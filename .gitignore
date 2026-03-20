@@ -1,0 +1,10 @@
+# Audio sample libraries (too large for git)
+DRUMS/
+SYNTHS/
+
+# OS files
+.DS_Store
+**/.DS_Store
+
+# Claude Code
+.claude/

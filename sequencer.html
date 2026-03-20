@@ -7,21 +7,23 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --bg: #09090f;
-            --surface: #111320;
-            --surface-hi: #181a2a;
-            --border: #1e2036;
-            --border-hi: #2e3150;
-            --text: #e0e0ee;
-            --text-dim: #7e82a0;
-            --text-muted: #505478;
+            --bg: #18181D;
+            --surface: #1e1e24;
+            --surface-hi: #25252c;
+            --border: #2a2a32;
+            --border-hi: #38383f;
+            --text: #ddd;
+            --text-dim: #999;
+            --text-muted: #666;
+            --text-faint: #58585F;
+            --section-label: #606068;
+            --param-value: #ddd;
             --radius: 10px;
             --radius-sm: 5px;
         }
         html, body {
             height: 100%;
             background: var(--bg);
-            background-image: radial-gradient(ellipse at 50% 0%, rgba(56,139,255,0.04) 0%, transparent 60%);
             color: var(--text);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
             font-size: 13px;
@@ -61,7 +63,7 @@
         .song-btns, .file-btns { display: flex; gap: 3px; }
         .song-btns .tb, .file-btns .tb { width: 22px; }
         .bpm-ctrl { display: flex; align-items: center; gap: 8px; margin-left: auto; }
-        .bpm-ctrl label { color: var(--text-dim); font-size: 10px; font-weight: 700; letter-spacing: 1.5px; }
+        .bpm-ctrl label { color: #777; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; }
         .bpm-ctrl input[type="range"] { width: 80px; accent-color: #388bff; cursor: pointer; }
         .bpm-ctrl input[type="number"] {
             width: 46px; background: var(--surface-hi); border: 1px solid var(--border-hi);
@@ -73,17 +75,17 @@
         /* ── Section ── */
         .section { margin-bottom: 16px; }
         .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-        .section-header span { font-size: 9px; font-weight: 700; letter-spacing: 2.5px; color: var(--text-dim); }
+        .section-header span { font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: var(--section-label); }
         .section-header::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent); }
         .bar-labels { display: flex; gap: 6px; margin-left: 190px; margin-bottom: 2px; }
-        .bar-label { flex:1; text-align:center; font-size:9px; font-weight:700; color:var(--text-muted); letter-spacing:1.5px; }
+        .bar-label { flex:1; text-align:center; font-size:9px; font-weight:700; color:#666; letter-spacing:1.5px; }
 
         /* ── Track Info ── */
         .track-info { width:190px; flex-shrink:0; display:flex; align-items:center; gap:5px; padding-right:6px; }
-        .track-color { width:3px; height:22px; border-radius:2px; flex-shrink:0; }
+        .track-color { width:3px; height:22px; border-radius:2px; flex-shrink:0; opacity:0.7; }
         .track-name {
-            font-weight:700; font-size:10px; min-width:28px; letter-spacing:0.3px;
-            cursor:default; padding:1px 3px; border-radius:2px;
+            font-weight:400; font-size:10px; min-width:28px; letter-spacing:0.3px;
+            color:#999; cursor:default; padding:1px 3px; border-radius:2px;
             border:1px solid transparent; transition:border-color 0.15s;
             overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100px;
         }
@@ -137,9 +139,10 @@
         .step-cell.beat-hi { background:rgba(255,255,255,0.06); }
         .step-cell.beat-gap { margin-left:3px; }
         .step-cell:hover { background:rgba(255,255,255,0.10)!important; }
-        .step-cell.playing:not(.active) { background:rgba(255,255,255,0.07)!important; }
+        .step-cell.playing:not(.active) { background:rgba(255,255,255,0.12)!important; }
         @keyframes hit { 0%{transform:scale(1)} 40%{transform:scale(1.15)} 100%{transform:scale(1)} }
         .step-cell.active.playing,.melody-cell.active.playing { animation:hit 0.12s ease-out; }
+        .melody-cell.playing:not(.active) { background:rgba(255,255,255,0.12)!important; }
 
         /* ── Melody Track ── */
         .melody-track {
@@ -178,7 +181,7 @@
         .melody-grid-wrapper { display:flex; padding:5px 8px; }
         .single-grid-wrapper { padding:5px 8px; }
         .note-labels { display:flex; flex-direction:column; gap:1px; padding-right:4px; }
-        .note-label { height:15px; display:flex; align-items:center; justify-content:flex-end; font-size:7px; font-weight:700; color:var(--text-dim); min-width:16px; padding-right:2px; }
+        .note-label { height:15px; display:flex; align-items:center; justify-content:flex-end; font-size:7px; font-weight:700; color:#666; min-width:16px; padding-right:2px; }
         .note-label.sharp { opacity:0.45; }
         .melody-grid { display:flex; flex-direction:column; gap:1px; flex:1; }
         .melody-row { display:flex; gap:6px; }
@@ -294,7 +297,7 @@
         #app.ext-panel-open { margin-right: 280px; }
         .ext-panel {
             position:fixed; top:0; right:0; bottom:0; width:280px;
-            background: linear-gradient(180deg, #0c0e18 0%, #080a12 100%);
+            background: linear-gradient(180deg, #1c1c22 0%, #18181D 100%);
             border-left:1px solid var(--border-hi);
             box-shadow: -12px 0 50px rgba(0,0,0,0.5), -2px 0 8px rgba(0,0,0,0.3);
             transform:translateX(100%);
@@ -310,7 +313,7 @@
         }
         .ext-panel-title {
             font-size:11px; font-weight:800; letter-spacing:2.5px;
-            color:var(--text); flex:1;
+            color:#bbb; flex:1;
         }
         .ext-panel-close {
             width:26px; height:26px; border-radius:50%;
@@ -383,15 +386,18 @@
     // ═══════════════════════════════════════════
     const STEPS = 64, BARS = 4, SPB = 16;
     const DRUMS_CFG = [
-        { color:'#ff3b5c' },{ color:'#ff8c38' },{ color:'#ffc638' },
-        { color:'#ff38a0' },{ color:'#ff6838' },
+        { color:'#F5C04E', bright:'#FFDA6E', idle:'rgba(245,192,78,0.75)',  grid:'rgba(245,192,78,0.14)' },
+        { color:'#EEA83E', bright:'#FFC258', idle:'rgba(238,168,62,0.70)',  grid:'rgba(238,168,62,0.12)' },
+        { color:'#E49432', bright:'#F8AE4C', idle:'rgba(228,148,50,0.65)', grid:'rgba(228,148,50,0.11)' },
+        { color:'#DA822A', bright:'#EE9C44', idle:'rgba(218,130,42,0.60)', grid:'rgba(218,130,42,0.10)' },
+        { color:'#D07224', bright:'#E48C3E', idle:'rgba(208,114,36,0.55)', grid:'rgba(208,114,36,0.09)' },
     ];
     const MEL_CFG = [
-        { color:'#388bff', mono:true },
-        { color:'#8b38ff', mono:false },
-        { color:'#38ffaa', mono:false },
+        { color:'#A0B4FF', bright:'#BCC8FF', idle:'rgba(160,180,255,0.70)', grid:'rgba(160,180,255,0.10)', mono:true },
+        { color:'#8C9CF0', bright:'#A8B4FF', idle:'rgba(140,156,240,0.62)', grid:'rgba(140,156,240,0.09)', mono:false },
+        { color:'#7C8AE2', bright:'#96A2F6', idle:'rgba(124,138,226,0.55)', grid:'rgba(124,138,226,0.08)', mono:false },
     ];
-    const VOCAL_CFG = { color:'#ff6b8a' };
+    const VOCAL_CFG = { color:'#5CDCC8', bright:'#7AEEDA', idle:'rgba(92,220,200,0.70)', grid:'rgba(92,220,200,0.11)' };
     const NOTES_DISPLAY = ['B','A#','A','G#','G','F#','F','E','D#','D','C#','C'];
     const SHARPS = new Set([1,3,6,8,10]);
     const DEFAULT_DRUM_NAMES = ['Kick','Snare','Closed Hat','Open Hat','Crash'];
@@ -444,10 +450,10 @@
         get playing() { return playing; },
         onStop(fn) { seqStopCallbacks.push(fn); },
         getTrackInfo(i) {
-            if (i < DRUMS_CFG.length) return { name: drumNames[i], color: DRUMS_CFG[i].color, type: 'drum' };
+            if (i < DRUMS_CFG.length) { const c=DRUMS_CFG[i]; return { name: drumNames[i], color: c.color, bright: c.bright, type: 'drum' }; }
             const mi = i - DRUMS_CFG.length;
-            if (mi < MEL_CFG.length) return { name: melNames[mi], color: MEL_CFG[mi].color, type: 'melody' };
-            return { name: vocalName, color: VOCAL_CFG.color, type: 'vocal' };
+            if (mi < MEL_CFG.length) { const c=MEL_CFG[mi]; return { name: melNames[mi], color: c.color, bright: c.bright, type: 'melody' }; }
+            return { name: vocalName, color: VOCAL_CFG.color, bright: VOCAL_CFG.bright, type: 'vocal' };
         },
         rebuildChain() { rebuildAudioChain(); },
         notifyStateChange() { scheduleSave(); },
@@ -675,8 +681,18 @@
         if(vocalPat[s]&&vocalBuf&&!mutedArr[DRUMS_CFG.length+MEL_CFG.length])playSample(vocalBuf,time,undefined,trackGains[DRUMS_CFG.length+MEL_CFG.length]);
         const delay=Math.max(0,(time-audioCtx.currentTime)*1000);setTimeout(()=>highlightStep(s),delay);
     }
-    function highlightStep(s){if(prevVisualStep>=0)clearHL(prevVisualStep);for(let t=0;t<DRUMS_CFG.length;t++)drumCells[t][s].classList.add('playing');for(let t=0;t<MEL_CFG.length;t++)for(let n=0;n<12;n++)melCells[t][s][n].classList.add('playing');vocalCells[s].classList.add('playing');prevVisualStep=s;}
-    function clearHL(s){for(let t=0;t<DRUMS_CFG.length;t++)drumCells[t][s].classList.remove('playing');for(let t=0;t<MEL_CFG.length;t++)for(let n=0;n<12;n++)melCells[t][s][n].classList.remove('playing');vocalCells[s].classList.remove('playing');}
+    function highlightStep(s){
+        if(prevVisualStep>=0)clearHL(prevVisualStep);
+        for(let t=0;t<DRUMS_CFG.length;t++){const c=drumCells[t][s];c.classList.add('playing');if(drumPat[t][s]){c.style.background=DRUMS_CFG[t].bright;c.style.boxShadow=`0 0 16px ${DRUMS_CFG[t].bright}80, 0 0 6px ${DRUMS_CFG[t].color}60`;}}
+        for(let t=0;t<MEL_CFG.length;t++)for(let n=0;n<12;n++){const c=melCells[t][s][n];c.classList.add('playing');const semi=displayToSemitone(n);if(melPat[t][s][semi]){c.style.background=MEL_CFG[t].bright;c.style.boxShadow=`0 0 16px ${MEL_CFG[t].bright}80, 0 0 6px ${MEL_CFG[t].color}60`;}}
+        vocalCells[s].classList.add('playing');if(vocalPat[s]){vocalCells[s].style.background=VOCAL_CFG.bright;vocalCells[s].style.boxShadow=`0 0 16px ${VOCAL_CFG.bright}80, 0 0 6px ${VOCAL_CFG.color}60`;}
+        prevVisualStep=s;
+    }
+    function clearHL(s){
+        for(let t=0;t<DRUMS_CFG.length;t++){const c=drumCells[t][s];c.classList.remove('playing');if(drumPat[t][s]){c.style.background=DRUMS_CFG[t].idle;c.style.boxShadow='';}else{c.style.background='';c.style.boxShadow='';}}
+        for(let t=0;t<MEL_CFG.length;t++)for(let n=0;n<12;n++){const c=melCells[t][s][n];c.classList.remove('playing');const semi=displayToSemitone(n);if(melPat[t][s][semi]){c.style.background=MEL_CFG[t].idle;c.style.boxShadow='';}else{c.style.background='';c.style.boxShadow='';}}
+        vocalCells[s].classList.remove('playing');if(vocalPat[s]){vocalCells[s].style.background=VOCAL_CFG.idle;vocalCells[s].style.boxShadow='';}else{vocalCells[s].style.background='';vocalCells[s].style.boxShadow='';}
+    }
 
     // ═══════════════════════════════════════════
     //  TRANSPORT
@@ -688,9 +704,9 @@
     // ═══════════════════════════════════════════
     //  CELL VISUALS
     // ═══════════════════════════════════════════
-    function updateDrumCell(t,s){const c=drumCells[t][s];if(drumPat[t][s]){c.classList.add('active');c.style.background=hexToRgba(DRUMS_CFG[t].color,0.75);c.style.boxShadow=`0 0 8px ${hexToRgba(DRUMS_CFG[t].color,0.3)}`;}else{c.classList.remove('active');c.style.background='';c.style.boxShadow='';}}
-    function updateMelCell(t,s,dr){const semi=displayToSemitone(dr);const c=melCells[t][s][dr];if(melPat[t][s][semi]){c.classList.add('active');c.style.background=hexToRgba(MEL_CFG[t].color,0.7);c.style.boxShadow=`0 0 6px ${hexToRgba(MEL_CFG[t].color,0.25)}`;}else{c.classList.remove('active');c.style.background='';c.style.boxShadow='';}}
-    function updateVocalCell(s){const c=vocalCells[s];if(vocalPat[s]){c.classList.add('active');c.style.background=hexToRgba(VOCAL_CFG.color,0.75);c.style.boxShadow=`0 0 8px ${hexToRgba(VOCAL_CFG.color,0.3)}`;}else{c.classList.remove('active');c.style.background='';c.style.boxShadow='';}}
+    function updateDrumCell(t,s){const c=drumCells[t][s];const cfg=DRUMS_CFG[t];if(drumPat[t][s]){c.classList.add('active');c.style.background=cfg.idle;c.style.boxShadow='';}else{c.classList.remove('active');c.style.background='';c.style.boxShadow='';}}
+    function updateMelCell(t,s,dr){const semi=displayToSemitone(dr);const c=melCells[t][s][dr];const cfg=MEL_CFG[t];if(melPat[t][s][semi]){c.classList.add('active');c.style.background=cfg.idle;c.style.boxShadow='';}else{c.classList.remove('active');c.style.background='';c.style.boxShadow='';}}
+    function updateVocalCell(s){const c=vocalCells[s];if(vocalPat[s]){c.classList.add('active');c.style.background=VOCAL_CFG.idle;c.style.boxShadow='';}else{c.classList.remove('active');c.style.background='';c.style.boxShadow='';}}
     function setMelodyCell(t,s,dr,val){const semi=displayToSemitone(dr);if(MEL_CFG[t].mono&&val){for(let n=0;n<12;n++){if(n!==semi&&melPat[t][s][n]){melPat[t][s][n]=false;updateMelCell(t,s,11-n);}}}melPat[t][s][semi]=val;updateMelCell(t,s,dr);if(!MEL_CFG[t].mono)updateHarmonyDim(t);}
 
     // Harmony

@@ -126,7 +126,7 @@
         container.innerHTML = '';
 
         const title = document.createElement('div');
-        title.style.cssText = 'font-size:8px;font-weight:700;letter-spacing:2px;color:#505478;margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid #1e2036;';
+        title.style.cssText = 'font-size:8px;font-weight:700;letter-spacing:2px;color:#666;margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid #2a2a32;';
         title.textContent = 'PULTEC EQP-1A PROGRAM EQ';
         container.appendChild(title);
 
@@ -179,7 +179,7 @@
 
     function sectionLabel(container, text) {
         const s = document.createElement('div');
-        s.style.cssText = 'font-size:7px;font-weight:800;letter-spacing:2px;color:#505478;margin-top:16px;margin-bottom:10px;padding-top:10px;border-top:1px solid #1e2036;';
+        s.style.cssText = 'font-size:7px;font-weight:800;letter-spacing:2px;color:#666;margin-top:16px;margin-bottom:10px;padding-top:10px;border-top:1px solid #2a2a32;';
         s.textContent = text;
         container.appendChild(s);
     }
@@ -190,15 +190,15 @@
         const header = document.createElement('div');
         header.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;';
         const lbl = document.createElement('div');
-        lbl.style.cssText = 'font-size:8px;font-weight:800;letter-spacing:1.5px;color:#7e82a0;';
+        lbl.style.cssText = 'font-size:8px;font-weight:800;letter-spacing:1.5px;color:#999;';
         lbl.textContent = label;
         const val = document.createElement('div');
-        val.style.cssText = 'font-size:10px;font-weight:700;color:#e0e0ee;font-variant-numeric:tabular-nums;';
+        val.style.cssText = 'font-size:10px;font-weight:700;color:#ddd;font-variant-numeric:tabular-nums;';
         val.textContent = format(value);
         header.appendChild(lbl); header.appendChild(val); wrap.appendChild(header);
         const slider = document.createElement('input');
         slider.type = 'range'; slider.min = min; slider.max = max; slider.step = step; slider.value = value;
-        slider.style.cssText = 'width:100%;accent-color:#ff5070;cursor:pointer;height:4px;';
+        slider.style.cssText = 'width:100%;accent-color:#888;cursor:pointer;height:4px;';
         slider.oninput = () => { const v = parseFloat(slider.value); val.textContent = format(v); onChange(v); };
         wrap.appendChild(slider); container.appendChild(wrap);
     }
@@ -207,11 +207,11 @@
         const wrap = document.createElement('div');
         wrap.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:12px;';
         const lbl = document.createElement('div');
-        lbl.style.cssText = 'font-size:8px;font-weight:800;letter-spacing:1.5px;color:#7e82a0;width:70px;flex-shrink:0;';
+        lbl.style.cssText = 'font-size:8px;font-weight:800;letter-spacing:1.5px;color:#999;width:70px;flex-shrink:0;';
         lbl.textContent = label;
         wrap.appendChild(lbl);
         const sel = document.createElement('select');
-        sel.style.cssText = 'flex:1;background:#181a2a;border:1px solid #2e3150;border-radius:4px;color:#e0e0ee;padding:3px 6px;font-size:10px;font-family:inherit;cursor:pointer;';
+        sel.style.cssText = 'flex:1;background:#181a2a;border:1px solid #2a2a32;border-radius:4px;color:#ddd;padding:3px 6px;font-size:10px;font-family:inherit;cursor:pointer;';
         options.forEach(o => {
             const opt = document.createElement('option');
             opt.value = o.v; opt.textContent = o.l;

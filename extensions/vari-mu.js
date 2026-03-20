@@ -101,7 +101,7 @@
 
         // Subtle section header
         const title = document.createElement('div');
-        title.style.cssText = 'font-size:8px;font-weight:700;letter-spacing:2px;color:#505478;margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid #1e2036;';
+        title.style.cssText = 'font-size:8px;font-weight:700;letter-spacing:2px;color:#666;margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid #2a2a32;';
         title.textContent = 'TUBE BUS COMPRESSOR';
         container.appendChild(title);
 
@@ -128,15 +128,15 @@
 
         // GR Meter
         const grSec = document.createElement('div');
-        grSec.style.cssText = 'margin-top:24px;padding-top:16px;border-top:1px solid #1e2036;';
+        grSec.style.cssText = 'margin-top:24px;padding-top:16px;border-top:1px solid #2a2a32;';
 
         const grLabel = document.createElement('div');
-        grLabel.style.cssText = 'font-size:8px;font-weight:800;letter-spacing:2px;color:#505478;margin-bottom:8px;';
+        grLabel.style.cssText = 'font-size:8px;font-weight:800;letter-spacing:2px;color:#666;margin-bottom:8px;';
         grLabel.textContent = 'GAIN REDUCTION';
         grSec.appendChild(grLabel);
 
         const grTrack = document.createElement('div');
-        grTrack.style.cssText = 'height:6px;background:#111320;border-radius:3px;overflow:hidden;border:1px solid #1e2036;';
+        grTrack.style.cssText = 'height:6px;background:#111320;border-radius:3px;overflow:hidden;border:1px solid #2a2a32;';
         const grFill = document.createElement('div');
         grFill.style.cssText = 'height:100%;width:0%;background:linear-gradient(90deg,#ff8c38,#ff3b5c);border-radius:3px;transition:width 0.06s linear;';
         grTrack.appendChild(grFill);
@@ -161,11 +161,11 @@
         header.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;';
 
         const lbl = document.createElement('div');
-        lbl.style.cssText = 'font-size:8px;font-weight:800;letter-spacing:2px;color:#7e82a0;';
+        lbl.style.cssText = 'font-size:8px;font-weight:800;letter-spacing:2px;color:#999;';
         lbl.textContent = label;
 
         const val = document.createElement('div');
-        val.style.cssText = 'font-size:10px;font-weight:700;color:#e0e0ee;font-variant-numeric:tabular-nums;';
+        val.style.cssText = 'font-size:10px;font-weight:700;color:#ddd;font-variant-numeric:tabular-nums;';
         val.textContent = format(value);
 
         header.appendChild(lbl);
@@ -176,7 +176,7 @@
         slider.type = 'range';
         slider.min = min; slider.max = max; slider.step = step;
         slider.value = value;
-        slider.style.cssText = 'width:100%;accent-color:#ff8c38;cursor:pointer;height:4px;';
+        slider.style.cssText = 'width:100%;accent-color:#888;cursor:pointer;height:4px;';
         slider.oninput = () => {
             const v = parseFloat(slider.value);
             val.textContent = format(v);

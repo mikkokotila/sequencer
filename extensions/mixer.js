@@ -38,7 +38,7 @@
         meterBars = [];
 
         const title = document.createElement('div');
-        title.style.cssText = 'font-size:8px;font-weight:700;letter-spacing:2px;color:#505478;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid #1e2036;';
+        title.style.cssText = 'font-size:8px;font-weight:700;letter-spacing:2px;color:#666;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid #2a2a32;';
         title.textContent = 'CHANNEL LEVELS';
         container.appendChild(title);
 
@@ -52,7 +52,7 @@
 
         // Master section
         const sep = document.createElement('div');
-        sep.style.cssText = 'margin-top:14px;padding-top:12px;border-top:1px solid #1e2036;';
+        sep.style.cssText = 'margin-top:14px;padding-top:12px;border-top:1px solid #2a2a32;';
         container.appendChild(sep);
 
         const masterInfo = { name: 'MASTER', color: '#388bff' };
@@ -69,12 +69,12 @@
         header.appendChild(dot);
 
         const name = document.createElement('div');
-        name.style.cssText = 'font-size:9px;font-weight:800;color:#e0e0ee;letter-spacing:1px;flex:1;';
+        name.style.cssText = 'font-size:9px;font-weight:800;color:#999;letter-spacing:1px;flex:1;';
         name.textContent = 'MASTER';
         header.appendChild(name);
 
         const val = document.createElement('div');
-        val.style.cssText = 'font-size:10px;font-weight:700;color:#e0e0ee;font-variant-numeric:tabular-nums;';
+        val.style.cssText = 'font-size:10px;font-weight:700;color:#ddd;font-variant-numeric:tabular-nums;';
         val.textContent = Math.round(masterLvl * 100) + '%';
         header.appendChild(val);
 
@@ -83,7 +83,7 @@
         const slider = document.createElement('input');
         slider.type = 'range'; slider.min = 0; slider.max = 1.5; slider.step = 0.01;
         slider.value = masterLvl;
-        slider.style.cssText = 'width:100%;accent-color:#388bff;cursor:pointer;height:4px;';
+        slider.style.cssText = 'width:100%;accent-color:#888;cursor:pointer;height:4px;';
         slider.oninput = () => {
             const v = parseFloat(slider.value);
             if (SEQ.masterGain) SEQ.masterGain.gain.value = v;
@@ -108,7 +108,7 @@
         header.appendChild(dot);
 
         const name = document.createElement('div');
-        name.style.cssText = 'font-size:9px;font-weight:700;color:#7e82a0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+        name.style.cssText = 'font-size:9px;font-weight:700;color:#999;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
         name.textContent = info.name;
         name.title = info.name;
         header.appendChild(name);
@@ -123,7 +123,7 @@
         meterBars.push(meterFill);
 
         const val = document.createElement('div');
-        val.style.cssText = 'font-size:10px;font-weight:700;color:#e0e0ee;min-width:28px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums;';
+        val.style.cssText = 'font-size:10px;font-weight:700;color:#ddd;min-width:28px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums;';
         val.textContent = Math.round(level * 100) + '%';
         header.appendChild(val);
 
@@ -133,7 +133,7 @@
         const slider = document.createElement('input');
         slider.type = 'range'; slider.min = 0; slider.max = 1; slider.step = 0.01;
         slider.value = level;
-        slider.style.cssText = `width:100%;accent-color:${info.color};cursor:pointer;height:3px;`;
+        slider.style.cssText = `width:100%;accent-color:#888;cursor:pointer;height:3px;`;
         slider.oninput = () => {
             const v = parseFloat(slider.value);
             if (!state.levels) state.levels = defaults();

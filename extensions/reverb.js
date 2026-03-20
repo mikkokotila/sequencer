@@ -218,7 +218,7 @@
         container.innerHTML = '';
 
         const title = document.createElement('div');
-        title.style.cssText = 'font-size:8px;font-weight:700;letter-spacing:2px;color:#505478;margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid #1e2036;';
+        title.style.cssText = 'font-size:8px;font-weight:700;letter-spacing:2px;color:#666;margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid #2a2a32;';
         title.textContent = 'EMT 140 PLATE REVERB';
         container.appendChild(title);
 
@@ -245,10 +245,10 @@
 
         // Per-channel aux sends
         const auxSec = document.createElement('div');
-        auxSec.style.cssText = 'margin-top:20px;padding-top:14px;border-top:1px solid #1e2036;';
+        auxSec.style.cssText = 'margin-top:20px;padding-top:14px;border-top:1px solid #2a2a32;';
 
         const auxTitle = document.createElement('div');
-        auxTitle.style.cssText = 'font-size:8px;font-weight:700;letter-spacing:2px;color:#505478;margin-bottom:12px;';
+        auxTitle.style.cssText = 'font-size:8px;font-weight:700;letter-spacing:2px;color:#666;margin-bottom:12px;';
         auxTitle.textContent = 'AUX SENDS';
         auxSec.appendChild(auxTitle);
 
@@ -265,7 +265,7 @@
             row.appendChild(dot);
 
             const name = document.createElement('div');
-            name.style.cssText = 'font-size:8px;font-weight:700;color:#7e82a0;width:52px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.3px;';
+            name.style.cssText = 'font-size:8px;font-weight:700;color:#999;width:52px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.3px;';
             name.textContent = info.name;
             name.title = info.name;
             row.appendChild(name);
@@ -273,10 +273,10 @@
             const slider = document.createElement('input');
             slider.type = 'range'; slider.min = 0; slider.max = 1; slider.step = 0.01;
             slider.value = sends[i] !== undefined ? sends[i] : 0.4;
-            slider.style.cssText = `flex:1;accent-color:${info.color};cursor:pointer;height:3px;`;
+            slider.style.cssText = `flex:1;accent-color:#888;cursor:pointer;height:3px;`;
             const idx = i;
             const val = document.createElement('div');
-            val.style.cssText = 'font-size:9px;font-weight:700;color:#e0e0ee;width:20px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums;';
+            val.style.cssText = 'font-size:9px;font-weight:700;color:#777;width:20px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums;';
             val.textContent = Math.round((sends[i] !== undefined ? sends[i] : 0.4) * 100);
 
             slider.oninput = () => {
@@ -304,11 +304,11 @@
         header.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;';
 
         const lbl = document.createElement('div');
-        lbl.style.cssText = 'font-size:8px;font-weight:800;letter-spacing:2px;color:#7e82a0;';
+        lbl.style.cssText = 'font-size:8px;font-weight:800;letter-spacing:2px;color:#999;';
         lbl.textContent = label;
 
         const val = document.createElement('div');
-        val.style.cssText = 'font-size:10px;font-weight:700;color:#e0e0ee;font-variant-numeric:tabular-nums;';
+        val.style.cssText = 'font-size:10px;font-weight:700;color:#ddd;font-variant-numeric:tabular-nums;';
         val.textContent = format(value);
 
         header.appendChild(lbl);
@@ -319,7 +319,7 @@
         slider.type = 'range';
         slider.min = min; slider.max = max; slider.step = step;
         slider.value = value;
-        slider.style.cssText = 'width:100%;accent-color:#38d4ff;cursor:pointer;height:4px;';
+        slider.style.cssText = 'width:100%;accent-color:#888;cursor:pointer;height:4px;';
         slider.oninput = () => {
             const v = parseFloat(slider.value);
             val.textContent = format(v);

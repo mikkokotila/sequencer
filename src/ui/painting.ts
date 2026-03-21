@@ -154,7 +154,7 @@ export function setupPainting(): void {
     if (!cell) return;
     e.preventDefault();
 
-    const type = (cell.dataset.type ?? '') as PaintType;
+    const type = (cell.dataset.type as PaintType | undefined) ?? null;
     const t = Number(cell.dataset.track ?? 0);
     const s = Number(cell.dataset.step ?? 0);
 

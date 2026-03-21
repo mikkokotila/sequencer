@@ -15,7 +15,7 @@ import {
 // ═══════════════════════════════════════════
 
 /** The track-type being painted, or empty string when idle. */
-export type PaintType = 'drum' | 'melody' | 'vocal' | '';
+export type PaintType = 'drum' | 'melody' | 'vocal';
 
 // ═══════════════════════════════════════════
 //  AUDIO
@@ -119,7 +119,7 @@ export let vocalSampleData: SampleData | null = null;
 
 export let painting = false;
 export let paintVal = true;
-export let paintType: PaintType = '';
+export let paintType: PaintType | null = null;
 
 export let selecting = false;
 export let selection: Selection = { track: -1, start: -1, end: -1 };
@@ -223,7 +223,7 @@ export function setPainting(v: boolean): void {
 export function setPaintVal(v: boolean): void {
   paintVal = v;
 }
-export function setPaintType(v: PaintType): void {
+export function setPaintType(v: PaintType | null): void {
   paintType = v;
 }
 export function setSelecting(v: boolean): void {

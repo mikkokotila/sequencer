@@ -37,7 +37,7 @@ FX buses:
   Delay bus  → Delay    → delay return  → mixBus
 
 Master chain:
-  mixBus → masterTrim → Pultec EQ → Vari-Mu Compressor → output
+  mixBus → masterTrim → Pultec EQ → Vari-Mu Compressor → Transformer → output
 ```
 
 ## Project structure

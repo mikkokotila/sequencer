@@ -429,6 +429,15 @@ test.describe('Extension Panels', () => {
     await page.locator('#ext-panel-close').click();
   });
 
+  test('transformer extension opens and has controls', async ({ page }) => {
+    await waitForApp(page);
+    // Transformer is third extension (after Pultec, Vari-Mu)
+    await page.locator('.ext-icon-btn').nth(2).click();
+    await expect(page.locator('#ext-panel')).toHaveClass(/open/);
+    await expect(page.locator('#ext-panel')).toContainText('TRANSFORMER');
+    await page.locator('#ext-panel-close').click();
+  });
+
   test('close button closes panel', async ({ page }) => {
     await waitForApp(page);
     await page.locator('.ext-icon-btn').first().click();

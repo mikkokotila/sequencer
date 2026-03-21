@@ -21,6 +21,7 @@ import { createMixer } from './engine/extensions/mixer';
 import { createReverb } from './engine/extensions/reverb';
 import { createDelay } from './engine/extensions/delay';
 import { createPultecEq } from './engine/extensions/pultec-eq';
+import { createTransformer } from './engine/extensions/transformer';
 
 async function init(): Promise<void> {
   // 1. Install SEQ API (makes window.SEQ available for extensions)
@@ -28,12 +29,13 @@ async function init(): Promise<void> {
 
   // 2. Register extensions
   // Order: master bus inserts first, then aux effects, then metering
-  // Master bus chain: Pultec EQ → Vari-Mu (serial inserts on master)
+  // Master bus chain: Pultec EQ → Vari-Mu → Transformer (serial inserts)
   // Aux effects: Reverb, Delay (parallel buses, returns to mixBus)
   // Metering: Mixer (channel fader controls + metering)
   SEQ_EXTENSIONS.push(
     createPultecEq(),
     createVariMu(),
+    createTransformer(),
     createMixer(),
     createReverb(),
     createDelay(),

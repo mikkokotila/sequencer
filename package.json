@@ -15,5 +15,8 @@
   },
   "dependencies": {
     "tone": "^15.1.22"
+  },
+  "lint-staged": {
+    "src/**/*.ts": ["eslint --fix", "prettier --write"]
   }
 }

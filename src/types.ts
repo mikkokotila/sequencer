@@ -6,7 +6,7 @@ export interface TrackColorConfig {
   readonly grid: string;
 }
 
-export interface DrumTrackConfig extends TrackColorConfig {}
+export type DrumTrackConfig = TrackColorConfig;
 
 export interface MelodyTrackConfig extends TrackColorConfig {
   readonly mono: boolean;
@@ -14,9 +14,9 @@ export interface MelodyTrackConfig extends TrackColorConfig {
 
 // Pattern data
 export interface Phrase {
-  drumPat: boolean[][];      // [track][step]
-  melPat: boolean[][][];     // [track][step][note]
-  vocalPat: boolean[];       // [step]
+  drumPat: boolean[][]; // [track][step]
+  melPat: boolean[][][]; // [track][step][note]
+  vocalPat: boolean[]; // [step]
 }
 
 // Sample data for persistence

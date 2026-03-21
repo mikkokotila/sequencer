@@ -17,16 +17,12 @@ import { emit } from '../events';
 export function makeEmptyPhrase(): Phrase {
   return {
     drumPat: DRUMS_CFG.map(() => Array<boolean>(STEPS).fill(false)),
-    melPat: MEL_CFG.map(() =>
-      Array.from({ length: STEPS }, () => Array<boolean>(12).fill(false)),
-    ),
+    melPat: MEL_CFG.map(() => Array.from({ length: STEPS }, () => Array<boolean>(12).fill(false))),
     vocalPat: Array<boolean>(STEPS).fill(false),
   };
 }
 
-export const phrases: Phrase[] = Array.from({ length: NUM_PHRASES }, () =>
-  makeEmptyPhrase(),
-);
+export const phrases: Phrase[] = Array.from({ length: NUM_PHRASES }, () => makeEmptyPhrase());
 
 export let currentPhrase = 0;
 export let playingPhrase = 0;
@@ -124,12 +120,7 @@ export function setDrumStep(track: number, step: number, value: boolean): void {
 }
 
 /** Set a single melody note and emit. */
-export function setMelStep(
-  track: number,
-  step: number,
-  note: number,
-  value: boolean,
-): void {
+export function setMelStep(track: number, step: number, note: number, value: boolean): void {
   const trackArr = melPat[track];
   if (!trackArr) return;
   const stepArr = trackArr[step];
@@ -181,13 +172,11 @@ export function isPhraseEmpty(idx: number): boolean {
   if (!p) return true;
 
   for (const row of p.drumPat) {
-    if (row && row.some(Boolean)) return false;
+    if (row.some(Boolean)) return false;
   }
   for (const track of p.melPat) {
-    if (track) {
-      for (const step of track) {
-        if (step && step.some(Boolean)) return false;
-      }
+    for (const step of track) {
+      if (step.some(Boolean)) return false;
     }
   }
   if (p.vocalPat.some(Boolean)) return false;
@@ -229,7 +218,7 @@ export function clearMelTrack(track: number): void {
   const trackArr = melPat[track];
   if (!trackArr) return;
   for (const step of trackArr) {
-    if (step) step.fill(false);
+    step.fill(false);
   }
   emit('transport:patternChanged', { type: 'melody', track, step: -1 });
 }
@@ -244,10 +233,7 @@ export function clearVocalTrack(): void {
  * FILL function: replicate a bar pattern across all bars in the current phrase.
  * Takes the first bar (steps 0-15) and copies it to bars 2-4.
  */
-export function replicateTrack(
-  type: 'drum' | 'melody' | 'vocal',
-  track: number,
-): void {
+export function replicateTrack(type: 'drum' | 'melody' | 'vocal', track: number): void {
   const SPB = 16; // steps per bar
 
   if (type === 'drum') {

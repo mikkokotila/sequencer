@@ -75,7 +75,7 @@ import {
 
 function toggleMute(gi: number, btn: HTMLElement): void {
   mutedArr[gi] = !mutedArr[gi];
-  btn.classList.toggle('muted', !!mutedArr[gi]);
+  btn.classList.toggle('muted', mutedArr[gi] ?? false);
   scheduleSave();
 }
 
@@ -126,13 +126,12 @@ export function buildStepGrid(
     const bg = el('div', 'bar-group');
     for (let l = 0; l < SPB; l++) {
       const s = bar * SPB + l;
-      const cls = 'step-cell' +
-        (l % 4 === 0 ? ' beat-hi' : '') +
-        (l > 0 && l % 4 === 0 ? ' beat-gap' : '');
+      const cls =
+        'step-cell' + (l % 4 === 0 ? ' beat-hi' : '') + (l > 0 && l % 4 === 0 ? ' beat-gap' : '');
       const c = el('div', cls);
-      c.dataset['type'] = type;
-      c.dataset['track'] = String(trackIdx);
-      c.dataset['step'] = String(s);
+      c.dataset.type = type;
+      c.dataset.track = String(trackIdx);
+      c.dataset.step = String(s);
       cells[s] = c;
       bg.appendChild(c);
     }
@@ -149,11 +148,19 @@ export function buildStepGrid(
 let _buildExtIcons: (() => void) | null = null;
 let _updateExtIcons: (() => void) | null = null;
 
-export function setExtIconsBuilder(fn: () => void): void { _buildExtIcons = fn; }
-export function setExtIconsUpdater(fn: () => void): void { _updateExtIcons = fn; }
+export function setExtIconsBuilder(fn: () => void): void {
+  _buildExtIcons = fn;
+}
+export function setExtIconsUpdater(fn: () => void): void {
+  _updateExtIcons = fn;
+}
 
-export function buildExtIcons(): void { _buildExtIcons?.(); }
-export function updateExtIcons(): void { _updateExtIcons?.(); }
+export function buildExtIcons(): void {
+  _buildExtIcons?.();
+}
+export function updateExtIcons(): void {
+  _updateExtIcons?.();
+}
 
 // ═══════════════════════════════════════════
 //  Song pane
@@ -174,18 +181,16 @@ export function updateSongPane(): void {
 
 export function refreshUI(): void {
   // Update all cells
-  for (let t = 0; t < DRUMS_CFG.length; t++)
-    for (let s = 0; s < STEPS; s++) updateDrumCell(t, s);
+  for (let t = 0; t < DRUMS_CFG.length; t++) for (let s = 0; s < STEPS; s++) updateDrumCell(t, s);
   for (let t = 0; t < MEL_CFG.length; t++)
-    for (let s = 0; s < STEPS; s++)
-      for (let d = 0; d < 12; d++) updateMelCell(t, s, d);
+    for (let s = 0; s < STEPS; s++) for (let d = 0; d < 12; d++) updateMelCell(t, s, d);
   for (let s = 0; s < STEPS; s++) updateVocalCell(s);
 
   // Drum tracks
   document.querySelectorAll('.melody-track[data-type="drum"]').forEach((row, ti) => {
     const n = row.querySelector('.track-name');
     if (n) n.textContent = drumNames[ti] ?? '';
-    const sb = row.querySelector('.sample-btn') as HTMLElement | null;
+    const sb = row.querySelector<HTMLElement>('.sample-btn');
     if (sb) {
       const sd = drumSampleData[ti];
       if (sd) {
@@ -198,7 +203,7 @@ export function refreshUI(): void {
         sb.title = '';
       }
     }
-    const mb = row.querySelector('.mute-btn') as HTMLElement | null;
+    const mb = row.querySelector<HTMLElement>('.mute-btn');
     if (mb) mb.classList.toggle('muted', !!mutedArr[ti]);
   });
 
@@ -208,7 +213,7 @@ export function refreshUI(): void {
     if (n) n.textContent = melNames[ti] ?? '';
     const ov = panel.querySelector('.oct-val');
     if (ov) ov.textContent = String(octaves[ti] ?? 3);
-    const sb = panel.querySelector('.sample-btn') as HTMLElement | null;
+    const sb = panel.querySelector<HTMLElement>('.sample-btn');
     if (sb) {
       const sd = melSampleData[ti];
       if (sd) {
@@ -221,9 +226,9 @@ export function refreshUI(): void {
         sb.title = '';
       }
     }
-    const mb = panel.querySelector('.mute-btn') as HTMLElement | null;
+    const mb = panel.querySelector<HTMLElement>('.mute-btn');
     if (mb) mb.classList.toggle('muted', !!mutedArr[DRUMS_CFG.length + ti]);
-    const ht = panel.querySelector('.harmony-toggle') as HTMLElement | null;
+    const ht = panel.querySelector<HTMLElement>('.harmony-toggle');
     if (ht) {
       const label = HARMONY_LABELS[harmonies[ti] ?? 0] ?? '\u2014';
       ht.textContent = 'HARM: ' + label;
@@ -233,11 +238,11 @@ export function refreshUI(): void {
   });
 
   // Vocal track
-  const vrow = document.querySelector('.melody-track[data-type="vocal"]') as HTMLElement | null;
+  const vrow = document.querySelector<HTMLElement>('.melody-track[data-type="vocal"]');
   if (vrow) {
     const n = vrow.querySelector('.track-name');
     if (n) n.textContent = vocalName;
-    const sb = vrow.querySelector('.sample-btn') as HTMLElement | null;
+    const sb = vrow.querySelector<HTMLElement>('.sample-btn');
     if (sb) {
       if (vocalSampleData) {
         sb.textContent = truncName(vocalSampleData.name);
@@ -249,7 +254,7 @@ export function refreshUI(): void {
         sb.title = '';
       }
     }
-    const mb = vrow.querySelector('.mute-btn') as HTMLElement | null;
+    const mb = vrow.querySelector<HTMLElement>('.mute-btn');
     if (mb) mb.classList.toggle('muted', !!mutedArr[DRUMS_CFG.length + MEL_CFG.length]);
   }
 
@@ -333,8 +338,8 @@ export function buildUI(): void {
   const drumsSec = el('div', 'section');
   DRUMS_CFG.forEach((cfg, ti) => {
     const panel = el('div', 'melody-track');
-    panel.dataset['track'] = String(ti);
-    panel.dataset['type'] = 'drum';
+    panel.dataset.track = String(ti);
+    panel.dataset.type = 'drum';
     const header = el('div', 'melody-track-header');
     const cb = el('div', 'track-color');
     cb.style.background = cfg.color;
@@ -343,7 +348,14 @@ export function buildUI(): void {
     nm.textContent = drumNames[ti] ?? '';
     nm.title = drumNames[ti] ?? '';
     header.appendChild(nm);
-    makeEditable(nm, () => drumNames[ti] ?? '', v => { drumNames[ti] = v; }, () => scheduleSave());
+    makeEditable(
+      nm,
+      () => drumNames[ti] ?? '',
+      (v) => {
+        drumNames[ti] = v;
+      },
+      () => scheduleSave(),
+    );
     const sb = el('button', 'sample-btn');
     sb.textContent = 'LOAD';
     sb.onclick = () => openBrowser('drum', ti);
@@ -363,7 +375,7 @@ export function buildUI(): void {
     panel.appendChild(header);
     const gw = el('div', 'single-grid-wrapper');
     drumCells[ti] = [];
-    buildStepGrid(gw, drumCells[ti]!, 'drum', ti);
+    buildStepGrid(gw, drumCells[ti], 'drum', ti);
     panel.appendChild(gw);
     setupDragDrop(panel, 'drum', ti);
     drumsSec.appendChild(panel);
@@ -374,8 +386,8 @@ export function buildUI(): void {
   const melSec = el('div', 'section');
   MEL_CFG.forEach((cfg, ti) => {
     const panel = el('div', 'melody-track');
-    panel.dataset['track'] = String(ti);
-    panel.dataset['type'] = 'melody';
+    panel.dataset.track = String(ti);
+    panel.dataset.type = 'melody';
     const header = el('div', 'melody-track-header');
     const cb = el('div', 'track-color');
     cb.style.background = cfg.color;
@@ -384,13 +396,23 @@ export function buildUI(): void {
     nm.textContent = melNames[ti] ?? '';
     nm.title = melNames[ti] ?? '';
     header.appendChild(nm);
-    makeEditable(nm, () => melNames[ti] ?? '', v => { melNames[ti] = v; }, () => scheduleSave());
+    makeEditable(
+      nm,
+      () => melNames[ti] ?? '',
+      (v) => {
+        melNames[ti] = v;
+      },
+      () => scheduleSave(),
+    );
     if (!cfg.mono) {
       const ht = el('button', 'harmony-toggle');
       const harmLabel = HARMONY_LABELS[harmonies[ti] ?? 0] ?? '\u2014';
       ht.textContent = 'HARM: ' + harmLabel;
       ht.classList.toggle('active', (harmonies[ti] ?? 0) > 0);
-      ht.onclick = () => { cycleHarmony(ti); scheduleSave(); };
+      ht.onclick = () => {
+        cycleHarmony(ti);
+        scheduleSave();
+      };
       header.appendChild(ht);
     }
     const sb = el('button', 'sample-btn');
@@ -439,7 +461,7 @@ export function buildUI(): void {
 
     const grid = el('div', 'melody-grid');
     melCells[ti] = [];
-    for (let s = 0; s < STEPS; s++) melCells[ti]![s] = [];
+    for (let s = 0; s < STEPS; s++) melCells[ti][s] = [];
     NOTES_DISPLAY.forEach((_note, di) => {
       const row = el('div', 'melody-row');
       const isSharp = SHARPS.has(di);
@@ -447,15 +469,16 @@ export function buildUI(): void {
         const bg = el('div', 'bar-group');
         for (let l = 0; l < SPB; l++) {
           const s = bar * SPB + l;
-          const cls = 'melody-cell' +
+          const cls =
+            'melody-cell' +
             (isSharp ? ' black-key' : ' white-key') +
             (l % 4 === 0 ? ' beat-hi' : '') +
             (l > 0 && l % 4 === 0 ? ' beat-gap' : '');
           const c = el('div', cls);
-          c.dataset['type'] = 'melody';
-          c.dataset['track'] = String(ti);
-          c.dataset['step'] = String(s);
-          c.dataset['note'] = String(di);
+          c.dataset.type = 'melody';
+          c.dataset.track = String(ti);
+          c.dataset.step = String(s);
+          c.dataset.note = String(di);
           melCells[ti]![s]![di] = c;
           bg.appendChild(c);
         }
@@ -473,7 +496,7 @@ export function buildUI(): void {
   // ── Vocal / Sample track ──
   const vocSec = el('div', 'section');
   const vpanel = el('div', 'melody-track');
-  vpanel.dataset['type'] = 'vocal';
+  vpanel.dataset.type = 'vocal';
   const vheader = el('div', 'melody-track-header');
   const vcb = el('div', 'track-color');
   vcb.style.background = VOCAL_CFG.color;
@@ -482,7 +505,14 @@ export function buildUI(): void {
   vnm.textContent = vocalName;
   vnm.title = vocalName;
   vheader.appendChild(vnm);
-  makeEditable(vnm, () => vocalName, v => { setVocalName(v); }, () => scheduleSave());
+  makeEditable(
+    vnm,
+    () => vocalName,
+    (v) => {
+      setVocalName(v);
+    },
+    () => scheduleSave(),
+  );
   const vsb = el('button', 'sample-btn');
   vsb.textContent = 'LOAD';
   vsb.onclick = () => openBrowser('vocal', 0);
@@ -519,9 +549,15 @@ export function buildUI(): void {
   const loadBtn = document.getElementById('load-btn');
   if (loadBtn) loadBtn.onclick = loadPatternFile;
   const songNewBtn = document.getElementById('song-new');
-  if (songNewBtn) songNewBtn.onclick = () => { void newSong(); };
+  if (songNewBtn)
+    songNewBtn.onclick = () => {
+      void newSong();
+    };
   const songDelBtn = document.getElementById('song-del');
-  if (songDelBtn) songDelBtn.onclick = () => { void deleteSong(); };
+  if (songDelBtn)
+    songDelBtn.onclick = () => {
+      void deleteSong();
+    };
 
   // Song name inline editing
   const songNameEl = document.getElementById('song-name');
@@ -571,7 +607,7 @@ export function buildUI(): void {
   songPane.id = 'song-pane';
   for (let i = 0; i < NUM_PHRASES; i++) {
     const slot = el('div', 'phrase-slot' + (i === 0 ? ' active' : ''));
-    slot.dataset['phrase'] = String(i);
+    slot.dataset.phrase = String(i);
     const num = el('span', 'phrase-num');
     num.textContent = String(i + 1);
     const dot = el('span', 'phrase-dot');

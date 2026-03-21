@@ -90,7 +90,7 @@ export function playPreviewSample(
   if (prevSource) {
     try {
       prevSource.stop();
-    } catch (_e) {
+    } catch {
       // already stopped
     }
   }

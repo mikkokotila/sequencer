@@ -48,9 +48,7 @@ import {
   vocalSampleData,
   setVocalSampleData,
 } from './song';
-import {
-  SEQ_EXTENSIONS,
-} from '../state';
+import { SEQ_EXTENSIONS } from '../state';
 import { getAudioContext, initAudio } from '../engine/audio';
 
 // ═══════════════════════════════════════════
@@ -83,48 +81,60 @@ export function openDB(): Promise<IDBDatabase> {
       setDb(req.result);
       resolve(req.result);
     };
-    req.onerror = () => reject(req.error);
+    req.onerror = () => reject(new Error(String(req.error)));
   });
 }
 
 export function dbPut(store: StoreName, val: unknown, key?: IDBValidKey): Promise<IDBValidKey> {
   return new Promise<IDBValidKey>((res, rej) => {
-    if (!db) { rej(new Error('DB not open')); return; }
+    if (!db) {
+      rej(new Error('DB not open'));
+      return;
+    }
     const tx = db.transaction(store, 'readwrite');
     const s = tx.objectStore(store);
     const r = key !== undefined ? s.put(val, key) : s.put(val);
     r.onsuccess = () => res(r.result);
-    r.onerror = () => rej(r.error);
+    r.onerror = () => rej(new Error(String(r.error)));
   });
 }
 
 export function dbGet<T = unknown>(store: StoreName, key: IDBValidKey): Promise<T | undefined> {
   return new Promise<T | undefined>((res, rej) => {
-    if (!db) { rej(new Error('DB not open')); return; }
+    if (!db) {
+      rej(new Error('DB not open'));
+      return;
+    }
     const tx = db.transaction(store, 'readonly');
     const r = tx.objectStore(store).get(key);
     r.onsuccess = () => res(r.result as T | undefined);
-    r.onerror = () => rej(r.error);
+    r.onerror = () => rej(new Error(String(r.error)));
   });
 }
 
 export function dbGetAll<T = unknown>(store: StoreName): Promise<T[]> {
   return new Promise<T[]>((res, rej) => {
-    if (!db) { rej(new Error('DB not open')); return; }
+    if (!db) {
+      rej(new Error('DB not open'));
+      return;
+    }
     const tx = db.transaction(store, 'readonly');
     const r = tx.objectStore(store).getAll();
     r.onsuccess = () => res(r.result as T[]);
-    r.onerror = () => rej(r.error);
+    r.onerror = () => rej(new Error(String(r.error)));
   });
 }
 
 export function dbDelete(store: StoreName, key: IDBValidKey): Promise<void> {
   return new Promise<void>((res, rej) => {
-    if (!db) { rej(new Error('DB not open')); return; }
+    if (!db) {
+      rej(new Error('DB not open'));
+      return;
+    }
     const tx = db.transaction(store, 'readwrite');
     const r = tx.objectStore(store).delete(key);
     r.onsuccess = () => res();
-    r.onerror = () => rej(r.error);
+    r.onerror = () => rej(new Error(String(r.error)));
   });
 }
 
@@ -149,24 +159,17 @@ export function collectSongData(name: string): SongData {
     melNames: [...melNames],
     vocalName,
     mutedArr: [...mutedArr],
-    drumSampleData: drumSampleData.map((d) =>
-      d ? { name: d.name, data: d.data } : null,
-    ),
-    melSampleData: melSampleData.map((d) =>
-      d ? { name: d.name, data: d.data } : null,
-    ),
+    drumSampleData: drumSampleData.map((d) => (d ? { name: d.name, data: d.data } : null)),
+    melSampleData: melSampleData.map((d) => (d ? { name: d.name, data: d.data } : null)),
     vocalSampleData: vocalSampleData
       ? { name: vocalSampleData.name, data: vocalSampleData.data }
       : null,
-    extensions: SEQ_EXTENSIONS.reduce<Record<string, ExtensionState>>(
-      (o, ext) => {
-        const s = ext.getState();
-        s['_enabled'] = !!ext._enabled;
-        o[ext.id] = s;
-        return o;
-      },
-      {},
-    ),
+    extensions: SEQ_EXTENSIONS.reduce<Record<string, ExtensionState>>((o, ext) => {
+      const s = ext.getState();
+      s._enabled = !!ext._enabled;
+      o[ext.id] = s;
+      return o;
+    }, {}),
     updatedAt: Date.now(),
   };
 }
@@ -185,7 +188,11 @@ export async function saveSong(): Promise<void> {
 
 export function scheduleSave(): void {
   if (saveTimer) clearTimeout(saveTimer);
-  setSaveTimer(setTimeout(() => { void saveSong(); }, 500));
+  setSaveTimer(
+    setTimeout(() => {
+      void saveSong();
+    }, 500),
+  );
 }
 
 // ═══════════════════════════════════════════
@@ -234,19 +241,19 @@ export async function loadSong(song: LegacySongInput): Promise<void> {
     for (let t = 0; t < DRUMS_CFG.length; t++) {
       for (let s = 0; s < STEPS; s++) {
         const row = p.drumPat[t];
-        if (row) row[s] = !!(sd?.[t]?.[s]);
+        if (row) row[s] = !!sd?.[t]?.[s];
       }
     }
     for (let t = 0; t < MEL_CFG.length; t++) {
       for (let s = 0; s < STEPS; s++) {
         for (let n = 0; n < 12; n++) {
           const step = p.melPat[t]?.[s];
-          if (step) step[n] = !!(sm?.[t]?.[s]?.[n]);
+          if (step) step[n] = !!sm?.[t]?.[s]?.[n];
         }
       }
     }
     for (let s = 0; s < STEPS; s++) {
-      p.vocalPat[s] = !!(sv?.[s]);
+      p.vocalPat[s] = !!sv?.[s];
     }
   }
 
@@ -269,7 +276,7 @@ export async function loadSong(song: LegacySongInput): Promise<void> {
   setVocalName(song.vocalName ?? DEFAULT_VOCAL_NAME);
 
   for (let i = 0; i < mutedArr.length; i++) {
-    mutedArr[i] = !!(song.mutedArr?.[i]);
+    mutedArr[i] = !!song.mutedArr?.[i];
   }
 
   // Ensure audio context is ready for decoding
@@ -283,7 +290,7 @@ export async function loadSong(song: LegacySongInput): Promise<void> {
       drumSampleData[t] = sd;
       try {
         drumBuf[t] = ctx ? await ctx.decodeAudioData(sd.data.slice(0)) : null;
-      } catch (_e) {
+      } catch {
         drumBuf[t] = null;
       }
     } else {
@@ -299,7 +306,7 @@ export async function loadSong(song: LegacySongInput): Promise<void> {
       melSampleData[t] = sd;
       try {
         melBuf[t] = ctx ? await ctx.decodeAudioData(sd.data.slice(0)) : null;
-      } catch (_e) {
+      } catch {
         melBuf[t] = null;
       }
     } else {
@@ -314,7 +321,7 @@ export async function loadSong(song: LegacySongInput): Promise<void> {
     setVocalSampleData(vsd);
     try {
       setVocalBuf(ctx ? await ctx.decodeAudioData(vsd.data.slice(0)) : null);
-    } catch (_e) {
+    } catch {
       setVocalBuf(null);
     }
   } else {
@@ -328,7 +335,7 @@ export async function loadSong(song: LegacySongInput): Promise<void> {
       const s = song.extensions?.[ext.id];
       if (s) {
         ext.setState(s);
-        ext._enabled = !!s['_enabled'];
+        ext._enabled = !!s._enabled;
         if (ext.setEnabled) ext.setEnabled(ext._enabled);
       }
     });
@@ -438,16 +445,15 @@ export function savePatternFile(): void {
   const data = collectSongData(currentSongName);
   // Strip DB-only fields for a clean export
   const exportData: Record<string, unknown> = { ...data };
-  delete exportData['id'];
-  delete exportData['updatedAt'];
+  delete exportData.id;
+  delete exportData.updatedAt;
 
   const blob = new Blob([JSON.stringify(exportData)], {
     type: 'application/json',
   });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download =
-    currentSongName.replace(/[^a-zA-Z0-9\-_ ]/g, '') + '.json';
+  a.download = currentSongName.replace(/[^a-zA-Z0-9\-_ ]/g, '') + '.json';
   a.click();
   URL.revokeObjectURL(a.href);
 }

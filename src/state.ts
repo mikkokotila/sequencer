@@ -45,16 +45,12 @@ export let playingPhrase = 0;
 export function makeEmptyPhrase(): Phrase {
   return {
     drumPat: DRUMS_CFG.map(() => Array<boolean>(STEPS).fill(false)),
-    melPat: MEL_CFG.map(() =>
-      Array.from({ length: STEPS }, () => Array<boolean>(12).fill(false)),
-    ),
+    melPat: MEL_CFG.map(() => Array.from({ length: STEPS }, () => Array<boolean>(12).fill(false))),
     vocalPat: Array<boolean>(STEPS).fill(false),
   };
 }
 
-export const phrases: Phrase[] = Array.from({ length: NUM_PHRASES }, () =>
-  makeEmptyPhrase(),
-);
+export const phrases: Phrase[] = Array.from({ length: NUM_PHRASES }, () => makeEmptyPhrase());
 
 export let currentPhrase = 0;
 
@@ -95,13 +91,11 @@ export const mutedArr: boolean[] = Array<boolean>(TOTAL_TRACKS).fill(false);
 //  BUFFERS (decoded AudioBuffers, loaded at runtime)
 // ═══════════════════════════════════════════
 
-export const drumBuf: (AudioBuffer | null)[] = Array<AudioBuffer | null>(
-  DRUMS_CFG.length,
-).fill(null);
+export const drumBuf: (AudioBuffer | null)[] = Array<AudioBuffer | null>(DRUMS_CFG.length).fill(
+  null,
+);
 
-export const melBuf: (AudioBuffer | null)[] = Array<AudioBuffer | null>(
-  MEL_CFG.length,
-).fill(null);
+export const melBuf: (AudioBuffer | null)[] = Array<AudioBuffer | null>(MEL_CFG.length).fill(null);
 
 export let vocalBuf: AudioBuffer | null = null;
 
@@ -113,9 +107,9 @@ export const drumSampleData: (SampleData | null)[] = Array<SampleData | null>(
   DRUMS_CFG.length,
 ).fill(null);
 
-export const melSampleData: (SampleData | null)[] = Array<SampleData | null>(
-  MEL_CFG.length,
-).fill(null);
+export const melSampleData: (SampleData | null)[] = Array<SampleData | null>(MEL_CFG.length).fill(
+  null,
+);
 
 export let vocalSampleData: SampleData | null = null;
 
@@ -159,7 +153,7 @@ export let sampleManifest: SampleManifest | null = null;
 
 export const SEQ_EXTENSIONS: Extension[] = [];
 export let activeExtensionId: string | null = null;
-export const seqStopCallbacks: Array<() => void> = [];
+export const seqStopCallbacks: (() => void)[] = [];
 
 // ═══════════════════════════════════════════
 //  SETTERS

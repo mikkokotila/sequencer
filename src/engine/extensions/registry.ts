@@ -11,11 +11,7 @@ import {
   seqStopCallbacks,
   playing,
 } from '../../state';
-import {
-  drumNames,
-  melNames,
-  vocalName,
-} from '../../transport/song';
+import { drumNames, melNames, vocalName } from '../../transport/song';
 import { getAudioContext, getMasterGain, getTrackGains, initAudio } from '../audio';
 import { DRUMS_CFG, MEL_CFG, VOCAL_CFG, TOTAL_TRACKS } from '../../config';
 import { el } from '../../ui/helpers';
@@ -70,14 +66,29 @@ export function installSeqAPI(): void {
     getTrackInfo(i: number): TrackInfo {
       if (i < DRUMS_CFG.length) {
         const c = DRUMS_CFG[i]!;
-        return { name: drumNames[i] ?? '', color: c.color, bright: c.bright, type: 'drum' as TrackType };
+        return {
+          name: drumNames[i] ?? '',
+          color: c.color,
+          bright: c.bright,
+          type: 'drum' as TrackType,
+        };
       }
       const mi = i - DRUMS_CFG.length;
       if (mi < MEL_CFG.length) {
         const c = MEL_CFG[mi]!;
-        return { name: melNames[mi] ?? '', color: c.color, bright: c.bright, type: 'melody' as TrackType };
+        return {
+          name: melNames[mi] ?? '',
+          color: c.color,
+          bright: c.bright,
+          type: 'melody' as TrackType,
+        };
       }
-      return { name: vocalName, color: VOCAL_CFG.color, bright: VOCAL_CFG.bright, type: 'vocal' as TrackType };
+      return {
+        name: vocalName,
+        color: VOCAL_CFG.color,
+        bright: VOCAL_CFG.bright,
+        type: 'vocal' as TrackType,
+      };
     },
     rebuildChain(): void {
       rebuildAudioChain();
@@ -112,7 +123,11 @@ export function rebuildAudioChain(): void {
   for (const ext of SEQ_EXTENSIONS) {
     const nodes = ext._nodes;
     if (!nodes) continue;
-    try { nodes.output.disconnect(); } catch (_e) { /* already disconnected */ }
+    try {
+      nodes.output.disconnect();
+    } catch {
+      /* already disconnected */
+    }
     prev.connect(nodes.input);
     prev = nodes.output;
   }
@@ -139,7 +154,7 @@ export function toggleExtension(extId: string): void {
     return;
   }
 
-  const ext = SEQ_EXTENSIONS.find(e => e.id === extId);
+  const ext = SEQ_EXTENSIONS.find((e) => e.id === extId);
   if (!ext) return;
 
   title.textContent = ext.name.toUpperCase();
@@ -159,10 +174,10 @@ export function toggleExtension(extId: string): void {
   if (isOn) toggle.classList.add('on');
   toggle.onclick = () => {
     ext._enabled = !ext._enabled;
-    toggle.classList.toggle('on', !!ext._enabled);
+    toggle.classList.toggle('on', ext._enabled ?? false);
     toggleLabel.textContent = ext._enabled ? 'ON' : 'OFF';
-    toggleLabel.classList.toggle('on', !!ext._enabled);
-    if (ext.setEnabled) ext.setEnabled(!!ext._enabled);
+    toggleLabel.classList.toggle('on', ext._enabled ?? false);
+    if (ext.setEnabled) ext.setEnabled(ext._enabled ?? false);
     scheduleSave();
   };
   toggleRow.appendChild(toggleLabel);
@@ -187,7 +202,7 @@ export function buildExtIcons(): void {
   container.innerHTML = '';
   for (const ext of SEQ_EXTENSIONS) {
     const btn = el('button', 'ext-icon-btn');
-    btn.dataset['extId'] = ext.id;
+    btn.dataset.extId = ext.id;
     btn.innerHTML = ext.icon;
     btn.title = ext.name;
     btn.onclick = () => toggleExtension(ext.id);
@@ -196,9 +211,9 @@ export function buildExtIcons(): void {
 }
 
 export function updateExtIcons(): void {
-  document.querySelectorAll('.ext-icon-btn').forEach(b => {
+  document.querySelectorAll('.ext-icon-btn').forEach((b) => {
     const btn = b as HTMLElement;
-    btn.classList.toggle('active', btn.dataset['extId'] === activeExtensionId);
+    btn.classList.toggle('active', btn.dataset.extId === activeExtensionId);
   });
 }
 

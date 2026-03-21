@@ -57,7 +57,7 @@ async function init(): Promise<void> {
   initPlayhead();
 
   // 9. Load last song or create default
-  const lastId = await dbGet('meta', 'currentSongId') as string | undefined;
+  const lastId = await dbGet<string>('meta', 'currentSongId');
   let song = lastId ? await dbGet('songs', lastId) : null;
 
   if (!song) {

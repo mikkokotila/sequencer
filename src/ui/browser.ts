@@ -17,13 +17,15 @@ import {
   setVocalBuf,
   setVocalSampleData,
 } from '../transport/song';
-import {
-  drumPat,
-  melPat,
-  vocalPat,
-} from '../transport/patterns';
+import { drumPat, melPat, vocalPat } from '../transport/patterns';
 import { playing } from '../state';
-import { initAudio, fetchAndDecode, playPreviewSample, loadAudioFile, getAudioContext } from '../engine/audio';
+import {
+  initAudio,
+  fetchAndDecode,
+  playPreviewSample,
+  loadAudioFile,
+  getAudioContext,
+} from '../engine/audio';
 import { el, truncName } from './helpers';
 import { scheduleSave } from '../transport/persistence';
 
@@ -62,15 +64,15 @@ type RawManifest = Record<string, unknown>;
 export async function loadManifest(): Promise<void> {
   try {
     const r = await fetch('samples.json');
-    const raw: RawManifest = await r.json() as RawManifest;
-    setSampleManifest(raw as ReturnType<typeof getSampleManifest>);
-  } catch (_e) {
+    const raw: RawManifest = (await r.json()) as RawManifest;
+    setSampleManifest(raw as ReturnType<typeof _getSampleManifest>);
+  } catch {
     console.warn('No samples.json found — browser will use file picker fallback');
   }
 }
 
 /** Type-safe helper to read sampleManifest. */
-function getSampleManifest(): typeof sampleManifest {
+function _getSampleManifest(): typeof sampleManifest {
   return sampleManifest;
 }
 
@@ -132,28 +134,30 @@ export function setupDragDrop(elem: HTMLElement, type: TrackType, idx: number): 
     elem.classList.add('drag-over');
   });
   elem.addEventListener('dragleave', () => elem.classList.remove('drag-over'));
-  elem.addEventListener('drop', async (e: DragEvent) => {
+  elem.addEventListener('drop', (e: DragEvent) => {
     e.preventDefault();
     elem.classList.remove('drag-over');
     const file = e.dataTransfer?.files[0];
     if (!file) return;
-    try {
-      const res = await loadAudioFile(file);
-      if (type === 'drum') {
-        drumBuf[idx] = res.buffer;
-        drumSampleData[idx] = { name: res.name, data: res.data };
-      } else if (type === 'melody') {
-        melBuf[idx] = res.buffer;
-        melSampleData[idx] = { name: res.name, data: res.data };
-      } else {
-        setVocalBuf(res.buffer);
-        setVocalSampleData({ name: res.name, data: res.data });
+    void (async () => {
+      try {
+        const res = await loadAudioFile(file);
+        if (type === 'drum') {
+          drumBuf[idx] = res.buffer;
+          drumSampleData[idx] = { name: res.name, data: res.data };
+        } else if (type === 'melody') {
+          melBuf[idx] = res.buffer;
+          melSampleData[idx] = { name: res.name, data: res.data };
+        } else {
+          setVocalBuf(res.buffer);
+          setVocalSampleData({ name: res.name, data: res.data });
+        }
+        updateSampleBtn(type, idx, res.name);
+        scheduleSave();
+      } catch (err) {
+        console.error('Drop failed:', err);
       }
-      updateSampleBtn(type, idx, res.name);
-      scheduleSave();
-    } catch (err) {
-      console.error('Drop failed:', err);
-    }
+    })();
   });
 }
 
@@ -164,9 +168,10 @@ export function setupDragDrop(elem: HTMLElement, type: TrackType, idx: number): 
 export function updateSampleBtn(type: TrackType | '', idx: number, name: string): void {
   let sel: string;
   if (type === 'drum') sel = `.melody-track[data-type="drum"][data-track="${idx}"] .sample-btn`;
-  else if (type === 'melody') sel = `.melody-track[data-type="melody"][data-track="${idx}"] .sample-btn`;
+  else if (type === 'melody')
+    sel = `.melody-track[data-type="melody"][data-track="${idx}"] .sample-btn`;
   else sel = `.melody-track[data-type="vocal"] .sample-btn`;
-  const btn = document.querySelector(sel) as HTMLElement | null;
+  const btn = document.querySelector<HTMLElement>(sel);
   if (!btn) return;
   btn.textContent = truncName(name);
   btn.title = name;
@@ -179,7 +184,10 @@ export function updateSampleBtn(type: TrackType | '', idx: number, name: string)
 
 export function openBrowser(type: TrackType, idx: number): void {
   const manifest = sampleManifest as RawManifest | null;
-  if (!manifest) { loadSampleFallback(type, idx); return; }
+  if (!manifest) {
+    loadSampleFallback(type, idx);
+    return;
+  }
 
   browserType = type;
   browserIdx = idx;
@@ -191,7 +199,10 @@ export function openBrowser(type: TrackType, idx: number): void {
     const keys = ['kick', 'snare', 'ch', 'oh', 'crash'] as const;
     const key: string = keys[idx] ?? 'kick';
     const entry = manifest[key] as { path: string; files: string[] } | undefined;
-    if (!entry) { loadSampleFallback(type, idx); return; }
+    if (!entry) {
+      loadSampleFallback(type, idx);
+      return;
+    }
     const items: BrowserItem[] = [];
     for (const f of entry.files) {
       items.push({
@@ -207,7 +218,7 @@ export function openBrowser(type: TrackType, idx: number): void {
       const parts = item.name.split(' ');
       const g = parts.length >= 3 ? parts.slice(0, 2).join(' ') : (parts[0] ?? '');
       if (!groups[g]) groups[g] = [];
-      groups[g]!.push(item);
+      groups[g].push(item);
     }
     browserItems = [];
     for (const g of Object.keys(groups).sort()) {
@@ -220,8 +231,11 @@ export function openBrowser(type: TrackType, idx: number): void {
     }
   } else {
     // melody or vocal — use synths
-    const synths = manifest['synths'] as SynthsManifest | undefined;
-    if (!synths) { loadSampleFallback(type, idx); return; }
+    const synths = manifest.synths as SynthsManifest | undefined;
+    if (!synths) {
+      loadSampleFallback(type, idx);
+      return;
+    }
     for (const group of Object.keys(synths.groups).sort()) {
       const files = synths.groups[group];
       if (!files) continue;
@@ -239,9 +253,11 @@ export function openBrowser(type: TrackType, idx: number): void {
   const titleEl = document.getElementById('browser-title');
   if (titleEl) {
     titleEl.textContent =
-      type === 'drum' ? (drumNames[idx] ?? 'Drum') + ' \u2014 Select Sample' :
-      type === 'melody' ? (melNames[idx] ?? 'Synth') + ' \u2014 Select Sample' :
-      'Vocal \u2014 Select Sample';
+      type === 'drum'
+        ? (drumNames[idx] ?? 'Drum') + ' \u2014 Select Sample'
+        : type === 'melody'
+          ? (melNames[idx] ?? 'Synth') + ' \u2014 Select Sample'
+          : 'Vocal \u2014 Select Sample';
   }
   const searchEl = document.getElementById('browser-search') as HTMLInputElement | null;
   if (searchEl) searchEl.value = '';
@@ -273,7 +289,8 @@ export function renderBrowserList(filter: string): void {
   let count = 0;
 
   browserItems.forEach((item, i) => {
-    if (lf && !item.name.toLowerCase().includes(lf) && !item.group.toLowerCase().includes(lf)) return;
+    if (lf && !item.name.toLowerCase().includes(lf) && !item.group.toLowerCase().includes(lf))
+      return;
     // Group header
     if (item.group !== lastGroup) {
       lastGroup = item.group;
@@ -283,14 +300,20 @@ export function renderBrowserList(filter: string): void {
     }
     const row = el('div', 'browser-item');
     if (browserSelected === i) row.classList.add('selected');
-    row.dataset['index'] = String(i);
+    row.dataset.index = String(i);
 
     const prev = el('button', 'browser-item-preview');
     prev.innerHTML = '&#9654;';
     prev.title = 'Preview';
     if (previewingIdx === i) prev.classList.add('previewing');
-    prev.onclick = (e: MouseEvent) => { e.stopPropagation(); void previewSample(i); };
-    prev.ondblclick = (e: MouseEvent) => { e.stopPropagation(); void previewSample(i); };
+    prev.onclick = (e: MouseEvent) => {
+      e.stopPropagation();
+      void previewSample(i);
+    };
+    prev.ondblclick = (e: MouseEvent) => {
+      e.stopPropagation();
+      void previewSample(i);
+    };
 
     const nameSpan = el('div', 'browser-item-name');
     nameSpan.textContent = item.name;
@@ -311,7 +334,7 @@ export function renderBrowserList(filter: string): void {
   });
 
   const countEl = document.getElementById('browser-count');
-  if (countEl) countEl.textContent = count + ' sample' + (count !== 1 ? 's' : '');
+  if (countEl) countEl.textContent = `${count} sample${count !== 1 ? 's' : ''}`;
   const loadBtn = document.getElementById('browser-load') as HTMLButtonElement | null;
   if (loadBtn) loadBtn.disabled = browserSelected === null;
 }
@@ -322,9 +345,9 @@ export function renderBrowserList(filter: string): void {
 
 function selectBrowserItem(i: number): void {
   browserSelected = i;
-  document.querySelectorAll('.browser-item').forEach(r => {
+  document.querySelectorAll('.browser-item').forEach((r) => {
     const row = r as HTMLElement;
-    row.classList.toggle('selected', Number(row.dataset['index']) === i);
+    row.classList.toggle('selected', Number(row.dataset.index) === i);
   });
   const loadBtn = document.getElementById('browser-load') as HTMLButtonElement | null;
   if (loadBtn) loadBtn.disabled = false;
@@ -337,13 +360,13 @@ function selectBrowserItem(i: number): void {
 function trackHasContent(type: TrackType | '', idx: number): boolean {
   if (type === 'drum') {
     const row = drumPat[idx];
-    return row ? row.some(v => v) : false;
+    return row ? row.some((v) => v) : false;
   }
   if (type === 'melody') {
     const track = melPat[idx];
-    return track ? track.some(s => s ? s.some(n => n) : false) : false;
+    return track ? track.some((s) => s.some((n) => n)) : false;
   }
-  return vocalPat.some(v => v);
+  return vocalPat.some((v) => v);
 }
 
 // ═══════════════════════════════════════════
@@ -357,20 +380,41 @@ function restoreOriginalBuffer(): void {
   if (browserType === 'drum') {
     const sd = drumSampleData[browserIdx];
     if (sd?.data) {
-      void ctx.decodeAudioData(sd.data.slice(0)).then(b => { drumBuf[browserIdx] = b; }).catch(() => { /* noop */ });
+      void ctx
+        .decodeAudioData(sd.data.slice(0))
+        .then((b) => {
+          drumBuf[browserIdx] = b;
+        })
+        .catch(() => {
+          /* noop */
+        });
     } else {
       drumBuf[browserIdx] = null;
     }
   } else if (browserType === 'melody') {
     const sd = melSampleData[browserIdx];
     if (sd?.data) {
-      void ctx.decodeAudioData(sd.data.slice(0)).then(b => { melBuf[browserIdx] = b; }).catch(() => { /* noop */ });
+      void ctx
+        .decodeAudioData(sd.data.slice(0))
+        .then((b) => {
+          melBuf[browserIdx] = b;
+        })
+        .catch(() => {
+          /* noop */
+        });
     } else {
       melBuf[browserIdx] = null;
     }
   } else {
     if (vocalSampleData?.data) {
-      void ctx.decodeAudioData(vocalSampleData.data.slice(0)).then(b => { setVocalBuf(b); }).catch(() => { /* noop */ });
+      void ctx
+        .decodeAudioData(vocalSampleData.data.slice(0))
+        .then((b) => {
+          setVocalBuf(b);
+        })
+        .catch(() => {
+          /* noop */
+        });
     } else {
       setVocalBuf(null);
     }
@@ -393,12 +437,16 @@ export async function previewSample(i: number): Promise<void> {
   if (isSequenceMode && previewingIdx === i) {
     previewingIdx = -1;
     restoreOriginalBuffer();
-    document.querySelectorAll('.browser-item-preview').forEach(b => b.classList.remove('previewing'));
+    document
+      .querySelectorAll('.browser-item-preview')
+      .forEach((b) => b.classList.remove('previewing'));
     return;
   }
 
   previewingIdx = i;
-  document.querySelectorAll('.browser-item-preview').forEach(b => b.classList.remove('previewing'));
+  document
+    .querySelectorAll('.browser-item-preview')
+    .forEach((b) => b.classList.remove('previewing'));
   const btn = document.querySelector(`.browser-item[data-index="${i}"] .browser-item-preview`);
   if (btn) btn.classList.add('previewing');
 
@@ -479,5 +527,8 @@ export function wireBrowserEvents(): void {
   }
 
   const loadBtn = document.getElementById('browser-load');
-  if (loadBtn) loadBtn.onclick = () => { void confirmBrowserLoad(); };
+  if (loadBtn)
+    loadBtn.onclick = () => {
+      void confirmBrowserLoad();
+    };
 }

@@ -30,10 +30,10 @@ let bufferSize = 128;
 let sampleRateVal = 48000;
 let oversampleMode: OverSampleType = '4x';
 let limiterOn = true;
-let filterCutoff = 75;  // 0-100%
-let filterRes = 30;     // 0-100%
-let saturation = 30;    // 0-100%
-let compression = 25;   // 0-100%
+let filterCutoff = 75; // 0-100%
+let filterRes = 30; // 0-100%
+let saturation = 30; // 0-100%
+let compression = 25; // 0-100%
 
 // Demo oscillator sources
 let demoOscs: OscillatorNode[] = [];
@@ -46,7 +46,7 @@ function pctToFreq(pct: number): number {
 }
 
 function pctToQ(pct: number): number {
-  return 0.5 + pct / 100 * 14.5; // 0.5 to 15
+  return 0.5 + (pct / 100) * 14.5; // 0.5 to 15
 }
 
 function makeSatCurve(drive: number): Float32Array {
@@ -60,7 +60,7 @@ function makeSatCurve(drive: number): Float32Array {
   const k = 1 + amount * 50;
   for (let i = 0; i < n; i++) {
     const x = (i * 2) / n - 1;
-    const shaped = (Math.PI + k) * x / (Math.PI + k * Math.abs(x));
+    const shaped = ((Math.PI + k) * x) / (Math.PI + k * Math.abs(x));
     const warmth = 0.04 * amount * (x * x - Math.abs(x));
     curve[i] = x * (1 - amount) + (shaped + warmth) * amount;
   }
@@ -118,13 +118,41 @@ function removeDemoChain(): void {
 
   stopDemoOscs();
 
-  try { master.disconnect(); } catch (_e) { /* */ }
-  try { demoFilter?.disconnect(); } catch (_e) { /* */ }
-  try { demoSaturator?.disconnect(); } catch (_e) { /* */ }
-  try { demoCompressor?.disconnect(); } catch (_e) { /* */ }
-  try { demoGain?.disconnect(); } catch (_e) { /* */ }
-  try { analyser?.disconnect(); } catch (_e) { /* */ }
-  try { analyserTime?.disconnect(); } catch (_e) { /* */ }
+  try {
+    master.disconnect();
+  } catch {
+    /* */
+  }
+  try {
+    demoFilter?.disconnect();
+  } catch {
+    /* */
+  }
+  try {
+    demoSaturator?.disconnect();
+  } catch {
+    /* */
+  }
+  try {
+    demoCompressor?.disconnect();
+  } catch {
+    /* */
+  }
+  try {
+    demoGain?.disconnect();
+  } catch {
+    /* */
+  }
+  try {
+    analyser?.disconnect();
+  } catch {
+    /* */
+  }
+  try {
+    analyserTime?.disconnect();
+  } catch {
+    /* */
+  }
 
   // Reconnect master directly to destination
   master.connect(ctx.destination);
@@ -140,8 +168,8 @@ function removeDemoChain(): void {
 function applyCompression(pct: number): void {
   if (!demoCompressor) return;
   // 0% = no compression, 100% = heavy
-  const thresh = -6 - pct * 0.4;   // -6 to -46
-  const ratio = 1 + pct * 0.19;     // 1 to 20
+  const thresh = -6 - pct * 0.4; // -6 to -46
+  const ratio = 1 + pct * 0.19; // 1 to 20
   demoCompressor.threshold.value = thresh;
   demoCompressor.ratio.value = ratio;
   demoCompressor.knee.value = 10;
@@ -156,7 +184,7 @@ function startDemoOscs(): void {
 
   // Detuned sawtooth stack for rich harmonics
   const freqs = [55, 55.1, 110, 110.15, 220, 220.3];
-  freqs.forEach(f => {
+  freqs.forEach((f) => {
     const osc = ctx.createOscillator();
     osc.type = 'sawtooth';
     osc.frequency.value = f;
@@ -170,7 +198,14 @@ function startDemoOscs(): void {
 }
 
 function stopDemoOscs(): void {
-  demoOscs.forEach(o => { try { o.stop(); o.disconnect(); } catch (_e) { /* */ } });
+  demoOscs.forEach((o) => {
+    try {
+      o.stop();
+      o.disconnect();
+    } catch {
+      /* */
+    }
+  });
   demoOscs = [];
   demoRunning = false;
 }
@@ -204,10 +239,13 @@ function drawSpectrum(): void {
 
   // Frequency grid lines
   const freqLines = [50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000];
-  freqLines.forEach(f => {
+  freqLines.forEach((f) => {
     if (f > maxF) return;
-    const x = (Math.log10(f) - logMin) / (logMax - logMin) * w;
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+    const x = ((Math.log10(f) - logMin) / (logMax - logMin)) * w;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, h);
+    ctx.stroke();
     const label = f >= 1000 ? `${f / 1000}k` : String(f);
     ctx.fillText(label, x + 3, h - 4);
   });
@@ -215,7 +253,10 @@ function drawSpectrum(): void {
   // dB grid lines
   for (let db = -80; db <= 0; db += 10) {
     const y = (1 - (db - dbMin) / (dbMax - dbMin)) * h;
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(w, y);
+    ctx.stroke();
     if (db % 20 === 0) ctx.fillText(`${db}dB`, 3, y - 3);
   }
 
@@ -232,8 +273,10 @@ function drawSpectrum(): void {
     const db = data[bin] ?? dbMin;
     const y = (1 - (db - dbMin) / (dbMax - dbMin)) * h;
 
-    if (!moved) { ctx.moveTo(px, y); moved = true; }
-    else ctx.lineTo(px, y);
+    if (!moved) {
+      ctx.moveTo(px, y);
+      moved = true;
+    } else ctx.lineTo(px, y);
   }
 
   // Fill area
@@ -258,8 +301,10 @@ function drawSpectrum(): void {
     if (bin >= data.length) break;
     const db = data[bin] ?? dbMin;
     const y = (1 - (db - dbMin) / (dbMax - dbMin)) * h;
-    if (!moved) { ctx.moveTo(px, y); moved = true; }
-    else ctx.lineTo(px, y);
+    if (!moved) {
+      ctx.moveTo(px, y);
+      moved = true;
+    } else ctx.lineTo(px, y);
   }
   ctx.strokeStyle = '#5CDCC8';
   ctx.lineWidth = 1.5;
@@ -267,15 +312,19 @@ function drawSpectrum(): void {
 
   // Cutoff indicator
   const cutoffFreq = pctToFreq(filterCutoff);
-  const cutoffX = (Math.log10(cutoffFreq) - logMin) / (logMax - logMin) * w;
+  const cutoffX = ((Math.log10(cutoffFreq) - logMin) / (logMax - logMin)) * w;
   ctx.setLineDash([4, 4]);
   ctx.strokeStyle = '#EEA83E';
   ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(cutoffX, 0); ctx.lineTo(cutoffX, h); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cutoffX, 0);
+  ctx.lineTo(cutoffX, h);
+  ctx.stroke();
   ctx.setLineDash([]);
   ctx.fillStyle = '#EEA83E';
   ctx.font = '8px monospace';
-  const cutLabel = cutoffFreq >= 1000 ? `${(cutoffFreq / 1000).toFixed(1)}k` : `${Math.round(cutoffFreq)}Hz`;
+  const cutLabel =
+    cutoffFreq >= 1000 ? `${(cutoffFreq / 1000).toFixed(1)}k` : `${Math.round(cutoffFreq)}Hz`;
   ctx.fillText(cutLabel, cutoffX + 4, 12);
 }
 
@@ -298,9 +347,12 @@ function drawWaveform(): void {
   ctx.fillStyle = '#444';
 
   const ampLines = [-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1];
-  ampLines.forEach(a => {
-    const y = (1 - a) * h / 2;
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  ampLines.forEach((a) => {
+    const y = ((1 - a) * h) / 2;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(w, y);
+    ctx.stroke();
     if (a === 0 || Math.abs(a) === 0.5 || Math.abs(a) === 1) {
       ctx.fillText(a.toFixed(1), 3, y - 3);
     }
@@ -325,7 +377,7 @@ function drawWaveform(): void {
   for (let i = 0; i < drawLen; i++) {
     const x = (i / drawLen) * w;
     const sample = data[trigIdx + i] ?? 0;
-    const y = (1 - sample) * h / 2;
+    const y = ((1 - sample) * h) / 2;
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }
@@ -346,7 +398,7 @@ function drawWaveform(): void {
   for (let i = 0; i < drawLen; i++) {
     const x = (i / drawLen) * w;
     const sample = data[trigIdx + i] ?? 0;
-    const y = (1 - sample) * h / 2;
+    const y = ((1 - sample) * h) / 2;
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }
@@ -357,13 +409,19 @@ function drawWaveform(): void {
   // Compression threshold lines
   if (compression > 5) {
     const threshLin = Math.pow(10, demoCompressor!.threshold.value / 20);
-    const yTop = (1 - threshLin) * h / 2;
-    const yBot = (1 + threshLin) * h / 2;
+    const yTop = ((1 - threshLin) * h) / 2;
+    const yBot = ((1 + threshLin) * h) / 2;
     ctx.setLineDash([4, 4]);
     ctx.strokeStyle = '#EEA83E';
     ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(0, yTop); ctx.lineTo(w, yTop); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, yBot); ctx.lineTo(w, yBot); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(0, yTop);
+    ctx.lineTo(w, yTop);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(0, yBot);
+    ctx.lineTo(w, yBot);
+    ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle = '#EEA83E';
     ctx.font = '7px monospace';
@@ -388,25 +446,33 @@ function getBlockBudget(): string {
 }
 
 function getEffectiveRate(): string {
-  const mult = oversampleMode === 'none' ? 1 : oversampleMode === '2x' ? 2 : oversampleMode === '4x' ? 4 : 8;
+  const mult = oversampleMode === 'none' ? 1 : oversampleMode === '2x' ? 2 : 4;
   const rate = sampleRateVal * mult;
   return rate >= 1000 ? `${(rate / 1000).toFixed(0)}kHz` : `${rate}Hz`;
 }
 
 function getDSPLoad(): number {
-  const osMultiplier = oversampleMode === 'none' ? 1 : oversampleMode === '2x' ? 2 : oversampleMode === '4x' ? 3 : 5;
-  const bufMultiplier = bufferSize <= 64 ? 4 : bufferSize <= 128 ? 2.5 : bufferSize <= 256 ? 1.5 : 1;
+  const osMultiplier = oversampleMode === 'none' ? 1 : oversampleMode === '2x' ? 2 : 3;
+  const bufMultiplier =
+    bufferSize <= 64 ? 4 : bufferSize <= 128 ? 2.5 : bufferSize <= 256 ? 1.5 : 1;
   return Math.min(100, Math.round(12 * osMultiplier * bufMultiplier));
 }
 
 // ── UI Building ──
-function makeSelect(id: string, options: string[], defaultVal: string, onChange: (v: string) => void): HTMLSelectElement {
+function makeSelect(
+  id: string,
+  options: string[],
+  defaultVal: string,
+  onChange: (v: string) => void,
+): HTMLSelectElement {
   const sel = document.createElement('select');
   sel.id = id;
-  sel.style.cssText = 'background:#222;border:1px solid #333;color:#ddd;padding:4px 8px;border-radius:4px;font:11px monospace;cursor:pointer;';
-  options.forEach(opt => {
+  sel.style.cssText =
+    'background:#222;border:1px solid #333;color:#ddd;padding:4px 8px;border-radius:4px;font:11px monospace;cursor:pointer;';
+  options.forEach((opt) => {
     const o = document.createElement('option');
-    o.value = opt; o.textContent = opt;
+    o.value = opt;
+    o.textContent = opt;
     if (opt === defaultVal) o.selected = true;
     sel.appendChild(o);
   });
@@ -423,7 +489,10 @@ function makeKnob(label: string, initial: number, onChange: (v: number) => void)
   valDisplay.textContent = `${initial}%`;
 
   const slider = document.createElement('input');
-  slider.type = 'range'; slider.min = '0'; slider.max = '100'; slider.value = String(initial);
+  slider.type = 'range';
+  slider.min = '0';
+  slider.max = '100';
+  slider.value = String(initial);
   slider.style.cssText = 'width:100%;accent-color:#888;cursor:pointer;';
   slider.oninput = () => {
     const v = Number(slider.value);
@@ -443,7 +512,8 @@ function makeKnob(label: string, initial: number, onChange: (v: number) => void)
 
 function makeRow(label: string, value: string | HTMLElement): HTMLDivElement {
   const row = document.createElement('div');
-  row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #222;';
+  row.style.cssText =
+    'display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #222;';
 
   const lbl = document.createElement('div');
   lbl.style.cssText = 'font:10px monospace;color:#999;';
@@ -464,7 +534,8 @@ function makeRow(label: string, value: string | HTMLElement): HTMLDivElement {
 
 function makeSectionTitle(text: string): HTMLDivElement {
   const d = document.createElement('div');
-  d.style.cssText = 'font:9px monospace;color:#666;letter-spacing:2px;text-transform:uppercase;padding:16px 0 8px;border-bottom:1px solid #2a2a32;margin-bottom:8px;';
+  d.style.cssText =
+    'font:9px monospace;color:#666;letter-spacing:2px;text-transform:uppercase;padding:16px 0 8px;border-bottom:1px solid #2a2a32;margin-bottom:8px;';
   d.textContent = text;
   return d;
 }
@@ -482,13 +553,16 @@ function buildPanel(): HTMLDivElement {
 
   // ── Left: Visualizations (stacked) ──
   const vizSide = document.createElement('div');
-  vizSide.style.cssText = 'flex:1;display:flex;flex-direction:column;padding:16px;gap:8px;min-width:0;';
+  vizSide.style.cssText =
+    'flex:1;display:flex;flex-direction:column;padding:16px;gap:8px;min-width:0;';
 
   // Spectrum
   const specWrap = document.createElement('div');
-  specWrap.style.cssText = 'flex:1;position:relative;border:1px solid #2a2a32;border-radius:8px;overflow:hidden;background:#111;';
+  specWrap.style.cssText =
+    'flex:1;position:relative;border:1px solid #2a2a32;border-radius:8px;overflow:hidden;background:#111;';
   const specLabel = document.createElement('div');
-  specLabel.style.cssText = 'position:absolute;top:8px;left:10px;font:9px monospace;color:#5CDCC8;letter-spacing:1.5px;z-index:1;opacity:0.7;';
+  specLabel.style.cssText =
+    'position:absolute;top:8px;left:10px;font:9px monospace;color:#5CDCC8;letter-spacing:1.5px;z-index:1;opacity:0.7;';
   specLabel.textContent = 'SPECTRUM ANALYZER';
   spectrumCanvas = document.createElement('canvas');
   spectrumCanvas.style.cssText = 'width:100%;height:100%;display:block;';
@@ -498,9 +572,11 @@ function buildPanel(): HTMLDivElement {
 
   // Waveform
   const waveWrap = document.createElement('div');
-  waveWrap.style.cssText = 'flex:1;position:relative;border:1px solid #2a2a32;border-radius:8px;overflow:hidden;background:#111;';
+  waveWrap.style.cssText =
+    'flex:1;position:relative;border:1px solid #2a2a32;border-radius:8px;overflow:hidden;background:#111;';
   const waveLabel = document.createElement('div');
-  waveLabel.style.cssText = 'position:absolute;top:8px;left:10px;font:9px monospace;color:#8C9CF0;letter-spacing:1.5px;z-index:1;opacity:0.7;';
+  waveLabel.style.cssText =
+    'position:absolute;top:8px;left:10px;font:9px monospace;color:#8C9CF0;letter-spacing:1.5px;z-index:1;opacity:0.7;';
   waveLabel.textContent = 'WAVEFORM OSCILLOSCOPE';
   waveformCanvas = document.createElement('canvas');
   waveformCanvas.style.cssText = 'width:100%;height:100%;display:block;';
@@ -512,19 +588,28 @@ function buildPanel(): HTMLDivElement {
 
   // ── Right: Controls ──
   const ctrlSide = document.createElement('div');
-  ctrlSide.style.cssText = 'width:320px;flex-shrink:0;border-left:1px solid #2a2a32;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;';
+  ctrlSide.style.cssText =
+    'width:320px;flex-shrink:0;border-left:1px solid #2a2a32;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;';
 
   // Header
   const header = document.createElement('div');
-  header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;';
+  header.style.cssText =
+    'display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;';
   const title = document.createElement('div');
   title.style.cssText = 'font:11px monospace;font-weight:800;color:#bbb;letter-spacing:2.5px;';
   title.textContent = 'ENGINE';
   const closeBtn = document.createElement('button');
-  closeBtn.style.cssText = 'width:26px;height:26px;border-radius:50%;border:1px solid #333;background:transparent;color:#888;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;';
+  closeBtn.style.cssText =
+    'width:26px;height:26px;border-radius:50%;border:1px solid #333;background:transparent;color:#888;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;';
   closeBtn.textContent = '\u00D7';
-  closeBtn.onmouseenter = () => { closeBtn.style.background = 'rgba(255,60,90,0.15)'; closeBtn.style.color = '#ff5070'; };
-  closeBtn.onmouseleave = () => { closeBtn.style.background = 'transparent'; closeBtn.style.color = '#888'; };
+  closeBtn.onmouseenter = () => {
+    closeBtn.style.background = 'rgba(255,60,90,0.15)';
+    closeBtn.style.color = '#ff5070';
+  };
+  closeBtn.onmouseleave = () => {
+    closeBtn.style.background = 'transparent';
+    closeBtn.style.color = '#888';
+  };
   closeBtn.onclick = () => toggle();
   header.appendChild(title);
   header.appendChild(closeBtn);
@@ -554,12 +639,24 @@ function buildPanel(): HTMLDivElement {
 
   // Runtime section
   ctrlSide.appendChild(makeSectionTitle('Runtime'));
-  ctrlSide.appendChild(makeRow('Buffer Size', makeSelect('ep-buf', ['64', '128', '256', '512'], String(bufferSize), v => {
-    bufferSize = Number(v); updateReadouts();
-  })));
-  ctrlSide.appendChild(makeRow('Sample Rate', makeSelect('ep-sr', ['44100', '48000', '96000'], String(sampleRateVal), v => {
-    sampleRateVal = Number(v); updateReadouts();
-  })));
+  ctrlSide.appendChild(
+    makeRow(
+      'Buffer Size',
+      makeSelect('ep-buf', ['64', '128', '256', '512'], String(bufferSize), (v) => {
+        bufferSize = Number(v);
+        updateReadouts();
+      }),
+    ),
+  );
+  ctrlSide.appendChild(
+    makeRow(
+      'Sample Rate',
+      makeSelect('ep-sr', ['44100', '48000', '96000'], String(sampleRateVal), (v) => {
+        sampleRateVal = Number(v);
+        updateReadouts();
+      }),
+    ),
+  );
 
   // Playback section
   ctrlSide.appendChild(makeSectionTitle('Playback'));
@@ -567,19 +664,33 @@ function buildPanel(): HTMLDivElement {
 
   // Effects section
   ctrlSide.appendChild(makeSectionTitle('Effects'));
-  ctrlSide.appendChild(makeRow('Oversampling', makeSelect('ep-os', ['none', '2x', '4x', '8x'], oversampleMode, v => {
-    oversampleMode = v as OverSampleType;
-    if (demoSaturator) demoSaturator.oversample = oversampleMode;
-    updateReadouts();
-  })));
+  ctrlSide.appendChild(
+    makeRow(
+      'Oversampling',
+      makeSelect('ep-os', ['none', '2x', '4x', '8x'], oversampleMode, (v) => {
+        oversampleMode = v as OverSampleType;
+        if (demoSaturator) demoSaturator.oversample = oversampleMode;
+        updateReadouts();
+      }),
+    ),
+  );
   ctrlSide.appendChild(makeRow('EQ', 'Native BiquadFilter'));
-  ctrlSide.appendChild(makeRow('Reverb Algorithm', makeSelect('ep-rev', ['Freeverb'], 'Freeverb', () => {})));
+  ctrlSide.appendChild(
+    makeRow(
+      'Reverb Algorithm',
+      makeSelect('ep-rev', ['Freeverb'], 'Freeverb', () => {
+        /* noop — single option */
+      }),
+    ),
+  );
 
   // Limiter toggle
   const limiterToggle = document.createElement('div');
-  limiterToggle.style.cssText = 'cursor:pointer;width:36px;height:18px;border-radius:9px;background:#1e2036;border:1px solid #2e3150;position:relative;transition:all 0.25s;';
+  limiterToggle.style.cssText =
+    'cursor:pointer;width:36px;height:18px;border-radius:9px;background:#1e2036;border:1px solid #2e3150;position:relative;transition:all 0.25s;';
   const limiterDot = document.createElement('div');
-  limiterDot.style.cssText = 'position:absolute;top:2px;left:20px;width:12px;height:12px;border-radius:50%;background:#4afe70;transition:all 0.25s;';
+  limiterDot.style.cssText =
+    'position:absolute;top:2px;left:20px;width:12px;height:12px;border-radius:50%;background:#4afe70;transition:all 0.25s;';
   limiterToggle.style.background = 'rgba(74,254,112,0.15)';
   limiterToggle.style.borderColor = 'rgba(74,254,112,0.4)';
   limiterToggle.appendChild(limiterDot);
@@ -596,31 +707,41 @@ function buildPanel(): HTMLDivElement {
   ctrlSide.appendChild(makeSectionTitle('Master Bus Demo'));
   const knobRow = document.createElement('div');
   knobRow.style.cssText = 'display:flex;gap:12px;margin-top:8px;';
-  knobRow.appendChild(makeKnob('Cutoff', filterCutoff, v => {
-    filterCutoff = v;
-    if (demoFilter) demoFilter.frequency.value = pctToFreq(v);
-  }));
-  knobRow.appendChild(makeKnob('Resonance', filterRes, v => {
-    filterRes = v;
-    if (demoFilter) demoFilter.Q.value = pctToQ(v);
-  }));
+  knobRow.appendChild(
+    makeKnob('Cutoff', filterCutoff, (v) => {
+      filterCutoff = v;
+      if (demoFilter) demoFilter.frequency.value = pctToFreq(v);
+    }),
+  );
+  knobRow.appendChild(
+    makeKnob('Resonance', filterRes, (v) => {
+      filterRes = v;
+      if (demoFilter) demoFilter.Q.value = pctToQ(v);
+    }),
+  );
   ctrlSide.appendChild(knobRow);
 
   const knobRow2 = document.createElement('div');
   knobRow2.style.cssText = 'display:flex;gap:12px;margin-top:12px;';
-  knobRow2.appendChild(makeKnob('Saturation', saturation, v => {
-    saturation = v;
-    if (demoSaturator) demoSaturator.curve = makeSatCurve(v) as unknown as Float32Array<ArrayBuffer>;
-  }));
-  knobRow2.appendChild(makeKnob('Compression', compression, v => {
-    compression = v;
-    applyCompression(v);
-  }));
+  knobRow2.appendChild(
+    makeKnob('Saturation', saturation, (v) => {
+      saturation = v;
+      if (demoSaturator)
+        demoSaturator.curve = makeSatCurve(v) as unknown as Float32Array<ArrayBuffer>;
+    }),
+  );
+  knobRow2.appendChild(
+    makeKnob('Compression', compression, (v) => {
+      compression = v;
+      applyCompression(v);
+    }),
+  );
   ctrlSide.appendChild(knobRow2);
 
   // Demo sound toggle
   const demoBtn = document.createElement('button');
-  demoBtn.style.cssText = 'margin-top:16px;width:100%;padding:8px;background:#222;border:1px solid #333;border-radius:4px;color:#999;font:9px monospace;letter-spacing:1.5px;cursor:pointer;transition:all 0.15s;';
+  demoBtn.style.cssText =
+    'margin-top:16px;width:100%;padding:8px;background:#222;border:1px solid #333;border-radius:4px;color:#999;font:9px monospace;letter-spacing:1.5px;cursor:pointer;transition:all 0.15s;';
   demoBtn.textContent = 'START TEST SIGNAL';
   demoBtn.onclick = () => {
     if (demoRunning) {
@@ -655,7 +776,7 @@ function buildPanel(): HTMLDivElement {
 
 function updateDSPLoad(fillEl?: HTMLDivElement | null): void {
   const load = getDSPLoad();
-  const el = fillEl ?? document.getElementById('dsp-load-fill') as HTMLDivElement | null;
+  const el = fillEl ?? (document.getElementById('dsp-load-fill') as HTMLDivElement | null);
   const val = document.getElementById('dsp-load-val');
   if (el) {
     el.style.width = `${load}%`;
@@ -668,11 +789,11 @@ function updateReadouts(): void {
   // Update readout values in the existing DOM
   const rows = panelEl?.querySelectorAll('[style*="justify-content:space-between"]');
   if (!rows) return;
-  rows.forEach(row => {
+  rows.forEach((row) => {
     const label = row.querySelector('div:first-child');
     const value = row.querySelector('div:last-child');
     if (!label || !value || value.querySelector('select') || value.querySelector('div')) return;
-    const txt = label.textContent ?? '';
+    const txt = label.textContent || '';
     if (txt === 'Round-trip Latency') value.textContent = getLatency();
     if (txt === 'Block Budget') value.textContent = getBlockBudget();
     if (txt === 'Effective Oversample Rate') value.textContent = getEffectiveRate();
@@ -681,7 +802,7 @@ function updateReadouts(): void {
 }
 
 function resizeCanvases(): void {
-  [spectrumCanvas, waveformCanvas].forEach(c => {
+  [spectrumCanvas, waveformCanvas].forEach((c) => {
     if (!c) return;
     const rect = c.getBoundingClientRect();
     c.width = rect.width * (window.devicePixelRatio || 1);
@@ -718,7 +839,7 @@ export function open(): void {
     extPanel.classList.remove('open');
     document.getElementById('app')?.classList.remove('ext-panel-open');
     document.body.classList.remove('ext-panel-open');
-    document.querySelectorAll('.ext-icon-btn.active').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.ext-icon-btn.active').forEach((b) => b.classList.remove('active'));
   }
 
   isOpen = true;

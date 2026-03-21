@@ -7,18 +7,8 @@
 import * as Tone from 'tone';
 import { STEPS, DRUMS_CFG, MEL_CFG, HARMONY_SEMITONES } from '../config';
 import { getAudioContext, getTrackGains, initAudio, playSample } from './audio';
-import {
-  phrases,
-  octaves,
-  harmonies,
-} from '../transport/patterns';
-import {
-  drumBuf,
-  melBuf,
-  vocalBuf,
-  mutedArr,
-  bpm as getBpm,
-} from '../transport/song';
+import { phrases, octaves, harmonies } from '../transport/patterns';
+import { drumBuf, melBuf, vocalBuf, mutedArr, bpm as getBpm } from '../transport/song';
 import { emit } from '../events';
 
 // ── Internal state ──
@@ -29,20 +19,35 @@ let scheduledEventId: number | null = null;
 
 // ── Callbacks ──
 let onPhraseChange: (() => void) | null = null;
-const stopCallbacks: Array<() => void> = [];
+const stopCallbacks: (() => void)[] = [];
 
-export function setOnPhraseChange(fn: () => void): void { onPhraseChange = fn; }
-export function onStop(fn: () => void): void { stopCallbacks.push(fn); }
+export function setOnPhraseChange(fn: () => void): void {
+  onPhraseChange = fn;
+}
+export function onStop(fn: () => void): void {
+  stopCallbacks.push(fn);
+}
 
 // ── Accessors ──
-export function isPlaying(): boolean { return playing; }
-export function getPlayingPhrase(): number { return playingPhrase; }
-export function setPlayingPhrase(p: number): void { playingPhrase = p; }
+export function isPlaying(): boolean {
+  return playing;
+}
+export function getPlayingPhrase(): number {
+  return playingPhrase;
+}
+export function setPlayingPhrase(p: number): void {
+  playingPhrase = p;
+}
 
 // ═══════════════════════════════════════════
 //  PHRASE QUERIES (re-exported from patterns)
 // ═══════════════════════════════════════════
-export { isPhraseEmpty, findNextPhrase, findFirstNonEmpty, fillWithPrev } from '../transport/patterns';
+export {
+  isPhraseEmpty,
+  findNextPhrase,
+  findFirstNonEmpty,
+  fillWithPrev,
+} from '../transport/patterns';
 import {
   isPhraseEmpty as _isPhraseEmpty,
   findNextPhrase as _findNextPhrase,
@@ -164,10 +169,9 @@ export function startPlayback(): void {
   Tone.getTransport().bpm.value = getBpm;
 
   // Schedule repeating callback: 16th notes (4 per beat)
-  scheduledEventId = Tone.getTransport().scheduleRepeat(
-    (time) => { scheduleStep(time); },
-    '16n',
-  );
+  scheduledEventId = Tone.getTransport().scheduleRepeat((time) => {
+    scheduleStep(time);
+  }, '16n');
 
   Tone.getTransport().start();
   onPhraseChange?.();
@@ -190,7 +194,11 @@ export function stopPlayback(): void {
   emit('engine:stop', {} as Record<string, never>);
 
   for (const fn of stopCallbacks) {
-    try { fn(); } catch (_e) { /* swallow */ }
+    try {
+      fn();
+    } catch {
+      /* swallow */
+    }
   }
 
   onPhraseChange?.();
@@ -201,7 +209,9 @@ export function togglePlay(): void {
   if (playing) {
     stopPlayback();
   } else {
-    void Tone.start().then(() => { startPlayback(); });
+    void Tone.start().then(() => {
+      startPlayback();
+    });
   }
 }
 

@@ -17,6 +17,13 @@ Applies to: any file in `src/engine/`, `src/engine/worklets/`, `src/engine/exten
 **Read:** `docs/contracts/quality-gates.md`
 Run `tests/audio-quality.html` after changes. All 25 assertions must pass.
 
+## When writing or modifying nonlinear audio processors
+
+Applies to: compressor, saturation, waveshaper, tape emulation, transformer — any processor that distorts, clips, or shapes the signal nonlinearly.
+
+**Read:** `docs/contracts/adaptive-transfer.md`
+Transfer function must vary with input level/frequency/history. Static curves are rejected.
+
 ## When changing colors, styles, or visual identity
 
 Applies to: CSS in `index.html`, track colors, extension panel styling, grid cell colors, text colors.

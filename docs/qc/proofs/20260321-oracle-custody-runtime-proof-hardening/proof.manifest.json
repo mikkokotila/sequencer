@@ -1,0 +1,36 @@
+{
+  "task_id": "20260321-oracle-custody-runtime-proof-hardening",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260321-oracle-custody-runtime-proof-hardening/logs/O-CI.log"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/governance-compiler.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/quality-gates.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/capability-proof-guardrails.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "NOT_VERIFIED",
+    "details": "Governance-only task; runtime harness validated in headless execution profile via compiler obligations."
+  },
+  "artifacts": [
+    "verdict.json",
+    "logs/O-CI.log",
+    "logs/O-ORACLE-HARNESS.log"
+  ]
+}

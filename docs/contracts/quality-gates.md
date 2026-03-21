@@ -21,6 +21,7 @@ Mandatory compiler phases:
 4. Execute required gates and proof checks.
 5. Verify final verdict.
 6. Attest `verdict.json`.
+7. Execute oracle harness in compiler custody (in-memory payload + challenge-response verification).
 
 ### 1) CI Pipeline (`npm run ci`)
 
@@ -52,6 +53,12 @@ Blocking regression checks include:
 4. Master insert extensions must keep `setState` non-audible while disabled (`off` means off).
 5. Engine master controls must preserve non-explosive low-end response curves (squared control checks).
 6. Benchmark harness must be deterministic and worklet-driven (no random main-thread proxy timing).
+
+Oracle proof custody rules:
+
+1. CA must not hand-author oracle JSON files as proof input.
+2. Compiler runs harness directly and writes oracle artifacts only after payload verification.
+3. Challenge-response mismatch or payload digest mismatch is a blocking failure.
 
 ### 4) Architecture Invariant Gates (task regression)
 

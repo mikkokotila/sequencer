@@ -1,0 +1,39 @@
+{
+  "task_id": "20260321-oracle-custody-runtime-proof-hardening",
+  "task_type": "governance-change",
+  "execution_profile": "headless",
+  "capability": {
+    "summary": "Harden compiler custody so oracle proof is compiler-executed, challenge-bound, and measured from runtime harnesses.",
+    "in_scope": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "docs/contracts/governance-compiler.md",
+      "docs/contracts/quality-gates.md",
+      "docs/contracts/capability-proof-guardrails.md",
+      "docs/qc/compiler/diagnostics.json",
+      "docs/qc/scripts/governance-compiler.mjs",
+      "docs/qc/scripts/oracle-harness.mjs"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "tests/**",
+      "e2e/**",
+      "index.html",
+      "README.md"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "governance:compiler-owned-harness",
+      "governance:challenge-response"
+    ],
+    "seed": "governance-hardening-v1",
+    "oracles": []
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": true
+  }
+}

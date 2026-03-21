@@ -608,6 +608,68 @@
       ],
       "recheck_protocol": "regenerate oracle artifacts from harness, then rerun gov:check"
     },
+    "GOV-PROOF-010": {
+      "severity": "BLOCKED",
+      "title": "Oracle harness execution failed",
+      "why_failed": "Compiler-owned harness did not produce valid machine payload for required oracle obligations.",
+      "root_cause_reminder": "Fix harness/runtime execution root cause. Do not hand-write oracle JSON.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-HARNESS-EXEC",
+          "summary": "Fix harness/runtime failure, rerun compiler so harness is executed by compiler and payload is captured in-memory."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Submitting pre-written oracle artifacts on disk",
+        "Bypassing compiler-owned harness execution",
+        "Direct git commit with missing harness payload"
+      ],
+      "required_evidence": [
+        "docs/qc/proofs/<task-id>/logs/O-ORACLE-HARNESS.log",
+        "compiler PASS attestation"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/scripts/**",
+        "docs/qc/compiler/**",
+        "docs/contracts/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "fix harness execution issue, then rerun npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-PROOF-011": {
+      "severity": "FAIL",
+      "title": "Oracle challenge-response verification failed",
+      "why_failed": "Harness payload failed compiler nonce binding (challenge echo, payload digest, or challenge_response mismatch).",
+      "root_cause_reminder": "Resolve payload binding mismatch at source. Do not disable challenge checks.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-CHALLENGE-BIND",
+          "summary": "Regenerate payload through compiler-owned harness execution so challenge, digest, and response are recomputed in the same run."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Editing challenge_response by hand",
+        "Removing nonce validation in compiler",
+        "Reusing stale payload from previous run"
+      ],
+      "required_evidence": [
+        "compiler-issued challenge bound to harness payload",
+        "matching payload_digest and challenge_response"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/scripts/**",
+        "docs/qc/compiler/**",
+        "docs/contracts/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "fix challenge-binding mismatch and rerun npm run gov:check -- --spec <same-spec>"
+    },
     "GOV-AUDIO-001": {
       "severity": "FAIL",
       "title": "Off state is not transparent",
@@ -1253,6 +1315,39 @@
         "e2e/**"
       ],
       "recheck_protocol": "after operator clears stand-down lock, rerun npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-PROC-009": {
+      "severity": "BLOCKED",
+      "title": "Governance scripts have unstaged local edits",
+      "why_failed": "Compiler hardening requires governance script state to be cleanly staged before oracle execution.",
+      "root_cause_reminder": "Stage or discard local governance-script drift first; then rerun compiler.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROC-STAGE-GOV-SCRIPTS",
+          "summary": "Stage intended docs/qc/scripts and docs/qc/compiler edits so compiler executes exactly what is staged."
+        },
+        {
+          "id": "RCP-PROC-DISCARD-DRIFT",
+          "summary": "Remove accidental local governance-script edits and rerun with clean working tree."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Running compiler with unstaged governance-script drift",
+        "Mixing staged and unstaged governance script versions",
+        "Forcing commit despite blocked compiler state"
+      ],
+      "required_evidence": [
+        "clean git status for docs/qc/scripts/** and docs/qc/compiler/**",
+        "compiler PASS attestation"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/scripts/**",
+        "docs/qc/compiler/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "stage/discard governance script local edits, then rerun npm run gov:check -- --spec <same-spec>"
     },
     "GOV-ROLE-001": {
       "severity": "BLOCKED",

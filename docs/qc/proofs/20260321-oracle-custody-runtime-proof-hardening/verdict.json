@@ -1,0 +1,83 @@
+{
+  "task_id": "20260321-oracle-custody-runtime-proof-hardening",
+  "task_type": "governance-change",
+  "execution_profile": "headless",
+  "spec_path": "docs/qc/specs/20260321-oracle-custody-runtime-proof-hardening.task.spec.json",
+  "policy_version": "1.2.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-21T20:46:59.556Z",
+  "finished_at_utc": "2026-03-21T20:47:04.220Z",
+  "head_sha": "6dbd215",
+  "tree_sha": "e0533e829f1e1f31c887bb83d92d00207fba2815",
+  "subject_sha": "8d17e1629af0d780ab1dadb469d38e3425fa07144568b5aca68f5c15c40b4ab3",
+  "subject_files": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "docs/contracts/capability-proof-guardrails.md",
+    "docs/contracts/governance-compiler.md",
+    "docs/contracts/quality-gates.md",
+    "docs/qc/compiler/diagnostics.json",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "docs/qc/scripts/oracle-harness.mjs"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "docs/contracts/capability-proof-guardrails.md",
+    "docs/contracts/governance-compiler.md",
+    "docs/contracts/quality-gates.md",
+    "docs/qc/compiler/diagnostics.json",
+    "docs/qc/proofs/20260321-oracle-custody-runtime-proof-hardening.md",
+    "docs/qc/proofs/20260321-oracle-custody-runtime-proof-hardening/proof.manifest.json",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "docs/qc/scripts/oracle-harness.mjs",
+    "docs/qc/specs/20260321-oracle-custody-runtime-proof-hardening.task.spec.json"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4426,
+        "log_file": "docs/qc/proofs/20260321-oracle-custody-runtime-proof-hardening/logs/O-CI.log"
+      }
+    ],
+    "global_debt": [],
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

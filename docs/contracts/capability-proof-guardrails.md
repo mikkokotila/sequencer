@@ -30,6 +30,7 @@ For benchmark-governed tasks, task spec must also declare top-level `execution_p
 3. oracle list
 4. oracle artifacts bound to compiler `subject_sha`
 5. machine-generated oracle outputs (`harness_version` must not be manual)
+6. compiler-owned harness custody (oracle payload produced during `gov:check`, not CA-authored disk submission)
 
 Mandatory minimum oracles for product tasks:
 
@@ -38,6 +39,7 @@ Mandatory minimum oracles for product tasks:
 
 Audio/control/persistence changes require extra diff-bound oracles from compiler rules.
 Manual narrative oracle evidence is blocking and must be replaced with deterministic harness output.
+Manual disk-authored oracle JSON as proof input is non-compliant.
 
 ## Guardrail Requirements
 

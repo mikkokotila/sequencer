@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
@@ -733,6 +734,397 @@ function readChangedFilesFromGit() {
   return files;
 }
 
+function parsePorcelainPath(raw) {
+  if (typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  if (trimmed.includes(' -> ')) {
+    return trimmed.split(' -> ').pop().trim();
+  }
+  return trimmed;
+}
+
+function getUnstagedGovernanceScriptEdits() {
+  const out = spawn('git status --porcelain --untracked-files=all -- docs/qc/scripts docs/qc/compiler');
+  if (out.status !== 0) {
+    throw new Error(`Unable to inspect governance script working tree state: ${out.stderr || out.stdout || 'unknown error'}`);
+  }
+
+  const dirty = new Set();
+  const lines = out.stdout
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .filter(Boolean);
+
+  for (const line of lines) {
+    if (line.startsWith('?? ')) {
+      dirty.add(parsePorcelainPath(line.slice(3)));
+      continue;
+    }
+
+    if (line.length < 4) continue;
+    const x = line[0];
+    const y = line[1];
+    const filePath = parsePorcelainPath(line.slice(3));
+
+    // We allow staged governance script edits, but block any unstaged/local drift.
+    const hasUnstaged = y !== ' ';
+    const unmerged = x === 'U' || y === 'U';
+    if (hasUnstaged || unmerged) {
+      dirty.add(filePath);
+    }
+  }
+
+  return [...dirty].filter(Boolean).sort();
+}
+
+async function createIndexSnapshot(treeSha) {
+  const snapshotRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'gov-index-'));
+  const command = `git archive ${JSON.stringify(treeSha)} | tar -x -C ${JSON.stringify(snapshotRoot)}`;
+  const out = spawn(command);
+  if (out.status !== 0) {
+    await fs.rm(snapshotRoot, { recursive: true, force: true });
+    throw new Error(`Failed to create git-index snapshot (${treeSha}): ${out.stderr || out.stdout || 'unknown error'}`);
+  }
+  return snapshotRoot;
+}
+
+function stableValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((entry) => stableValue(entry));
+  }
+  if (value && typeof value === 'object') {
+    const out = {};
+    for (const key of Object.keys(value).sort()) {
+      out[key] = stableValue(value[key]);
+    }
+    return out;
+  }
+  return value;
+}
+
+function stableStringify(value) {
+  return JSON.stringify(stableValue(value));
+}
+
+function buildChallengeResponse(challenge, taskId, subjectSha, executionProfile, payloadDigest) {
+  return sha256(`${challenge}|${taskId}|${subjectSha}|${executionProfile}|${payloadDigest}`);
+}
+
+function parseHarnessPayload(stdout) {
+  const trimmed = (stdout || '').trim();
+  if (!trimmed) {
+    return { ok: false, error: 'Oracle harness produced empty stdout.' };
+  }
+  try {
+    return { ok: true, data: JSON.parse(trimmed) };
+  } catch (err) {
+    return {
+      ok: false,
+      error: `Oracle harness did not output valid JSON: ${err instanceof Error ? err.message : String(err)}`,
+    };
+  }
+}
+
+function getThresholdForOracle(ctx, oracleId) {
+  const thresholdConfig = ctx.rules.oracle_thresholds?.[oracleId];
+  const threshold =
+    thresholdConfig && typeof thresholdConfig === 'object' && thresholdConfig.profiles
+      ? thresholdConfig.profiles[ctx.executionProfile]
+      : thresholdConfig;
+
+  if (thresholdConfig && thresholdConfig.profiles && !threshold) {
+    ctx.addDiagnostic(
+      'GOV-SPEC-008',
+      `Oracle ${oracleId} has no threshold for execution_profile=${ctx.executionProfile}`,
+      {
+        oracle_id: oracleId,
+        execution_profile: ctx.executionProfile,
+        available_profiles: Object.keys(thresholdConfig.profiles || {}),
+      },
+    );
+  }
+
+  return threshold || null;
+}
+
+function evaluateOracleThreshold(ctx, oracleId, metrics) {
+  const threshold = getThresholdForOracle(ctx, oracleId);
+  if (!threshold) {
+    return { thresholdPass: true, threshold: null };
+  }
+  const metricValue = metrics?.[threshold.metric];
+  const thresholdPass = compareMetric(metricValue, threshold.operator, threshold.value);
+  if (!thresholdPass) {
+    ctx.addDiagnostic(
+      threshold.failure_code || 'GOV-PROOF-008',
+      `${oracleId} metric failed (${threshold.metric} ${threshold.operator} ${threshold.value}, got ${metricValue})`,
+      {
+        oracle_id: oracleId,
+        metric: threshold.metric,
+        operator: threshold.operator,
+        expected: threshold.value,
+        actual: metricValue,
+      },
+    );
+  }
+  return { thresholdPass, threshold };
+}
+
+async function executeOracleHarness(ctx) {
+  const requiredOracles = [...ctx.generatedObligations.oracles];
+  if (requiredOracles.length === 0) {
+    return;
+  }
+
+  if (!ctx.args.noWrite) {
+    await ensureDir(path.join(ctx.proofDir, 'oracles'));
+    await ensureDir(path.join(ctx.proofDir, 'raw'));
+  }
+
+  const challenge = crypto.randomBytes(32).toString('hex');
+  let snapshotRoot = root;
+  let usedSnapshot = false;
+
+  if (!ctx.args.simulateFiles.length && ctx.treeSha && ctx.treeSha !== 'UNSET') {
+    snapshotRoot = await createIndexSnapshot(ctx.treeSha);
+    usedSnapshot = true;
+  }
+
+  try {
+    const harnessPath = path.join(snapshotRoot, 'docs/qc/scripts/oracle-harness.mjs');
+    const oracleCsv = requiredOracles.join(',');
+    const command = [
+      `node ${JSON.stringify(harnessPath)}`,
+      `--task-id ${JSON.stringify(ctx.taskId)}`,
+      `--oracles ${JSON.stringify(oracleCsv)}`,
+      `--subject-sha ${JSON.stringify(ctx.subjectSha)}`,
+      `--execution-profile ${JSON.stringify(ctx.executionProfile)}`,
+      `--challenge ${JSON.stringify(challenge)}`,
+      `--repo-root ${JSON.stringify(snapshotRoot)}`,
+      '--json',
+    ].join(' ');
+
+    const started = Date.now();
+    const result = spawn(command, {
+      env: {
+        GOV_TASK_TYPE: ctx.taskType || '',
+        GOV_EXECUTION_PROFILE: ctx.executionProfile || 'headless',
+      },
+    });
+    const elapsedMs = Date.now() - started;
+
+    const harnessLogPath = path.join(ctx.logsDir, 'O-ORACLE-HARNESS.log');
+    const harnessLogBody = [
+      `command: ${command}`,
+      `status: ${result.status}`,
+      `elapsed_ms: ${elapsedMs}`,
+      `snapshot_root: ${snapshotRoot}`,
+      `used_snapshot: ${usedSnapshot}`,
+      '',
+      '--- stdout ---',
+      result.stdout,
+      '',
+      '--- stderr ---',
+      result.stderr,
+    ].join('\n');
+    await writeLog(harnessLogPath, harnessLogBody);
+
+    if (result.status !== 0) {
+      ctx.addDiagnostic(
+        'GOV-PROOF-010',
+        `Oracle harness failed (exit=${result.status}).`,
+        {
+          command,
+          exit_code: result.status,
+          log_file: path.relative(root, harnessLogPath),
+        },
+      );
+      for (const oracleId of requiredOracles) {
+        ctx.oracleResults.push({
+          oracle_id: oracleId,
+          status: 'BLOCKED',
+          artifact: path.join('docs/qc/proofs', ctx.taskId, 'oracles', `${oracleId}.json`),
+        });
+      }
+      return;
+    }
+
+    const parsed = parseHarnessPayload(result.stdout);
+    if (!parsed.ok) {
+      ctx.addDiagnostic('GOV-PROOF-010', parsed.error, {
+        log_file: path.relative(root, harnessLogPath),
+      });
+      for (const oracleId of requiredOracles) {
+        ctx.oracleResults.push({
+          oracle_id: oracleId,
+          status: 'BLOCKED',
+          artifact: path.join('docs/qc/proofs', ctx.taskId, 'oracles', `${oracleId}.json`),
+        });
+      }
+      return;
+    }
+
+    const payload = parsed.data;
+    if (payload.task_id !== ctx.taskId) {
+      ctx.addDiagnostic('GOV-PROOF-008', `Oracle harness task_id mismatch (expected ${ctx.taskId}, got ${payload.task_id})`, {
+        expected_task_id: ctx.taskId,
+        harness_task_id: payload.task_id,
+      });
+    }
+    if (payload.subject_sha !== ctx.subjectSha) {
+      ctx.addDiagnostic(
+        'GOV-PROOF-006',
+        `Oracle harness subject_sha mismatch (expected ${ctx.subjectSha}, got ${payload.subject_sha})`,
+        {
+          expected_subject_sha: ctx.subjectSha,
+          harness_subject_sha: payload.subject_sha,
+        },
+      );
+    }
+    if (payload.execution_profile !== ctx.executionProfile) {
+      ctx.addDiagnostic(
+        'GOV-SPEC-008',
+        `Oracle harness execution_profile mismatch (expected ${ctx.executionProfile}, got ${payload.execution_profile})`,
+        {
+          expected_execution_profile: ctx.executionProfile,
+          harness_execution_profile: payload.execution_profile,
+        },
+      );
+    }
+
+    const harnessVersion = typeof payload.harness_version === 'string' ? payload.harness_version.trim() : '';
+    if (!harnessVersion) {
+      ctx.addDiagnostic('GOV-PROOF-008', 'Oracle harness_version is missing or empty in harness payload.');
+    } else if (/^manual\b/i.test(harnessVersion)) {
+      ctx.addDiagnostic('GOV-PROOF-009', `Manual oracle harness is not allowed (harness_version=${harnessVersion}).`, {
+        harness_version: harnessVersion,
+      });
+    }
+
+    const payloadOracles = Array.isArray(payload.oracles) ? payload.oracles : [];
+    const digestInput = payloadOracles
+      .map((oracle) => ({
+        oracle_id: oracle?.oracle_id,
+        status: oracle?.status,
+        metrics: oracle?.metrics || {},
+        raw_sha256: oracle?.raw_sha256 || null,
+      }))
+      .sort((a, b) => String(a.oracle_id).localeCompare(String(b.oracle_id)));
+
+    const payloadDigest = sha256(stableStringify(digestInput));
+    if (payload.payload_digest !== payloadDigest) {
+      ctx.addDiagnostic(
+        'GOV-PROOF-011',
+        'Oracle payload digest mismatch.',
+        {
+          expected_payload_digest: payloadDigest,
+          harness_payload_digest: payload.payload_digest || null,
+        },
+      );
+    }
+
+    if (payload.challenge !== challenge) {
+      ctx.addDiagnostic('GOV-PROOF-011', 'Oracle challenge echo mismatch.', {
+        expected_challenge: challenge,
+        harness_challenge: payload.challenge || null,
+      });
+    }
+
+    const expectedResponse = buildChallengeResponse(
+      challenge,
+      ctx.taskId,
+      ctx.subjectSha,
+      ctx.executionProfile,
+      payloadDigest,
+    );
+    if (payload.challenge_response !== expectedResponse) {
+      ctx.addDiagnostic('GOV-PROOF-011', 'Oracle challenge_response mismatch.', {
+        expected_challenge_response: expectedResponse,
+        harness_challenge_response: payload.challenge_response || null,
+      });
+    }
+
+    const payloadById = new Map();
+    for (const oracle of payloadOracles) {
+      if (oracle && typeof oracle.oracle_id === 'string' && !payloadById.has(oracle.oracle_id)) {
+        payloadById.set(oracle.oracle_id, oracle);
+      }
+    }
+
+    for (const oracleId of requiredOracles) {
+      const relArtifact = path.join('docs/qc/proofs', ctx.taskId, 'oracles', `${oracleId}.json`);
+      const relRaw = path.posix.join('raw', `${oracleId}.json`);
+
+      const oracle = payloadById.get(oracleId);
+      if (!oracle) {
+        ctx.addDiagnostic('GOV-PROOF-004', `Oracle harness did not return required oracle: ${oracleId}`, {
+          oracle_id: oracleId,
+        });
+        ctx.oracleResults.push({ oracle_id: oracleId, status: 'BLOCKED', artifact: relArtifact });
+        continue;
+      }
+
+      const metrics = oracle.metrics && typeof oracle.metrics === 'object' ? oracle.metrics : {};
+      const evidence = typeof oracle.evidence === 'string' ? oracle.evidence : '';
+      const status = typeof oracle.status === 'string' ? oracle.status.toUpperCase() : 'FAIL';
+      const rawEncoding = oracle.raw?.encoding === 'base64' ? 'base64' : 'utf8';
+      const rawContent = typeof oracle.raw?.content === 'string' ? oracle.raw.content : '';
+      const rawBuffer = Buffer.from(rawContent, rawEncoding);
+      const rawSha = sha256(rawBuffer);
+
+      if (oracle.raw_sha256 && oracle.raw_sha256 !== rawSha) {
+        ctx.addDiagnostic('GOV-PROOF-005', `Oracle raw artifact hash mismatch for ${oracleId}`, {
+          oracle_id: oracleId,
+          expected_hash: oracle.raw_sha256,
+          actual_hash: rawSha,
+        });
+      }
+
+      const artifact = {
+        oracle_id: oracleId,
+        task_id: ctx.taskId,
+        subject_sha: ctx.subjectSha,
+        harness_version: harnessVersion || 'unknown',
+        status,
+        metrics,
+        raw_artifact: relRaw,
+        raw_sha256: rawSha,
+        evidence,
+        challenge_id: sha256(challenge),
+        payload_digest: payloadDigest,
+      };
+
+      const rawPath = path.join(ctx.proofDir, relRaw);
+      const artifactPath = path.join(ctx.proofDir, 'oracles', `${oracleId}.json`);
+      if (!ctx.args.noWrite) {
+        await fs.writeFile(rawPath, rawBuffer);
+        await fs.writeFile(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`, 'utf8');
+      }
+
+      const { thresholdPass, threshold } = evaluateOracleThreshold(ctx, oracleId, metrics);
+      if (status !== 'PASS') {
+        ctx.addDiagnostic(
+          threshold?.failure_code || 'GOV-PROOF-008',
+          `${oracleId} reported status ${status}`,
+          { oracle_id: oracleId, status },
+        );
+      }
+
+      ctx.oracleResults.push({
+        oracle_id: oracleId,
+        status: status === 'PASS' && thresholdPass ? 'PASS' : 'FAIL',
+        artifact: relArtifact,
+        raw_artifact: path.join('docs/qc/proofs', ctx.taskId, relRaw),
+        raw_sha256: rawSha,
+      });
+    }
+  } finally {
+    if (usedSnapshot) {
+      await fs.rm(snapshotRoot, { recursive: true, force: true });
+    }
+  }
+}
+
 function buildGroupMatches(pathGroups, changedFiles) {
   const matches = {};
   for (const [group, patterns] of Object.entries(pathGroups || {})) {
@@ -781,6 +1173,24 @@ async function phaseBind(ctx) {
   const unboundFiles = ctx.changedFiles.filter((filePath) => !matchesAnyPattern(filePath, allPatterns));
   if (unboundFiles.length > 0) {
     ctx.addDiagnostic('GOV-BIND-001', `Unbound changed files: ${unboundFiles.join(', ')}`, { unboundFiles });
+  }
+
+  if (!ctx.args.simulateFiles.length) {
+    try {
+      const dirtyGovernanceScripts = getUnstagedGovernanceScriptEdits();
+      if (dirtyGovernanceScripts.length > 0) {
+        ctx.addDiagnostic(
+          'GOV-PROC-009',
+          `Governance script local edits must be cleanly staged before check: ${dirtyGovernanceScripts.join(', ')}`,
+          { dirtyGovernanceScripts },
+        );
+      }
+    } catch (err) {
+      ctx.addDiagnostic(
+        'GOV-PROC-003',
+        `Unable to inspect governance script working tree state: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
   }
 
   const inScopePatterns = Array.isArray(ctx.spec?.capability?.in_scope) ? ctx.spec.capability.in_scope : [];
@@ -1078,167 +1488,6 @@ async function validateManifest(ctx) {
   return manifest;
 }
 
-async function validateOracleArtifact(ctx, oracleId) {
-  const artifactTemplate = ctx.rules.oracle_artifact?.base_dir || 'docs/qc/proofs/{task_id}/oracles';
-  const oracleBase = artifactTemplate.replace('{task_id}', ctx.taskId);
-  const oraclePath = path.join(root, oracleBase, `${oracleId}.json`);
-  const relOraclePath = path.relative(root, oraclePath);
-
-  let raw;
-  try {
-    raw = await fs.readFile(oraclePath, 'utf8');
-  } catch {
-    ctx.addDiagnostic('GOV-PROOF-004', `Missing oracle artifact: ${relOraclePath}`, {
-      oracle_id: oracleId,
-      artifact: relOraclePath,
-    });
-    ctx.oracleResults.push({ oracle_id: oracleId, status: 'BLOCKED', artifact: relOraclePath });
-    return;
-  }
-
-  const parsed = readJsonFileSafe(raw, relOraclePath);
-  if (!parsed.ok) {
-    ctx.addDiagnostic('GOV-PROOF-008', parsed.error, {
-      oracle_id: oracleId,
-      artifact: relOraclePath,
-    });
-    ctx.oracleResults.push({ oracle_id: oracleId, status: 'BLOCKED', artifact: relOraclePath });
-    return;
-  }
-
-  const artifact = parsed.data;
-  const requiredFields = ctx.rules.oracle_artifact?.required_fields || [];
-  const missingFields = requiredFields.filter((field) => !(field in artifact));
-  if (missingFields.length > 0) {
-    ctx.addDiagnostic('GOV-PROOF-008', `Oracle artifact missing fields: ${missingFields.join(', ')}`, {
-      oracle_id: oracleId,
-      missingFields,
-    });
-  }
-
-  const harnessVersion =
-    typeof artifact.harness_version === 'string' ? artifact.harness_version.trim() : '';
-  if (!harnessVersion) {
-    ctx.addDiagnostic(
-      'GOV-PROOF-008',
-      `Oracle harness_version is missing or empty for ${oracleId}`,
-      { oracle_id: oracleId, harness_version: artifact.harness_version ?? null },
-    );
-  } else if (/^manual\b/i.test(harnessVersion)) {
-    ctx.addDiagnostic(
-      'GOV-PROOF-009',
-      `Manual oracle harness is not allowed for ${oracleId} (harness_version=${harnessVersion})`,
-      { oracle_id: oracleId, harness_version: harnessVersion },
-    );
-  }
-
-  if (artifact.oracle_id !== oracleId) {
-    ctx.addDiagnostic(
-      'GOV-PROOF-008',
-      `Oracle id mismatch in ${relOraclePath} (expected ${oracleId}, got ${artifact.oracle_id})`,
-      { oracle_id: oracleId, artifact_oracle_id: artifact.oracle_id },
-    );
-  }
-
-  if (artifact.task_id !== ctx.taskId) {
-    ctx.addDiagnostic(
-      'GOV-PROOF-008',
-      `Oracle task_id mismatch for ${oracleId} (expected ${ctx.taskId}, got ${artifact.task_id})`,
-      { oracle_id: oracleId, artifact_task_id: artifact.task_id },
-    );
-  }
-
-  if (!ctx.args.simulateFiles.length && artifact.subject_sha !== ctx.subjectSha) {
-    ctx.addDiagnostic(
-      'GOV-PROOF-006',
-      `Oracle subject_sha mismatch for ${oracleId} (expected ${ctx.subjectSha}, got ${artifact.subject_sha})`,
-      { oracle_id: oracleId, artifact_subject_sha: artifact.subject_sha, expected_subject_sha: ctx.subjectSha },
-    );
-  }
-
-  const rawArtifactPath = path.resolve(ctx.proofDir, artifact.raw_artifact || '');
-  let rawContent;
-  try {
-    rawContent = await fs.readFile(rawArtifactPath);
-  } catch {
-    ctx.addDiagnostic('GOV-PROOF-004', `Missing oracle raw artifact for ${oracleId}: ${artifact.raw_artifact}`, {
-      oracle_id: oracleId,
-      raw_artifact: artifact.raw_artifact,
-    });
-    ctx.oracleResults.push({
-      oracle_id: oracleId,
-      status: 'BLOCKED',
-      artifact: relOraclePath,
-      raw_artifact: artifact.raw_artifact,
-    });
-    return;
-  }
-
-  const actualHash = sha256(rawContent);
-  if (actualHash !== artifact.raw_sha256) {
-    ctx.addDiagnostic(
-      'GOV-PROOF-005',
-      `Oracle raw artifact hash mismatch for ${oracleId}`,
-      {
-        oracle_id: oracleId,
-        expected_hash: artifact.raw_sha256,
-        actual_hash: actualHash,
-      },
-    );
-  }
-
-  const thresholdConfig = ctx.rules.oracle_thresholds?.[oracleId];
-  const threshold =
-    thresholdConfig && typeof thresholdConfig === 'object' && thresholdConfig.profiles
-      ? thresholdConfig.profiles[ctx.executionProfile]
-      : thresholdConfig;
-  if (thresholdConfig && thresholdConfig.profiles && !threshold) {
-    ctx.addDiagnostic(
-      'GOV-SPEC-008',
-      `Oracle ${oracleId} has no threshold for execution_profile=${ctx.executionProfile}`,
-      {
-        oracle_id: oracleId,
-        execution_profile: ctx.executionProfile,
-        available_profiles: Object.keys(thresholdConfig.profiles || {}),
-      },
-    );
-  }
-  let thresholdPass = true;
-  if (threshold) {
-    const metricValue = artifact.metrics?.[threshold.metric];
-    thresholdPass = compareMetric(metricValue, threshold.operator, threshold.value);
-    if (!thresholdPass) {
-      ctx.addDiagnostic(
-        threshold.failure_code || 'GOV-PROOF-008',
-        `${oracleId} metric failed (${threshold.metric} ${threshold.operator} ${threshold.value}, got ${metricValue})`,
-        {
-          oracle_id: oracleId,
-          metric: threshold.metric,
-          operator: threshold.operator,
-          expected: threshold.value,
-          actual: metricValue,
-        },
-      );
-    }
-  }
-
-  if (artifact.status !== 'PASS') {
-    ctx.addDiagnostic(
-      threshold?.failure_code || 'GOV-PROOF-008',
-      `${oracleId} reported status ${artifact.status}`,
-      { oracle_id: oracleId, status: artifact.status },
-    );
-  }
-
-  ctx.oracleResults.push({
-    oracle_id: oracleId,
-    status: artifact.status === 'PASS' && thresholdPass ? 'PASS' : 'FAIL',
-    artifact: relOraclePath,
-    raw_artifact: path.relative(root, rawArtifactPath),
-    raw_sha256: actualHash,
-  });
-}
-
 async function phaseExecute(ctx) {
   const phaseName = 'execute';
 
@@ -1263,10 +1512,7 @@ async function phaseExecute(ctx) {
 
   await executeCommandObligations(ctx);
   await validateManifest(ctx);
-
-  for (const oracleId of ctx.generatedObligations.oracles) {
-    await validateOracleArtifact(ctx, oracleId);
-  }
+  await executeOracleHarness(ctx);
 
   const failCount = ctx.diagnostics.filter((d) => d.severity === 'FAIL').length;
   const blockedCount = ctx.diagnostics.filter((d) => d.severity === 'BLOCKED').length;

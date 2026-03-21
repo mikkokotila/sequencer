@@ -42,14 +42,16 @@ Before commit, ensure proof artifacts exist:
 
 1. `docs/qc/proofs/<task-id>/proof.manifest.json`
 2. `docs/qc/proofs/<task-id>/verdict.json` (written by compiler)
-3. `docs/qc/proofs/<task-id>.md`
-4. `logs/compiler.log` contains hash-chained warning/error trail (auto-appended by compiler)
+3. `docs/qc/proofs/<task-id>/oracles/*.json` and `docs/qc/proofs/<task-id>/raw/*` (written by compiler-owned harness custody)
+4. `docs/qc/proofs/<task-id>.md`
+5. `logs/compiler.log` contains hash-chained warning/error trail (auto-appended by compiler)
 
 ### Required Commands
 
 1. Stage intended files only.
 2. Run compiler:
    - `npm run gov:check -- --spec docs/qc/specs/<task-id>.task.spec.json`
+   - do not manually generate oracle JSON files; compiler invokes harness directly and captures oracle payload in-memory
 3. If compiler verdict is `FAIL`/`BLOCKED`/`ERROR`:
    - read the highest-severity diagnostic
    - apply one listed acceptable recipe

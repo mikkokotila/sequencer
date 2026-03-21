@@ -107,6 +107,19 @@ Accepted override channels:
 
 Without override, compiler emits `GOV-ROLE-001` and blocks task.
 
+## Execution Profiles
+
+Compiler resolves benchmark oracle policy by `execution_profile`.
+
+1. Allowed values: `headless`, `interactive`
+2. `execution_profile` is read from `task.spec.json`
+3. Benchmark-governed tasks must declare `execution_profile` explicitly
+
+Profile behavior:
+
+1. `interactive`: requires real `process()` timing oracle threshold (`p99 <= budget`)
+2. `headless`: requires structural benchmark oracle threshold (worklet/determinism/proxy-timing safeguards)
+
 ## Anti-Deception Rules
 
 1. Obligation selection is diff-derived, not author-selected.

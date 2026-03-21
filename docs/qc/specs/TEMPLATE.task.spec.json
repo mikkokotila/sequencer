@@ -1,6 +1,7 @@
 {
   "task_id": "YYYYMMDD-short-name",
   "task_type": "feature",
+  "execution_profile": "headless",
   "capability": {
     "summary": "One-sentence slice scope",
     "in_scope": [

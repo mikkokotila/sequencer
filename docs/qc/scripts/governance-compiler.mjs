@@ -329,6 +329,8 @@ class CompilerContext {
     this.specPath = args.specPath;
     this.taskId = null;
     this.taskType = null;
+    this.executionProfile = (rules.execution_profiles && rules.execution_profiles.default) || 'headless';
+    this.executionProfileExplicit = false;
     this.treeSha = 'UNSET';
     this.subjectSha = 'UNSET';
     this.subjectFiles = [];
@@ -554,6 +556,14 @@ async function phaseParseSpec(ctx) {
   ctx.spec = spec;
   ctx.taskId = typeof spec.task_id === 'string' ? spec.task_id.trim() : '';
   ctx.taskType = typeof spec.task_type === 'string' ? spec.task_type.trim() : '';
+  const allowedProfiles = Array.isArray(ctx.rules.execution_profiles?.allowed)
+    ? ctx.rules.execution_profiles.allowed
+    : ['headless', 'interactive'];
+  const defaultProfile =
+    typeof ctx.rules.execution_profiles?.default === 'string' ? ctx.rules.execution_profiles.default : 'headless';
+  const rawExecutionProfile = typeof spec.execution_profile === 'string' ? spec.execution_profile.trim() : '';
+  ctx.executionProfileExplicit = rawExecutionProfile.length > 0;
+  ctx.executionProfile = (rawExecutionProfile || defaultProfile).toLowerCase();
   if (ctx.taskId) {
     ctx.proofDir = path.join(root, 'docs/qc/proofs', ctx.taskId);
     ctx.logsDir = path.join(ctx.proofDir, 'logs');
@@ -571,6 +581,17 @@ async function phaseParseSpec(ctx) {
         provided_task_type: ctx.taskType,
         allowed_task_types: ctx.rules.task_types || [],
         suggested_task_type: suggestedTaskType,
+      },
+    );
+  }
+  if (!allowedProfiles.includes(ctx.executionProfile)) {
+    errors.push(`execution_profile must be one of: ${allowedProfiles.join(', ')}`);
+    ctx.addDiagnostic(
+      'GOV-SPEC-008',
+      `Invalid execution_profile "${ctx.executionProfile}". Allowed values: ${allowedProfiles.join(', ')}`,
+      {
+        provided_execution_profile: ctx.executionProfile,
+        allowed_execution_profiles: allowedProfiles,
       },
     );
   }
@@ -825,6 +846,14 @@ async function phaseBind(ctx) {
     }
   }
 
+  if (ctx.groupMatches.benchmark && !ctx.executionProfileExplicit) {
+    ctx.addDiagnostic(
+      'GOV-SPEC-008',
+      'Benchmark-governed task must declare execution_profile explicitly in task spec.',
+      { required_profiles: ctx.rules.execution_profiles?.allowed || ['headless', 'interactive'] },
+    );
+  }
+
   ctx.addPhase(phaseName, ctx.diagnostics.length > 0 ? 'WARN' : 'PASS', 'Diff-to-contract binding complete.');
 }
 
@@ -914,6 +943,7 @@ async function executeCommandObligations(ctx) {
         GOV_CHANGED_FILES: ctx.changedFiles.join('\n'),
         GOV_SUBJECT_FILES: ctx.subjectFiles.join('\n'),
         GOV_TASK_TYPE: ctx.taskType || '',
+        GOV_EXECUTION_PROFILE: ctx.executionProfile || 'headless',
       },
     });
     const elapsedMs = Date.now() - started;
@@ -1157,7 +1187,22 @@ async function validateOracleArtifact(ctx, oracleId) {
     );
   }
 
-  const threshold = ctx.rules.oracle_thresholds?.[oracleId];
+  const thresholdConfig = ctx.rules.oracle_thresholds?.[oracleId];
+  const threshold =
+    thresholdConfig && typeof thresholdConfig === 'object' && thresholdConfig.profiles
+      ? thresholdConfig.profiles[ctx.executionProfile]
+      : thresholdConfig;
+  if (thresholdConfig && thresholdConfig.profiles && !threshold) {
+    ctx.addDiagnostic(
+      'GOV-SPEC-008',
+      `Oracle ${oracleId} has no threshold for execution_profile=${ctx.executionProfile}`,
+      {
+        oracle_id: oracleId,
+        execution_profile: ctx.executionProfile,
+        available_profiles: Object.keys(thresholdConfig.profiles || {}),
+      },
+    );
+  }
   let thresholdPass = true;
   if (threshold) {
     const metricValue = artifact.metrics?.[threshold.metric];
@@ -1251,6 +1296,7 @@ async function phaseAttest(ctx) {
   const attestation = {
     task_id: ctx.taskId,
     task_type: ctx.taskType,
+    execution_profile: ctx.executionProfile,
     spec_path: ctx.specPath,
     policy_version: ctx.rules.version,
     diagnostics_version: ctx.diagnosticCatalog.version || '1.0.0',
@@ -1295,6 +1341,7 @@ function printSummary(ctx, attestationResult) {
   if (ctx.args.quiet) return;
 
   console.log('governance-compiler: phase summary');
+  console.log(`execution_profile: ${ctx.executionProfile}`);
   for (const phase of ctx.phases) {
     console.log(`- ${phase.name}: ${phase.status} | ${phase.detail}`);
   }

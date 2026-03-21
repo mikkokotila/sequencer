@@ -1,0 +1,36 @@
+{
+  "task_id": "20260321-benchmark-profile-discriminator",
+  "task_type": "governance-change",
+  "execution_profile": "headless",
+  "capability": {
+    "summary": "Operationalize dual benchmark execution profiles so headless enforces structural integrity and interactive enforces real process-time p99 budget.",
+    "in_scope": [
+      "CLAUDE.md",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**",
+      "docs/qc/specs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "tests/**",
+      "e2e/**",
+      "index.html",
+      "sequencer.html"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:kick_01"
+    ],
+    "seed": "governance-seed-v7",
+    "oracles": []
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": true
+  }
+}

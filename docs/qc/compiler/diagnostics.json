@@ -1,5 +1,5 @@
 {
-  "version": "1.3.0",
+  "version": "1.4.0",
   "diagnostics": {
     "GOV-SPEC-001": {
       "severity": "BLOCKED",
@@ -187,6 +187,33 @@
         "src/**"
       ],
       "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-SPEC-008": {
+      "severity": "BLOCKED",
+      "title": "Invalid or missing execution profile",
+      "why_failed": "Benchmark-governed tasks must declare a valid execution_profile so compiler can apply the correct oracle policy.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-SPEC-EXEC-PROFILE",
+          "summary": "Set execution_profile to one allowed value (headless|interactive) in task.spec.json."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Leaving benchmark tasks without execution_profile",
+        "Using ad-hoc profile names",
+        "Switching profile via hidden runtime tweaks without spec update"
+      ],
+      "required_evidence": [
+        "task.spec.json execution_profile",
+        "profile-matched oracle artifact metrics"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/specs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "update execution_profile in spec, regenerate profile-matched proof, rerun gov:check"
     },
     "GOV-BIND-001": {
       "severity": "FAIL",
@@ -991,6 +1018,33 @@
         "docs/contracts/**"
       ],
       "recheck_protocol": "run benchmark_worklet_budget oracle and verify p99 <= block budget"
+    },
+    "GOV-PERF-003": {
+      "severity": "FAIL",
+      "title": "Headless benchmark structural proof failed",
+      "why_failed": "Headless profile requires structural benchmark integrity checks; required structural metric did not pass.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PERF-HEADLESS-STRUCT",
+          "summary": "Fix benchmark structure (worklet chain, deterministic inputs, no proxy timing shortcuts) and regenerate oracle."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Marking structural oracle as PASS without machine evidence",
+        "Faking timing pass with UI text or proxy timers"
+      ],
+      "required_evidence": [
+        "benchmark_worklet_budget oracle artifact (headless structural metrics)"
+      ],
+      "allowed_change_scope": [
+        "tests/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**",
+        "docs/contracts/**"
+      ],
+      "recheck_protocol": "run benchmark oracle in headless profile and verify structural_ok == 1"
     },
     "GOV-PROC-001": {
       "severity": "BLOCKED",

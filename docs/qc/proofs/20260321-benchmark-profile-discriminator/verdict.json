@@ -1,0 +1,85 @@
+{
+  "task_id": "20260321-benchmark-profile-discriminator",
+  "task_type": "governance-change",
+  "execution_profile": "headless",
+  "spec_path": "docs/qc/specs/20260321-benchmark-profile-discriminator.task.spec.json",
+  "policy_version": "1.2.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-21T20:16:15.851Z",
+  "finished_at_utc": "2026-03-21T20:16:20.623Z",
+  "head_sha": "46c34be",
+  "tree_sha": "ebcb58d342c4342ffe3dab2b3f6c07e78fce6419",
+  "subject_sha": "8266c41a96672c6311f39b1ff1a84632b9a79c00f4576a1b65918c497eb7f8ba",
+  "subject_files": [
+    "CLAUDE.md",
+    "docs/contracts/capability-proof-guardrails.md",
+    "docs/contracts/governance-compiler.md",
+    "docs/contracts/quality-gates.md",
+    "docs/qc/compiler/diagnostics.json",
+    "docs/qc/compiler/obligation-rules.json",
+    "docs/qc/scripts/audio-gates.mjs",
+    "docs/qc/scripts/governance-compiler.mjs"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "CLAUDE.md",
+    "docs/contracts/capability-proof-guardrails.md",
+    "docs/contracts/governance-compiler.md",
+    "docs/contracts/quality-gates.md",
+    "docs/qc/compiler/diagnostics.json",
+    "docs/qc/compiler/obligation-rules.json",
+    "docs/qc/proofs/20260321-benchmark-profile-discriminator.md",
+    "docs/qc/proofs/20260321-benchmark-profile-discriminator/proof.manifest.json",
+    "docs/qc/scripts/audio-gates.mjs",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "docs/qc/specs/20260321-benchmark-profile-discriminator.task.spec.json",
+    "docs/qc/specs/TEMPLATE.task.spec.json",
+    "logs/compiler.log"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4507,
+        "log_file": "docs/qc/proofs/20260321-benchmark-profile-discriminator/logs/O-CI.log"
+      }
+    ],
+    "global_debt": [],
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

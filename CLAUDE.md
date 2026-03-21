@@ -90,6 +90,19 @@ Compiler-bound requirements include:
 - audio oracle artifacts (`off_transparent`, `on_audible`, `low_end_continuity`, `clip_guard`, `default_safety`)
 - deterministic fixtures + fixed seed
 
+## When changing benchmark path
+
+Applies to: `tests/benchmark.html`, `src/engine/worklets/**`.
+
+Task spec must declare:
+
+1. `execution_profile: "headless"` or `execution_profile: "interactive"`
+
+Profile semantics:
+
+1. `interactive` requires real process-time budget proof (`p99 <= budget`)
+2. `headless` requires structural benchmark integrity proof only
+
 ## When writing or modifying nonlinear audio processors
 
 Applies to: compressor, saturation, waveshaper, tape emulation, transformer, and other nonlinear processors.

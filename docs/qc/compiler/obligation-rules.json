@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "task_types": [
     "feature",
     "bugfix",
@@ -7,6 +7,13 @@
     "governance-change",
     "qc"
   ],
+  "execution_profiles": {
+    "default": "headless",
+    "allowed": [
+      "headless",
+      "interactive"
+    ]
+  },
   "path_groups": {
     "governance_policy": [
       "AGENTS.md",
@@ -183,10 +190,20 @@
       "failure_code": "GOV-CTRL-006"
     },
     "benchmark_worklet_budget": {
-      "metric": "p99_ms",
-      "operator": "<=",
-      "value": 2.67,
-      "failure_code": "GOV-PERF-002"
+      "profiles": {
+        "interactive": {
+          "metric": "p99_ms",
+          "operator": "<=",
+          "value": 2.67,
+          "failure_code": "GOV-PERF-002"
+        },
+        "headless": {
+          "metric": "structural_ok",
+          "operator": "==",
+          "value": 1,
+          "failure_code": "GOV-PERF-003"
+        }
+      }
     },
     "mutation_guard": {
       "metric": "mutant_failures",

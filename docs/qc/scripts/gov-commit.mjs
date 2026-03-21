@@ -120,6 +120,19 @@ async function main() {
     process.exit(1);
   }
 
+  const compilerLogRel = path.join('logs', 'compiler.log');
+  try {
+    await fs.access(path.join(root, compilerLogRel));
+    const addCompilerLog = run(`git add ${JSON.stringify(compilerLogRel)}`);
+    if (addCompilerLog.status !== 0) {
+      console.error(`ERROR | GOV-PROC-003 | Failed to stage compiler audit log at ${compilerLogRel}.`);
+      process.stderr.write(addCompilerLog.stderr);
+      process.exit(1);
+    }
+  } catch {
+    // no compiler log yet
+  }
+
   const trailer = [
     `Gov-Task: ${taskId}`,
     'Gov-Verdict: PASS',

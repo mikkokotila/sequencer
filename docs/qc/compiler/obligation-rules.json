@@ -13,6 +13,7 @@
       "CLAUDE.md",
       "docs/contracts/**",
       "docs/qc/**",
+      "logs/compiler.log",
       "package.json",
       "package-lock.json",
       ".husky/**"

@@ -26,6 +26,7 @@ Before commit, ensure proof artifacts exist:
 1. `docs/qc/proofs/<task-id>/proof.manifest.json`
 2. `docs/qc/proofs/<task-id>/verdict.json` (written by compiler)
 3. `docs/qc/proofs/<task-id>.md`
+4. `logs/compiler.log` contains hash-chained warning/error trail (auto-appended by compiler)
 
 ### Required Commands
 

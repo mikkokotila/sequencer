@@ -7,6 +7,8 @@ import { spawnSync } from 'node:child_process';
 const root = process.cwd();
 const RULES_PATH = path.join(root, 'docs/qc/compiler/obligation-rules.json');
 const DIAGNOSTICS_PATH = path.join(root, 'docs/qc/compiler/diagnostics.json');
+const COMPILER_LOG_PATH = path.join(root, 'logs/compiler.log');
+const CHAIN_GENESIS_HASH = '0'.repeat(64);
 
 function parseArgs(argv) {
   const args = {
@@ -113,6 +115,12 @@ function matchesAnyPattern(filePath, patterns) {
   return patterns.some((pattern) => matchesPattern(filePath, pattern));
 }
 
+const COMPILER_MANAGED_ARTIFACT_PATTERNS = ['docs/qc/proofs/**', 'docs/qc/specs/**', 'logs/compiler.log'];
+
+function isCompilerManagedArtifact(filePath) {
+  return matchesAnyPattern(filePath, COMPILER_MANAGED_ARTIFACT_PATTERNS);
+}
+
 function compareMetric(actual, operator, expected) {
   if (typeof actual !== 'number') return false;
   switch (operator) {
@@ -143,6 +151,89 @@ async function ensureDir(dir) {
   await fs.mkdir(dir, { recursive: true });
 }
 
+async function getCompilerLogChainState(logPath) {
+  let raw = '';
+  try {
+    raw = await fs.readFile(logPath, 'utf8');
+  } catch (err) {
+    if (err && typeof err === 'object' && 'code' in err && err.code === 'ENOENT') {
+      return { exists: false, lineCount: 0, lastHash: CHAIN_GENESIS_HASH };
+    }
+    throw err;
+  }
+
+  const lines = raw
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  let prevHash = CHAIN_GENESIS_HASH;
+  for (let i = 0; i < lines.length; i++) {
+    let entry;
+    try {
+      entry = JSON.parse(lines[i]);
+    } catch (err) {
+      throw new Error(`compiler.log line ${i + 1} is not valid JSON: ${err instanceof Error ? err.message : String(err)}`);
+    }
+
+    if (entry.prev_hash !== prevHash) {
+      throw new Error(
+        `compiler.log hash-chain broken at line ${i + 1}: expected prev_hash=${prevHash}, got ${entry.prev_hash}`,
+      );
+    }
+
+    const unsignedEntry = { ...entry };
+    delete unsignedEntry.hash;
+    const computedHash = sha256(JSON.stringify(unsignedEntry));
+    if (entry.hash !== computedHash) {
+      throw new Error(
+        `compiler.log hash mismatch at line ${i + 1}: expected ${computedHash}, got ${entry.hash}`,
+      );
+    }
+
+    prevHash = entry.hash;
+  }
+
+  return { exists: true, lineCount: lines.length, lastHash: prevHash };
+}
+
+async function appendCompilerAuditLog(entries) {
+  if (!Array.isArray(entries) || entries.length === 0) {
+    return { written: 0, lastHash: null };
+  }
+
+  await ensureDir(path.dirname(COMPILER_LOG_PATH));
+  const chainState = await getCompilerLogChainState(COMPILER_LOG_PATH);
+  let prevHash = chainState.lastHash;
+  let buffer = '';
+
+  for (const event of entries) {
+    const unsignedEntry = {
+      ts: event.ts || nowIso(),
+      run_id: event.run_id || 'unknown-run',
+      level: event.level || 'WARN',
+      category: event.category || 'compiler',
+      code: event.code || null,
+      severity: event.severity || null,
+      phase: event.phase || null,
+      message: event.message || '',
+      task_id: event.task_id || null,
+      spec_path: event.spec_path || null,
+      head_sha: event.head_sha || null,
+      tree_sha: event.tree_sha || null,
+      context: event.context || {},
+      prev_hash: prevHash,
+    };
+    const hash = sha256(JSON.stringify(unsignedEntry));
+    const entry = { ...unsignedEntry, hash };
+    buffer += `${JSON.stringify(entry)}\n`;
+    prevHash = hash;
+  }
+
+  await fs.appendFile(COMPILER_LOG_PATH, buffer, 'utf8');
+  return { written: entries.length, lastHash: prevHash };
+}
+
 class CompilerContext {
   constructor(args, rules, diagnosticCatalog) {
     this.args = args;
@@ -168,10 +259,18 @@ class CompilerContext {
     this.proofDir = null;
     this.logsDir = null;
     this.startedAt = nowIso();
+    this.runId = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
+    this.auditEvents = [];
   }
 
   addPhase(name, status, detail) {
     this.phases.push({ name, status, detail });
+    if (['WARN', 'FAIL', 'BLOCKED', 'ERROR'].includes(status)) {
+      this.addAuditEvent(status === 'WARN' ? 'WARN' : 'ERROR', 'phase', `${name}: ${detail}`, {
+        phase: name,
+        status,
+      });
+    }
   }
 
   addDiagnostic(code, message, context = {}, severityOverride = null) {
@@ -203,10 +302,30 @@ class CompilerContext {
     };
 
     this.diagnostics.push(diagnostic);
+    this.addAuditEvent('ERROR', 'diagnostic', diagnostic.message, {
+      code: diagnostic.code,
+      severity: diagnostic.severity,
+      context,
+    });
   }
 
   hasSeverity(severity) {
     return this.diagnostics.some((d) => d.severity === severity);
+  }
+
+  addAuditEvent(level, category, message, extra = {}) {
+    this.auditEvents.push({
+      ts: nowIso(),
+      run_id: this.runId,
+      level,
+      category,
+      message,
+      task_id: this.taskId,
+      spec_path: this.specPath,
+      head_sha: this.headSha,
+      tree_sha: this.treeSha,
+      ...extra,
+    });
   }
 }
 
@@ -407,7 +526,9 @@ async function phaseBind(ctx) {
 
   const inScopePatterns = Array.isArray(ctx.spec?.capability?.in_scope) ? ctx.spec.capability.in_scope : [];
   if (inScopePatterns.length > 0 && !inScopePatterns.includes('**')) {
-    const scopeMismatches = ctx.changedFiles.filter((filePath) => !matchesAnyPattern(filePath, inScopePatterns));
+    const scopeMismatches = ctx.changedFiles.filter(
+      (filePath) => !isCompilerManagedArtifact(filePath) && !matchesAnyPattern(filePath, inScopePatterns),
+    );
     if (scopeMismatches.length > 0) {
       ctx.addDiagnostic(
         'GOV-BIND-006',
@@ -858,6 +979,14 @@ async function phaseAttest(ctx) {
   return { verdictPath, verdict, attestation };
 }
 
+async function flushAuditTrail(ctx) {
+  if (ctx.auditEvents.length === 0) {
+    return { written: 0, lastHash: null };
+  }
+
+  return appendCompilerAuditLog(ctx.auditEvents);
+}
+
 function printSummary(ctx, attestationResult) {
   if (ctx.args.quiet) return;
 
@@ -920,11 +1049,15 @@ async function runCompiler(args) {
   await phaseExecute(ctx);
   await phaseVerify(ctx);
   const attestationResult = await phaseAttest(ctx);
+  const auditWriteResult = await flushAuditTrail(ctx);
+  if (auditWriteResult.written > 0) {
+    ctx.addPhase('audit', 'PASS', `Appended ${auditWriteResult.written} warning/error event(s) to logs/compiler.log.`);
+  }
 
   printSummary(ctx, attestationResult);
 
   const verdict = attestationResult?.verdict || summarizeVerdict(ctx.diagnostics);
-  return { verdict, ctx, attestationResult };
+  return { verdict, ctx, attestationResult, auditWriteResult };
 }
 
 async function main() {
@@ -937,7 +1070,29 @@ async function main() {
     }
     process.exit(1);
   } catch (err) {
-    console.error(`ERROR | GOV-PROC-003 | ${err instanceof Error ? err.message : String(err)}`);
+    const message = err instanceof Error ? err.message : String(err);
+    try {
+      await appendCompilerAuditLog([
+        {
+          ts: nowIso(),
+          run_id: `fatal-${Date.now()}`,
+          level: 'ERROR',
+          category: 'fatal',
+          code: 'GOV-PROC-003',
+          severity: 'ERROR',
+          phase: 'main',
+          message,
+          task_id: null,
+          spec_path: args.specPath || null,
+          head_sha: null,
+          tree_sha: null,
+          context: {},
+        },
+      ]);
+    } catch {
+      // do not mask primary error
+    }
+    console.error(`ERROR | GOV-PROC-003 | ${message}`);
     process.exit(1);
   }
 }

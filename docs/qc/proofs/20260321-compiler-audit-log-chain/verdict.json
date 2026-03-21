@@ -1,0 +1,71 @@
+{
+  "task_id": "20260321-compiler-audit-log-chain",
+  "task_type": "governance-change",
+  "spec_path": "docs/qc/specs/20260321-compiler-audit-log-chain.task.spec.json",
+  "policy_version": "1.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-21T16:10:48.618Z",
+  "finished_at_utc": "2026-03-21T16:10:53.567Z",
+  "head_sha": "05d6690",
+  "tree_sha": "fd45eee049c9a94a86a8fc981186322d566889dc",
+  "simulated_files": [],
+  "changed_files": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "docs/contracts/governance-compiler.md",
+    "docs/qc/README.md",
+    "docs/qc/compiler/obligation-rules.json",
+    "docs/qc/proofs/20260321-compiler-audit-log-chain.md",
+    "docs/qc/proofs/20260321-compiler-audit-log-chain/logs/O-CI.log",
+    "docs/qc/proofs/20260321-compiler-audit-log-chain/proof.manifest.json",
+    "docs/qc/proofs/20260321-compiler-audit-log-chain/verdict.json",
+    "docs/qc/scripts/gov-commit.mjs",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "docs/qc/specs/20260321-compiler-audit-log-chain.task.spec.json",
+    "logs/compiler.log"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4873,
+        "log_file": "docs/qc/proofs/20260321-compiler-audit-log-chain/logs/O-CI.log"
+      }
+    ],
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

@@ -54,6 +54,10 @@ Per task, required files:
 3. `docs/qc/proofs/<task-id>/verdict.json`
 4. `docs/qc/proofs/<task-id>.md` (human summary)
 
+Global compiler audit trail:
+
+5. `logs/compiler.log` (append-only warning/error trail)
+
 ## Prescriptive Diagnostics
 
 Diagnostic metadata is machine-readable in:
@@ -68,6 +72,17 @@ Each diagnostic includes:
 4. required evidence
 5. allowed/forbidden change scope
 6. exact recheck protocol
+
+## Immutable Audit Trail
+
+Compiler warnings/errors are appended to `logs/compiler.log` as JSONL entries with a hash-chain:
+
+1. each entry stores `prev_hash`
+2. each entry hash is `sha256(entry_without_hash)`
+3. chain starts at genesis hash of 64 zeroes
+4. compiler verifies existing chain before appending new entries
+
+If chain verification fails, compiler exits with `GOV-PROC-003`.
 
 ## CI and Enforcement
 

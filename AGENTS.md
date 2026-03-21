@@ -78,8 +78,9 @@ For every completed governance task:
 2. Ensure required checks are represented in `docs/qc/proofs/<task-id>/proof.manifest.json`.
 3. Run `npm run gov:check -- --spec docs/qc/specs/<task-id>.task.spec.json`.
 4. Create/update `docs/qc/proofs/<task-id>.md`.
-5. Commit immediately through `npm run gov:commit -- --spec ... -m \"type(scope): description\"`.
-6. If real-browser verification was not performed, state it in the proof artifact and commit body.
+5. Ensure compiler warnings/errors were appended to `logs/compiler.log` hash-chain.
+6. Commit immediately through `npm run gov:commit -- --spec ... -m \"type(scope): description\"`.
+7. If real-browser verification was not performed, state it in the proof artifact and commit body.
 
 No task is complete without both:
 - committed changes

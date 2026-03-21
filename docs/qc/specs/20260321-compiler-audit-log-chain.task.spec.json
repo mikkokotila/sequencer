@@ -1,0 +1,32 @@
+{
+  "task_id": "20260321-compiler-audit-log-chain",
+  "task_type": "governance-change",
+  "capability": {
+    "summary": "Add append-only hash-chained compiler warning/error audit trail and stage it during governed commits.",
+    "in_scope": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "docs/contracts/**",
+      "docs/qc/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "tests/**",
+      "e2e/**"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:kick_01"
+    ],
+    "seed": "governance-seed-v1",
+    "oracles": []
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": true
+  }
+}

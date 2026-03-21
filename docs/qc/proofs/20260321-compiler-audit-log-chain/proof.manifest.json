@@ -1,0 +1,35 @@
+{
+  "task_id": "20260321-compiler-audit-log-chain",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "evidence": "logs/O-CI.log"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/governance-compiler.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/quality-gates.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/commit.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "NOT_VERIFIED",
+    "details": "Governance-only changes; no runtime product interaction changed."
+  },
+  "artifacts": [
+    "proof.manifest.json",
+    "verdict.json",
+    "../../../../logs/compiler.log"
+  ]
+}

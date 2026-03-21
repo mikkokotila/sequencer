@@ -53,7 +53,7 @@ function setWorkletParam(node: AudioWorkletNode, name: string, value: number): v
 // ═══════════════════════════════════════════
 
 export function createVariMu(): Extension {
-  let state: VariMuState = {
+  let state: VariMuState & { model?: number } = {
     drive: 0.05, // very gentle saturation
     compress: -10, // only catch peaks
     ratio: 2, // gentle 2:1 ratio
@@ -61,7 +61,11 @@ export function createVariMu(): Extension {
     speed: 1, // medium speed (10ms attack, 150ms release)
     mix: 0.5, // 50/50 wet/dry parallel compression
     output: 0.65, // slight makeup
+    model: 0, // 0=FET, 1=OPTO, 2=VCA
   };
+
+  const MODEL_LABELS = ['FET', 'OPTO', 'VCA'] as const;
+  const MODEL_TITLES = ['FET COMPRESSOR', 'OPTICAL COMPRESSOR', 'VCA BUS COMPRESSOR'] as const;
 
   const SPEED_PRESETS: readonly SpeedPreset[] = [
     { attack: 0.002, release: 0.05, label: 'FAST' },
@@ -90,6 +94,9 @@ export function createVariMu(): Extension {
     setWorkletParam(compressor, 'ratio', state.ratio);
     setWorkletParam(compressor, 'knee', state.knee);
     setWorkletParam(compressor, 'makeupGain', 1);
+
+    // Send model selection to worklet via MessagePort
+    compressor.port.postMessage({ type: 'setModel', model: state.model ?? 0 });
 
     const preset = SPEED_PRESETS[state.speed] ?? SPEED_PRESETS[2]!;
     setWorkletParam(compressor, 'attack', preset.attack);
@@ -155,9 +162,34 @@ export function createVariMu(): Extension {
 
       const title = document.createElement('div');
       title.style.cssText =
-        'font-size:8px;font-weight:700;letter-spacing:2px;color:#666;margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid #2a2a32;';
-      title.textContent = 'TUBE BUS COMPRESSOR';
+        'font-size:8px;font-weight:700;letter-spacing:2px;color:#666;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #2a2a32;';
+      title.textContent = MODEL_TITLES[state.model ?? 0] ?? 'COMPRESSOR';
       container.appendChild(title);
+
+      // Model selector
+      const modelRow = document.createElement('div');
+      modelRow.style.cssText = 'display:flex;gap:3px;margin-bottom:16px;';
+      for (let i = 0; i < 3; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = MODEL_LABELS[i] ?? '';
+        const isActive = (state.model ?? 0) === i;
+        btn.style.cssText = `flex:1;padding:5px;border:1px solid ${isActive ? '#555' : '#333'};background:${isActive ? '#333' : '#1a1a1a'};color:${isActive ? '#ddd' : '#666'};font:9px monospace;font-weight:700;letter-spacing:1.5px;cursor:pointer;border-radius:3px;transition:all 0.15s;`;
+        btn.onmouseenter = () => {
+          if ((state.model ?? 0) !== i) btn.style.borderColor = '#444';
+        };
+        btn.onmouseleave = () => {
+          if ((state.model ?? 0) !== i) btn.style.borderColor = '#333';
+        };
+        btn.onclick = () => {
+          state.model = i;
+          applyState();
+          window.SEQ.notifyStateChange();
+          // Re-render the whole UI to update button states + title
+          this.createUI(container);
+        };
+        modelRow.appendChild(btn);
+      }
+      container.appendChild(modelRow);
 
       makeSlider(
         container,

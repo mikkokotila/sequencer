@@ -396,6 +396,39 @@ test.describe('Extension Panels', () => {
     await expect(toggle).not.toHaveClass(/on/);
   });
 
+  test('compressor model selector switches between FET/OPTO/VCA', async ({ page }) => {
+    await waitForApp(page);
+    // Open first extension (vari-mu compressor)
+    await page.locator('.ext-icon-btn').first().click();
+    await expect(page.locator('#ext-panel')).toHaveClass(/open/);
+
+    // Enable the extension
+    const toggle = page.locator('.ext-toggle');
+    if (!(await toggle.evaluate((el) => el.classList.contains('on')))) {
+      await toggle.click();
+    }
+
+    // Find model buttons — should be 3 (FET, OPTO, VCA)
+    const modelBtns = page.locator('#ext-panel button:has-text("FET"), #ext-panel button:has-text("OPTO"), #ext-panel button:has-text("VCA")');
+    const count = await modelBtns.count();
+    expect(count).toBe(3);
+
+    // Click OPTO
+    await page.locator('#ext-panel button:has-text("OPTO")').click();
+    // Title should update
+    await expect(page.locator('#ext-panel')).toContainText('OPTICAL');
+
+    // Click VCA
+    await page.locator('#ext-panel button:has-text("VCA")').click();
+    await expect(page.locator('#ext-panel')).toContainText('VCA');
+
+    // Click FET
+    await page.locator('#ext-panel button:has-text("FET")').click();
+    await expect(page.locator('#ext-panel')).toContainText('FET');
+
+    await page.locator('#ext-panel-close').click();
+  });
+
   test('close button closes panel', async ({ page }) => {
     await waitForApp(page);
     await page.locator('.ext-icon-btn').first().click();

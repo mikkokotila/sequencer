@@ -8,7 +8,8 @@ import { loadManifest, wireBrowserEvents } from './ui/browser';
 import { buildUI, refreshUI, refreshSongName, updateSongPane } from './ui/build';
 import { setupPainting, setOnSave, setOnSongPaneUpdate } from './ui/painting';
 import { installSeqAPI, initExtensions } from './engine/extensions/registry';
-import { togglePlay, syncBpm } from './engine/scheduler';
+import { togglePlay, syncBpm, stopPlayback } from './engine/scheduler';
+import { on } from './events';
 import { initPlayhead } from './ui/playhead';
 import { genId } from './ui/helpers';
 import { SEQ_EXTENSIONS } from './engine/extensions/store';
@@ -48,6 +49,30 @@ async function init(): Promise<void> {
   setOnSave(scheduleSave);
   setOnSongPaneUpdate(updateSongPane);
   setOnBpmChange(syncBpm);
+
+  // 4b. Wire persistence lifecycle events
+  on('persistence:songCreated', () => {
+    stopPlayback();
+    refreshUI();
+    refreshSongName();
+    updateSongPane();
+  });
+  on('persistence:songDeleted', () => {
+    refreshUI();
+    refreshSongName();
+    updateSongPane();
+  });
+  on('persistence:songSwitched', () => {
+    stopPlayback();
+    refreshUI();
+    refreshSongName();
+    updateSongPane();
+  });
+  on('persistence:fileLoaded', () => {
+    refreshUI();
+    refreshSongName();
+    updateSongPane();
+  });
 
   // 5. Setup mouse painting
   setupPainting();

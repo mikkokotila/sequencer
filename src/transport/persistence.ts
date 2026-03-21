@@ -50,6 +50,7 @@ import {
 } from './song';
 import { SEQ_EXTENSIONS } from '../engine/extensions/store';
 import { getAudioContext } from '../engine/audio';
+import { emit } from '../events';
 
 // ═══════════════════════════════════════════
 //  Helpers
@@ -350,27 +351,8 @@ export async function loadSong(song: LegacySongInput): Promise<void> {
 //  New / delete song
 // ═══════════════════════════════════════════
 
-/**
- * UI callbacks that main.ts wires up so persistence can trigger
- * UI refreshes without importing UI code directly.
- */
-export interface PersistenceCallbacks {
-  refreshUI: () => void;
-  refreshSongName: () => void;
-  updateSongPane: () => void;
-  stopPlayback: () => void;
-}
-
-let _callbacks: PersistenceCallbacks | null = null;
-
-/** Call once from main.ts to provide UI callback hooks. */
-export function setPersistenceCallbacks(cb: PersistenceCallbacks): void {
-  _callbacks = cb;
-}
-
 export async function newSong(): Promise<void> {
   await saveSong();
-  _callbacks?.stopPlayback();
 
   // Clear all phrases
   for (let pi = 0; pi < NUM_PHRASES; pi++) {
@@ -412,9 +394,7 @@ export async function newSong(): Promise<void> {
   setCurrentSongName('Untitled');
 
   await saveSong();
-  _callbacks?.refreshUI();
-  _callbacks?.refreshSongName();
-  _callbacks?.updateSongPane();
+  emit('persistence:songCreated', {});
 }
 
 export async function deleteSong(): Promise<boolean> {
@@ -426,8 +406,7 @@ export async function deleteSong(): Promise<boolean> {
     const last = songs[songs.length - 1];
     if (last) {
       await loadSong(last);
-      _callbacks?.refreshUI();
-      _callbacks?.refreshSongName();
+      emit('persistence:songDeleted', {});
     }
   } else {
     await newSong();
@@ -473,7 +452,7 @@ export function loadPatternFile(): void {
       const merged: LegacySongInput = { ...data };
       if (currentSongId) merged.id = currentSongId;
       await loadSong(merged);
-      _callbacks?.refreshUI();
+      emit('persistence:fileLoaded', {});
       scheduleSave();
     } catch (err) {
       console.error('Load failed:', err);
@@ -491,9 +470,7 @@ export async function switchSong(id: string): Promise<void> {
   await saveSong();
   const song = await dbGet<SongData>('songs', id);
   if (!song) return;
-  _callbacks?.stopPlayback();
   await loadSong(song);
-  _callbacks?.refreshUI();
-  _callbacks?.refreshSongName();
+  emit('persistence:songSwitched', {});
   await dbPut('meta', currentSongId, 'currentSongId');
 }

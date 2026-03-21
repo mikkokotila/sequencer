@@ -21,6 +21,12 @@ export interface EventMap {
   'ui:setStep': { type: string; track: number; step: number; note?: number; value: boolean };
   'ui:loadSample': { type: string; track: number; buffer: ArrayBuffer; name: string };
   'ui:setBpm': { bpm: number };
+
+  // Persistence lifecycle
+  'persistence:songCreated': Record<string, never>;
+  'persistence:songDeleted': Record<string, never>;
+  'persistence:songSwitched': Record<string, never>;
+  'persistence:fileLoaded': Record<string, never>;
 }
 
 // ── Bus implementation ──

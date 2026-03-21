@@ -25,6 +25,7 @@ function parseArgs(argv) {
   const args = {
     specPath: process.env.GOV_TASK_SPEC || '',
     message: '',
+    allowGovernanceChange: process.env.GOV_ALLOW_GOVERNANCE_CHANGE === '1',
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -37,6 +38,10 @@ function parseArgs(argv) {
     if (token === '-m' || token === '--message') {
       args.message = argv[i + 1] || '';
       i++;
+      continue;
+    }
+    if (token === '--allow-governance-change') {
+      args.allowGovernanceChange = true;
       continue;
     }
   }
@@ -81,7 +86,9 @@ async function main() {
   }
 
   const taskId = spec.task_id.trim();
-  const compilerCmd = `node docs/qc/scripts/governance-compiler.mjs check --spec ${JSON.stringify(args.specPath)}`;
+  const compilerCmd =
+    `node docs/qc/scripts/governance-compiler.mjs check --spec ${JSON.stringify(args.specPath)}` +
+    (args.allowGovernanceChange ? ' --allow-governance-change' : '');
   const compilerResult = run(compilerCmd);
   process.stdout.write(compilerResult.stdout);
   process.stderr.write(compilerResult.stderr);

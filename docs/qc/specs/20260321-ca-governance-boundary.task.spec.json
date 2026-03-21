@@ -1,0 +1,35 @@
+{
+  "task_id": "20260321-ca-governance-boundary",
+  "task_type": "governance-change",
+  "capability": {
+    "summary": "Enforce observer-only governance changes so CA cannot execute governance-change tasks without explicit observer override.",
+    "in_scope": [
+      "CLAUDE.md",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**",
+      "package.json",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "tests/**",
+      "e2e/**",
+      "index.html",
+      "sequencer.html"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:kick_01"
+    ],
+    "seed": "governance-seed-v6",
+    "oracles": []
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": true
+  }
+}

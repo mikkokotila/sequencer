@@ -1,0 +1,78 @@
+{
+  "task_id": "20260321-ca-governance-boundary",
+  "task_type": "governance-change",
+  "spec_path": "docs/qc/specs/20260321-ca-governance-boundary.task.spec.json",
+  "policy_version": "1.1.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-21T20:10:58.253Z",
+  "finished_at_utc": "2026-03-21T20:11:03.071Z",
+  "head_sha": "362099d",
+  "tree_sha": "99c90cfaa152812de59e48c53fb6ab7e7f323152",
+  "subject_sha": "db73ccc688e0a12813a65a1fc8c18fe92efd3626be0ffc7a53d1a8e51b89f9b7",
+  "subject_files": [
+    "CLAUDE.md",
+    "docs/contracts/governance-compiler.md",
+    "docs/qc/compiler/diagnostics.json",
+    "docs/qc/scripts/gov-commit.mjs",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "package.json"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "CLAUDE.md",
+    "docs/contracts/governance-compiler.md",
+    "docs/qc/compiler/diagnostics.json",
+    "docs/qc/proofs/20260321-ca-governance-boundary.md",
+    "docs/qc/proofs/20260321-ca-governance-boundary/proof.manifest.json",
+    "docs/qc/scripts/gov-commit.mjs",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "docs/qc/specs/20260321-ca-governance-boundary.task.spec.json",
+    "package.json"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4617,
+        "log_file": "docs/qc/proofs/20260321-ca-governance-boundary/logs/O-CI.log"
+      }
+    ],
+    "global_debt": [],
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

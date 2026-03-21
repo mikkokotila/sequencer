@@ -5,6 +5,9 @@
 Every task must pass the Governance Compiler before commit.
 The compiler is the authoritative source of task completion.
 
+`governance-change` tasks are observer-only.
+CA may not run governance-change tasks.
+
 Run:
 
 ```bash
@@ -15,6 +18,13 @@ Commit through:
 
 ```bash
 npm run gov:commit -- --spec docs/qc/specs/<task-id>.task.spec.json -m "type(scope): description"
+```
+
+Observer wrappers:
+
+```bash
+npm run gov:check:observer -- --spec docs/qc/specs/<task-id>.task.spec.json
+npm run gov:commit:observer -- --spec docs/qc/specs/<task-id>.task.spec.json -m "type(scope): description"
 ```
 
 ## Compiler Phases
@@ -85,6 +95,17 @@ Compiler enforces mid-task termination via `docs/qc/standdown/active.json`.
 1. If lock status is `ACTIVE`, product tasks are blocked with `GOV-PROC-008`.
 2. Stand-down lock is released only by operator clearing the lock.
 3. While lock is active, CA must remain paused and non-committing.
+
+## Observer Override
+
+Compiler blocks `task_type=governance-change` unless observer override is provided.
+
+Accepted override channels:
+
+1. CLI flag `--allow-governance-change`
+2. environment `GOV_ALLOW_GOVERNANCE_CHANGE=1`
+
+Without override, compiler emits `GOV-ROLE-001` and blocks task.
 
 ## Anti-Deception Rules
 

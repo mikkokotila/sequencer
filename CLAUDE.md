@@ -2,6 +2,22 @@
 
 Read the relevant contract BEFORE starting work. Not all contracts apply to every task.
 
+## Role Boundary
+
+Coding Agent (CA) is product-implementation only.
+
+CA must never perform governance development:
+
+- `AGENTS.md`
+- `CLAUDE.md`
+- `docs/contracts/**`
+- `docs/qc/compiler/**`
+- `docs/qc/scripts/**`
+- `package.json`
+- `.husky/**`
+
+If a request requires governance changes, CA must stand down and wait for observer reactivation.
+
 ## Always
 
 **Read:** `docs/contracts/commit.md`

@@ -20,6 +20,7 @@ function parseArgs(argv) {
     simulateFiles: [],
     noWrite: false,
     strictManifest: true,
+    allowGovernanceChange: process.env.GOV_ALLOW_GOVERNANCE_CHANGE === '1',
     quiet: false,
   };
 
@@ -43,6 +44,8 @@ function parseArgs(argv) {
         args.strictManifest = false;
       } else if (token === '--quiet') {
         args.quiet = true;
+      } else if (token === '--allow-governance-change') {
+        args.allowGovernanceChange = true;
       }
       continue;
     }
@@ -568,6 +571,17 @@ async function phaseParseSpec(ctx) {
         provided_task_type: ctx.taskType,
         allowed_task_types: ctx.rules.task_types || [],
         suggested_task_type: suggestedTaskType,
+      },
+    );
+  }
+
+  if (ctx.taskType === 'governance-change' && !ctx.args.allowGovernanceChange) {
+    ctx.addDiagnostic(
+      'GOV-ROLE-001',
+      'governance-change is observer-only. CA must stand down; observer must rerun with --allow-governance-change.',
+      {
+        task_type: ctx.taskType,
+        allow_governance_change: ctx.args.allowGovernanceChange,
       },
     );
   }

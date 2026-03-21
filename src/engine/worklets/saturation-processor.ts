@@ -110,6 +110,17 @@ class SaturationProcessor extends AudioWorkletProcessor {
 
     const drive = parameters['drive']?.[0] ?? 0.15;
     const mix = parameters['mix']?.[0] ?? 1;
+
+    // Fast bypass: if drive is zero or mix is zero, just copy input to output
+    if (drive < 0.001 || mix < 0.001) {
+      for (let ch = 0; ch < numChannels; ch++) {
+        const inp = input[ch];
+        const out = output[ch];
+        if (inp && out) out.set(inp);
+      }
+      return true;
+    }
+
     const dryMix = 1 - mix;
     const k = 1 + drive * 50;
 

@@ -56,7 +56,7 @@ import {
   cycleHarmony,
   updateHarmonyDim,
 } from './cells';
-import { setupPainting, replicateTrack, clearSelection } from './painting';
+import { replicateTrack, clearSelection } from './painting';
 import { openBrowser, wireBrowserEvents, setupDragDrop, closeBrowser } from './browser';
 import { toggle as toggleEnginePanel, isEngineOpen } from './engine-panel';
 import { togglePlay, stopPlayback, isPhraseEmpty, fillWithPrev } from '../engine/scheduler';
@@ -654,6 +654,7 @@ export function buildUI(): void {
     }
   });
 
-  // Set up painting interaction
-  setupPainting();
+  // NOTE: setupPainting() is called by main.ts, NOT here.
+  // Calling it twice registers duplicate mousedown handlers
+  // that toggle cells on then immediately off.
 }

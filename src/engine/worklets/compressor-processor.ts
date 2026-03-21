@@ -34,6 +34,9 @@ class CompressorProcessor extends AudioWorkletProcessor {
   // Model selection
   private model: number = MODEL_FET;
 
+  // GR reporting
+  private grReportCounter = 0;
+
   // Shared envelope state
   private envDb: Float64Array;
 
@@ -402,6 +405,15 @@ class CompressorProcessor extends AudioWorkletProcessor {
       this.optoHeat[ch] = heat;
       this.optoDetFilter[ch] = detFilter;
       this.vcaPrevTarget[ch] = prevTarget;
+    }
+
+    // Report gain reduction to main thread every ~8 blocks (~24ms)
+    this.grReportCounter++;
+    if (this.grReportCounter >= 8) {
+      this.grReportCounter = 0;
+      // Use channel 0 GR as representative value
+      const gr = this.envDb[0] ?? 0;
+      this.port.postMessage({ type: 'gr', value: gr });
     }
 
     return true;

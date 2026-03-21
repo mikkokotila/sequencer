@@ -81,6 +81,7 @@ export function createCompressor(): Extension {
   let grFill: HTMLElement | null = null;
   let grVal: HTMLElement | null = null;
   let grRAF: number | null = null;
+  let lastGrDb = 0; // real GR value received from worklet via MessagePort
 
   // ═══════════════════════════════════════════
   //  APPLY STATE
@@ -112,16 +113,16 @@ export function createCompressor(): Extension {
   }
 
   // ═══════════════════════════════════════════
-  //  GR METER (visual only — reads no native compressor)
+  //  GR METER (real — reads GR from worklet via MessagePort)
   // ═══════════════════════════════════════════
   function startGRMeter(): void {
     if (grRAF !== null) cancelAnimationFrame(grRAF);
     function tick(): void {
-      // AudioWorklet compressor doesn't expose .reduction —
-      // show placeholder until a message-port solution is added.
       if (grFill && grVal) {
-        grFill.style.width = '0%';
-        grVal.textContent = '0.0 dB';
+        const grAbs = Math.abs(lastGrDb);
+        const pct = Math.min(100, (grAbs / 30) * 100); // 30dB full scale
+        grFill.style.width = `${pct}%`;
+        grVal.textContent = `${lastGrDb.toFixed(1)} dB`;
       }
       grRAF = requestAnimationFrame(tick);
     }
@@ -152,6 +153,14 @@ export function createCompressor(): Extension {
 
       inputGain.connect(dryGain);
       dryGain.connect(outputGain);
+
+      // Listen for real GR values from the compressor worklet
+      compressor.port.onmessage = (e: MessageEvent) => {
+        const msg = e.data as { type: string; value?: number };
+        if (msg.type === 'gr' && msg.value !== undefined) {
+          lastGrDb = msg.value;
+        }
+      };
 
       nodes = { inputGain, saturation, compressor, wetGain, dryGain, outputGain, ctx };
       applyState();
@@ -348,19 +357,17 @@ export function createCompressor(): Extension {
       enabled = on;
       if (!nodes) return;
       if (on) {
+        // Reconnect full processing chain
+        nodes.inputGain.disconnect();
+        nodes.inputGain.connect(nodes.saturation);
+        nodes.inputGain.connect(nodes.dryGain);
         applyState();
       } else {
-        // Full bypass: unity gain through dry path, zero wet
-        nodes.wetGain.gain.value = 0;
-        nodes.dryGain.gain.value = 1;
-        nodes.inputGain.gain.value = 1;
-        nodes.outputGain.gain.value = 1; // MUST reset to unity
-        // Bypass saturation: drive=0 means identity
-        setWorkletParam(nodes.saturation, 'drive', 0);
-        setWorkletParam(nodes.saturation, 'mix', 0);
-        // Bypass compressor: threshold=0 means no compression
-        setWorkletParam(nodes.compressor, 'threshold', 0);
-        setWorkletParam(nodes.compressor, 'makeupGain', 1);
+        // Real bypass: disconnect processing, wire input straight to output
+        nodes.inputGain.disconnect();
+        nodes.inputGain.connect(nodes.outputGain);
+        nodes.outputGain.gain.value = 1;
+        lastGrDb = 0; // reset meter
       }
     },
 

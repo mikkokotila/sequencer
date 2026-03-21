@@ -5,13 +5,13 @@
     //  STATE
     // ═══════════════════════════════════════════
     let state = {
-        drive: 0.3,
-        compress: -24,
+        drive: 0.15,
+        compress: -18,
         ratio: 4,
         knee: 30,
         speed: 2,
         mix: 1.0,
-        output: 0.7,
+        output: 0.55,
     };
 
     const SPEED_PRESETS = [
@@ -29,15 +29,20 @@
     //  TUBE SATURATION CURVE
     // ═══════════════════════════════════════════
     function makeTubeCurve(amount) {
-        const k = amount * 50 + 1;
         const n = 8192;
         const curve = new Float32Array(n);
+        if (amount < 0.001) {
+            // Pure identity — zero distortion when drive is off
+            for (let i = 0; i < n; i++) curve[i] = (i * 2) / n - 1;
+            return curve;
+        }
+        const k = amount * 50 + 1;
         for (let i = 0; i < n; i++) {
             const x = (i * 2) / n - 1;
-            // Soft-clip with even-harmonic bias
-            curve[i] = (Math.PI + k) * x / (Math.PI + k * Math.abs(x));
-            // Subtle even-harmonic warmth
-            curve[i] += 0.04 * amount * (x * x - Math.abs(x));
+            const shaped = (Math.PI + k) * x / (Math.PI + k * Math.abs(x));
+            const warmth = 0.04 * amount * (x * x - Math.abs(x));
+            // Crossfade from identity to saturation
+            curve[i] = x * (1 - amount) + (shaped + warmth) * amount;
         }
         return curve;
     }
@@ -75,7 +80,7 @@
         if (!nodes) return;
         const { inputGain, waveshaper, compressor, wetGain, dryGain, outputGain } = nodes;
 
-        inputGain.gain.value = 1 + state.drive * 3;
+        inputGain.gain.value = 1 + state.drive * 1.5;
         waveshaper.curve = makeTubeCurve(state.drive);
 
         compressor.threshold.value = state.compress;
@@ -89,7 +94,7 @@
         wetGain.gain.value = state.mix;
         dryGain.gain.value = 1 - state.mix;
 
-        outputGain.gain.value = state.output * 2;
+        outputGain.gain.value = state.output * 1.5;
     }
 
     // ═══════════════════════════════════════════

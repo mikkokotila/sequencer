@@ -81,7 +81,7 @@
         row.appendChild(header);
 
         const slider = document.createElement('input');
-        slider.type = 'range'; slider.min = 0; slider.max = 1.5; slider.step = 0.01;
+        slider.type = 'range'; slider.min = 0; slider.max = 1.0; slider.step = 0.01;
         slider.value = masterLvl;
         slider.style.cssText = 'width:100%;accent-color:#888;cursor:pointer;height:4px;';
         slider.oninput = () => {

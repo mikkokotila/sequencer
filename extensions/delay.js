@@ -36,7 +36,7 @@
         sends: null,       // per-track aux send levels
     };
 
-    function defaultSends() { return Array(TRACK_COUNT).fill(0.35); }
+    function defaultSends() { return Array(TRACK_COUNT).fill(0.12); }
     function getSends() { return state.sends || defaultSends(); }
 
     let nodes = null;
@@ -48,18 +48,19 @@
     //  with soft asymmetric clipping
     // ═══════════════════════════════════════════
     function makeTapeCurve(amount) {
-        const k = amount * 30 + 1;
         const n = 4096;
         const curve = new Float32Array(n);
+        if (amount < 0.001) {
+            for (let i = 0; i < n; i++) curve[i] = (i * 2) / n - 1;
+            return curve;
+        }
+        const k = amount * 30 + 1;
         for (let i = 0; i < n; i++) {
             const x = (i * 2) / n - 1;
-            // Asymmetric soft clip (tape bias)
-            const pos = (Math.PI + k) * x / (Math.PI + k * Math.abs(x));
-            // Slight asymmetry for even harmonics
-            const asym = x > 0 ? 1.0 : 0.95;
-            curve[i] = pos * asym;
-            // Subtle warmth
-            curve[i] += 0.02 * amount * Math.sin(x * Math.PI);
+            const shaped = (Math.PI + k) * x / (Math.PI + k * Math.abs(x));
+            // DC-balanced asymmetry via even harmonics (no raw offset)
+            const warmth = 0.02 * amount * Math.sin(x * Math.PI);
+            curve[i] = x * (1 - amount) + (shaped + warmth) * amount;
         }
         return curve;
     }
@@ -70,7 +71,7 @@
     function init(audioCtx) {
         // Send bus: all per-track sends merge here
         const sendBus = audioCtx.createGain();
-        sendBus.gain.value = 1;
+        sendBus.gain.value = 1 / Math.sqrt(TRACK_COUNT); // normalize summing
 
         // Input saturation (EP-3 preamp)
         const inputSat = audioCtx.createWaveShaper();

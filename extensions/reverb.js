@@ -30,7 +30,7 @@
         sends: null,      // per-track aux send levels, null = defaults
     };
 
-    function defaultSends() { return Array(TRACK_COUNT).fill(0.4); }
+    function defaultSends() { return Array(TRACK_COUNT).fill(0.15); }
     function getSends() { return state.sends || defaultSends(); }
 
     let nodes = null;
@@ -147,7 +147,7 @@
 
         // Send bus: all per-track sends merge here
         const sendBus = audioCtx.createGain();
-        sendBus.gain.value = 1;
+        sendBus.gain.value = 1 / Math.sqrt(TRACK_COUNT); // normalize summing
 
         // Create per-track send gain nodes
         // Each connects from the track's gain node to the send bus

@@ -4,9 +4,10 @@
 export {};
 
 const HALFBAND_TAPS = 15;
+// Normalized halfband FIR: sum=1.0 for unity gain with ×2 upsample.
 const HALFBAND_COEFS: readonly number[] = [
-  -0.0126, 0.0, 0.0602, 0.0, -0.1738, 0.0, 0.6262, 1.0, 0.6262, 0.0, -0.1738, 0.0, 0.0602, 0.0,
-  -0.0126,
+  -0.0063, 0.0, 0.0301, 0.0, -0.0869, 0.0, 0.3131, 0.5, 0.3131, 0.0, -0.0869, 0.0, 0.0301, 0.0,
+  -0.0063,
 ];
 
 // Model constants
@@ -225,6 +226,16 @@ class CompressorProcessor extends AudioWorkletProcessor {
     const attackTime = parameters['attack']?.[0] ?? 0.01;
     const releaseTime = parameters['release']?.[0] ?? 0.15;
     const makeupGain = parameters['makeupGain']?.[0] ?? 1;
+
+    // Fast bypass: threshold >= 0 and ratio <= 1 and makeupGain = 1 = no compression
+    if (threshold >= 0 && ratio <= 1.001 && Math.abs(makeupGain - 1) < 0.001) {
+      for (let ch = 0; ch < numChannels; ch++) {
+        const inp = input[ch];
+        const out = output[ch];
+        if (inp && out) out.set(inp);
+      }
+      return true;
+    }
 
     const sr4x = sampleRate * 4;
     const model = this.model;

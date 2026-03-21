@@ -1,5 +1,5 @@
 /**
- * Vari-Mu — Tube bus compressor extension.
+ * Compressor — three-model bus compressor extension (FET/Opto/VCA).
  *
  * Uses AudioWorklet processors:
  *   - saturation-processor (drive, mix)
@@ -13,7 +13,7 @@ import { makeSlider, formatPct } from '../../ui/helpers';
 //  Internal types
 // ═══════════════════════════════════════════
 
-interface VariMuState {
+interface CompressorState {
   drive: number;
   compress: number;
   ratio: number;
@@ -23,7 +23,7 @@ interface VariMuState {
   output: number;
 }
 
-interface VariMuNodes {
+interface CompressorNodes {
   inputGain: GainNode;
   saturation: AudioWorkletNode;
   compressor: AudioWorkletNode;
@@ -52,15 +52,15 @@ function setWorkletParam(node: AudioWorkletNode, name: string, value: number): v
 //  Factory
 // ═══════════════════════════════════════════
 
-export function createVariMu(): Extension {
-  let state: VariMuState & { model?: number } = {
+export function createCompressor(): Extension {
+  let state: CompressorState & { model?: number } = {
     drive: 0.0, // no saturation until user adds it
-    compress: -6, // only catch the loudest peaks
-    ratio: 1.5, // very gentle ratio
+    compress: 0, // threshold 0dB = no compression until user lowers it
+    ratio: 1, // 1:1 = unity, no compression
     knee: 30, // soft knee
     speed: 1, // medium speed (10ms attack, 150ms release)
-    mix: 0.3, // mostly dry — subtle glue
-    output: 0.7, // compensate for gentle GR
+    mix: 1.0, // 100% wet (full processing when engaged)
+    output: 1.0, // unity output
     model: 0, // 0=FET, 1=OPTO, 2=VCA
   };
 
@@ -74,7 +74,7 @@ export function createVariMu(): Extension {
     { attack: 0.1, release: 0.8, label: 'HOLD' },
   ];
 
-  let nodes: VariMuNodes | null = null;
+  let nodes: CompressorNodes | null = null;
   let enabled = false;
   let grFill: HTMLElement | null = null;
   let grVal: HTMLElement | null = null;
@@ -130,8 +130,8 @@ export function createVariMu(): Extension {
   //  EXTENSION OBJECT
   // ═══════════════════════════════════════════
   return {
-    id: 'vari-mu',
-    name: 'Vari-Mu',
+    id: 'compressor',
+    name: 'Compressor',
     icon: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 12L5 4L8 10L11 2L14 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 
     init(ctx: AudioContext): NodePair {
@@ -337,7 +337,7 @@ export function createVariMu(): Extension {
     },
 
     setState(s: ExtensionState): void {
-      state = { ...state, ...(s as Partial<VariMuState>) };
+      state = { ...state, ...(s as Partial<CompressorState>) };
       applyState();
     },
 

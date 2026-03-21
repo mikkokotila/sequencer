@@ -16,7 +16,7 @@ import { currentSongId, setCurrentSongId, setOnBpmChange } from './transport/son
 import { initEngineProcessing } from './ui/engine-panel';
 
 // Register all extensions
-import { createVariMu } from './engine/extensions/vari-mu';
+import { createCompressor } from './engine/extensions/compressor';
 import { createMixer } from './engine/extensions/mixer';
 import { createReverb } from './engine/extensions/reverb';
 import { createDelay } from './engine/extensions/delay';
@@ -34,7 +34,7 @@ async function init(): Promise<void> {
   // Metering: Mixer (channel fader controls + metering)
   SEQ_EXTENSIONS.push(
     createPultecEq(),
-    createVariMu(),
+    createCompressor(),
     createTransformer(),
     createMixer(),
     createReverb(),

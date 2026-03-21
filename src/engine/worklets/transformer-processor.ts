@@ -5,9 +5,10 @@
 export {};
 
 const HALFBAND_TAPS = 15;
+// Normalized halfband FIR: sum=1.0 for unity gain with ×2 upsample.
 const HALFBAND_COEFS: readonly number[] = [
-  -0.0126, 0.0, 0.0602, 0.0, -0.1738, 0.0, 0.6262, 1.0, 0.6262, 0.0, -0.1738, 0.0, 0.0602, 0.0,
-  -0.0126,
+  -0.0063, 0.0, 0.0301, 0.0, -0.0869, 0.0, 0.3131, 0.5, 0.3131, 0.0, -0.0869, 0.0, 0.0301, 0.0,
+  -0.0063,
 ];
 
 const MAX_BLOCK = 128;
@@ -203,15 +204,18 @@ class TransformerProcessor extends AudioWorkletProcessor {
         // Blend: original + level-scaled even harmonics (squared color for smooth control)
         sample = sample + colorSq * levelFactor * evenHarmonic * 0.08;
 
-        // 3. LF thickening (one-pole lowshelf)
-        lfS += lfAlpha * (sample - lfS);
-        sample = sample + (lfS - sample) * (lfBoostLin - 1) * driveSq;
+        // 3. LF thickening + HF rolloff — only when drive is significant
+        if (driveSq > 0.01) {
+          // LF thickening (one-pole lowshelf)
+          lfS += lfAlpha * (sample - lfS);
+          sample = sample + (lfS - sample) * (lfBoostLin - 1) * driveSq;
 
-        // 4. HF rolloff (one-pole lowpass)
-        hfS += hfAlpha * (sample - hfS);
-        sample = hfS;
+          // HF rolloff (one-pole lowpass, blended with dry by drive amount)
+          hfS += hfAlpha * (sample - hfS);
+          sample = sample * (1 - driveSq) + hfS * driveSq;
+        }
 
-        // 5. Output level compensation
+        // 4. Output level compensation
         buf4x[i] = sample * outputComp;
       }
 

@@ -5,7 +5,6 @@
  */
 
 import { getAudioContext, getMixBus, initAudio } from '../engine/audio';
-import { SEQ_EXTENSIONS } from '../state';
 
 // ── State ──
 let isOpen = false;
@@ -28,11 +27,7 @@ let sampleRateVal = 48000;
 let oversampleMode: OverSampleType = '4x';
 let limiterOn = true;
 
-// Master bus knob values (drive the master bus extensions)
-let masterCutoff = 100; // 0-100% — Pultec high shelf
-let masterResonance = 0; // 0-100% — Pultec Q
-let masterSaturation = 0; // 0-100% — Vari-Mu drive
-let masterCompression = 0; // 0-100% — Vari-Mu compress
+// (Master bus knobs removed — engine panel does not control extensions)
 
 // Demo oscillator sources
 let demoOscs: OscillatorNode[] = [];
@@ -336,32 +331,6 @@ function makeSelect(
   return sel;
 }
 
-function makeKnob(label: string, initial: number, onChange: (v: number) => void): HTMLDivElement {
-  const wrap = document.createElement('div');
-  wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;';
-  const valDisplay = document.createElement('div');
-  valDisplay.style.cssText = 'font:11px monospace;color:#ddd;';
-  valDisplay.textContent = `${initial}%`;
-  const slider = document.createElement('input');
-  slider.type = 'range';
-  slider.min = '0';
-  slider.max = '100';
-  slider.value = String(initial);
-  slider.style.cssText = 'width:100%;accent-color:#888;cursor:pointer;';
-  slider.oninput = () => {
-    const v = Number(slider.value);
-    valDisplay.textContent = `${v}%`;
-    onChange(v);
-  };
-  const lbl = document.createElement('div');
-  lbl.style.cssText = 'font:8px monospace;color:#666;letter-spacing:1px;text-transform:uppercase;';
-  lbl.textContent = label;
-  wrap.appendChild(valDisplay);
-  wrap.appendChild(slider);
-  wrap.appendChild(lbl);
-  return wrap;
-}
-
 function makeRow(label: string, value: string | HTMLElement): HTMLDivElement {
   const row = document.createElement('div');
   row.style.cssText =
@@ -554,61 +523,14 @@ function buildPanel(): HTMLDivElement {
   };
   ctrlSide.appendChild(makeRow('Master Limiter', limiterToggle));
 
-  // Master Bus Controls — drive Pultec EQ and Vari-Mu extension params
+  // Master Bus — informational display only.
+  // Engine does NOT control extensions. Use extension panels to adjust processing.
   ctrlSide.appendChild(makeSectionTitle('Master Bus'));
-
-  // Helper: find extension by ID and set a state key
-  function setExtParam(extId: string, key: string, value: number): void {
-    const ext = SEQ_EXTENSIONS.find((e) => e.id === extId);
-    if (!ext) return;
-    // Enable the extension if it isn't already
-    if (!ext._enabled) {
-      ext._enabled = true;
-      if (ext.setEnabled) ext.setEnabled(true);
-    }
-    // Update state and re-apply
-    ext.setState({ [key]: value });
-  }
-
-  const knobRow = document.createElement('div');
-  knobRow.style.cssText = 'display:flex;gap:12px;margin-top:8px;';
-  knobRow.appendChild(
-    makeKnob('Cutoff', masterCutoff, (v) => {
-      masterCutoff = v;
-      // Squared mapping: 1%→19990Hz, 50%→15000Hz, 0%→1000Hz
-      const t = v / 100;
-      setExtParam('pultec-eq', 'highAttenFreq', 1000 + t * t * 19000);
-    }),
-  );
-  knobRow.appendChild(
-    makeKnob('Resonance', masterResonance, (v) => {
-      masterResonance = v;
-      // Squared: 1%→0.001dB, 50%→2.5dB, 100%→10dB
-      const t = v / 100;
-      setExtParam('pultec-eq', 'highBoost', t * t * 10);
-    }),
-  );
-  ctrlSide.appendChild(knobRow);
-
-  const knobRow2 = document.createElement('div');
-  knobRow2.style.cssText = 'display:flex;gap:12px;margin-top:12px;';
-  knobRow2.appendChild(
-    makeKnob('Saturation', masterSaturation, (v) => {
-      masterSaturation = v;
-      // Squared: 1%→0.0001, 50%→0.25, 100%→1.0
-      const t = v / 100;
-      setExtParam('vari-mu', 'drive', t * t);
-    }),
-  );
-  knobRow2.appendChild(
-    makeKnob('Compression', masterCompression, (v) => {
-      masterCompression = v;
-      // Squared: 1%→-6.003dB, 50%→-14.5dB, 100%→-40dB
-      const t = v / 100;
-      setExtParam('vari-mu', 'compress', -6 - t * t * 34);
-    }),
-  );
-  ctrlSide.appendChild(knobRow2);
+  const infoNote = document.createElement('div');
+  infoNote.style.cssText = 'font:9px monospace;color:#555;margin-bottom:12px;line-height:1.5;';
+  infoNote.textContent =
+    'Use extension panels (EQ, Compressor, Transformer) to control master bus processing.';
+  ctrlSide.appendChild(infoNote);
 
   // Test signal toggle
   const demoBtn = document.createElement('button');

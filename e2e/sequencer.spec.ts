@@ -104,14 +104,18 @@ test.describe('Drum Grid', () => {
 test.describe('Melody Grid', () => {
   test('clicking a melody cell toggles it on', async ({ page }) => {
     await waitForApp(page);
-    const cell = page.locator('.melody-track[data-type="melody"][data-track="0"] .melody-cell').nth(5);
+    const cell = page
+      .locator('.melody-track[data-type="melody"][data-track="0"] .melody-cell')
+      .nth(5);
     await cell.click();
     await expect(cell).toHaveClass(/active/);
   });
 
   test('clicking an active melody cell toggles it off', async ({ page }) => {
     await waitForApp(page);
-    const cell = page.locator('.melody-track[data-type="melody"][data-track="0"] .melody-cell').nth(7);
+    const cell = page
+      .locator('.melody-track[data-type="melody"][data-track="0"] .melody-cell')
+      .nth(7);
     await cell.click(); // on
     await expect(cell).toHaveClass(/active/);
     await cell.click(); // off
@@ -210,7 +214,9 @@ test.describe('Melody Track Controls', () => {
   test('harmony toggle cycles through modes', async ({ page }) => {
     await waitForApp(page);
     // Harmony only on poly tracks (track 1 or 2 in melody)
-    const harmBtn = page.locator('.melody-track[data-type="melody"][data-track="1"] .harmony-toggle');
+    const harmBtn = page.locator(
+      '.melody-track[data-type="melody"][data-track="1"] .harmony-toggle',
+    );
     if ((await harmBtn.count()) === 0) {
       test.skip();
       return;
@@ -282,9 +288,9 @@ test.describe('Song Management', () => {
     await page.waitForTimeout(1000);
 
     // That cell should now be cleared
-    const activeCount = await page.locator(
-      '.melody-track[data-type="drum"][data-track="3"] .step-cell.active',
-    ).count();
+    const activeCount = await page
+      .locator('.melody-track[data-type="drum"][data-track="3"] .step-cell.active')
+      .count();
     expect(activeCount).toBe(0);
   });
 });
@@ -398,7 +404,7 @@ test.describe('Extension Panels', () => {
 
   test('compressor model selector switches between FET/OPTO/VCA', async ({ page }) => {
     await waitForApp(page);
-    // Open vari-mu compressor (second extension after Pultec EQ)
+    // Open compressor compressor (second extension after Pultec EQ)
     await page.locator('.ext-icon-btn').nth(1).click();
     await expect(page.locator('#ext-panel')).toHaveClass(/open/);
 
@@ -409,7 +415,9 @@ test.describe('Extension Panels', () => {
     }
 
     // Find model buttons — should be 3 (FET, OPTO, VCA)
-    const modelBtns = page.locator('#ext-panel button:has-text("FET"), #ext-panel button:has-text("OPTO"), #ext-panel button:has-text("VCA")');
+    const modelBtns = page.locator(
+      '#ext-panel button:has-text("FET"), #ext-panel button:has-text("OPTO"), #ext-panel button:has-text("VCA")',
+    );
     const count = await modelBtns.count();
     expect(count).toBe(3);
 
@@ -431,7 +439,7 @@ test.describe('Extension Panels', () => {
 
   test('transformer extension opens and has controls', async ({ page }) => {
     await waitForApp(page);
-    // Transformer is third extension (after Pultec, Vari-Mu)
+    // Transformer is third extension (after Pultec, Compressor)
     await page.locator('.ext-icon-btn').nth(2).click();
     await expect(page.locator('#ext-panel')).toHaveClass(/open/);
     await expect(page.locator('#ext-panel')).toContainText('TRANSFORMER');
@@ -540,7 +548,9 @@ test.describe('Persistence', () => {
     await waitForApp(page);
 
     // Cell should still be active
-    const cellAfter = page.locator('.melody-track[data-type="drum"][data-track="1"] .step-cell').nth(4);
+    const cellAfter = page
+      .locator('.melody-track[data-type="drum"][data-track="1"] .step-cell')
+      .nth(4);
     await expect(cellAfter).toHaveClass(/active/);
   });
 });

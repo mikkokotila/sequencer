@@ -2,9 +2,11 @@
 export {};
 
 const HALFBAND_TAPS = 15;
+// Normalized halfband FIR: coefficients sum to 1.0 for unity gain with ×2 upsample.
+// Original coefficients summed to 2.0, causing massive gain cascade through the pipeline.
 const HALFBAND_COEFS: readonly number[] = [
-  -0.0126, 0.0, 0.0602, 0.0, -0.1738, 0.0, 0.6262, 1.0, 0.6262, 0.0, -0.1738, 0.0, 0.0602, 0.0,
-  -0.0126,
+  -0.0063, 0.0, 0.0301, 0.0, -0.0869, 0.0, 0.3131, 0.5, 0.3131, 0.0, -0.0869, 0.0, 0.0301, 0.0,
+  -0.0063,
 ];
 
 function saturate(x: number, k: number): number {

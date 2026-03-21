@@ -141,7 +141,12 @@ export function replicateTrack(type: string, idx: number): void {
 
 // ── Painting setup ──
 
+let paintingInitialized = false;
+
 export function setupPainting(): void {
+  if (paintingInitialized) return;
+  paintingInitialized = true;
+
   document.addEventListener('mousedown', (e: MouseEvent) => {
     if (e.button !== 0) return;
     const target = e.target as HTMLElement;

@@ -290,7 +290,8 @@ export async function loadSong(song: LegacySongInput): Promise<void> {
       drumSampleData[t] = sd;
       try {
         drumBuf[t] = ctx ? await ctx.decodeAudioData(sd.data.slice(0)) : null;
-      } catch {
+      } catch (e: unknown) {
+        console.warn(`Failed to decode drum sample ${t}:`, e);
         drumBuf[t] = null;
       }
     } else {
@@ -306,7 +307,8 @@ export async function loadSong(song: LegacySongInput): Promise<void> {
       melSampleData[t] = sd;
       try {
         melBuf[t] = ctx ? await ctx.decodeAudioData(sd.data.slice(0)) : null;
-      } catch {
+      } catch (e: unknown) {
+        console.warn(`Failed to decode melody sample ${t}:`, e);
         melBuf[t] = null;
       }
     } else {
@@ -321,7 +323,8 @@ export async function loadSong(song: LegacySongInput): Promise<void> {
     setVocalSampleData(vsd);
     try {
       setVocalBuf(ctx ? await ctx.decodeAudioData(vsd.data.slice(0)) : null);
-    } catch {
+    } catch (e: unknown) {
+      console.warn('Failed to decode vocal sample:', e);
       setVocalBuf(null);
     }
   } else {

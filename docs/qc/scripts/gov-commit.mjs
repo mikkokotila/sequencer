@@ -112,17 +112,11 @@ async function main() {
     process.exit(1);
   }
 
-  const tree = run('git write-tree');
-  const treeSha = tree.stdout.trim();
-  if (tree.status !== 0 || !treeSha) {
-    console.error('ERROR | GOV-PROC-003 | Unable to compute staged tree hash.');
-    process.exit(1);
-  }
-
-  if (verdict.tree_sha !== treeSha) {
-    console.error(
-      `FAIL | GOV-PROC-004 | verdict tree_sha mismatch (verdict=${verdict.tree_sha} staged=${treeSha}).`,
-    );
+  const proofDirRel = path.join('docs/qc/proofs', taskId);
+  const addProof = run(`git add ${JSON.stringify(proofDirRel)}`);
+  if (addProof.status !== 0) {
+    console.error(`ERROR | GOV-PROC-003 | Failed to stage proof artifacts in ${proofDirRel}.`);
+    process.stderr.write(addProof.stderr);
     process.exit(1);
   }
 

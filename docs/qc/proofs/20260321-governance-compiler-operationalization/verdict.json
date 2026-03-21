@@ -4,16 +4,15 @@
   "spec_path": "docs/qc/specs/20260321-governance-compiler-operationalization.task.spec.json",
   "policy_version": "1.0.0",
   "diagnostics_version": "1.0.0",
-  "started_at_utc": "2026-03-21T16:03:00.495Z",
-  "finished_at_utc": "2026-03-21T16:03:05.000Z",
-  "head_sha": "ebcb7bf",
-  "tree_sha": "d3f4b5f0428b8c3511c91c9b826c1cfdc346bb1c",
+  "started_at_utc": "2026-03-21T16:04:57.206Z",
+  "finished_at_utc": "2026-03-21T16:05:01.634Z",
+  "head_sha": "3212c4f",
+  "tree_sha": "2e85e84115a37bdf35a6e3a20685fbfc23066bb7",
   "simulated_files": [],
   "changed_files": [
-    "docs/qc/proofs/20260321-governance-compiler-operationalization/proof.manifest.json",
-    "docs/qc/proofs/TEMPLATE.proof.manifest.json",
-    "docs/qc/scripts/governance-compiler.mjs",
-    "docs/qc/specs/20260321-governance-compiler-operationalization.task.spec.json"
+    "docs/qc/proofs/20260321-governance-compiler-operationalization/logs/O-CI.log",
+    "docs/qc/proofs/20260321-governance-compiler-operationalization/verdict.json",
+    "docs/qc/scripts/gov-commit.mjs"
   ],
   "phases": [
     {
@@ -50,7 +49,7 @@
         "command": "npm run ci",
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 4434,
+        "elapsed_ms": 4359,
         "log_file": "docs/qc/proofs/20260321-governance-compiler-operationalization/logs/O-CI.log"
       }
     ],

@@ -1,0 +1,34 @@
+{
+  "task_id": "20260321-oracle-harness-profile-metric-fix",
+  "task_type": "governance-change",
+  "execution_profile": "headless",
+  "capability": {
+    "summary": "Fix oracle harness benchmark metric keys so headless emits structural_ok and interactive remains p99-compatible.",
+    "in_scope": [
+      "docs/qc/scripts/**",
+      "docs/qc/specs/**",
+      "docs/qc/proofs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "tests/**",
+      "e2e/**",
+      "index.html",
+      "sequencer.html"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:kick_01"
+    ],
+    "seed": "governance-seed-v8",
+    "oracles": []
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": true
+  }
+}

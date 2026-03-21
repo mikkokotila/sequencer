@@ -1,0 +1,69 @@
+{
+  "task_id": "20260321-oracle-harness-profile-metric-fix",
+  "task_type": "governance-change",
+  "execution_profile": "headless",
+  "spec_path": "docs/qc/specs/20260321-oracle-harness-profile-metric-fix.task.spec.json",
+  "policy_version": "1.2.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-21T20:31:28.172Z",
+  "finished_at_utc": "2026-03-21T20:31:32.620Z",
+  "head_sha": "227f0db",
+  "tree_sha": "008f843d53fd313f8659a69557e93f4f4921eb78",
+  "subject_sha": "c73a790d68826c64b9873f6a7d996c29f52900a79213743475c9721a28f96b1a",
+  "subject_files": [
+    "docs/qc/scripts/oracle-harness.mjs"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260321-oracle-harness-profile-metric-fix.md",
+    "docs/qc/proofs/20260321-oracle-harness-profile-metric-fix/proof.manifest.json",
+    "docs/qc/scripts/oracle-harness.mjs",
+    "docs/qc/specs/20260321-oracle-harness-profile-metric-fix.task.spec.json"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4360,
+        "log_file": "docs/qc/proofs/20260321-oracle-harness-profile-metric-fix/logs/O-CI.log"
+      }
+    ],
+    "global_debt": [],
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

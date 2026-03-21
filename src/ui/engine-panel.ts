@@ -27,12 +27,6 @@ let waveformCanvas: HTMLCanvasElement | null = null;
 let spectrumCtx: CanvasRenderingContext2D | null = null;
 let waveformCtx: CanvasRenderingContext2D | null = null;
 
-// Settings state
-let bufferSize = 128;
-let sampleRateVal = 48000;
-let oversampleMode: OverSampleType = '4x';
-let limiterOn = true;
-
 // ── Engine-level processing nodes ──
 // These are REAL Web Audio API native nodes, owned by the engine alone.
 // They sit after the extension chain and before ctx.destination.
@@ -204,7 +198,7 @@ function drawSpectrum(): void {
   const data = new Float32Array(analyser.frequencyBinCount);
   analyser.getFloatFrequencyData(data);
 
-  const sr = sampleRateVal;
+  const sr = getAudioContext()?.sampleRate ?? 48000;
   const nyquist = sr / 2;
   const minF = 30;
   const maxF = nyquist;
@@ -386,48 +380,13 @@ function animLoop(): void {
   animFrame = requestAnimationFrame(animLoop);
 }
 
-// ── Computed readouts ──
-function getLatency(): string {
-  return ((bufferSize / sampleRateVal) * 2000).toFixed(2) + ' ms';
-}
-
-function getBlockBudget(): string {
-  return ((bufferSize / sampleRateVal) * 1000).toFixed(2) + ' ms';
-}
-
-function getEffectiveRate(): string {
-  const mult = oversampleMode === 'none' ? 1 : oversampleMode === '2x' ? 2 : 4;
-  const rate = sampleRateVal * mult;
-  return rate >= 1000 ? `${(rate / 1000).toFixed(0)}kHz` : `${rate}Hz`;
-}
-
-function getDSPLoad(): number {
-  const osMultiplier = oversampleMode === 'none' ? 1 : oversampleMode === '2x' ? 2 : 3;
-  const bufMultiplier =
-    bufferSize <= 64 ? 4 : bufferSize <= 128 ? 2.5 : bufferSize <= 256 ? 1.5 : 1;
-  return Math.min(100, Math.round(12 * osMultiplier * bufMultiplier));
-}
-
 // ── UI Building ──
-function makeSelect(
-  id: string,
-  options: string[],
-  defaultVal: string,
-  onChange: (v: string) => void,
-): HTMLSelectElement {
-  const sel = document.createElement('select');
-  sel.id = id;
-  sel.style.cssText =
-    'background:#222;border:1px solid #333;color:#ddd;padding:4px 8px;border-radius:4px;font:11px monospace;cursor:pointer;';
-  options.forEach((opt) => {
-    const o = document.createElement('option');
-    o.value = opt;
-    o.textContent = opt;
-    if (opt === defaultVal) o.selected = true;
-    sel.appendChild(o);
-  });
-  sel.onchange = () => onChange(sel.value);
-  return sel;
+function makeReadonly(id: string, value: string): HTMLSpanElement {
+  const span = document.createElement('span');
+  span.id = id;
+  span.style.cssText = 'font:11px monospace;color:#ddd;';
+  span.textContent = value;
+  return span;
 }
 
 function makeRow(label: string, value: string | HTMLElement): HTMLDivElement {
@@ -535,46 +494,31 @@ function buildPanel(): HTMLDivElement {
   header.appendChild(closeBtn);
   ctrlSide.appendChild(header);
 
-  // DSP Load
-  const loadWrap = document.createElement('div');
-  loadWrap.style.cssText = 'margin-bottom:16px;';
-  const loadLabel = document.createElement('div');
-  loadLabel.style.cssText = 'font:8px monospace;color:#666;letter-spacing:1.5px;margin-bottom:4px;';
-  loadLabel.textContent = 'DSP LOAD';
-  const loadBar = document.createElement('div');
-  loadBar.style.cssText = 'height:4px;background:#222;border-radius:2px;overflow:hidden;';
-  const loadFill = document.createElement('div');
-  loadFill.id = 'dsp-load-fill';
-  loadFill.style.cssText = 'height:100%;border-radius:2px;transition:width 0.3s,background 0.3s;';
-  updateDSPLoad(loadFill);
-  loadBar.appendChild(loadFill);
-  const loadVal = document.createElement('div');
-  loadVal.id = 'dsp-load-val';
-  loadVal.style.cssText = 'font:10px monospace;color:#999;margin-top:2px;text-align:right;';
-  loadVal.textContent = `${getDSPLoad()}%`;
-  loadWrap.appendChild(loadLabel);
-  loadWrap.appendChild(loadBar);
-  loadWrap.appendChild(loadVal);
-  ctrlSide.appendChild(loadWrap);
+  // Base Latency (real AudioContext value)
+  const ctx = getAudioContext();
+  const baseLatencyMs =
+    ctx?.baseLatency !== undefined ? (ctx.baseLatency * 1000).toFixed(2) + ' ms' : 'N/A';
+  const latencyWrap = document.createElement('div');
+  latencyWrap.style.cssText = 'margin-bottom:16px;';
+  const latencyLabel = document.createElement('div');
+  latencyLabel.style.cssText =
+    'font:8px monospace;color:#666;letter-spacing:1.5px;margin-bottom:4px;';
+  latencyLabel.textContent = 'BASE LATENCY';
+  const latencyVal = document.createElement('div');
+  latencyVal.style.cssText = 'font:10px monospace;color:#999;margin-top:2px;text-align:right;';
+  latencyVal.textContent = baseLatencyMs;
+  latencyWrap.appendChild(latencyLabel);
+  latencyWrap.appendChild(latencyVal);
+  ctrlSide.appendChild(latencyWrap);
 
   // Runtime section
+  const actualSR = getAudioContext()?.sampleRate;
   ctrlSide.appendChild(makeSectionTitle('Runtime'));
-  ctrlSide.appendChild(
-    makeRow(
-      'Buffer Size',
-      makeSelect('ep-buf', ['64', '128', '256', '512'], String(bufferSize), (v) => {
-        bufferSize = Number(v);
-        updateReadouts();
-      }),
-    ),
-  );
+  ctrlSide.appendChild(makeRow('Buffer Size', makeReadonly('ep-buf', '128')));
   ctrlSide.appendChild(
     makeRow(
       'Sample Rate',
-      makeSelect('ep-sr', ['44100', '48000', '96000'], String(sampleRateVal), (v) => {
-        sampleRateVal = Number(v);
-        updateReadouts();
-      }),
+      makeReadonly('ep-sr', actualSR !== undefined ? String(actualSR) : '\u2014'),
     ),
   );
 
@@ -584,43 +528,9 @@ function buildPanel(): HTMLDivElement {
 
   // Effects section
   ctrlSide.appendChild(makeSectionTitle('Effects'));
-  ctrlSide.appendChild(
-    makeRow(
-      'Oversampling',
-      makeSelect('ep-os', ['none', '2x', '4x', '8x'], oversampleMode, (v) => {
-        oversampleMode = v as OverSampleType;
-        updateReadouts();
-      }),
-    ),
-  );
+  ctrlSide.appendChild(makeRow('Oversampling', makeReadonly('ep-os', '4x')));
   ctrlSide.appendChild(makeRow('EQ', 'Native BiquadFilter'));
-  ctrlSide.appendChild(
-    makeRow(
-      'Reverb Algorithm',
-      makeSelect('ep-rev', ['Freeverb'], 'Freeverb', () => {
-        /* noop — single option */
-      }),
-    ),
-  );
-
-  // Limiter toggle
-  const limiterToggle = document.createElement('div');
-  limiterToggle.style.cssText =
-    'cursor:pointer;width:36px;height:18px;border-radius:9px;background:#1e2036;border:1px solid #2e3150;position:relative;transition:all 0.25s;';
-  const limiterDot = document.createElement('div');
-  limiterDot.style.cssText =
-    'position:absolute;top:2px;left:20px;width:12px;height:12px;border-radius:50%;background:#4afe70;transition:all 0.25s;';
-  limiterToggle.style.background = 'rgba(74,254,112,0.15)';
-  limiterToggle.style.borderColor = 'rgba(74,254,112,0.4)';
-  limiterToggle.appendChild(limiterDot);
-  limiterToggle.onclick = () => {
-    limiterOn = !limiterOn;
-    limiterDot.style.left = limiterOn ? '20px' : '2px';
-    limiterDot.style.background = limiterOn ? '#4afe70' : '#505478';
-    limiterToggle.style.background = limiterOn ? 'rgba(74,254,112,0.15)' : '#1e2036';
-    limiterToggle.style.borderColor = limiterOn ? 'rgba(74,254,112,0.4)' : '#2e3150';
-  };
-  ctrlSide.appendChild(makeRow('Master Limiter', limiterToggle));
+  ctrlSide.appendChild(makeRow('Reverb Algorithm', 'Freeverb'));
 
   // Master Bus — engine-level processing controls.
   // These control REAL audio nodes owned by the engine (not extensions).
@@ -678,47 +588,19 @@ function buildPanel(): HTMLDivElement {
   };
   ctrlSide.appendChild(demoBtn);
 
-  // Readout section
+  // Readout section — real AudioContext values
   ctrlSide.appendChild(makeSectionTitle('Readout'));
-  const readoutLatency = document.createElement('div');
-  const readoutBudget = document.createElement('div');
-  const readoutRate = document.createElement('div');
-  readoutLatency.id = 'ep-latency';
-  readoutBudget.id = 'ep-budget';
-  readoutRate.id = 'ep-effrate';
-  ctrlSide.appendChild(makeRow('Round-trip Latency', getLatency()));
-  ctrlSide.appendChild(makeRow('Block Budget', getBlockBudget()));
-  ctrlSide.appendChild(makeRow('Effective Oversample Rate', getEffectiveRate()));
+  const rtCtx = getAudioContext();
+  const rtBaseLatency =
+    rtCtx?.baseLatency !== undefined ? (rtCtx.baseLatency * 1000).toFixed(2) + ' ms' : 'N/A';
+  const rtSR = rtCtx?.sampleRate ?? 48000;
+  const blockBudget = ((128 / rtSR) * 1000).toFixed(2) + ' ms';
+  ctrlSide.appendChild(makeRow('Round-trip Latency', rtBaseLatency));
+  ctrlSide.appendChild(makeRow('Block Budget', blockBudget));
+  ctrlSide.appendChild(makeRow('Effective Oversample Rate', '4x'));
 
   panel.appendChild(ctrlSide);
   return panel;
-}
-
-function updateDSPLoad(fillEl?: HTMLDivElement | null): void {
-  const load = getDSPLoad();
-  const el = fillEl ?? (document.getElementById('dsp-load-fill') as HTMLDivElement | null);
-  const val = document.getElementById('dsp-load-val');
-  if (el) {
-    el.style.width = `${load}%`;
-    el.style.background = load < 50 ? '#4afe70' : load < 75 ? '#EEA83E' : '#ff3c5a';
-  }
-  if (val) val.textContent = `${load}%`;
-}
-
-function updateReadouts(): void {
-  // Update readout values in the existing DOM
-  const rows = panelEl?.querySelectorAll('[style*="justify-content:space-between"]');
-  if (!rows) return;
-  rows.forEach((row) => {
-    const label = row.querySelector('div:first-child');
-    const value = row.querySelector('div:last-child');
-    if (!label || !value || value.querySelector('select') || value.querySelector('div')) return;
-    const txt = label.textContent || '';
-    if (txt === 'Round-trip Latency') value.textContent = getLatency();
-    if (txt === 'Block Budget') value.textContent = getBlockBudget();
-    if (txt === 'Effective Oversample Rate') value.textContent = getEffectiveRate();
-  });
-  updateDSPLoad();
 }
 
 function resizeCanvases(): void {

@@ -8,6 +8,7 @@ import compressorUrl from './worklets/compressor-processor.ts?url';
 import saturationUrl from './worklets/saturation-processor.ts?url';
 import freeverbUrl from './worklets/freeverb-processor.ts?url';
 import delayUrl from './worklets/delay-processor.ts?url';
+import benchmarkUrl from './worklets/benchmark-processor.ts?url';
 
 const loaded = new Set<string>();
 
@@ -26,5 +27,6 @@ export async function loadAllWorklets(ctx: AudioContext): Promise<void> {
     load(ctx, 'saturation-processor', saturationUrl),
     load(ctx, 'freeverb-processor', freeverbUrl),
     load(ctx, 'delay-processor', delayUrl),
+    load(ctx, 'benchmark-processor', benchmarkUrl),
   ]);
 }

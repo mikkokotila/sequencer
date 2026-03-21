@@ -16,6 +16,7 @@ Applies to: any file in `src/engine/`, `src/engine/worklets/`, `src/engine/exten
 
 **Read:** `docs/contracts/quality-gates.md`
 Run `tests/audio-quality.html` after changes. All 25 assertions must pass.
+Run `tests/benchmark.html` after worklet/DSP changes. p99 must be within budget.
 
 ## When writing or modifying nonlinear audio processors
 

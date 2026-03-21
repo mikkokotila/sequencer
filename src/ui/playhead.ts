@@ -5,9 +5,9 @@
 
 import { on } from '../events';
 import { DRUMS_CFG, MEL_CFG, VOCAL_CFG } from '../config';
-import { drumPat, melPat, vocalPat, currentPhrase } from '../transport/patterns';
+import { currentPhrase } from '../transport/patterns';
 import { drumCells, melCells, vocalCells } from '../state';
-import { displayToSemitone } from './helpers';
+import { updateDrumCell, updateMelCell, updateVocalCell } from './cells';
 
 let prevVisualStep = -1;
 
@@ -22,30 +22,17 @@ function highlightStep(step: number, phrase: number): void {
   // Drum cells
   for (let t = 0; t < DRUMS_CFG.length; t++) {
     const c = drumCells[t]?.[step];
-    const cfg = DRUMS_CFG[t];
-    const row = drumPat[t];
-    if (!c || !cfg) continue;
+    if (!c) continue;
     c.classList.add('playing');
-    if (row?.[step]) {
-      c.style.background = cfg.bright;
-      c.style.boxShadow = `0 0 16px ${cfg.bright}80, 0 0 6px ${cfg.color}60`;
-    }
   }
 
   // Melody cells
   for (let t = 0; t < MEL_CFG.length; t++) {
-    const cfg = MEL_CFG[t];
-    if (!cfg) continue;
+    if (!MEL_CFG[t]) continue;
     for (let n = 0; n < 12; n++) {
       const c = melCells[t]?.[step]?.[n];
       if (!c) continue;
       c.classList.add('playing');
-      const semi = displayToSemitone(n);
-      const stepData = melPat[t]?.[step];
-      if (stepData?.[semi]) {
-        c.style.background = cfg.bright;
-        c.style.boxShadow = `0 0 16px ${cfg.bright}80, 0 0 6px ${cfg.color}60`;
-      }
     }
   }
 
@@ -53,10 +40,6 @@ function highlightStep(step: number, phrase: number): void {
   const vc = vocalCells[step];
   if (vc) {
     vc.classList.add('playing');
-    if (vocalPat[step]) {
-      vc.style.background = VOCAL_CFG.bright;
-      vc.style.boxShadow = `0 0 16px ${VOCAL_CFG.bright}80, 0 0 6px ${VOCAL_CFG.color}60`;
-    }
   }
 
   prevVisualStep = step;
@@ -66,53 +49,69 @@ function highlightStep(step: number, phrase: number): void {
 function clearHL(s: number): void {
   for (let t = 0; t < DRUMS_CFG.length; t++) {
     const c = drumCells[t]?.[s];
-    const cfg = DRUMS_CFG[t];
-    const row = drumPat[t];
-    if (!c || !cfg) continue;
+    if (!c) continue;
     c.classList.remove('playing');
-    if (row?.[s]) {
-      c.style.background = cfg.idle;
-      c.style.boxShadow = '';
-    } else {
-      c.style.background = '';
-      c.style.boxShadow = '';
-    }
+    updateDrumCell(t, s);
   }
 
   for (let t = 0; t < MEL_CFG.length; t++) {
-    const cfg = MEL_CFG[t];
-    if (!cfg) continue;
+    if (!MEL_CFG[t]) continue;
     for (let n = 0; n < 12; n++) {
       const c = melCells[t]?.[s]?.[n];
       if (!c) continue;
       c.classList.remove('playing');
-      const semi = displayToSemitone(n);
-      const stepData = melPat[t]?.[s];
-      if (stepData?.[semi]) {
-        c.style.background = cfg.idle;
-        c.style.boxShadow = '';
-      } else {
-        c.style.background = '';
-        c.style.boxShadow = '';
-      }
+      updateMelCell(t, s, n);
     }
   }
 
   const vc = vocalCells[s];
   if (vc) {
     vc.classList.remove('playing');
-    if (vocalPat[s]) {
-      vc.style.background = VOCAL_CFG.idle;
-      vc.style.boxShadow = '';
-    } else {
-      vc.style.background = '';
-      vc.style.boxShadow = '';
-    }
+    updateVocalCell(s);
   }
+}
+
+/** Inject playhead CSS rules so highlight is driven by class toggles, not inline styles. */
+function injectPlayheadCSS(): void {
+  const style = document.createElement('style');
+  const rules: string[] = [];
+
+  // Drum tracks: active + playing = bright highlight
+  for (let t = 0; t < DRUMS_CFG.length; t++) {
+    const cfg = DRUMS_CFG[t];
+    if (!cfg) continue;
+    rules.push(
+      `.step-cell[data-type="drum"][data-track="${t}"].active.playing { background: ${cfg.bright} !important; box-shadow: 0 0 16px ${cfg.bright}80, 0 0 6px ${cfg.color}60 !important; }`,
+    );
+  }
+
+  // Melody tracks: active + playing = bright highlight
+  for (let t = 0; t < MEL_CFG.length; t++) {
+    const cfg = MEL_CFG[t];
+    if (!cfg) continue;
+    rules.push(
+      `.melody-cell[data-track="${t}"].active.playing { background: ${cfg.bright} !important; box-shadow: 0 0 16px ${cfg.bright}80, 0 0 6px ${cfg.color}60 !important; }`,
+    );
+  }
+
+  // Vocal track: active + playing = bright highlight
+  rules.push(
+    `.step-cell[data-type="vocal"].active.playing { background: ${VOCAL_CFG.bright} !important; box-shadow: 0 0 16px ${VOCAL_CFG.bright}80, 0 0 6px ${VOCAL_CFG.color}60 !important; }`,
+  );
+
+  // Non-active cells that are playing get a subtle highlight
+  rules.push(
+    `.step-cell.playing, .melody-cell.playing { background: rgba(255,255,255,0.03) !important; }`,
+  );
+
+  style.textContent = rules.join('\n');
+  document.head.appendChild(style);
 }
 
 /** Subscribe to engine events. Call once at init. */
 export function initPlayhead(): void {
+  injectPlayheadCSS();
+
   on('engine:step', ({ step, phrase }) => {
     highlightStep(step, phrase);
   });

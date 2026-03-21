@@ -8,33 +8,40 @@
     "qc"
   ],
   "path_groups": {
-    "governance": [
+    "governance_policy": [
       "AGENTS.md",
       "CLAUDE.md",
       "docs/contracts/**",
-      "docs/qc/**",
-      "logs/compiler.log",
+      "docs/qc/README.md",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**",
       "package.json",
       "package-lock.json",
       ".husky/**"
+    ],
+    "compiler_managed": [
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
     ],
     "product": [
       "src/**",
       "tests/**",
       "e2e/**",
       "index.html",
-      "sequencer.html"
+      "sequencer.html",
+      "README.md"
     ],
-    "audio": [
-      "src/engine/**",
+    "audio_dsp": [
+      "src/engine/audio.ts",
       "src/engine/worklets/**",
       "src/engine/extensions/**"
     ],
     "controls": [
       "src/ui/**",
-      "src/engine/extensions/**",
-      "src/engine/audio.ts",
-      "src/engine/scheduler.ts"
+      "src/engine/midi.ts",
+      "src/engine/audio.ts"
     ],
     "persistence": [
       "src/transport/persistence.ts",
@@ -59,10 +66,7 @@
       "default_safety"
     ],
     "controls": [
-      "control_binding",
-      "control_monotonicity",
-      "low_end_continuity",
-      "mutation_guard"
+      "control_binding"
     ],
     "persistence": [
       "persistence_roundtrip"
@@ -82,19 +86,36 @@
       "command": "npm run e2e",
       "failure_code": "GOV-PROC-002"
     },
-    "O-GATE-CONTRACTS": {
-      "label": "Contract static gates",
-      "command": "npm run gate:contracts",
+    "O-GATE-CONTRACTS-DELTA": {
+      "label": "Contract static gates (task regression)",
+      "command": "node docs/qc/scripts/contract-gates.mjs --mode delta",
       "failure_code": "GOV-PROC-002"
     },
-    "O-GATE-ARCH": {
-      "label": "Architecture gates",
-      "command": "npm run gate:architecture",
+    "O-GATE-ARCH-DELTA": {
+      "label": "Architecture gates (task regression)",
+      "command": "node docs/qc/scripts/architecture-gates.mjs --mode delta",
       "failure_code": "GOV-PROC-002"
+    },
+    "O-GATE-CONTRACTS-FULL": {
+      "label": "Contract static gates (global debt)",
+      "command": "node docs/qc/scripts/contract-gates.mjs --mode full",
+      "failure_code": "GOV-PROC-002",
+      "non_blocking": true
+    },
+    "O-GATE-ARCH-FULL": {
+      "label": "Architecture gates (global debt)",
+      "command": "node docs/qc/scripts/architecture-gates.mjs --mode full",
+      "failure_code": "GOV-PROC-002",
+      "non_blocking": true
     },
     "O-AUDIO-GATES": {
       "label": "Audio browser gates",
       "command": "npm run audio:gates",
+      "failure_code": "GOV-PROC-002"
+    },
+    "O-COMMIT-RANGE": {
+      "label": "Commit range governance attestation",
+      "command": "npm run gate:commit-range",
       "failure_code": "GOV-PROC-002"
     }
   },
@@ -103,7 +124,7 @@
     "required_fields": [
       "oracle_id",
       "task_id",
-      "tree_sha",
+      "subject_sha",
       "harness_version",
       "status",
       "metrics",

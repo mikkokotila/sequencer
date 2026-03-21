@@ -2,13 +2,7 @@
   "task_id": "YYYYMMDD-short-name",
   "tree_sha": "__AUTO__",
   "commit_shas": [],
-  "required_gates": [
-    {
-      "id": "O-CI",
-      "result": "PASS",
-      "evidence": "logs/O-CI.log"
-    }
-  ],
+  "required_gates": [],
   "contracts": [
     {
       "path": "docs/contracts/commit.md",

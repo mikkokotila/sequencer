@@ -13,3 +13,4 @@ Rules:
 2. QC baseline advances only on a `PASS` verdict.
 3. `docs/qc/proofs/<task-id>/verdict.json` is compiler-generated and required.
 4. Compiler audit log chain must remain valid; tampering blocks compiler execution.
+5. Oracle artifacts bind to compiler `subject_sha` (product-scope hash), not full staged tree hash.

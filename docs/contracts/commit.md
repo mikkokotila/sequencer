@@ -42,7 +42,7 @@ No committing without verifying the actual app works in a real browser. Automate
 
 Before every commit:
 1. `npm run gov:check -- --spec docs/qc/specs/<task-id>.task.spec.json` returns `PASS`
-2. All compiler-required command obligations pass (`ci`, `e2e`, `gate:contracts`, `gate:architecture`, and `audio:gates` if bound)
+2. All compiler-required blocking obligations pass (`ci`, `e2e`, delta contract/architecture gates, `gate:commit-range`, and `audio:gates` if bound)
 3. The app has been opened in an actual browser and the changed feature manually confirmed to work
 
 If you cannot verify in a real browser, the commit message must state this explicitly.

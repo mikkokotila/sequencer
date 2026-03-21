@@ -26,6 +26,7 @@ No task may complete without all three layers.
 1. deterministic fixtures (built-in samples)
 2. fixed seed
 3. oracle list
+4. oracle artifacts bound to compiler `subject_sha`
 
 Mandatory minimum oracles for product tasks:
 

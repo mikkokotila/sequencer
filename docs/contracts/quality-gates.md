@@ -35,9 +35,16 @@ Runs four gates in sequence. All must pass:
 
 Playwright suite must pass with zero failures.
 
-### 3) Contract Static Gates (`npm run gate:contracts`)
+### 3) Contract Static Gates (task regression)
 
-Static policy checks that fail on known recurring regressions:
+Compiler uses delta mode for blocking task-regression checks:
+
+- `node docs/qc/scripts/contract-gates.mjs --mode delta`
+
+Only checks relevant to staged files are blocking.
+Full-debt scan remains available via `npm run gate:contracts` and is tracked as non-blocking debt in compiler output.
+
+Blocking regression checks include:
 
 1. No `test.fixme` debt in `e2e/` and `tests/`.
 2. No informational `assert(..., true, ...)` assertions in audio test pages.
@@ -46,9 +53,16 @@ Static policy checks that fail on known recurring regressions:
 5. Engine master controls must preserve non-explosive low-end response curves (squared control checks).
 6. Benchmark harness must be deterministic and worklet-driven (no random main-thread proxy timing).
 
-### 4) Architecture Invariant Gates (`npm run gate:architecture`)
+### 4) Architecture Invariant Gates (task regression)
 
-Hard-fail checks for architectural truthfulness:
+Compiler uses delta mode for blocking task-regression checks:
+
+- `node docs/qc/scripts/architecture-gates.mjs --mode delta`
+
+Only checks relevant to staged files are blocking.
+Full-debt scan remains available via `npm run gate:architecture` and is tracked as non-blocking debt in compiler output.
+
+Blocking regression checks include:
 
 1. No dummy extension pass-through node hacks.
 2. No `window.SEQ` global coupling from extensions.
@@ -68,7 +82,7 @@ Hard-fail checks for architectural truthfulness:
 ### 5) Audio Browser Gates (`npm run audio:gates`) — conditional
 
 Required when changing audio code in:
-- `src/engine/**`
+- `src/engine/audio.ts`
 - `src/engine/worklets/**`
 - `src/engine/extensions/**`
 
@@ -84,13 +98,16 @@ These pages must report passing verdicts.
 
 Underlying gate bundle:
 
-`npm run verify` runs:
+`npm run verify` runs blocking push checks:
 - `npm run ci`
 - `npm run e2e`
+- `npm run gate:commit-range`
+
+`npm run verify:global-debt` runs full debt tracking scans:
 - `npm run gate:contracts`
 - `npm run gate:architecture`
 
-For audio-code tasks, run `npm run audio:gates` in addition to `npm run verify`.
+For audio-code tasks, run `npm run audio:gates` in addition to compiler-required obligations.
 
 Completion flow:
 

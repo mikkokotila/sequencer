@@ -72,12 +72,14 @@ function readJsonFileSafe(content, filePath) {
   }
 }
 
-function spawn(command) {
+function spawn(command, options = {}) {
+  const env = options.env ? { ...process.env, ...options.env } : process.env;
   const result = spawnSync(command, {
     cwd: root,
     encoding: 'utf8',
     shell: true,
     maxBuffer: 1024 * 1024 * 20,
+    env,
   });
   return {
     status: result.status ?? 1,
@@ -119,6 +121,39 @@ const COMPILER_MANAGED_ARTIFACT_PATTERNS = ['docs/qc/proofs/**', 'docs/qc/specs/
 
 function isCompilerManagedArtifact(filePath) {
   return matchesAnyPattern(filePath, COMPILER_MANAGED_ARTIFACT_PATTERNS);
+}
+
+function isGovernancePolicyFile(filePath) {
+  const patterns = [
+    'AGENTS.md',
+    'CLAUDE.md',
+    'docs/contracts/**',
+    'docs/qc/compiler/**',
+    'docs/qc/scripts/**',
+    'package.json',
+    'package-lock.json',
+    '.husky/**',
+  ];
+  return matchesAnyPattern(filePath, patterns);
+}
+
+function computeSubjectShaFromIndex(files) {
+  if (!Array.isArray(files) || files.length === 0) {
+    return CHAIN_GENESIS_HASH;
+  }
+  const rows = [];
+  for (const filePath of [...files].sort()) {
+    const out = spawn(`git ls-files -s -- ${JSON.stringify(filePath)}`);
+    if (out.status !== 0 || !out.stdout.trim()) {
+      rows.push(`${filePath}:MISSING`);
+      continue;
+    }
+    const line = out.stdout.trim().split('\n')[0];
+    const parts = line.trim().split(/\s+/);
+    const blobSha = parts[1] || 'MISSING';
+    rows.push(`${filePath}:${blobSha}`);
+  }
+  return sha256(rows.join('\n'));
 }
 
 function compareMetric(actual, operator, expected) {
@@ -242,6 +277,7 @@ class CompilerContext {
     this.phases = [];
     this.diagnostics = [];
     this.commandResults = [];
+    this.globalDebtResults = [];
     this.oracleResults = [];
     this.changedFiles = [];
     this.groupMatches = {};
@@ -255,6 +291,8 @@ class CompilerContext {
     this.taskId = null;
     this.taskType = null;
     this.treeSha = 'UNSET';
+    this.subjectSha = 'UNSET';
+    this.subjectFiles = [];
     this.headSha = 'UNSET';
     this.proofDir = null;
     this.logsDir = null;
@@ -498,6 +536,8 @@ async function phaseBind(ctx) {
   if (ctx.args.simulateFiles.length > 0) {
     ctx.changedFiles = [...ctx.args.simulateFiles];
     ctx.treeSha = 'SIMULATED-TREE';
+    ctx.subjectFiles = ctx.changedFiles.filter((filePath) => !isCompilerManagedArtifact(filePath));
+    ctx.subjectSha = ctx.subjectFiles.length > 0 ? sha256(ctx.subjectFiles.sort().join('\n')) : 'SIMULATED-SUBJECT';
   } else {
     ctx.changedFiles = readChangedFilesFromGit();
     if (ctx.changedFiles.length > 0) {
@@ -507,6 +547,8 @@ async function phaseBind(ctx) {
         ctx.treeSha = 'UNSET';
       }
     }
+    ctx.subjectFiles = ctx.changedFiles.filter((filePath) => !isCompilerManagedArtifact(filePath));
+    ctx.subjectSha = computeSubjectShaFromIndex(ctx.subjectFiles);
   }
 
   if (ctx.changedFiles.length === 0) {
@@ -538,7 +580,7 @@ async function phaseBind(ctx) {
     }
   }
 
-  const governanceTouched = !!ctx.groupMatches.governance;
+  const governanceTouched = ctx.changedFiles.some((filePath) => isGovernancePolicyFile(filePath));
   const productTouched = !!ctx.groupMatches.product;
 
   if (ctx.taskType !== 'governance-change' && governanceTouched) {
@@ -557,7 +599,7 @@ async function phaseBind(ctx) {
 
   const declaredOracles = Array.isArray(ctx.spec?.proof?.oracles) ? ctx.spec.proof.oracles : [];
 
-  if (ctx.groupMatches.audio) {
+  if (ctx.groupMatches.audio_dsp || ctx.groupMatches.audio) {
     const requiredAudio = ctx.rules.required_oracles?.audio || [];
     const missing = requiredAudio.filter((oracle) => !declaredOracles.includes(oracle));
     if (missing.length > 0) {
@@ -597,11 +639,14 @@ function synthesizeCommandObligations(ctx) {
   if (ctx.groupMatches.product) {
     commandIds.add('O-CI');
     commandIds.add('O-E2E');
-    commandIds.add('O-GATE-CONTRACTS');
-    commandIds.add('O-GATE-ARCH');
+    commandIds.add('O-GATE-CONTRACTS-DELTA');
+    commandIds.add('O-GATE-ARCH-DELTA');
+    commandIds.add('O-GATE-CONTRACTS-FULL');
+    commandIds.add('O-GATE-ARCH-FULL');
+    commandIds.add('O-COMMIT-RANGE');
   }
 
-  if (ctx.groupMatches.audio) {
+  if (ctx.groupMatches.audio_dsp || ctx.groupMatches.audio) {
     commandIds.add('O-AUDIO-GATES');
   }
 
@@ -624,7 +669,7 @@ function synthesizeOracleObligations(ctx) {
     }
   }
 
-  if (ctx.groupMatches.audio) {
+  if (ctx.groupMatches.audio_dsp || ctx.groupMatches.audio) {
     for (const oracle of ctx.rules.required_oracles?.audio || []) set.add(oracle);
   }
 
@@ -668,7 +713,13 @@ async function executeCommandObligations(ctx) {
 
   for (const obligation of obligations) {
     const started = Date.now();
-    const result = spawn(obligation.command);
+    const result = spawn(obligation.command, {
+      env: {
+        GOV_CHANGED_FILES: ctx.changedFiles.join('\n'),
+        GOV_SUBJECT_FILES: ctx.subjectFiles.join('\n'),
+        GOV_TASK_TYPE: ctx.taskType || '',
+      },
+    });
     const elapsedMs = Date.now() - started;
     const logFile = path.join(ctx.logsDir, `${obligation.id}.log`);
     const logBody = [
@@ -689,6 +740,7 @@ async function executeCommandObligations(ctx) {
       id: obligation.id,
       label: obligation.label || obligation.id,
       command: obligation.command,
+      blocking: obligation.non_blocking === true ? false : true,
       status: result.status === 0 ? 'PASS' : 'FAIL',
       exit_code: result.status,
       elapsed_ms: elapsedMs,
@@ -698,15 +750,30 @@ async function executeCommandObligations(ctx) {
     ctx.commandResults.push(outcome);
 
     if (result.status !== 0) {
-      ctx.addDiagnostic(
-        obligation.failure_code || 'GOV-PROC-002',
-        `${obligation.id} failed: ${obligation.command}`,
-        {
+      if (obligation.non_blocking === true) {
+        ctx.globalDebtResults.push({
+          id: obligation.id,
+          label: obligation.label || obligation.id,
           command: obligation.command,
+          status: 'FAIL',
           log_file: outcome.log_file,
-          exit_code: result.status,
-        },
-      );
+        });
+        ctx.addAuditEvent('WARN', 'global_debt', `${obligation.id} failed (tracked, non-blocking)`, {
+          code: obligation.failure_code || 'GOV-PROC-002',
+          severity: 'WARN',
+          context: { command: obligation.command, log_file: outcome.log_file, exit_code: result.status },
+        });
+      } else {
+        ctx.addDiagnostic(
+          obligation.failure_code || 'GOV-PROC-002',
+          `${obligation.id} failed: ${obligation.command}`,
+          {
+            command: obligation.command,
+            log_file: outcome.log_file,
+            exit_code: result.status,
+          },
+        );
+      }
     }
   }
 }
@@ -730,6 +797,16 @@ async function validateManifest(ctx) {
   }
 
   const manifest = parsed.data;
+  if (!ctx.args.noWrite && ctx.commandResults.length > 0) {
+    manifest.required_gates = ctx.commandResults.map((result) => ({
+      id: result.id,
+      result: result.status,
+      blocking: result.blocking,
+      evidence: result.log_file,
+    }));
+    await fs.writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+  }
+
   const requiredFields = ctx.rules.manifest?.required_fields || [];
   const missingFields = requiredFields.filter((field) => !(field in manifest));
   if (missingFields.length > 0) {
@@ -756,7 +833,9 @@ async function validateManifest(ctx) {
   }
 
   if (ctx.args.strictManifest) {
-    const requiredCommandIds = ctx.generatedObligations.commands.map((o) => o.id);
+    const requiredCommandIds = ctx.generatedObligations.commands
+      .filter((obligation) => obligation.non_blocking !== true)
+      .map((o) => o.id);
     const gateRecords = Array.isArray(manifest.required_gates) ? manifest.required_gates : [];
     const missingGateRecords = requiredCommandIds.filter(
       (id) => !gateRecords.some((record) => record.id === id && typeof record.result === 'string'),
@@ -827,11 +906,11 @@ async function validateOracleArtifact(ctx, oracleId) {
     );
   }
 
-  if (!ctx.args.simulateFiles.length && artifact.tree_sha !== ctx.treeSha) {
+  if (!ctx.args.simulateFiles.length && artifact.subject_sha !== ctx.subjectSha) {
     ctx.addDiagnostic(
       'GOV-PROOF-006',
-      `Oracle tree_sha mismatch for ${oracleId} (expected ${ctx.treeSha}, got ${artifact.tree_sha})`,
-      { oracle_id: oracleId, artifact_tree_sha: artifact.tree_sha, expected_tree_sha: ctx.treeSha },
+      `Oracle subject_sha mismatch for ${oracleId} (expected ${ctx.subjectSha}, got ${artifact.subject_sha})`,
+      { oracle_id: oracleId, artifact_subject_sha: artifact.subject_sha, expected_subject_sha: ctx.subjectSha },
     );
   }
 
@@ -957,11 +1036,14 @@ async function phaseAttest(ctx) {
     finished_at_utc: nowIso(),
     head_sha: ctx.headSha,
     tree_sha: ctx.treeSha,
+    subject_sha: ctx.subjectSha,
+    subject_files: ctx.subjectFiles,
     simulated_files: ctx.args.simulateFiles,
     changed_files: ctx.changedFiles,
     phases: ctx.phases,
     obligations: {
       commands: ctx.commandResults,
+      global_debt: ctx.globalDebtResults,
       oracles: ctx.oracleResults,
       manifest_required: true,
     },
@@ -999,8 +1081,15 @@ function printSummary(ctx, attestationResult) {
     console.log('\ncommand obligations');
     for (const command of ctx.commandResults) {
       console.log(
-        `- ${command.status} | ${command.id} | ${command.command} | log=${command.log_file} | exit=${command.exit_code}`,
+        `- ${command.status} | ${command.id} | ${command.command} | blocking=${command.blocking} | log=${command.log_file} | exit=${command.exit_code}`,
       );
+    }
+  }
+
+  if (ctx.globalDebtResults.length > 0) {
+    console.log('\nglobal debt (non-blocking)');
+    for (const debt of ctx.globalDebtResults) {
+      console.log(`- FAIL | ${debt.id} | ${debt.command} | log=${debt.log_file}`);
     }
   }
 

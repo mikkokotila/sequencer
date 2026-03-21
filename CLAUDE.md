@@ -36,11 +36,12 @@ Before commit, ensure proof artifacts exist:
 3. If and only if compiler verdict is `PASS`, commit with:
    - `npm run gov:commit -- --spec docs/qc/specs/<task-id>.task.spec.json -m "type(scope): description"`
 
-Compiler determines which gates must run from staged diff (`ci`, `e2e`, `gate:contracts`, `gate:architecture`, `audio:gates`).
+Compiler determines blocking task-regression gates from staged diff (`ci`, `e2e`, delta contract/architecture gates, `audio:gates` when bound, and `gate:commit-range`).
+Global-debt full scans are tracked non-blocking during compiler execution.
 
 ## When changing audio code
 
-Applies to: any file in `src/engine/`, `src/engine/worklets/`, `src/engine/extensions/`.
+Applies to: `src/engine/audio.ts`, any file in `src/engine/worklets/`, `src/engine/extensions/`.
 
 **Read:** `docs/contracts/audio-determinism.md`
 

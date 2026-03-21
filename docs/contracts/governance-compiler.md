@@ -26,6 +26,11 @@ npm run gov:commit -- --spec docs/qc/specs/<task-id>.task.spec.json -m "type(sco
 5. `verify` - evaluate diagnostics and final verdict.
 6. `attest` - write `docs/qc/proofs/<task-id>/verdict.json`.
 
+During `execute`, obligations are split:
+
+1. `task_regression` (blocking)
+2. `global_debt` (non-blocking, tracked)
+
 ## Verdict Policy
 
 Allowed verdicts:
@@ -44,6 +49,7 @@ Any verdict other than `PASS` blocks completion and commit.
 3. Governance-change tasks may not include product files.
 4. Required proof artifacts are hash-verified against raw evidence.
 5. Missing proof artifact is always `BLOCKED`.
+6. Compiler-managed artifacts (`docs/qc/specs/**`, `docs/qc/proofs/**`, `logs/compiler.log`) do not count as governance-policy edits in feature tasks.
 
 ## Required Artifacts
 
@@ -84,7 +90,15 @@ Compiler warnings/errors are appended to `logs/compiler.log` as JSONL entries wi
 
 If chain verification fails, compiler exits with `GOV-PROC-003`.
 
+## Subject Hash Model
+
+Oracle artifacts bind to `subject_sha`, not full staged tree SHA.
+
+`subject_sha` is computed from staged product files only, excluding compiler-managed artifacts.
+This removes self-referential tree loops for proof/oracle files.
+
 ## CI and Enforcement
 
 `gov:check` is required before completion.
 `gov:commit` is the standard commit path because it attaches attestation trailers.
+`npm run gate:commit-range` enforces that product commits contain valid governance trailers and a PASS attestation.

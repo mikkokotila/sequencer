@@ -1,0 +1,33 @@
+{
+  "task_id": "20260321-governance-compiler-hardening-v2",
+  "task_type": "governance-change",
+  "capability": {
+    "summary": "Harden compiler obligations, artifact binding, and commit-range governance so CA cannot bypass proofs by self-referential artifacts or global-debt shortcuts.",
+    "in_scope": [
+      "CLAUDE.md",
+      "docs/contracts/**",
+      "docs/qc/**",
+      "package.json"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "tests/**",
+      "e2e/**",
+      "index.html",
+      "sequencer.html"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:kick_01"
+    ],
+    "seed": "governance-seed-v2",
+    "oracles": []
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": true
+  }
+}

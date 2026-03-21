@@ -1,0 +1,98 @@
+{
+  "task_id": "20260321-governance-compiler-hardening-v2",
+  "task_type": "governance-change",
+  "spec_path": "docs/qc/specs/20260321-governance-compiler-hardening-v2.task.spec.json",
+  "policy_version": "1.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-21T17:18:53.642Z",
+  "finished_at_utc": "2026-03-21T17:18:58.677Z",
+  "head_sha": "6402dc7",
+  "tree_sha": "5ef36c47cf5c3d3bc735c3af0d2aa0a22545a3ee",
+  "subject_sha": "4e846d89d59b49800507d434f66d976e056cc001e9b1a9d4a02bdac329754a91",
+  "subject_files": [
+    "CLAUDE.md",
+    "docs/contracts/capability-proof-guardrails.md",
+    "docs/contracts/commit.md",
+    "docs/contracts/e2e.md",
+    "docs/contracts/governance-compiler.md",
+    "docs/contracts/quality-gates.md",
+    "docs/qc/README.md",
+    "docs/qc/compiler/diagnostics.json",
+    "docs/qc/compiler/obligation-rules.json",
+    "docs/qc/scripts/architecture-gates.mjs",
+    "docs/qc/scripts/commit-range-gates.mjs",
+    "docs/qc/scripts/contract-gates.mjs",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "package.json"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "CLAUDE.md",
+    "docs/contracts/capability-proof-guardrails.md",
+    "docs/contracts/commit.md",
+    "docs/contracts/e2e.md",
+    "docs/contracts/governance-compiler.md",
+    "docs/contracts/quality-gates.md",
+    "docs/qc/README.md",
+    "docs/qc/compiler/diagnostics.json",
+    "docs/qc/compiler/obligation-rules.json",
+    "docs/qc/proofs/20260321-governance-compiler-hardening-v2/logs/O-CI.log",
+    "docs/qc/proofs/20260321-governance-compiler-hardening-v2/proof.manifest.json",
+    "docs/qc/proofs/20260321-governance-compiler-hardening-v2/verdict.json",
+    "docs/qc/proofs/TEMPLATE.oracle.json",
+    "docs/qc/proofs/TEMPLATE.proof.manifest.json",
+    "docs/qc/scripts/architecture-gates.mjs",
+    "docs/qc/scripts/commit-range-gates.mjs",
+    "docs/qc/scripts/contract-gates.mjs",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "docs/qc/specs/20260321-governance-compiler-hardening-v2.task.spec.json",
+    "logs/compiler.log",
+    "package.json"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4658,
+        "log_file": "docs/qc/proofs/20260321-governance-compiler-hardening-v2/logs/O-CI.log"
+      }
+    ],
+    "global_debt": [],
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

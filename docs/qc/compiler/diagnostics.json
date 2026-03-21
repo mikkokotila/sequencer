@@ -447,20 +447,20 @@
     },
     "GOV-PROOF-006": {
       "severity": "FAIL",
-      "title": "Artifact tree mismatch",
-      "why_failed": "Artifact tree_sha does not match staged tree being validated.",
+      "title": "Artifact subject mismatch",
+      "why_failed": "Artifact subject_sha does not match the staged subject hash being validated.",
       "acceptable_recipes": [
         {
           "id": "RCP-PROOF-BIND-TREE",
-          "summary": "Regenerate proof artifacts for current staged tree and update tree_sha."
+          "summary": "Regenerate proof artifacts for current staged subject and update subject_sha."
         }
       ],
       "disallowed_workarounds": [
         "Copying artifacts from previous commit",
-        "Omitting tree_sha field"
+        "Omitting subject_sha field"
       ],
       "required_evidence": [
-        "artifact tree_sha equal to compiler tree_sha"
+        "artifact subject_sha equal to compiler subject_sha"
       ],
       "allowed_change_scope": [
         "docs/qc/proofs/**"

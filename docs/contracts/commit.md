@@ -32,9 +32,11 @@ docs(contracts): add commit and quality-gates contracts
 
 1. One commit per logical change. Don't batch unrelated work.
 2. Run `npm run gov:check -- --spec docs/qc/specs/<task-id>.task.spec.json` before committing.
-3. Commit through `npm run gov:commit -- --spec docs/qc/specs/<task-id>.task.spec.json -m \"type(scope): description\"`.
-4. Commit message describes the *why*, not the *what*.
-5. Never amend previous commits unless explicitly asked.
+3. If `gov:check` is not `PASS`, do not commit. Read diagnostics, apply acceptable recipes, rerun `gov:check`, and repeat until `PASS`.
+4. Commit through `npm run gov:commit -- --spec docs/qc/specs/<task-id>.task.spec.json -m \"type(scope): description\"`.
+5. Do not bypass with direct `git commit` for product changes.
+6. Commit message describes the *why*, not the *what*.
+7. Never amend previous commits unless explicitly asked.
 
 ## Verification Before Commit
 

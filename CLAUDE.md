@@ -33,8 +33,15 @@ Before commit, ensure proof artifacts exist:
 1. Stage intended files only.
 2. Run compiler:
    - `npm run gov:check -- --spec docs/qc/specs/<task-id>.task.spec.json`
-3. If and only if compiler verdict is `PASS`, commit with:
+3. If compiler verdict is `FAIL`/`BLOCKED`/`ERROR`:
+   - read the highest-severity diagnostic
+   - apply one listed acceptable recipe
+   - rerun `gov:check` with the same spec
+   - repeat until compiler verdict is `PASS`
+4. If and only if compiler verdict is `PASS`, commit with:
    - `npm run gov:commit -- --spec docs/qc/specs/<task-id>.task.spec.json -m "type(scope): description"`
+
+Direct `git commit` for product changes is non-compliant when compiler verdict is not `PASS`.
 
 Compiler determines blocking task-regression gates from staged diff (`ci`, `e2e`, delta contract/architecture gates, `audio:gates` when bound, and `gate:commit-range`).
 Global-debt full scans are tracked non-blocking during compiler execution.

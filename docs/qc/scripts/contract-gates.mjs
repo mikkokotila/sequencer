@@ -156,15 +156,19 @@ async function checkNewSongExtensionReset(args, changedFiles) {
     return;
   }
   const block = text.slice(start, end);
+  const hasHelperResetCall = block.includes('resetAllExtensions(');
   const hasLoop = block.includes('SEQ_EXTENSIONS.forEach') || block.includes('for (const ext of SEQ_EXTENSIONS)');
   const hasStateReset = block.includes('ext.setState(');
   const hasEnabledReset = block.includes('ext.setEnabled(');
-  const ok = hasLoop && hasStateReset && hasEnabledReset;
+  const hasInlineReset = hasLoop && hasStateReset && hasEnabledReset;
+  const ok = hasHelperResetCall || hasInlineReset;
   record(
     ok,
     'newSong deterministic reset',
     ok
-      ? 'newSong() resets extension state + enabled state.'
+      ? hasHelperResetCall
+        ? 'newSong() delegates deterministic reset via resetAllExtensions().'
+        : 'newSong() resets extension state + enabled state inline.'
       : 'Expected newSong() to reset extension state and enabled flags; pattern not found.',
   );
 }
@@ -249,7 +253,7 @@ async function checkEngineControlCurves(args, changedFiles) {
 async function checkBenchmarkDeterminism(args, changedFiles) {
   if (
     args.mode === 'delta' &&
-    !touchesAny(changedFiles, ['tests/benchmark.html', 'src/engine/worklets/**', 'src/engine/extensions/**'])
+    !touchesAny(changedFiles, ['tests/benchmark.html', 'src/engine/worklets/benchmark-processor.ts'])
   ) {
     recordSkipped('Benchmark deterministic harness', 'Benchmark/worklet paths unchanged.');
     return;

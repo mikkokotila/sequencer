@@ -1,0 +1,34 @@
+{
+  "task_id": "20260321-compiler-remediation-loop-hardening",
+  "task_type": "governance-change",
+  "capability": {
+    "summary": "Harden compiler diagnostics and execution flow so CA gets explicit remediation instructions, avoids null-path crashes, and cannot pass manual oracle evidence.",
+    "in_scope": [
+      "CLAUDE.md",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "tests/**",
+      "e2e/**",
+      "index.html",
+      "sequencer.html"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:kick_01"
+    ],
+    "seed": "governance-seed-v3",
+    "oracles": []
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": true
+  }
+}

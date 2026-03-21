@@ -27,6 +27,7 @@ No task may complete without all three layers.
 2. fixed seed
 3. oracle list
 4. oracle artifacts bound to compiler `subject_sha`
+5. machine-generated oracle outputs (`harness_version` must not be manual)
 
 Mandatory minimum oracles for product tasks:
 
@@ -34,6 +35,7 @@ Mandatory minimum oracles for product tasks:
 2. `on_audible`
 
 Audio/control/persistence changes require extra diff-bound oracles from compiler rules.
+Manual narrative oracle evidence is blocking and must be replaced with deterministic harness output.
 
 ## Guardrail Requirements
 

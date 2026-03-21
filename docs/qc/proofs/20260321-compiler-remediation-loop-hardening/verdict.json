@@ -1,0 +1,85 @@
+{
+  "task_id": "20260321-compiler-remediation-loop-hardening",
+  "task_type": "governance-change",
+  "spec_path": "docs/qc/specs/20260321-compiler-remediation-loop-hardening.task.spec.json",
+  "policy_version": "1.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-21T18:01:43.021Z",
+  "finished_at_utc": "2026-03-21T18:01:48.452Z",
+  "head_sha": "7ffcb51",
+  "tree_sha": "c64cf92cfdb8e1a42381467ac79e70eb767d7b6f",
+  "subject_sha": "220661887787260c3804bddad34afa0222446ac0d5329b717fb8c55f17019f2c",
+  "subject_files": [
+    "CLAUDE.md",
+    "docs/contracts/capability-proof-guardrails.md",
+    "docs/contracts/commit.md",
+    "docs/contracts/governance-compiler.md",
+    "docs/qc/compiler/diagnostics.json",
+    "docs/qc/scripts/architecture-gates.mjs",
+    "docs/qc/scripts/contract-gates.mjs",
+    "docs/qc/scripts/governance-compiler.mjs"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "CLAUDE.md",
+    "docs/contracts/capability-proof-guardrails.md",
+    "docs/contracts/commit.md",
+    "docs/contracts/governance-compiler.md",
+    "docs/qc/compiler/diagnostics.json",
+    "docs/qc/proofs/20260321-compiler-remediation-loop-hardening.md",
+    "docs/qc/proofs/20260321-compiler-remediation-loop-hardening/logs/O-CI.log",
+    "docs/qc/proofs/20260321-compiler-remediation-loop-hardening/proof.manifest.json",
+    "docs/qc/proofs/20260321-compiler-remediation-loop-hardening/verdict.json",
+    "docs/qc/scripts/architecture-gates.mjs",
+    "docs/qc/scripts/contract-gates.mjs",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "docs/qc/specs/20260321-compiler-remediation-loop-hardening.task.spec.json",
+    "logs/compiler.log"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 5059,
+        "log_file": "docs/qc/proofs/20260321-compiler-remediation-loop-hardening/logs/O-CI.log"
+      }
+    ],
+    "global_debt": [],
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

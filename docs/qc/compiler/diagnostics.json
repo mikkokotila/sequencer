@@ -159,6 +159,35 @@
       ],
       "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
     },
+    "GOV-SPEC-007": {
+      "severity": "BLOCKED",
+      "title": "Invalid task_type value",
+      "why_failed": "task.spec.json uses unsupported task_type; compiler cannot bind obligations deterministically.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-SPEC-TASK-TYPE",
+          "summary": "Use one allowed task_type from obligation-rules.json (feature|bugfix|refactor|governance-change|qc)."
+        },
+        {
+          "id": "RCP-SPEC-TASK-TYPE-FIX",
+          "summary": "If task_type is \"fix\", replace it with \"bugfix\" and rerun compiler."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Committing with unsupported task_type",
+        "Skipping compiler because schema is 'close enough'"
+      ],
+      "required_evidence": [
+        "task.spec.json with supported task_type"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/specs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
     "GOV-BIND-001": {
       "severity": "FAIL",
       "title": "Unbound changed file",
@@ -520,6 +549,37 @@
         "src/**"
       ],
       "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-PROOF-009": {
+      "severity": "BLOCKED",
+      "title": "Manual oracle evidence is not allowed",
+      "why_failed": "Oracle artifact declares manual harness evidence, which is self-asserted and non-deterministic for compiler trust.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-MACHINE-HARNESS",
+          "summary": "Generate oracle artifacts from a deterministic machine harness and record harness_version accordingly."
+        },
+        {
+          "id": "RCP-PROOF-RAW-OUTPUT",
+          "summary": "Attach raw machine output files and matching hashes in oracle artifacts."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Using manual-v* harness_version",
+        "Writing narrative evidence without machine output"
+      ],
+      "required_evidence": [
+        "oracle artifact with non-manual harness_version",
+        "raw artifact produced by deterministic harness"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**",
+        "tests/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "regenerate oracle artifacts from harness, then rerun gov:check"
     },
     "GOV-AUDIO-001": {
       "severity": "FAIL",

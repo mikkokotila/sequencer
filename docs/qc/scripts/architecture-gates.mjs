@@ -79,6 +79,34 @@ function runRg(pattern, targets) {
   };
 }
 
+function readAddedLines(targets) {
+  const diff = spawnSync('git', ['diff', '--cached', '--unified=0', '--', ...targets], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  if (diff.status !== 0) {
+    return { ok: false, lines: [], error: `git diff failed (status ${diff.status}): ${diff.stderr || 'unknown error'}` };
+  }
+  const lines = (diff.stdout || '')
+    .split('\n')
+    .filter((line) => line.startsWith('+') && !line.startsWith('+++'))
+    .map((line) => line.slice(1));
+  return { ok: true, lines, error: '' };
+}
+
+function hasAddedPattern(pattern, targets) {
+  const added = readAddedLines(targets);
+  if (!added.ok) {
+    return { matched: true, out: added.error };
+  }
+  const re = new RegExp(pattern);
+  const hits = added.lines.filter((line) => re.test(line));
+  if (hits.length > 0) {
+    return { matched: true, out: hits.join('\n') };
+  }
+  return { matched: false, out: '' };
+}
+
 async function checkNoDummyPassThroughNodes(args, changedFiles) {
   const targets = [
     'src/engine/extensions/reverb.ts',
@@ -107,6 +135,15 @@ async function checkNoDummyPassThroughNodes(args, changedFiles) {
 async function checkNoWindowSeqGlobalInExtensions(args, changedFiles) {
   if (args.mode === 'delta' && !touchesAny(changedFiles, ['src/engine/extensions/**'])) {
     recordSkipped('No global window.SEQ extension coupling', 'Extension files unchanged.');
+    return;
+  }
+  if (args.mode === 'delta') {
+    const r = hasAddedPattern('window\\.SEQ', ['src/engine/extensions']);
+    record(
+      !r.matched,
+      'No global window.SEQ extension coupling',
+      r.matched ? r.out : 'No new window.SEQ additions in staged diff.',
+    );
     return;
   }
   const r = runRg('window\\.SEQ', ['src/engine/extensions']);
@@ -182,6 +219,32 @@ async function checkInitAudioCallSpread(args, changedFiles) {
     !touchesAny(changedFiles, ['src/engine/audio.ts', 'src/main.ts', 'src/ui/**', 'src/transport/persistence.ts'])
   ) {
     recordSkipped('Audio initialization ownership is centralized', 'initAudio callsite files unchanged.');
+    return;
+  }
+  if (args.mode === 'delta') {
+    const deltaTargets = changedFiles.filter((filePath) => filePath.startsWith('src/'));
+    if (deltaTargets.length === 0) {
+      recordSkipped('Audio initialization ownership is centralized', 'No source files in delta scope.');
+      return;
+    }
+    const added = readAddedLines(deltaTargets);
+    if (!added.ok) {
+      record(false, 'Audio initialization ownership is centralized', added.error);
+      return;
+    }
+    const newCalls = added.lines.filter(
+      (line) =>
+        /\binitAudio\(/.test(line) &&
+        !/function\s+initAudio\s*\(/.test(line) &&
+        !/import\s+\{[^}]*\binitAudio\b/.test(line),
+    );
+    record(
+      newCalls.length === 0,
+      'Audio initialization ownership is centralized',
+      newCalls.length === 0
+        ? 'No new initAudio call sites added in staged diff.'
+        : `New initAudio call sites added: ${newCalls.join(' | ')}`,
+    );
     return;
   }
   const r = runRg('initAudio\\(', ['src']);

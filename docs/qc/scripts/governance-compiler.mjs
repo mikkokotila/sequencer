@@ -367,6 +367,10 @@ class CompilerContext {
   }
 }
 
+function hasHardStopDiagnostics(ctx) {
+  return ctx.hasSeverity('BLOCKED') || ctx.hasSeverity('ERROR');
+}
+
 async function loadRules() {
   const [rulesRaw, diagnosticsRaw] = await Promise.all([
     fs.readFile(RULES_PATH, 'utf8'),
@@ -414,11 +418,25 @@ async function phaseParseSpec(ctx) {
   ctx.spec = spec;
   ctx.taskId = typeof spec.task_id === 'string' ? spec.task_id.trim() : '';
   ctx.taskType = typeof spec.task_type === 'string' ? spec.task_type.trim() : '';
+  if (ctx.taskId) {
+    ctx.proofDir = path.join(root, 'docs/qc/proofs', ctx.taskId);
+    ctx.logsDir = path.join(ctx.proofDir, 'logs');
+  }
 
   const errors = [];
   if (!ctx.taskId) errors.push('task_id must be a non-empty string');
   if (!ctx.rules.task_types?.includes(ctx.taskType)) {
     errors.push(`task_type must be one of: ${(ctx.rules.task_types || []).join(', ')}`);
+    const suggestedTaskType = ctx.taskType === 'fix' ? 'bugfix' : null;
+    ctx.addDiagnostic(
+      'GOV-SPEC-007',
+      `Invalid task_type "${ctx.taskType}". Allowed values: ${(ctx.rules.task_types || []).join(', ')}`,
+      {
+        provided_task_type: ctx.taskType,
+        allowed_task_types: ctx.rules.task_types || [],
+        suggested_task_type: suggestedTaskType,
+      },
+    );
   }
 
   const capability = spec.capability;
@@ -497,9 +515,6 @@ async function phaseParseSpec(ctx) {
     ctx.addPhase(phaseName, 'BLOCKED', `${errors.length} schema issue(s).`);
     return;
   }
-
-  ctx.proofDir = path.join(root, 'docs/qc/proofs', ctx.taskId);
-  ctx.logsDir = path.join(ctx.proofDir, 'logs');
 
   ctx.addPhase(phaseName, 'PASS', 'task.spec.json schema validated.');
 }
@@ -890,6 +905,22 @@ async function validateOracleArtifact(ctx, oracleId) {
     });
   }
 
+  const harnessVersion =
+    typeof artifact.harness_version === 'string' ? artifact.harness_version.trim() : '';
+  if (!harnessVersion) {
+    ctx.addDiagnostic(
+      'GOV-PROOF-008',
+      `Oracle harness_version is missing or empty for ${oracleId}`,
+      { oracle_id: oracleId, harness_version: artifact.harness_version ?? null },
+    );
+  } else if (/^manual\b/i.test(harnessVersion)) {
+    ctx.addDiagnostic(
+      'GOV-PROOF-009',
+      `Manual oracle harness is not allowed for ${oracleId} (harness_version=${harnessVersion})`,
+      { oracle_id: oracleId, harness_version: harnessVersion },
+    );
+  }
+
   if (artifact.oracle_id !== oracleId) {
     ctx.addDiagnostic(
       'GOV-PROOF-008',
@@ -987,6 +1018,15 @@ async function phaseExecute(ctx) {
 
   if (!ctx.spec || !ctx.taskId) {
     ctx.addPhase(phaseName, 'BLOCKED', 'Spec missing; execute skipped.');
+    return;
+  }
+  if (!ctx.proofDir || !ctx.logsDir) {
+    ctx.addDiagnostic(
+      'GOV-SPEC-002',
+      'Proof paths could not be resolved from spec; fix parse diagnostics first, then rerun.',
+      { task_id: ctx.taskId, proof_dir: ctx.proofDir, logs_dir: ctx.logsDir },
+    );
+    ctx.addPhase(phaseName, 'BLOCKED', 'Proof paths unresolved; execute skipped.');
     return;
   }
 
@@ -1119,6 +1159,14 @@ function printSummary(ctx, attestationResult) {
     console.log('\ndiagnostics\n- none');
   }
 
+  if (ctx.diagnostics.length > 0) {
+    console.log('\nrequired remediation loop');
+    console.log('1. Read the highest-severity diagnostic and pick one acceptable recipe.');
+    console.log('2. Apply only that remediation; do not bypass with direct commit.');
+    console.log('3. Re-run: npm run gov:check -- --spec <same-spec>');
+    console.log('4. Repeat until final verdict is PASS, then run gov:commit.');
+  }
+
   if (attestationResult?.verdictPath && !ctx.args.noWrite) {
     console.log(`\nattestation: ${path.relative(root, attestationResult.verdictPath)}`);
   }
@@ -1133,9 +1181,20 @@ async function runCompiler(args) {
   const ctx = new CompilerContext(args, rules, diagnostics);
 
   await phaseParseSpec(ctx);
-  await phaseBind(ctx);
-  await phaseSynthesize(ctx);
-  await phaseExecute(ctx);
+  if (hasHardStopDiagnostics(ctx)) {
+    ctx.addPhase('bind', 'BLOCKED', 'Skipped due blocking parse diagnostics.');
+    ctx.addPhase('synthesize', 'BLOCKED', 'Skipped due blocking parse diagnostics.');
+    ctx.addPhase('execute', 'BLOCKED', 'Skipped due blocking parse diagnostics.');
+  } else {
+    await phaseBind(ctx);
+    if (hasHardStopDiagnostics(ctx)) {
+      ctx.addPhase('synthesize', 'BLOCKED', 'Skipped due blocking bind diagnostics.');
+      ctx.addPhase('execute', 'BLOCKED', 'Skipped due blocking bind diagnostics.');
+    } else {
+      await phaseSynthesize(ctx);
+      await phaseExecute(ctx);
+    }
+  }
   await phaseVerify(ctx);
   const attestationResult = await phaseAttest(ctx);
   const auditWriteResult = await flushAuditTrail(ctx);

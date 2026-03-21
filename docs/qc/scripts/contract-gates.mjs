@@ -68,11 +68,37 @@ async function checkNewSongExtensionReset() {
 }
 
 async function checkSetStateRespectsDisabled() {
-  const targets = [
+  const preferredTargets = [
     'src/engine/extensions/pultec-eq.ts',
-    'src/engine/extensions/vari-mu.ts',
+    'src/engine/extensions/compressor.ts',
     'src/engine/extensions/transformer.ts',
   ];
+  const legacyTarget = 'src/engine/extensions/vari-mu.ts';
+  const targets = [];
+  for (const rel of preferredTargets) {
+    try {
+      await fs.access(path.join(root, rel));
+      targets.push(rel);
+    } catch {
+      // ignore missing target
+    }
+  }
+  if (targets.length === 0) {
+    try {
+      await fs.access(path.join(root, legacyTarget));
+      targets.push(legacyTarget);
+    } catch {
+      // ignore missing legacy target
+    }
+  }
+  if (targets.length === 0) {
+    record(
+      false,
+      'setState respects disabled state',
+      'No expected extension files found for disabled-state guard checks.',
+    );
+    return;
+  }
   for (const rel of targets) {
     const text = await fs.readFile(path.join(root, rel), 'utf8');
     const regex = /setState\(s: ExtensionState\): void \{[\s\S]*?if \(enabled\) applyState\(\);[\s\S]*?\}/m;

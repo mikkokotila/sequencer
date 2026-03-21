@@ -10,6 +10,9 @@ Every completed change gets a conventional commit.
 **Run:** `npm run ci`
 Every completed change must pass all four CI gates (typecheck, lint, format, circular). Read `docs/contracts/quality-gates.md` for details.
 
+**Run:** `npm run e2e`
+Every completed change must pass all E2E tests. Read `docs/contracts/e2e.md` for details. Every new feature or bug fix must add corresponding tests.
+
 ## When changing audio code
 
 Applies to: any file in `src/engine/`, `src/engine/worklets/`, `src/engine/extensions/`.

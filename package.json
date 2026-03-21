@@ -12,12 +12,14 @@
     "format": "prettier --write 'src/**/*.ts'",
     "format:check": "prettier --check 'src/**/*.ts'",
     "circular": "madge --circular --extensions ts src/",
+    "e2e": "npx playwright test",
     "ci": "npm run typecheck && npm run lint && npm run format:check && npm run circular",
     "preview": "vite preview",
     "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.58.2",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
@@ -32,6 +34,9 @@
     "tone": "^15.1.22"
   },
   "lint-staged": {
-    "src/**/*.ts": ["eslint --fix", "prettier --write"]
+    "src/**/*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }

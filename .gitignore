@@ -12,3 +12,4 @@ SYNTHS/
 # Node
 node_modules/
 dist/
+test-results/

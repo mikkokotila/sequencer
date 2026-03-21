@@ -89,14 +89,15 @@ export function createReverb(): Extension {
       sendBus.gain.value = 1 / Math.sqrt(TRACK_COUNT);
 
       sendGains = [];
-      const trackGainsArr = window.SEQ.trackGains;
+      // Post-fader post-pan sends: tap from channelPan outputs
+      const channelPans = window.SEQ.channelPans;
       const sends = getSends();
-      for (let i = 0; i < trackGainsArr.length; i++) {
-        const tg = trackGainsArr[i];
-        if (!tg) continue;
+      for (let i = 0; i < channelPans.length; i++) {
+        const pan = channelPans[i];
+        if (!pan) continue;
         const sg = ctx.createGain();
-        sg.gain.value = sends[i] ?? 0.4;
-        tg.connect(sg);
+        sg.gain.value = sends[i] ?? 0.15;
+        pan.connect(sg);
         sg.connect(sendBus);
         sendGains.push(sg);
       }
@@ -107,8 +108,9 @@ export function createReverb(): Extension {
       nodes = { sendBus, freeverb, wetGain, ctx };
       applyState();
 
-      const masterGain = window.SEQ.masterGain;
-      if (masterGain) wetGain.connect(masterGain);
+      // Wet return goes to mixBus (not masterGain — no feedback loop)
+      const mixBus = window.SEQ.mixBus;
+      if (mixBus) wetGain.connect(mixBus);
 
       window.SEQ.onStop(() => {
         if (!nodes) return;

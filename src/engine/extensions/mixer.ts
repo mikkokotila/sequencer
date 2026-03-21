@@ -35,7 +35,7 @@ export function createMixer(): Extension {
   }
 
   function applyLevels(): void {
-    const gains = window.SEQ.trackGains;
+    const gains = window.SEQ.channelFaders;
     const lvls = getLevels();
     for (let i = 0; i < gains.length; i++) {
       const g = gains[i];
@@ -114,7 +114,7 @@ export function createMixer(): Extension {
       if (!state.levels) state.levels = defaults();
       state.levels[idx] = v;
       val.textContent = `${Math.round(v * 100)}%`;
-      const g = window.SEQ.trackGains[idx];
+      const g = window.SEQ.channelFaders[idx];
       if (g) g.gain.value = v;
       window.SEQ.notifyStateChange();
     };
@@ -129,7 +129,7 @@ export function createMixer(): Extension {
     icon: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="7" width="2" height="7" rx="1" fill="currentColor"/><rect x="5" y="3" width="2" height="11" rx="1" fill="currentColor"/><rect x="9" y="5" width="2" height="9" rx="1" fill="currentColor"/><rect x="13" y="1" width="2" height="13" rx="1" fill="currentColor"/></svg>',
 
     init(ctx: AudioContext): NodePair {
-      const gains = window.SEQ.trackGains;
+      const gains = window.SEQ.channelFaders;
       analysers = [];
       for (const g of gains) {
         const a = ctx.createAnalyser();
@@ -224,7 +224,7 @@ export function createMixer(): Extension {
     },
 
     setEnabled(on: boolean): void {
-      const gains = window.SEQ.trackGains;
+      const gains = window.SEQ.channelFaders;
       if (on) {
         applyLevels();
       } else {

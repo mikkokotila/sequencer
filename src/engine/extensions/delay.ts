@@ -93,20 +93,22 @@ export function createDelay(): Extension {
       delay.connect(wetGain);
 
       sendGains = [];
-      const trackGainsArr = window.SEQ.trackGains;
+      // Post-fader post-pan sends: tap from channelPan outputs
+      const channelPans = window.SEQ.channelPans;
       const sends = getSends();
-      for (let i = 0; i < trackGainsArr.length; i++) {
-        const tg = trackGainsArr[i];
-        if (!tg) continue;
+      for (let i = 0; i < channelPans.length; i++) {
+        const pan = channelPans[i];
+        if (!pan) continue;
         const sg = ctx.createGain();
-        sg.gain.value = sends[i] ?? 0.35;
-        tg.connect(sg);
+        sg.gain.value = sends[i] ?? 0.12;
+        pan.connect(sg);
         sg.connect(sendBus);
         sendGains.push(sg);
       }
 
-      const masterGain = window.SEQ.masterGain;
-      if (masterGain) wetGain.connect(masterGain);
+      // Wet return goes to mixBus (not masterGain)
+      const mixBus = window.SEQ.mixBus;
+      if (mixBus) wetGain.connect(mixBus);
 
       nodes = { sendBus, delay, wetGain, ctx };
       applyState();

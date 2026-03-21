@@ -12,7 +12,17 @@ import {
   playing,
 } from '../../state';
 import { drumNames, melNames, vocalName } from '../../transport/song';
-import { getAudioContext, getMasterGain, getTrackGains, getFinalOutput, initAudio } from '../audio';
+import {
+  getAudioContext,
+  getMasterGain,
+  getTrackGains,
+  getChannelFaders,
+  getChannelPans,
+  getMixBus,
+  getMasterTrim,
+  getFinalOutput,
+  initAudio,
+} from '../audio';
 import { DRUMS_CFG, MEL_CFG, VOCAL_CFG, TOTAL_TRACKS } from '../../config';
 import { el } from '../../ui/helpers';
 import { scheduleSave } from '../../transport/persistence';
@@ -26,6 +36,10 @@ export interface SeqAPI {
   readonly audioContext: AudioContext | null;
   readonly masterGain: GainNode | null;
   readonly trackGains: GainNode[];
+  readonly channelFaders: GainNode[];
+  readonly channelPans: StereoPannerNode[];
+  readonly mixBus: GainNode | null;
+  readonly masterTrim: GainNode | null;
   readonly trackCount: number;
   readonly playing: boolean;
   onStop(fn: () => void): void;
@@ -53,6 +67,18 @@ export function installSeqAPI(): void {
     },
     get trackGains(): GainNode[] {
       return getTrackGains();
+    },
+    get channelFaders(): GainNode[] {
+      return getChannelFaders();
+    },
+    get channelPans(): StereoPannerNode[] {
+      return getChannelPans();
+    },
+    get mixBus(): GainNode | null {
+      return getMixBus();
+    },
+    get masterTrim(): GainNode | null {
+      return getMasterTrim();
     },
     get trackCount(): number {
       return TOTAL_TRACKS;

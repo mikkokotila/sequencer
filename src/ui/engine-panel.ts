@@ -4,19 +4,14 @@
  * Uses real AnalyserNodes on the master bus for live visualization.
  */
 
-import { getAudioContext, getMasterGain, initAudio, setFinalOutput } from '../engine/audio';
-import { rebuildAudioChain } from '../engine/extensions/registry';
+import { getAudioContext, getMixBus, initAudio } from '../engine/audio';
 
 // ── State ──
 let isOpen = false;
 let panelEl: HTMLDivElement | null = null;
 let animFrame = 0;
 
-// Audio demo chain nodes
-let demoFilter: BiquadFilterNode | null = null;
-let demoSaturator: WaveShaperNode | null = null;
-let demoCompressor: DynamicsCompressorNode | null = null;
-let demoGain: GainNode | null = null;
+// Analyser nodes (read-only taps for visualization)
 let analyser: AnalyserNode | null = null;
 let analyserTime: AnalyserNode | null = null;
 
@@ -26,76 +21,30 @@ let waveformCanvas: HTMLCanvasElement | null = null;
 let spectrumCtx: CanvasRenderingContext2D | null = null;
 let waveformCtx: CanvasRenderingContext2D | null = null;
 
-// Settings state
+// Settings state (informational display)
 let bufferSize = 128;
 let sampleRateVal = 48000;
 let oversampleMode: OverSampleType = '4x';
 let limiterOn = true;
-let filterCutoff = 100; // 0-100% — wide open by default
-let filterRes = 0; // 0-100% — no resonance by default
-let saturation = 0; // 0-100% — no saturation by default
-let compression = 0; // 0-100% — no compression by default
 
 // Demo oscillator sources
 let demoOscs: OscillatorNode[] = [];
 let demoRunning = false;
 
-// ── Helpers ──
-function pctToFreq(pct: number): number {
-  // 0%=200Hz, 100%=20000Hz, logarithmic
-  return 200 * Math.pow(100, pct / 100);
-}
-
-function pctToQ(pct: number): number {
-  return 0.5 + (pct / 100) * 14.5; // 0.5 to 15
-}
-
-function makeSatCurve(drive: number): Float32Array {
-  const n = 4096;
-  const curve = new Float32Array(n);
-  const amount = drive / 100;
-  if (amount < 0.001) {
-    for (let i = 0; i < n; i++) curve[i] = (i * 2) / n - 1;
-    return curve;
-  }
-  const k = 1 + amount * 50;
-  for (let i = 0; i < n; i++) {
-    const x = (i * 2) / n - 1;
-    const shaped = ((Math.PI + k) * x) / (Math.PI + k * Math.abs(x));
-    const warmth = 0.04 * amount * (x * x - Math.abs(x));
-    curve[i] = x * (1 - amount) + (shaped + warmth) * amount;
-  }
-  return curve;
-}
-
 // ── Audio Setup ──
-// Engine processing is PERMANENT — initialized once at app startup,
-// never torn down. Opening/closing the panel only shows/hides the UI
-// and starts/stops the visualization animation loop.
-//
-// Engine processing sits AFTER the extension chain, BEFORE ctx.destination:
-// masterGain → [extensions] → engineFilter → engineSaturator → engineCompressor → engineGain → destination
-//                                                                                     ├→ analyser
-//                                                                                     └→ analyserTime
-//
-// The engine creates a GainNode as the "finalOutput" that the extension chain
-// connects to (via setFinalOutput). Then the engine chain connects that input
-// through processing to ctx.destination. This is permanent — never torn down.
+// Engine panel is VISUALIZATION ONLY — no audio processing.
+// Analysers tap off the mix bus for spectrum/waveform display.
+// All audio processing is done by the master bus extensions (Pultec, Vari-Mu).
 let engineInitialized = false;
 
 export function initEngineProcessing(): void {
   if (engineInitialized) return;
   initAudio();
   const ctx = getAudioContext();
-  if (!ctx) return;
+  const mix = getMixBus();
+  if (!ctx || !mix) return;
 
-  // At neutral settings (all defaults), use a simple pass-through.
-  // Processing nodes are created but NOT connected until a knob moves.
-  demoGain = ctx.createGain();
-  demoGain.gain.value = 1.0;
-  demoGain.connect(ctx.destination);
-
-  // Create analysers (read-only taps, always connected for visualizations)
+  // Analysers tap off mixBus (read-only, for visualizations)
   analyser = ctx.createAnalyser();
   analyser.fftSize = 4096;
   analyser.smoothingTimeConstant = 0.8;
@@ -104,89 +53,19 @@ export function initEngineProcessing(): void {
   analyserTime.fftSize = 2048;
   analyserTime.smoothingTimeConstant = 0;
 
-  demoGain.connect(analyser);
-  demoGain.connect(analyserTime);
-
-  // Create processing nodes (disconnected until needed)
-  demoFilter = ctx.createBiquadFilter();
-  demoFilter.type = 'lowpass';
-  demoFilter.frequency.value = pctToFreq(filterCutoff);
-  demoFilter.Q.value = pctToQ(filterRes);
-
-  demoSaturator = ctx.createWaveShaper();
-  demoSaturator.curve = makeSatCurve(saturation) as unknown as Float32Array<ArrayBuffer>;
-  demoSaturator.oversample = oversampleMode;
-
-  demoCompressor = ctx.createDynamicsCompressor();
-  applyCompression(compression);
-
-  // At defaults (cutoff=100, res=0, sat=0, comp=0), all processing is bypassed.
-  // The finalOutput is just demoGain (pass-through).
-  setFinalOutput(demoGain);
-  rebuildAudioChain();
+  mix.connect(analyser);
+  mix.connect(analyserTime);
 
   engineInitialized = true;
 }
 
-// Check if any engine processing is active (not at neutral defaults)
-function isProcessingActive(): boolean {
-  return filterCutoff < 100 || filterRes > 0 || saturation > 0 || compression > 0;
-}
-
-// Rebuild the engine chain: either bypass (pass-through) or insert processing
-function rebuildEngineChain(): void {
-  const ctx = getAudioContext();
-  if (!ctx || !demoGain || !demoFilter || !demoSaturator || !demoCompressor) return;
-
-  // Disconnect everything from demoGain input
-  try {
-    demoFilter.disconnect();
-  } catch {
-    /* */
-  }
-  try {
-    demoSaturator.disconnect();
-  } catch {
-    /* */
-  }
-  try {
-    demoCompressor.disconnect();
-  } catch {
-    /* */
-  }
-
-  if (isProcessingActive()) {
-    // Insert processing: finalOutput → filter → saturator → compressor → demoGain → destination
-    setFinalOutput(demoFilter);
-    demoFilter.connect(demoSaturator);
-    demoSaturator.connect(demoCompressor);
-    demoCompressor.connect(demoGain);
-  } else {
-    // Bypass: finalOutput → demoGain → destination (zero processing)
-    setFinalOutput(demoGain);
-  }
-  rebuildAudioChain();
-}
-
-function applyCompression(pct: number): void {
-  if (!demoCompressor) return;
-  // 0% = no compression, 100% = heavy
-  const thresh = -6 - pct * 0.4; // -6 to -46
-  const ratio = 1 + pct * 0.19; // 1 to 20
-  demoCompressor.threshold.value = thresh;
-  demoCompressor.ratio.value = ratio;
-  demoCompressor.knee.value = 10;
-  demoCompressor.attack.value = 0.003;
-  demoCompressor.release.value = 0.15;
-}
-
 function startDemoOscs(): void {
   const ctx = getAudioContext();
-  const master = getMasterGain();
-  if (!ctx || !master || demoRunning) return;
+  const mix = getMixBus();
+  if (!ctx || !mix || demoRunning) return;
 
-  // Detuned sawtooth stack — connects to masterGain so it goes through
-  // the same processing chain as the sequencer audio
+  // Detuned sawtooth stack — connects to mixBus so it goes through
+  // the same master chain as the sequencer audio
   const freqs = [55, 55.1, 110, 110.15, 220, 220.3];
   freqs.forEach((f) => {
     const osc = ctx.createOscillator();
@@ -194,7 +73,7 @@ function startDemoOscs(): void {
     osc.frequency.value = f;
     const g = ctx.createGain();
     g.gain.value = 0.04; // quiet
-    osc.connect(g).connect(master);
+    osc.connect(g).connect(mix);
     osc.start();
     demoOscs.push(osc);
   });
@@ -314,22 +193,7 @@ function drawSpectrum(): void {
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
-  // Cutoff indicator
-  const cutoffFreq = pctToFreq(filterCutoff);
-  const cutoffX = ((Math.log10(cutoffFreq) - logMin) / (logMax - logMin)) * w;
-  ctx.setLineDash([4, 4]);
-  ctx.strokeStyle = '#EEA83E';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(cutoffX, 0);
-  ctx.lineTo(cutoffX, h);
-  ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle = '#EEA83E';
-  ctx.font = '8px monospace';
-  const cutLabel =
-    cutoffFreq >= 1000 ? `${(cutoffFreq / 1000).toFixed(1)}k` : `${Math.round(cutoffFreq)}Hz`;
-  ctx.fillText(cutLabel, cutoffX + 4, 12);
+  // (cutoff indicator removed — engine panel no longer has filter control)
 }
 
 function drawWaveform(): void {
@@ -411,26 +275,7 @@ function drawWaveform(): void {
   ctx.stroke();
 
   // Compression threshold lines
-  if (compression > 5) {
-    const threshLin = Math.pow(10, demoCompressor!.threshold.value / 20);
-    const yTop = ((1 - threshLin) * h) / 2;
-    const yBot = ((1 + threshLin) * h) / 2;
-    ctx.setLineDash([4, 4]);
-    ctx.strokeStyle = '#EEA83E';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, yTop);
-    ctx.lineTo(w, yTop);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(0, yBot);
-    ctx.lineTo(w, yBot);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = '#EEA83E';
-    ctx.font = '7px monospace';
-    ctx.fillText('THRESH', w - 40, yTop - 3);
-  }
+  // (threshold indicator removed — compression control is in Vari-Mu extension)
 }
 
 function animLoop(): void {
@@ -482,36 +327,6 @@ function makeSelect(
   });
   sel.onchange = () => onChange(sel.value);
   return sel;
-}
-
-function makeKnob(label: string, initial: number, onChange: (v: number) => void): HTMLDivElement {
-  const wrap = document.createElement('div');
-  wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;';
-
-  const valDisplay = document.createElement('div');
-  valDisplay.style.cssText = 'font:11px monospace;color:#ddd;';
-  valDisplay.textContent = `${initial}%`;
-
-  const slider = document.createElement('input');
-  slider.type = 'range';
-  slider.min = '0';
-  slider.max = '100';
-  slider.value = String(initial);
-  slider.style.cssText = 'width:100%;accent-color:#888;cursor:pointer;';
-  slider.oninput = () => {
-    const v = Number(slider.value);
-    valDisplay.textContent = `${v}%`;
-    onChange(v);
-  };
-
-  const lbl = document.createElement('div');
-  lbl.style.cssText = 'font:8px monospace;color:#666;letter-spacing:1px;text-transform:uppercase;';
-  lbl.textContent = label;
-
-  wrap.appendChild(valDisplay);
-  wrap.appendChild(slider);
-  wrap.appendChild(lbl);
-  return wrap;
 }
 
 function makeRow(label: string, value: string | HTMLElement): HTMLDivElement {
@@ -673,7 +488,6 @@ function buildPanel(): HTMLDivElement {
       'Oversampling',
       makeSelect('ep-os', ['none', '2x', '4x', '8x'], oversampleMode, (v) => {
         oversampleMode = v as OverSampleType;
-        if (demoSaturator) demoSaturator.oversample = oversampleMode;
         updateReadouts();
       }),
     ),
@@ -707,46 +521,7 @@ function buildPanel(): HTMLDivElement {
   };
   ctrlSide.appendChild(makeRow('Master Limiter', limiterToggle));
 
-  // Master Bus Demo
-  ctrlSide.appendChild(makeSectionTitle('Master Bus Demo'));
-  const knobRow = document.createElement('div');
-  knobRow.style.cssText = 'display:flex;gap:12px;margin-top:8px;';
-  knobRow.appendChild(
-    makeKnob('Cutoff', filterCutoff, (v) => {
-      filterCutoff = v;
-      if (demoFilter) demoFilter.frequency.value = pctToFreq(v);
-      rebuildEngineChain();
-    }),
-  );
-  knobRow.appendChild(
-    makeKnob('Resonance', filterRes, (v) => {
-      filterRes = v;
-      if (demoFilter) demoFilter.Q.value = pctToQ(v);
-      rebuildEngineChain();
-    }),
-  );
-  ctrlSide.appendChild(knobRow);
-
-  const knobRow2 = document.createElement('div');
-  knobRow2.style.cssText = 'display:flex;gap:12px;margin-top:12px;';
-  knobRow2.appendChild(
-    makeKnob('Saturation', saturation, (v) => {
-      saturation = v;
-      if (demoSaturator)
-        demoSaturator.curve = makeSatCurve(v) as unknown as Float32Array<ArrayBuffer>;
-      rebuildEngineChain();
-    }),
-  );
-  knobRow2.appendChild(
-    makeKnob('Compression', compression, (v) => {
-      compression = v;
-      applyCompression(v);
-      rebuildEngineChain();
-    }),
-  );
-  ctrlSide.appendChild(knobRow2);
-
-  // Demo sound toggle
+  // Test signal toggle
   const demoBtn = document.createElement('button');
   demoBtn.style.cssText =
     'margin-top:16px;width:100%;padding:8px;background:#222;border:1px solid #333;border-radius:4px;color:#999;font:9px monospace;letter-spacing:1.5px;cursor:pointer;transition:all 0.15s;';

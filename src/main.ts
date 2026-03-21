@@ -27,12 +27,16 @@ async function init(): Promise<void> {
   installSeqAPI();
 
   // 2. Register extensions
+  // Order: master bus inserts first, then aux effects, then metering
+  // Master bus chain: Pultec EQ → Vari-Mu (serial inserts on master)
+  // Aux effects: Reverb, Delay (parallel buses, returns to mixBus)
+  // Metering: Mixer (channel fader controls + metering)
   SEQ_EXTENSIONS.push(
+    createPultecEq(),
     createVariMu(),
     createMixer(),
     createReverb(),
     createDelay(),
-    createPultecEq(),
   );
 
   // 3. Build the UI
@@ -56,7 +60,7 @@ async function init(): Promise<void> {
   initAudio();
   await loadWorklets();
   initExtensions();
-  initEngineProcessing(); // permanent master bus processing (filter, saturator, compressor)
+  initEngineProcessing(); // visualization analysers only
   initPlayhead();
 
   // 9. Load last song or create default

@@ -398,8 +398,8 @@ test.describe('Extension Panels', () => {
 
   test('compressor model selector switches between FET/OPTO/VCA', async ({ page }) => {
     await waitForApp(page);
-    // Open first extension (vari-mu compressor)
-    await page.locator('.ext-icon-btn').first().click();
+    // Open vari-mu compressor (second extension after Pultec EQ)
+    await page.locator('.ext-icon-btn').nth(1).click();
     await expect(page.locator('#ext-panel')).toHaveClass(/open/);
 
     // Enable the extension

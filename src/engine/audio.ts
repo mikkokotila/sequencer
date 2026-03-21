@@ -1,5 +1,17 @@
 /**
- * Audio engine — AudioContext lifecycle, sample playback, file loading.
+ * Audio engine — canonical studio signal flow.
+ *
+ * Per channel:
+ *   samples → trackGain → channelFader → channelPan → mixBus
+ *                                              ↓
+ *                          post-fader post-pan aux sends → Reverb/Delay buses
+ *
+ * FX buses:
+ *   reverbBus → freeverb → reverbReturn → mixBus
+ *   delayBus  → delay    → delayReturn  → mixBus
+ *
+ * Master chain:
+ *   mixBus → masterTrim → [Pultec EQ] → [Vari-Mu] → [Transformer] → [Limiter] → destination
  */
 
 import { TOTAL_TRACKS } from '../config';
@@ -8,11 +20,18 @@ import { loadAllWorklets } from './worklet-loader';
 
 // ── Module state ──
 let audioCtx: AudioContext | null = null;
-let masterGain: GainNode | null = null;
-const trackGains: GainNode[] = [];
-// Engine processing output — everything ultimately connects here.
-// By default it's ctx.destination. The engine panel replaces it
-// with its processing chain (filter → saturator → compressor → destination).
+
+// Per-channel nodes
+const trackGains: GainNode[] = []; // sample playback target
+const channelFaders: GainNode[] = []; // user-controlled level
+const channelPans: StereoPannerNode[] = []; // pan position
+
+// Mixing
+let mixBus: GainNode | null = null; // single summing point for all dry + FX returns
+let masterTrim: GainNode | null = null; // gain staging before master chain
+let masterGain: GainNode | null = null; // first node in master insert chain
+
+// Final output — master chain connects to this (defaults to ctx.destination)
 let finalOutput: AudioNode | null = null;
 
 // ── Accessors ──
@@ -28,33 +47,79 @@ export function getTrackGains(): GainNode[] {
   return trackGains;
 }
 
-/** Get the final output node (engine processing input, or ctx.destination). */
+export function getChannelFaders(): GainNode[] {
+  return channelFaders;
+}
+
+export function getChannelPans(): StereoPannerNode[] {
+  return channelPans;
+}
+
+export function getMixBus(): GainNode | null {
+  return mixBus;
+}
+
+export function getMasterTrim(): GainNode | null {
+  return masterTrim;
+}
+
 export function getFinalOutput(): AudioNode | null {
   return finalOutput;
 }
 
-/** Set the final output node (called by engine panel during init). */
 export function setFinalOutput(node: AudioNode): void {
   finalOutput = node;
 }
 
 /**
- * Initialize the AudioContext, masterGain, and per-track gain nodes.
+ * Initialize the AudioContext and the full channel strip routing.
  * Safe to call multiple times — only creates once.
+ *
+ * Signal flow per channel:
+ *   trackGain[i] → channelFader[i] → channelPan[i] → mixBus
+ *
+ * Mix bus to master:
+ *   mixBus → masterTrim → masterGain → [master chain] → destination
  */
 export function initAudio(): void {
   if (!audioCtx) {
     audioCtx = new AudioContext();
+
+    // Mix bus — the single summing point for ALL sources
+    mixBus = audioCtx.createGain();
+    mixBus.gain.value = 1.0;
+
+    // Master trim — gain staging before master chain processors
+    masterTrim = audioCtx.createGain();
+    masterTrim.gain.value = 1.0; // unity by default
+
+    // Master gain — first node of master insert chain
     masterGain = audioCtx.createGain();
-    masterGain.gain.value = 0.8; // headroom for summing
+    masterGain.gain.value = 0.8; // headroom
+
+    // Default output
     finalOutput = audioCtx.destination;
+
+    // Wire: mixBus → masterTrim → masterGain → destination
+    mixBus.connect(masterTrim);
+    masterTrim.connect(masterGain);
     masterGain.connect(finalOutput);
 
-    // Create per-track gain nodes
+    // Create per-channel strip: trackGain → fader → pan → mixBus
     for (let i = 0; i < TOTAL_TRACKS; i++) {
-      const g = audioCtx.createGain();
-      g.connect(masterGain);
-      trackGains.push(g);
+      const tg = audioCtx.createGain(); // sample target
+      const fader = audioCtx.createGain();
+      fader.gain.value = 0.8; // default channel level
+      const pan = audioCtx.createStereoPanner();
+      pan.pan.value = 0; // center
+
+      tg.connect(fader);
+      fader.connect(pan);
+      pan.connect(mixBus);
+
+      trackGains.push(tg);
+      channelFaders.push(fader);
+      channelPans.push(pan);
     }
   }
   if (audioCtx.state === 'suspended') {
@@ -64,7 +129,6 @@ export function initAudio(): void {
 
 /**
  * Load all AudioWorklet processors into the current AudioContext.
- * Must be called after initAudio() and before creating any AudioWorkletNodes.
  */
 export async function loadWorklets(): Promise<void> {
   if (!audioCtx) return;
@@ -73,7 +137,6 @@ export async function loadWorklets(): Promise<void> {
 
 /**
  * Play a sample at a given time with optional playback rate and destination.
- * Returns the source node (can be used to stop it).
  */
 export function playSample(
   buffer: AudioBuffer,
@@ -85,23 +148,21 @@ export function playSample(
   const src = audioCtx.createBufferSource();
   src.buffer = buffer;
   if (rate !== undefined) src.playbackRate.value = rate;
-  src.connect(dest ?? masterGain ?? audioCtx.destination);
+  src.connect(dest ?? mixBus ?? audioCtx.destination);
   src.start(time);
   return src;
 }
 
 /**
  * Play a sample immediately for UI preview.
- * Optionally pass a previous source to stop it (soft cutoff).
  */
 export function playPreviewSample(
   buffer: AudioBuffer,
   rate?: number,
   prevSource?: AudioBufferSourceNode | null,
 ): AudioBufferSourceNode | null {
-  if (!audioCtx || !masterGain) return null;
+  if (!audioCtx || !mixBus) return null;
 
-  // Soft-stop previous preview
   if (prevSource) {
     try {
       prevSource.stop();
@@ -114,18 +175,16 @@ export function playPreviewSample(
   src.buffer = buffer;
   if (rate !== undefined) src.playbackRate.value = rate;
 
-  // Use a dedicated gain for preview with fade envelope
   const previewGain = audioCtx.createGain();
   previewGain.gain.value = 1;
-  previewGain.connect(masterGain);
+  previewGain.connect(mixBus); // preview goes to mix bus
   src.connect(previewGain);
   src.start(0);
   return src;
 }
 
 /**
- * Load an audio file from a File input, returning the decoded buffer
- * and the raw ArrayBuffer (for persistence).
+ * Load an audio file from a File input.
  */
 export async function loadAudioFile(file: File): Promise<LoadedSample> {
   initAudio();
@@ -142,7 +201,6 @@ export async function fetchAndDecode(url: string): Promise<LoadedSample> {
   const resp = await fetch(url);
   const ab = await resp.arrayBuffer();
   const buffer = await audioCtx!.decodeAudioData(ab.slice(0));
-  // Extract filename from URL
   const name = url.split('/').pop() ?? 'sample';
   return { buffer, data: ab, name };
 }

@@ -48,7 +48,7 @@ import {
   vocalSampleData,
   setVocalSampleData,
 } from './song';
-import { SEQ_EXTENSIONS } from '../engine/extensions/store';
+import { SEQ_EXTENSIONS, resetAllExtensions } from '../engine/extensions/store';
 import { getAudioContext } from '../engine/audio';
 import { emit } from '../events';
 
@@ -387,6 +387,9 @@ export async function newSong(): Promise<void> {
   drumSampleData.fill(null);
   melSampleData.fill(null);
   setVocalSampleData(null);
+
+  // Reset all extensions to canonical defaults with _enabled=false
+  resetAllExtensions();
 
   // Reset BPM and song identity
   setBpm(120);

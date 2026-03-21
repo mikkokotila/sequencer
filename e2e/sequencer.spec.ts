@@ -271,27 +271,40 @@ test.describe('Song Management', () => {
     await expect(page.locator('.song-name-input')).toBeVisible();
   });
 
-  test.fixme('new song clears patterns', async ({ page }) => {
-    await waitForApp(page);
-    // Clear IndexedDB to start fresh
-    await page.evaluate(() => indexedDB.deleteDatabase('sequencer-db'));
-    await page.reload();
+  test('new song resets patterns and extensions deterministically', async ({ page }) => {
     await waitForApp(page);
 
-    // Click a cell on an empty track
+    // Toggle on an extension to create non-default state
+    const extIconBtn = page.locator('.ext-icon-btn').first();
+    await extIconBtn.click();
+    await expect(page.locator('#ext-panel')).toHaveClass(/open/);
+    const toggle = page.locator('.ext-toggle');
+    await toggle.click();
+    await expect(toggle).toHaveClass(/on/);
+    // Close extension panel
+    await page.locator('#ext-panel-close').click();
+    await expect(page.locator('#ext-panel')).not.toHaveClass(/open/);
+
+    // Click a cell on an empty track to create non-default pattern
     const cell = page.locator('.melody-track[data-type="drum"][data-track="3"] .step-cell').nth(5);
     await cell.click();
     await expect(cell).toHaveClass(/active/);
 
-    // Create new song
+    // Create new song — triggers resetAllExtensions() + pattern clearing
     await page.locator('#song-new').click();
-    await page.waitForTimeout(1000);
+    // Wait for async save + UI refresh
+    await page.waitForTimeout(1500);
 
-    // That cell should now be cleared
-    const activeCount = await page
+    // Pattern should be cleared (only default kick pattern remains on track 0)
+    const track3Active = await page
       .locator('.melody-track[data-type="drum"][data-track="3"] .step-cell.active')
       .count();
-    expect(activeCount).toBe(0);
+    expect(track3Active).toBe(0);
+
+    // Extension should be disabled — re-open same panel and check toggle is OFF
+    await extIconBtn.click();
+    await expect(page.locator('#ext-panel')).toHaveClass(/open/);
+    await expect(page.locator('.ext-toggle')).not.toHaveClass(/on/);
   });
 });
 

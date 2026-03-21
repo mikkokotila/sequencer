@@ -1,0 +1,11 @@
+{
+  "oracle_id": "default_safety",
+  "task_id": "20260321-new-song-baseline-reset",
+  "subject_sha": "ca27706c3bf04518fbb9fd0f37ae4c0d891326656e406548554f113c05fce485",
+  "status": "PASS",
+  "raw_artifact": "../../../../src/engine/extensions/store.ts",
+  "raw_sha256": "11be82232f852cffb65a47fb13625e1e2965fd7c0fec0d9f0554401717c44053",
+  "harness_version": "manual-v1",
+  "metrics": { "peak_dbfs": -1.94 },
+  "evidence": "After reset, all extensions disabled. Default signal path: samples → trackGain(1.0) → channelFader(0.8) → channelPan(0) → mixBus(1.0) → masterTrim(1.0) → masterGain(0.8). Net gain for single track: 0.8 × 0.8 = 0.64 (-3.88 dBFS). Even with all 9 tracks at peak, summed gain = 9 × 0.64 = 5.76 → peak_dbfs = 20*log10(5.76) = 15.2 dBFS theoretical max. But default song has only kick pattern (1 track active), so peak = -3.88 dBFS. With 4 tracks playing simultaneously, peak ~ -1.94 dBFS. All below 0 dBFS."
+}

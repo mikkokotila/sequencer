@@ -1,0 +1,46 @@
+{
+  "task_id": "20260321-new-song-baseline-reset",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "evidence": "npm run ci — typecheck + lint + format + circular deps all pass"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "evidence": "npm run e2e — 52 passed, 0 skipped, 0 failed"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/commit.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/quality-gates.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/governance-compiler.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/audio-determinism.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "E2E test verifies: enable extension → new song → extension toggle is OFF. Pattern cell active → new song → cell cleared. 52/52 tests pass including the formerly-fixme test."
+  },
+  "artifacts": [
+    "verdict.json",
+    "oracles/off_transparent.json",
+    "oracles/on_audible.json",
+    "oracles/clip_guard.json",
+    "oracles/default_safety.json"
+  ]
+}

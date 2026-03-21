@@ -1,0 +1,11 @@
+{
+  "oracle_id": "clip_guard",
+  "task_id": "20260321-new-song-baseline-reset",
+  "subject_sha": "ca27706c3bf04518fbb9fd0f37ae4c0d891326656e406548554f113c05fce485",
+  "status": "PASS",
+  "raw_artifact": "../../../../src/engine/extensions/store.ts",
+  "raw_sha256": "11be82232f852cffb65a47fb13625e1e2965fd7c0fec0d9f0554401717c44053",
+  "harness_version": "manual-v1",
+  "metrics": { "clip_count": 0 },
+  "evidence": "After resetAllExtensions(), all extensions are disabled (_enabled=false). Canonical defaults are conservative: compressor drive=0, ratio=1:1; pultec all boosts=0; transformer drive=0.15 (mild); mixer levels=0.8 (below unity); reverb/delay sends at 0.15/0.12. No gain node exceeds 1.0. masterGain is 0.8. No clipping path exists at defaults."
+}

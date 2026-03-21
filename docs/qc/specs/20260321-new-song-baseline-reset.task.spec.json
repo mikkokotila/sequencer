@@ -1,0 +1,42 @@
+{
+  "task_id": "20260321-new-song-baseline-reset",
+  "task_type": "fix",
+  "capability": {
+    "summary": "Deterministic newSong() baseline reset: extensions reset to canonical defaults with _enabled=false, no prior tone carryover",
+    "in_scope": [
+      "src/engine/extensions/store.ts",
+      "src/transport/persistence.ts",
+      "e2e/sequencer.spec.ts"
+    ],
+    "out_of_scope": [
+      "src/engine/worklets/**"
+    ],
+    "controls": [
+      {
+        "id": "newsong.extensions_reset",
+        "default": "all_defaults_disabled",
+        "range": ["all_defaults_disabled"],
+        "unit": "state",
+        "off_semantics": "extensions disabled, canonical defaults applied, acoustically transparent",
+        "on_semantics": "N/A — this control is about the reset behavior"
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:kick_01"
+    ],
+    "seed": "fixed-seed-v1",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "clip_guard",
+      "default_safety"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false
+  }
+}

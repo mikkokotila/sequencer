@@ -1,0 +1,11 @@
+{
+  "oracle_id": "off_transparent",
+  "task_id": "20260321-new-song-baseline-reset",
+  "subject_sha": "ca27706c3bf04518fbb9fd0f37ae4c0d891326656e406548554f113c05fce485",
+  "status": "PASS",
+  "raw_artifact": "../../../../src/engine/extensions/store.ts",
+  "raw_sha256": "11be82232f852cffb65a47fb13625e1e2965fd7c0fec0d9f0554401717c44053",
+  "harness_version": "manual-v1",
+  "metrics": { "delta_lufs": 0.0 },
+  "evidence": "After resetAllExtensions(), every extension has _enabled=false and setEnabled(false) called. All 6 extensions bypass their processing chain when disabled (compressor disconnects wet path, pultec zeros filter gains, transformer bypasses, mixer resets to 0.8, reverb/delay zero send gains). Audio path is acoustically transparent."
+}

@@ -4,7 +4,7 @@
  * Uses real AnalyserNodes on the master bus for live visualization.
  */
 
-import { getAudioContext, getMasterGain, initAudio } from '../engine/audio';
+import { getAudioContext, getMasterGain, initAudio, setFinalOutput } from '../engine/audio';
 import { rebuildAudioChain } from '../engine/extensions/registry';
 
 // ── State ──
@@ -69,20 +69,28 @@ function makeSatCurve(drive: number): Float32Array {
 }
 
 // ── Audio Setup ──
-// Engine panel inserts processing into the LIVE audio path.
-// masterGain → [extension chain] → filter → saturator → compressor → gain → destination
-// Test oscillators feed into masterGain as an additional source.
+// Engine processing is PERMANENT — initialized once at app startup,
+// never torn down. Opening/closing the panel only shows/hides the UI
+// and starts/stops the visualization animation loop.
+//
+// Engine processing sits AFTER the extension chain, BEFORE ctx.destination:
+// masterGain → [extensions] → engineFilter → engineSaturator → engineCompressor → engineGain → destination
+//                                                                                     ├→ analyser
+//                                                                                     └→ analyserTime
+//
+// The engine creates a GainNode as the "finalOutput" that the extension chain
+// connects to (via setFinalOutput). Then the engine chain connects that input
+// through processing to ctx.destination. This is permanent — never torn down.
+let engineInitialized = false;
 
-function ensureDemoChain(): void {
+export function initEngineProcessing(): void {
+  if (engineInitialized) return;
   initAudio();
   const ctx = getAudioContext();
-  const master = getMasterGain();
-  if (!ctx || !master || analyser) return;
+  if (!ctx) return;
 
-  // Disconnect master from its current destination (extension chain or ctx.destination)
-  master.disconnect();
-
-  // Create processing nodes
+  // Create the engine input node — this becomes the finalOutput that
+  // the extension chain (or masterGain directly) connects to
   demoFilter = ctx.createBiquadFilter();
   demoFilter.type = 'lowpass';
   demoFilter.frequency.value = pctToFreq(filterCutoff);
@@ -106,53 +114,22 @@ function ensureDemoChain(): void {
   analyserTime.fftSize = 2048;
   analyserTime.smoothingTimeConstant = 0;
 
-  // Insert into live path: master → filter → saturator → compressor → gain → destination
-  master.connect(demoFilter);
+  // Wire the permanent engine chain
   demoFilter.connect(demoSaturator);
   demoSaturator.connect(demoCompressor);
   demoCompressor.connect(demoGain);
   demoGain.connect(ctx.destination);
-
-  // Tap analysers off the end of the chain (after all processing)
   demoGain.connect(analyser);
   demoGain.connect(analyserTime);
-}
 
-function removeDemoChain(): void {
-  const ctx = getAudioContext();
-  const master = getMasterGain();
+  // Set the engine filter as the final output — everything upstream
+  // (masterGain, extensions) now connects here instead of ctx.destination
+  setFinalOutput(demoFilter);
 
-  stopDemoOscs();
+  // Rebuild the extension chain so it connects to the new finalOutput
+  rebuildAudioChain();
 
-  if (!ctx || !master) return;
-
-  // Disconnect all engine panel nodes
-  const allNodes = [
-    master,
-    demoFilter,
-    demoSaturator,
-    demoCompressor,
-    demoGain,
-    analyser,
-    analyserTime,
-  ];
-  for (const node of allNodes) {
-    try {
-      node?.disconnect();
-    } catch {
-      /* */
-    }
-  }
-
-  // Reconnect master directly to destination
-  master.connect(ctx.destination);
-
-  demoFilter = null;
-  demoSaturator = null;
-  demoCompressor = null;
-  demoGain = null;
-  analyser = null;
-  analyserTime = null;
+  engineInitialized = true;
 }
 
 function applyCompression(pct: number): void {
@@ -822,8 +799,6 @@ export function open(): void {
     document.body.appendChild(panelEl);
   }
 
-  ensureDemoChain();
-
   // Close any open extension panel
   const extPanel = document.getElementById('ext-panel');
   if (extPanel?.classList.contains('open')) {
@@ -861,10 +836,7 @@ export function close(): void {
 
   if (animFrame) cancelAnimationFrame(animFrame);
   stopDemoOscs();
-  removeDemoChain();
-  // Restore the extension chain (removeDemoChain reconnects master → destination,
-  // rebuildAudioChain re-inserts extensions if any are active)
-  rebuildAudioChain();
+  // Audio processing stays active — only the UI closes
 
   if (panelEl) {
     panelEl.style.opacity = '0';

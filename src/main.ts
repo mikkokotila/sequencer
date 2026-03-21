@@ -13,6 +13,7 @@ import { initPlayhead } from './ui/playhead';
 import { genId } from './ui/helpers';
 import { SEQ_EXTENSIONS } from './state';
 import { currentSongId, setCurrentSongId, setOnBpmChange } from './transport/song';
+import { initEngineProcessing } from './ui/engine-panel';
 
 // Register all extensions
 import { createVariMu } from './engine/extensions/vari-mu';
@@ -51,10 +52,11 @@ async function init(): Promise<void> {
   // 7. Init audio + extensions + load manifest (parallel)
   await Promise.all([openDB(), loadManifest()]);
 
-  // 8. Init audio, load worklets, extensions, and playhead
+  // 8. Init audio, load worklets, extensions, engine processing, and playhead
   initAudio();
   await loadWorklets();
   initExtensions();
+  initEngineProcessing(); // permanent master bus processing (filter, saturator, compressor)
   initPlayhead();
 
   // 9. Load last song or create default

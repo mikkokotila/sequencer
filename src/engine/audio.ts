@@ -10,6 +10,10 @@ import { loadAllWorklets } from './worklet-loader';
 let audioCtx: AudioContext | null = null;
 let masterGain: GainNode | null = null;
 const trackGains: GainNode[] = [];
+// Engine processing output — everything ultimately connects here.
+// By default it's ctx.destination. The engine panel replaces it
+// with its processing chain (filter → saturator → compressor → destination).
+let finalOutput: AudioNode | null = null;
 
 // ── Accessors ──
 export function getAudioContext(): AudioContext | null {
@@ -24,6 +28,16 @@ export function getTrackGains(): GainNode[] {
   return trackGains;
 }
 
+/** Get the final output node (engine processing input, or ctx.destination). */
+export function getFinalOutput(): AudioNode | null {
+  return finalOutput;
+}
+
+/** Set the final output node (called by engine panel during init). */
+export function setFinalOutput(node: AudioNode): void {
+  finalOutput = node;
+}
+
 /**
  * Initialize the AudioContext, masterGain, and per-track gain nodes.
  * Safe to call multiple times — only creates once.
@@ -33,7 +47,8 @@ export function initAudio(): void {
     audioCtx = new AudioContext();
     masterGain = audioCtx.createGain();
     masterGain.gain.value = 0.8; // headroom for summing
-    masterGain.connect(audioCtx.destination);
+    finalOutput = audioCtx.destination;
+    masterGain.connect(finalOutput);
 
     // Create per-track gain nodes
     for (let i = 0; i < TOTAL_TRACKS; i++) {

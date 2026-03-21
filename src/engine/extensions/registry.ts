@@ -12,7 +12,7 @@ import {
   playing,
 } from '../../state';
 import { drumNames, melNames, vocalName } from '../../transport/song';
-import { getAudioContext, getMasterGain, getTrackGains, initAudio } from '../audio';
+import { getAudioContext, getMasterGain, getTrackGains, getFinalOutput, initAudio } from '../audio';
 import { DRUMS_CFG, MEL_CFG, VOCAL_CFG, TOTAL_TRACKS } from '../../config';
 import { el } from '../../ui/helpers';
 import { scheduleSave } from '../../transport/persistence';
@@ -106,11 +106,12 @@ export function installSeqAPI(): void {
 export function rebuildAudioChain(): void {
   const masterGain = getMasterGain();
   const audioCtx = getAudioContext();
-  if (!masterGain || !audioCtx) return;
+  const output = getFinalOutput();
+  if (!masterGain || !audioCtx || !output) return;
 
   masterGain.disconnect();
   if (SEQ_EXTENSIONS.length === 0) {
-    masterGain.connect(audioCtx.destination);
+    masterGain.connect(output);
     return;
   }
 
@@ -136,7 +137,7 @@ export function rebuildAudioChain(): void {
       ext.setEnabled(ext._enabled ?? false);
     }
   }
-  prev.connect(audioCtx.destination);
+  prev.connect(output);
 }
 
 // ═══════════════════════════════════════════

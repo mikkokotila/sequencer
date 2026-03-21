@@ -1,8 +1,9 @@
 /**
  * Pultec EQ — EQP-1A Program Equalizer emulation.
  *
- * Converts the original IIFE to an ES module factory
- * that returns an Extension conforming to types.ts.
+ * EQ bands use native BiquadFilterNodes.
+ * Tube coloration uses AudioWorklet processor:
+ *   - saturation-processor (drive, mix)
  */
 
 import type { Extension, ExtensionState, NodePair } from '../../types';
@@ -29,7 +30,7 @@ interface PultecNodes {
     lowAttenFilter: BiquadFilterNode;
     highBoostFilter: BiquadFilterNode;
     highAttenFilter: BiquadFilterNode;
-    tubeSat: WaveShaperNode;
+    tubeSat: AudioWorkletNode;
     outputGain: GainNode;
     ctx: AudioContext;
 }
@@ -37,6 +38,15 @@ interface PultecNodes {
 interface SelectOption {
     readonly v: number;
     readonly l: string;
+}
+
+// ═══════════════════════════════════════════
+//  Helpers
+// ═══════════════════════════════════════════
+
+function setWorkletParam(node: AudioWorkletNode, name: string, value: number): void {
+    const param = node.parameters.get(name);
+    if (param) param.value = value;
 }
 
 // ═══════════════════════════════════════════
@@ -58,19 +68,6 @@ export function createPultecEq(): Extension {
 
     let nodes: PultecNodes | null = null;
 
-    // Tube amplifier saturation
-    function makeTubeCurve(amount: number): Float32Array<ArrayBuffer> {
-        const k = amount * 15 + 1;
-        const n = 4096;
-        const curve = new Float32Array(n);
-        for (let i = 0; i < n; i++) {
-            const x = (i * 2) / n - 1;
-            const base = (Math.PI + k) * x / (Math.PI + k * Math.abs(x));
-            curve[i] = base + 0.015 * amount * (x * x - Math.abs(x));
-        }
-        return curve;
-    }
-
     function applyState(): void {
         if (!nodes) return;
         const { lowBoostFilter, lowAttenFilter, highBoostFilter, highAttenFilter, tubeSat } = nodes;
@@ -88,7 +85,8 @@ export function createPultecEq(): Extension {
         highAttenFilter.frequency.value = state.highAttenFreq;
         highAttenFilter.gain.value = -state.highAtten;
 
-        tubeSat.curve = makeTubeCurve(state.tubeColor) as Float32Array<ArrayBuffer>;
+        setWorkletParam(tubeSat, 'drive', state.tubeColor);
+        setWorkletParam(tubeSat, 'mix', 1);
     }
 
     // ═══════════════════════════════════════════
@@ -152,9 +150,7 @@ export function createPultecEq(): Extension {
             highAttenFilter.frequency.value = state.highAttenFreq;
             highAttenFilter.gain.value = -state.highAtten;
 
-            const tubeSat = ctx.createWaveShaper();
-            tubeSat.curve = makeTubeCurve(state.tubeColor) as Float32Array<ArrayBuffer>;
-            tubeSat.oversample = '2x';
+            const tubeSat = new AudioWorkletNode(ctx, 'saturation-processor');
 
             const outputGain = ctx.createGain();
             outputGain.gain.value = 1;
@@ -166,6 +162,7 @@ export function createPultecEq(): Extension {
             tubeSat.connect(outputGain);
 
             nodes = { lowBoostFilter, lowAttenFilter, highBoostFilter, highAttenFilter, tubeSat, outputGain, ctx };
+            applyState();
 
             return { input: lowBoostFilter, output: outputGain };
         },
@@ -245,17 +242,18 @@ export function createPultecEq(): Extension {
                 nodes.lowAttenFilter.gain.value = 0;
                 nodes.highBoostFilter.gain.value = 0;
                 nodes.highAttenFilter.gain.value = 0;
-                nodes.tubeSat.curve = makeTubeCurve(0) as Float32Array<ArrayBuffer>;
+                // Bypass saturation: drive=0 means identity
+                setWorkletParam(nodes.tubeSat, 'drive', 0);
             }
         },
 
         destroy(): void {
             if (nodes) {
-                Object.values(nodes).forEach(n => {
-                    if (n && typeof n === 'object' && 'disconnect' in n) {
-                        try { (n as AudioNode).disconnect(); } catch (_e) { /* already disconnected */ }
-                    }
-                });
+                const { lowBoostFilter, lowAttenFilter, highBoostFilter, highAttenFilter, tubeSat, outputGain } = nodes;
+                const allNodes: AudioNode[] = [lowBoostFilter, lowAttenFilter, highBoostFilter, highAttenFilter, tubeSat, outputGain];
+                for (const n of allNodes) {
+                    try { n.disconnect(); } catch (_e) { /* already disconnected */ }
+                }
                 nodes = null;
             }
         },

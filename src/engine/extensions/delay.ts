@@ -1,8 +1,8 @@
 /**
- * Tape Delay — Echoplex EP-3 emulation with per-channel aux sends.
+ * Tape Delay — delay with per-channel aux sends.
  *
- * Converts the original IIFE to an ES module factory
- * that returns an Extension conforming to types.ts.
+ * Uses AudioWorklet processor:
+ *   - delay-processor (delayTime, feedback, tone, mix)
  */
 
 import type { Extension, ExtensionState, NodePair } from '../../types';
@@ -16,29 +16,27 @@ interface DelayState {
     time: number;
     feedback: number;
     tone: number;
-    saturation: number;
-    wobble: number;
     mix: number;
     sends: number[] | null;
 }
 
 interface DelayNodes {
     sendBus: GainNode;
-    inputSat: WaveShaperNode;
-    delay: DelayNode;
-    feedbackGain: GainNode;
-    tapeLPF: BiquadFilterNode;
-    tapeHPF: BiquadFilterNode;
-    fbSat: WaveShaperNode;
+    delay: AudioWorkletNode;
     wetGain: GainNode;
-    lfo: OscillatorNode;
-    lfoGain: GainNode;
-    lfo2: OscillatorNode;
-    lfo2Gain: GainNode;
     ctx: AudioContext;
 }
 
 const TRACK_COUNT = 9;
+
+// ═══════════════════════════════════════════
+//  Helpers
+// ═══════════════════════════════════════════
+
+function setWorkletParam(node: AudioWorkletNode, name: string, value: number): void {
+    const param = node.parameters.get(name);
+    if (param) param.value = value;
+}
 
 // ═══════════════════════════════════════════
 //  Factory
@@ -49,8 +47,6 @@ export function createDelay(): Extension {
         time: 0.375,
         feedback: 0.45,
         tone: 0.55,
-        saturation: 0.3,
-        wobble: 0.3,
         mix: 0.25,
         sends: null,
     };
@@ -61,35 +57,12 @@ export function createDelay(): Extension {
     let nodes: DelayNodes | null = null;
     let sendGains: GainNode[] = [];
 
-    // ═══════════════════════════════════════════
-    //  TAPE SATURATION CURVE
-    // ═══════════════════════════════════════════
-    function makeTapeCurve(amount: number): Float32Array {
-        const n = 4096;
-        const curve = new Float32Array(n);
-        if (amount < 0.001) {
-            for (let i = 0; i < n; i++) curve[i] = (i * 2) / n - 1;
-            return curve;
-        }
-        const k = amount * 30 + 1;
-        for (let i = 0; i < n; i++) {
-            const x = (i * 2) / n - 1;
-            const shaped = (Math.PI + k) * x / (Math.PI + k * Math.abs(x));
-            const warmth = 0.02 * amount * Math.sin(x * Math.PI);
-            curve[i] = x * (1 - amount) + (shaped + warmth) * amount;
-        }
-        return curve;
-    }
-
     function applyState(): void {
         if (!nodes) return;
-        nodes.delay.delayTime.setTargetAtTime(state.time, nodes.ctx.currentTime, 0.05);
-        nodes.feedbackGain.gain.value = Math.min(state.feedback, 0.95);
-        nodes.tapeLPF.frequency.value = 800 + state.tone * 6000;
-        nodes.inputSat.curve = makeTapeCurve(state.saturation) as Float32Array<ArrayBuffer>;
-        nodes.fbSat.curve = makeTapeCurve(state.saturation * 0.6) as Float32Array<ArrayBuffer>;
-        nodes.lfoGain.gain.value = state.wobble * 0.003;
-        nodes.lfo2Gain.gain.value = state.wobble * 0.0004;
+        setWorkletParam(nodes.delay, 'delayTime', state.time);
+        setWorkletParam(nodes.delay, 'feedback', Math.min(state.feedback, 0.95));
+        setWorkletParam(nodes.delay, 'tone', state.tone);
+        setWorkletParam(nodes.delay, 'mix', 1); // mix is handled by wetGain externally
         nodes.wetGain.gain.value = state.mix;
         const sends = getSends();
         for (let i = 0; i < sendGains.length; i++) {
@@ -107,60 +80,13 @@ export function createDelay(): Extension {
             const sendBus = ctx.createGain();
             sendBus.gain.value = 1 / Math.sqrt(TRACK_COUNT);
 
-            const inputSat = ctx.createWaveShaper();
-            inputSat.curve = makeTapeCurve(state.saturation) as Float32Array<ArrayBuffer>;
-            inputSat.oversample = '2x';
-
-            const delay = ctx.createDelay(2.0);
-            delay.delayTime.value = state.time;
-
-            const feedbackGain = ctx.createGain();
-            feedbackGain.gain.value = state.feedback;
-
-            const tapeLPF = ctx.createBiquadFilter();
-            tapeLPF.type = 'lowpass';
-            tapeLPF.frequency.value = 800 + state.tone * 6000;
-            tapeLPF.Q.value = 0.5;
-
-            const tapeHPF = ctx.createBiquadFilter();
-            tapeHPF.type = 'highpass';
-            tapeHPF.frequency.value = 80;
-            tapeHPF.Q.value = 0.5;
-
-            const fbSat = ctx.createWaveShaper();
-            fbSat.curve = makeTapeCurve(state.saturation * 0.6) as Float32Array<ArrayBuffer>;
-            fbSat.oversample = '2x';
-
-            const lfo = ctx.createOscillator();
-            lfo.type = 'sine';
-            lfo.frequency.value = 0.6;
-            const lfoGain = ctx.createGain();
-            lfoGain.gain.value = state.wobble * 0.003;
-            lfo.connect(lfoGain);
-            lfoGain.connect(delay.delayTime);
-            lfo.start();
-
-            const lfo2 = ctx.createOscillator();
-            lfo2.type = 'triangle';
-            lfo2.frequency.value = 3.7;
-            const lfo2Gain = ctx.createGain();
-            lfo2Gain.gain.value = state.wobble * 0.0004;
-            lfo2.connect(lfo2Gain);
-            lfo2Gain.connect(delay.delayTime);
-            lfo2.start();
+            const delay = new AudioWorkletNode(ctx, 'delay-processor');
 
             const wetGain = ctx.createGain();
             wetGain.gain.value = state.mix;
 
-            sendBus.connect(inputSat);
-            inputSat.connect(delay);
+            sendBus.connect(delay);
             delay.connect(wetGain);
-
-            delay.connect(fbSat);
-            fbSat.connect(tapeHPF);
-            tapeHPF.connect(tapeLPF);
-            tapeLPF.connect(feedbackGain);
-            feedbackGain.connect(delay);
 
             sendGains = [];
             const trackGainsArr = window.SEQ.trackGains;
@@ -178,24 +104,19 @@ export function createDelay(): Extension {
             const masterGain = window.SEQ.masterGain;
             if (masterGain) wetGain.connect(masterGain);
 
-            nodes = {
-                sendBus, inputSat, delay, feedbackGain,
-                tapeLPF, tapeHPF, fbSat, wetGain,
-                lfo, lfoGain, lfo2, lfo2Gain,
-                ctx,
-            };
+            nodes = { sendBus, delay, wetGain, ctx };
+            applyState();
 
             window.SEQ.onStop(() => {
                 if (!nodes) return;
                 const now = nodes.ctx.currentTime;
-                nodes.feedbackGain.gain.setValueAtTime(nodes.feedbackGain.gain.value, now);
-                nodes.feedbackGain.gain.linearRampToValueAtTime(0, now + 0.05);
+                // Ramp down feedback and wet to stop repeats
+                setWorkletParam(nodes.delay, 'feedback', 0);
                 nodes.wetGain.gain.setValueAtTime(nodes.wetGain.gain.value, now);
                 nodes.wetGain.gain.linearRampToValueAtTime(0, now + 0.15);
                 setTimeout(() => {
                     if (!nodes) return;
-                    nodes.feedbackGain.gain.cancelScheduledValues(0);
-                    nodes.feedbackGain.gain.value = Math.min(state.feedback, 0.95);
+                    setWorkletParam(nodes.delay, 'feedback', Math.min(state.feedback, 0.95));
                     nodes.wetGain.gain.cancelScheduledValues(0);
                     nodes.wetGain.gain.value = state.mix;
                 }, 300);
@@ -210,7 +131,7 @@ export function createDelay(): Extension {
 
             const title = document.createElement('div');
             title.style.cssText = 'font-size:8px;font-weight:700;letter-spacing:2px;color:#666;margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid #2a2a32;';
-            title.textContent = 'ECHOPLEX EP-3 TAPE DELAY';
+            title.textContent = 'TAPE DELAY';
             container.appendChild(title);
 
             makeSlider(container, 'TIME', state.time, 0.04, 0.8, 0.001,
@@ -224,14 +145,6 @@ export function createDelay(): Extension {
             makeSlider(container, 'TONE', state.tone, 0, 1, 0.01,
                 v => { const hz = 800 + v * 6000; return hz < 1000 ? Math.round(hz) + 'Hz' : (hz / 1000).toFixed(1) + 'kHz'; },
                 v => { state.tone = v; applyState(); window.SEQ.notifyStateChange(); });
-
-            makeSlider(container, 'SATURATION', state.saturation, 0, 1, 0.01,
-                v => Math.round(v * 100) + '%',
-                v => { state.saturation = v; applyState(); window.SEQ.notifyStateChange(); });
-
-            makeSlider(container, 'WOBBLE', state.wobble, 0, 1, 0.01,
-                v => Math.round(v * 100) + '%',
-                v => { state.wobble = v; applyState(); window.SEQ.notifyStateChange(); });
 
             makeSlider(container, 'WET LEVEL', state.mix, 0, 1, 0.01,
                 v => Math.round(v * 100) + '%',
@@ -311,7 +224,7 @@ export function createDelay(): Extension {
                 applyState();
             } else {
                 nodes.wetGain.gain.value = 0;
-                nodes.feedbackGain.gain.value = 0;
+                setWorkletParam(nodes.delay, 'feedback', 0);
                 for (const sg of sendGains) sg.gain.value = 0;
             }
         },
@@ -320,13 +233,11 @@ export function createDelay(): Extension {
             sendGains.forEach(sg => { try { sg.disconnect(); } catch (_e) { /* already disconnected */ } });
             sendGains = [];
             if (nodes) {
-                try { nodes.lfo.stop(); } catch (_e) { /* already stopped */ }
-                try { nodes.lfo2.stop(); } catch (_e) { /* already stopped */ }
-                Object.values(nodes).forEach(n => {
-                    if (n && typeof n === 'object' && 'disconnect' in n) {
-                        try { (n as AudioNode).disconnect(); } catch (_e) { /* already disconnected */ }
-                    }
-                });
+                const { sendBus, delay, wetGain } = nodes;
+                const allNodes: AudioNode[] = [sendBus, delay, wetGain];
+                for (const n of allNodes) {
+                    try { n.disconnect(); } catch (_e) { /* already disconnected */ }
+                }
                 nodes = null;
             }
         },

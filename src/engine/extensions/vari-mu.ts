@@ -1,8 +1,9 @@
 /**
  * Vari-Mu — Tube bus compressor extension.
  *
- * Converts the original IIFE to an ES module factory
- * that returns an Extension conforming to types.ts.
+ * Uses AudioWorklet processors:
+ *   - saturation-processor (drive, mix)
+ *   - compressor-processor (threshold, ratio, knee, attack, release, makeupGain)
  */
 
 import type { Extension, ExtensionState, NodePair } from '../../types';
@@ -24,8 +25,8 @@ interface VariMuState {
 
 interface VariMuNodes {
     inputGain: GainNode;
-    waveshaper: WaveShaperNode;
-    compressor: DynamicsCompressorNode;
+    saturation: AudioWorkletNode;
+    compressor: AudioWorkletNode;
     wetGain: GainNode;
     dryGain: GainNode;
     outputGain: GainNode;
@@ -36,6 +37,15 @@ interface SpeedPreset {
     readonly attack: number;
     readonly release: number;
     readonly label: string;
+}
+
+// ═══════════════════════════════════════════
+//  Helpers
+// ═══════════════════════════════════════════
+
+function setWorkletParam(node: AudioWorkletNode, name: string, value: number): void {
+    const param = node.parameters.get(name);
+    if (param) param.value = value;
 }
 
 // ═══════════════════════════════════════════
@@ -66,42 +76,24 @@ export function createVariMu(): Extension {
     let grRAF: number | null = null;
 
     // ═══════════════════════════════════════════
-    //  TUBE SATURATION CURVE
-    // ═══════════════════════════════════════════
-    function makeTubeCurve(amount: number): Float32Array {
-        const n = 8192;
-        const curve = new Float32Array(n);
-        if (amount < 0.001) {
-            for (let i = 0; i < n; i++) curve[i] = (i * 2) / n - 1;
-            return curve;
-        }
-        const k = amount * 50 + 1;
-        for (let i = 0; i < n; i++) {
-            const x = (i * 2) / n - 1;
-            const shaped = (Math.PI + k) * x / (Math.PI + k * Math.abs(x));
-            const warmth = 0.04 * amount * (x * x - Math.abs(x));
-            curve[i] = x * (1 - amount) + (shaped + warmth) * amount;
-        }
-        return curve;
-    }
-
-    // ═══════════════════════════════════════════
     //  APPLY STATE
     // ═══════════════════════════════════════════
     function applyState(): void {
         if (!nodes) return;
-        const { inputGain, waveshaper, compressor, wetGain, dryGain, outputGain } = nodes;
+        const { inputGain, saturation, compressor, wetGain, dryGain, outputGain } = nodes;
 
         inputGain.gain.value = 1 + state.drive * 1.5;
-        waveshaper.curve = makeTubeCurve(state.drive) as Float32Array<ArrayBuffer>;
+        setWorkletParam(saturation, 'drive', state.drive);
+        setWorkletParam(saturation, 'mix', 1);
 
-        compressor.threshold.value = state.compress;
-        compressor.ratio.value = state.ratio;
-        compressor.knee.value = state.knee;
+        setWorkletParam(compressor, 'threshold', state.compress);
+        setWorkletParam(compressor, 'ratio', state.ratio);
+        setWorkletParam(compressor, 'knee', state.knee);
+        setWorkletParam(compressor, 'makeupGain', 1);
 
         const preset = SPEED_PRESETS[state.speed] ?? SPEED_PRESETS[2]!;
-        compressor.attack.value = preset.attack;
-        compressor.release.value = preset.release;
+        setWorkletParam(compressor, 'attack', preset.attack);
+        setWorkletParam(compressor, 'release', preset.release);
 
         wetGain.gain.value = state.mix;
         dryGain.gain.value = 1 - state.mix;
@@ -110,16 +102,16 @@ export function createVariMu(): Extension {
     }
 
     // ═══════════════════════════════════════════
-    //  GR METER
+    //  GR METER (visual only — reads no native compressor)
     // ═══════════════════════════════════════════
     function startGRMeter(): void {
         if (grRAF !== null) cancelAnimationFrame(grRAF);
         function tick(): void {
-            if (nodes && grFill && grVal) {
-                const gr = nodes.compressor.reduction; // negative dB
-                const pct = Math.min(100, Math.abs(gr) * 3.33);
-                grFill.style.width = pct + '%';
-                grVal.textContent = gr.toFixed(1) + ' dB';
+            // AudioWorklet compressor doesn't expose .reduction —
+            // show placeholder until a message-port solution is added.
+            if (grFill && grVal) {
+                grFill.style.width = '0%';
+                grVal.textContent = '0.0 dB';
             }
             grRAF = requestAnimationFrame(tick);
         }
@@ -136,23 +128,21 @@ export function createVariMu(): Extension {
 
         init(ctx: AudioContext): NodePair {
             const inputGain = ctx.createGain();
-            const waveshaper = ctx.createWaveShaper();
-            const compressor = ctx.createDynamicsCompressor();
+            const saturation = new AudioWorkletNode(ctx, 'saturation-processor');
+            const compressor = new AudioWorkletNode(ctx, 'compressor-processor');
             const wetGain = ctx.createGain();
             const dryGain = ctx.createGain();
             const outputGain = ctx.createGain();
 
-            inputGain.connect(waveshaper);
-            waveshaper.connect(compressor);
+            inputGain.connect(saturation);
+            saturation.connect(compressor);
             compressor.connect(wetGain);
             wetGain.connect(outputGain);
 
             inputGain.connect(dryGain);
             dryGain.connect(outputGain);
 
-            waveshaper.oversample = '4x';
-
-            nodes = { inputGain, waveshaper, compressor, wetGain, dryGain, outputGain, ctx };
+            nodes = { inputGain, saturation, compressor, wetGain, dryGain, outputGain, ctx };
             applyState();
 
             return { input: inputGain, output: outputGain };
@@ -235,17 +225,21 @@ export function createVariMu(): Extension {
                 nodes.wetGain.gain.value = 0;
                 nodes.dryGain.gain.value = 1;
                 nodes.inputGain.gain.value = 1;
+                // Bypass saturation: drive=0 means identity
+                setWorkletParam(nodes.saturation, 'drive', 0);
+                // Bypass compressor: threshold=0 means no compression
+                setWorkletParam(nodes.compressor, 'threshold', 0);
             }
         },
 
         destroy(): void {
             if (grRAF !== null) cancelAnimationFrame(grRAF);
             if (nodes) {
-                Object.values(nodes).forEach(n => {
-                    if (n && typeof n === 'object' && 'disconnect' in n) {
-                        try { (n as AudioNode).disconnect(); } catch (_e) { /* already disconnected */ }
-                    }
-                });
+                const { inputGain, saturation, compressor, wetGain, dryGain, outputGain } = nodes;
+                const allNodes: AudioNode[] = [inputGain, saturation, compressor, wetGain, dryGain, outputGain];
+                for (const n of allNodes) {
+                    try { n.disconnect(); } catch (_e) { /* already disconnected */ }
+                }
                 nodes = null;
             }
         },

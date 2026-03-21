@@ -2,7 +2,7 @@
  * Entry point — initializes all modules and wires them together.
  */
 
-import { initAudio } from './engine/audio';
+import { initAudio, loadWorklets } from './engine/audio';
 import { openDB, dbGet, saveSong, loadSong, scheduleSave } from './transport/persistence';
 import { loadManifest, wireBrowserEvents } from './ui/browser';
 import { buildUI, refreshUI, refreshSongName, updateSongPane } from './ui/build';
@@ -50,8 +50,9 @@ async function init(): Promise<void> {
   // 7. Init audio + extensions + load manifest (parallel)
   await Promise.all([openDB(), loadManifest()]);
 
-  // 8. Init audio, extensions, and playhead
+  // 8. Init audio, load worklets, extensions, and playhead
   initAudio();
+  await loadWorklets();
   initExtensions();
   initPlayhead();
 

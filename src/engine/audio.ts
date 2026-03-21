@@ -4,6 +4,7 @@
 
 import { TOTAL_TRACKS } from '../config';
 import type { LoadedSample } from '../types';
+import { loadAllWorklets } from './worklet-loader';
 
 // ── Module state ──
 let audioCtx: AudioContext | null = null;
@@ -44,6 +45,15 @@ export function initAudio(): void {
   if (audioCtx.state === 'suspended') {
     void audioCtx.resume();
   }
+}
+
+/**
+ * Load all AudioWorklet processors into the current AudioContext.
+ * Must be called after initAudio() and before creating any AudioWorkletNodes.
+ */
+export async function loadWorklets(): Promise<void> {
+  if (!audioCtx) return;
+  await loadAllWorklets(audioCtx);
 }
 
 /**

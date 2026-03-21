@@ -11,15 +11,15 @@ import {
   melBuf,
   drumSampleData,
   melSampleData,
-  vocalSampleData,
   drumNames,
   melNames,
+  vocalBuf,
   setVocalBuf,
   setVocalSampleData,
 } from '../transport/song';
 import { drumPat, melPat, vocalPat } from '../transport/patterns';
 import { isPlaying } from '../engine/scheduler';
-import { fetchAndDecode, playPreviewSample, loadAudioFile, getAudioContext } from '../engine/audio';
+import { fetchAndDecode, playPreviewSample, loadAudioFile } from '../engine/audio';
 import { el, truncName } from './helpers';
 import { scheduleSave } from '../transport/persistence';
 
@@ -377,52 +377,20 @@ function trackHasContent(type: TrackType | '', idx: number): boolean {
 //  Buffer restore (for sequence-mode preview cancel)
 // ═══════════════════════════════════════════
 
-function restoreOriginalBuffer(): void {
-  const ctx = getAudioContext();
-  if (!ctx) return;
+// Saved original buffer before preview swap — restore from this, not async re-decode
+let savedOriginalBuffer: AudioBuffer | null = null;
 
-  if (browserType === 'drum') {
-    const sd = drumSampleData[browserIdx];
-    if (sd?.data) {
-      void ctx
-        .decodeAudioData(sd.data.slice(0))
-        .then((b) => {
-          drumBuf[browserIdx] = b;
-        })
-        .catch(() => {
-          /* noop */
-        });
-    } else {
-      drumBuf[browserIdx] = null;
-    }
-  } else if (browserType === 'melody') {
-    const sd = melSampleData[browserIdx];
-    if (sd?.data) {
-      void ctx
-        .decodeAudioData(sd.data.slice(0))
-        .then((b) => {
-          melBuf[browserIdx] = b;
-        })
-        .catch(() => {
-          /* noop */
-        });
-    } else {
-      melBuf[browserIdx] = null;
-    }
-  } else {
-    if (vocalSampleData?.data) {
-      void ctx
-        .decodeAudioData(vocalSampleData.data.slice(0))
-        .then((b) => {
-          setVocalBuf(b);
-        })
-        .catch(() => {
-          /* noop */
-        });
-    } else {
-      setVocalBuf(null);
-    }
-  }
+function saveOriginalBuffer(): void {
+  if (browserType === 'drum') savedOriginalBuffer = drumBuf[browserIdx] ?? null;
+  else if (browserType === 'melody') savedOriginalBuffer = melBuf[browserIdx] ?? null;
+  else savedOriginalBuffer = vocalBuf;
+}
+
+function restoreOriginalBuffer(): void {
+  if (browserType === 'drum') drumBuf[browserIdx] = savedOriginalBuffer;
+  else if (browserType === 'melody') melBuf[browserIdx] = savedOriginalBuffer;
+  else setVocalBuf(savedOriginalBuffer);
+  savedOriginalBuffer = null;
 }
 
 // ═══════════════════════════════════════════
@@ -465,7 +433,8 @@ export async function previewSample(i: number): Promise<void> {
     }
 
     if (isSequenceMode) {
-      // Swap buffer so the playing sequence uses this sound
+      // Save original before first swap so we can restore without re-decode
+      if (savedOriginalBuffer === null) saveOriginalBuffer();
       if (browserType === 'drum') drumBuf[browserIdx] = buffer;
       else if (browserType === 'melody') melBuf[browserIdx] = buffer;
       else setVocalBuf(buffer);

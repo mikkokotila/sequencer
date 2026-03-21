@@ -5,7 +5,7 @@
  */
 
 import { getAudioContext, getMasterGain, initAudio } from '../engine/audio';
-import { rebuildAudioChain } from '../engine/extensions/registry';
+// No longer imports rebuildAudioChain — engine panel never touches main audio path
 
 // ── State ──
 let isOpen = false;
@@ -69,17 +69,31 @@ function makeSatCurve(drive: number): Float32Array {
 }
 
 // ── Audio Setup ──
+// The engine panel NEVER touches the main audio path.
+// Analysers tap off the existing chain (read-only).
+// Demo knobs drive a SEPARATE isolated signal chain for the test oscillators.
+let demoChainOutput: GainNode | null = null;
+
 function ensureDemoChain(): void {
   initAudio();
   const ctx = getAudioContext();
   const master = getMasterGain();
   if (!ctx || !master || analyser) return;
 
-  // Insert demo processing chain between master and destination
-  // master → demoFilter → demoSaturator → demoCompressor → demoGain → destination
-  // Also tap analysers after demoGain
-  master.disconnect();
+  // Analysers tap off the main chain — no disconnect, no insert
+  analyser = ctx.createAnalyser();
+  analyser.fftSize = 4096;
+  analyser.smoothingTimeConstant = 0.8;
 
+  analyserTime = ctx.createAnalyser();
+  analyserTime.fftSize = 2048;
+  analyserTime.smoothingTimeConstant = 0;
+
+  // Tap analysers off master (read-only, doesn't affect audio)
+  master.connect(analyser);
+  master.connect(analyserTime);
+
+  // Separate demo chain for test signal only (doesn't touch main path)
   demoFilter = ctx.createBiquadFilter();
   demoFilter.type = 'lowpass';
   demoFilter.frequency.value = pctToFreq(filterCutoff);
@@ -95,73 +109,66 @@ function ensureDemoChain(): void {
   demoGain = ctx.createGain();
   demoGain.gain.value = 1.0;
 
-  analyser = ctx.createAnalyser();
-  analyser.fftSize = 4096;
-  analyser.smoothingTimeConstant = 0.8;
+  demoChainOutput = ctx.createGain();
+  demoChainOutput.gain.value = 1.0;
 
-  analyserTime = ctx.createAnalyser();
-  analyserTime.fftSize = 2048;
-  analyserTime.smoothingTimeConstant = 0;
-
-  master.connect(demoFilter);
+  // Demo chain: filter → saturator → compressor → gain → output → destination
+  // This is ONLY for demo oscillators, completely separate from main audio
   demoFilter.connect(demoSaturator);
   demoSaturator.connect(demoCompressor);
   demoCompressor.connect(demoGain);
-  demoGain.connect(ctx.destination);
-  demoGain.connect(analyser);
-  demoGain.connect(analyserTime);
+  demoGain.connect(demoChainOutput);
+  demoChainOutput.connect(ctx.destination);
+  // Also tap demo chain for analysers so knob changes are visible
+  demoChainOutput.connect(analyser);
+  demoChainOutput.connect(analyserTime);
 }
 
 function removeDemoChain(): void {
-  const ctx = getAudioContext();
   const master = getMasterGain();
-  if (!ctx || !master) return;
 
   stopDemoOscs();
 
-  try {
-    master.disconnect();
-  } catch {
-    /* */
+  // Disconnect analysers from master (they were tapped, not inserted)
+  if (master && analyser) {
+    try {
+      master.disconnect(analyser);
+    } catch {
+      /* */
+    }
   }
-  try {
-    demoFilter?.disconnect();
-  } catch {
-    /* */
-  }
-  try {
-    demoSaturator?.disconnect();
-  } catch {
-    /* */
-  }
-  try {
-    demoCompressor?.disconnect();
-  } catch {
-    /* */
-  }
-  try {
-    demoGain?.disconnect();
-  } catch {
-    /* */
-  }
-  try {
-    analyser?.disconnect();
-  } catch {
-    /* */
-  }
-  try {
-    analyserTime?.disconnect();
-  } catch {
-    /* */
+  if (master && analyserTime) {
+    try {
+      master.disconnect(analyserTime);
+    } catch {
+      /* */
+    }
   }
 
-  // Reconnect master directly to destination
-  master.connect(ctx.destination);
+  // Disconnect demo chain nodes
+  const demoNodes = [
+    demoFilter,
+    demoSaturator,
+    demoCompressor,
+    demoGain,
+    demoChainOutput,
+    analyser,
+    analyserTime,
+  ];
+  for (const node of demoNodes) {
+    try {
+      node?.disconnect();
+    } catch {
+      /* */
+    }
+  }
 
+  // Main audio path was never touched — no reconnection needed
   demoFilter = null;
   demoSaturator = null;
   demoCompressor = null;
   demoGain = null;
+  demoChainOutput = null;
   analyser = null;
   analyserTime = null;
 }
@@ -180,10 +187,9 @@ function applyCompression(pct: number): void {
 
 function startDemoOscs(): void {
   const ctx = getAudioContext();
-  const master = getMasterGain();
-  if (!ctx || !master || demoRunning) return;
+  if (!ctx || !demoFilter || demoRunning) return;
 
-  // Detuned sawtooth stack for rich harmonics
+  // Detuned sawtooth stack — connects to demo chain, NOT masterGain
   const freqs = [55, 55.1, 110, 110.15, 220, 220.3];
   freqs.forEach((f) => {
     const osc = ctx.createOscillator();
@@ -191,7 +197,7 @@ function startDemoOscs(): void {
     osc.frequency.value = f;
     const g = ctx.createGain();
     g.gain.value = 0.04; // quiet
-    osc.connect(g).connect(master);
+    osc.connect(g).connect(demoFilter!);
     osc.start();
     demoOscs.push(osc);
   });
@@ -872,8 +878,6 @@ export function close(): void {
   if (animFrame) cancelAnimationFrame(animFrame);
   stopDemoOscs();
   removeDemoChain();
-  // Restore extension chain after demo chain teardown
-  rebuildAudioChain();
 
   if (panelEl) {
     panelEl.style.opacity = '0';

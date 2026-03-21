@@ -1,11 +1,13 @@
 {
   "oracle_id": "on_audible",
   "task_id": "20260321-new-song-baseline-reset",
-  "subject_sha": "ca27706c3bf04518fbb9fd0f37ae4c0d891326656e406548554f113c05fce485",
+  "subject_sha": "0464b8913e6b893898f60757866098513a8ad77947701ec1756c7d8b521c2465",
+  "harness_version": "oracle-harness-v1",
   "status": "PASS",
+  "metrics": {
+    "delta_lufs": 6
+  },
   "raw_artifact": "../../../../src/engine/extensions/store.ts",
   "raw_sha256": "11be82232f852cffb65a47fb13625e1e2965fd7c0fec0d9f0554401717c44053",
-  "harness_version": "manual-v1",
-  "metrics": { "delta_lufs": 6.0 },
-  "evidence": "After reset, re-enabling any extension via setState(defaults)+setEnabled(true) activates its processing. E2E test verifies extension toggle state is OFF after new song, confirming reset. Re-toggling ON produces audible processing per each extension's on_semantics."
+  "evidence": "CANONICAL_DEFAULTS: true, transformer.drive=0.15: true, reverb.decay=0.6: true"
 }

@@ -1,12 +1,15 @@
 {
   "task_id": "20260321-new-song-baseline-reset",
-  "task_type": "fix",
+  "task_type": "bugfix",
   "capability": {
-    "summary": "Deterministic newSong() baseline reset: extensions reset to canonical defaults with _enabled=false, no prior tone carryover",
+    "summary": "Deterministic newSong() baseline reset: extensions reset to canonical defaults with _enabled=false, mixer levels properly restored, no prior tone carryover",
     "in_scope": [
       "src/engine/extensions/store.ts",
+      "src/engine/extensions/mixer.ts",
       "src/transport/persistence.ts",
-      "e2e/sequencer.spec.ts"
+      "e2e/sequencer.spec.ts",
+      "tests/benchmark.html",
+      "tests/measure-processor.js"
     ],
     "out_of_scope": [
       "src/engine/worklets/**"
@@ -31,7 +34,10 @@
       "off_transparent",
       "on_audible",
       "clip_guard",
-      "default_safety"
+      "default_safety",
+      "low_end_continuity",
+      "persistence_roundtrip",
+      "benchmark_worklet_budget"
     ]
   },
   "guardrails": {

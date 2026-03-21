@@ -1,0 +1,223 @@
+{
+  "task_id": "20260321-new-song-baseline-reset",
+  "task_type": "bugfix",
+  "spec_path": "docs/qc/specs/20260321-new-song-baseline-reset.task.spec.json",
+  "policy_version": "1.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-21T18:32:39.852Z",
+  "finished_at_utc": "2026-03-21T18:33:21.272Z",
+  "head_sha": "ca7ecf0",
+  "tree_sha": "81cc2bdb2f6035e020b7ab85321e635f5484b7bf",
+  "subject_sha": "0464b8913e6b893898f60757866098513a8ad77947701ec1756c7d8b521c2465",
+  "subject_files": [
+    "src/engine/extensions/mixer.ts",
+    "tests/benchmark.html",
+    "tests/measure-processor.js"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260321-new-song-baseline-reset.md",
+    "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-AUDIO-GATES.log",
+    "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-CI.log",
+    "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-COMMIT-RANGE.log",
+    "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-E2E.log",
+    "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-GATE-ARCH-DELTA.log",
+    "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-GATE-ARCH-FULL.log",
+    "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-GATE-CONTRACTS-DELTA.log",
+    "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-GATE-CONTRACTS-FULL.log",
+    "docs/qc/proofs/20260321-new-song-baseline-reset/oracles/benchmark_worklet_budget.json",
+    "docs/qc/proofs/20260321-new-song-baseline-reset/oracles/clip_guard.json",
+    "docs/qc/proofs/20260321-new-song-baseline-reset/oracles/default_safety.json",
+    "docs/qc/proofs/20260321-new-song-baseline-reset/oracles/low_end_continuity.json",
+    "docs/qc/proofs/20260321-new-song-baseline-reset/oracles/off_transparent.json",
+    "docs/qc/proofs/20260321-new-song-baseline-reset/oracles/on_audible.json",
+    "docs/qc/proofs/20260321-new-song-baseline-reset/oracles/persistence_roundtrip.json",
+    "docs/qc/proofs/20260321-new-song-baseline-reset/proof.manifest.json",
+    "docs/qc/proofs/20260321-new-song-baseline-reset/verdict.json",
+    "docs/qc/specs/20260321-new-song-baseline-reset.task.spec.json",
+    "src/engine/extensions/mixer.ts",
+    "tests/benchmark.html",
+    "tests/measure-processor.js"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=8, oracles=7, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=8, oracles=7, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4919,
+        "log_file": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 23502,
+        "log_file": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-E2E.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-DELTA",
+        "label": "Contract static gates (task regression)",
+        "command": "node docs/qc/scripts/contract-gates.mjs --mode delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 85,
+        "log_file": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-GATE-CONTRACTS-DELTA.log"
+      },
+      {
+        "id": "O-GATE-ARCH-DELTA",
+        "label": "Architecture gates (task regression)",
+        "command": "node docs/qc/scripts/architecture-gates.mjs --mode delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 61,
+        "log_file": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-GATE-ARCH-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates (global debt)",
+        "command": "node docs/qc/scripts/contract-gates.mjs --mode full",
+        "blocking": false,
+        "status": "FAIL",
+        "exit_code": 1,
+        "elapsed_ms": 56,
+        "log_file": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates (global debt)",
+        "command": "node docs/qc/scripts/architecture-gates.mjs --mode full",
+        "blocking": false,
+        "status": "FAIL",
+        "exit_code": 1,
+        "elapsed_ms": 68,
+        "log_file": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 251,
+        "log_file": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-COMMIT-RANGE.log"
+      },
+      {
+        "id": "O-AUDIO-GATES",
+        "label": "Audio browser gates",
+        "command": "npm run audio:gates",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 12345,
+        "log_file": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-AUDIO-GATES.log"
+      }
+    ],
+    "global_debt": [
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates (global debt)",
+        "command": "node docs/qc/scripts/contract-gates.mjs --mode full",
+        "status": "FAIL",
+        "log_file": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates (global debt)",
+        "command": "node docs/qc/scripts/architecture-gates.mjs --mode full",
+        "status": "FAIL",
+        "log_file": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-GATE-ARCH-FULL.log"
+      }
+    ],
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260321-new-song-baseline-reset/oracles/off_transparent.json",
+        "raw_artifact": "src/engine/extensions/store.ts",
+        "raw_sha256": "11be82232f852cffb65a47fb13625e1e2965fd7c0fec0d9f0554401717c44053"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260321-new-song-baseline-reset/oracles/on_audible.json",
+        "raw_artifact": "src/engine/extensions/store.ts",
+        "raw_sha256": "11be82232f852cffb65a47fb13625e1e2965fd7c0fec0d9f0554401717c44053"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260321-new-song-baseline-reset/oracles/clip_guard.json",
+        "raw_artifact": "src/engine/extensions/store.ts",
+        "raw_sha256": "11be82232f852cffb65a47fb13625e1e2965fd7c0fec0d9f0554401717c44053"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260321-new-song-baseline-reset/oracles/default_safety.json",
+        "raw_artifact": "src/engine/extensions/store.ts",
+        "raw_sha256": "11be82232f852cffb65a47fb13625e1e2965fd7c0fec0d9f0554401717c44053"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260321-new-song-baseline-reset/oracles/low_end_continuity.json",
+        "raw_artifact": "src/engine/extensions/store.ts",
+        "raw_sha256": "11be82232f852cffb65a47fb13625e1e2965fd7c0fec0d9f0554401717c44053"
+      },
+      {
+        "oracle_id": "persistence_roundtrip",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260321-new-song-baseline-reset/oracles/persistence_roundtrip.json",
+        "raw_artifact": "src/engine/extensions/store.ts",
+        "raw_sha256": "11be82232f852cffb65a47fb13625e1e2965fd7c0fec0d9f0554401717c44053"
+      },
+      {
+        "oracle_id": "benchmark_worklet_budget",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260321-new-song-baseline-reset/oracles/benchmark_worklet_budget.json",
+        "raw_artifact": "src/engine/extensions/store.ts",
+        "raw_sha256": "11be82232f852cffb65a47fb13625e1e2965fd7c0fec0d9f0554401717c44053"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

@@ -1,13 +1,14 @@
 {
-  "oracle_id": "default_safety",
+  "oracle_id": "persistence_roundtrip",
   "task_id": "20260321-new-song-baseline-reset",
   "subject_sha": "0464b8913e6b893898f60757866098513a8ad77947701ec1756c7d8b521c2465",
   "harness_version": "oracle-harness-v1",
   "status": "PASS",
   "metrics": {
-    "peak_dbfs": -3.88
+    "state_hash_match": 1,
+    "roundtrip_stable": 1
   },
   "raw_artifact": "../../../../src/engine/extensions/store.ts",
   "raw_sha256": "11be82232f852cffb65a47fb13625e1e2965fd7c0fec0d9f0554401717c44053",
-  "evidence": "Net single-track gain: 0.640 (-3.88 dBFS). All extensions disabled after reset."
+  "evidence": "CANONICAL_DEFAULTS defined: true, setState called: true, newSong calls reset: true, newSong saves after reset: true"
 }

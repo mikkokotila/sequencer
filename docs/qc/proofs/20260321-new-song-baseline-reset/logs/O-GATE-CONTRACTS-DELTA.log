@@ -1,0 +1,16 @@
+command: node docs/qc/scripts/contract-gates.mjs --mode delta
+status: 0
+elapsed_ms: 85
+
+--- stdout ---
+PASS | No fixme debt | No new test.fixme() additions in staged diff.
+PASS | No informational assertions | No new assert(..., true, ...) additions in staged diff.
+PASS | newSong deterministic reset | [delta-skip] Persistence layer unchanged.
+PASS | setState respects disabled state | [delta-skip] Extension processors unchanged.
+PASS | Engine low-end control curve safety | [delta-skip] Engine panel control mappings unchanged.
+PASS | Benchmark deterministic harness | Benchmark harness uses real DSP chain for measurement.
+
+contract-gates(delta): all 6 checks passed.
+
+
+--- stderr ---

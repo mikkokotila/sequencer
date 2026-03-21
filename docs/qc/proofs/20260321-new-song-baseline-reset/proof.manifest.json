@@ -6,12 +6,50 @@
     {
       "id": "O-CI",
       "result": "PASS",
-      "evidence": "npm run ci — typecheck + lint + format + circular deps all pass"
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-CI.log"
     },
     {
       "id": "O-E2E",
       "result": "PASS",
-      "evidence": "npm run e2e — 52 passed, 0 skipped, 0 failed"
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-E2E.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-GATE-CONTRACTS-DELTA.log"
+    },
+    {
+      "id": "O-GATE-ARCH-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-GATE-ARCH-DELTA.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-FULL",
+      "result": "FAIL",
+      "blocking": false,
+      "evidence": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-GATE-CONTRACTS-FULL.log"
+    },
+    {
+      "id": "O-GATE-ARCH-FULL",
+      "result": "FAIL",
+      "blocking": false,
+      "evidence": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-GATE-ARCH-FULL.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-COMMIT-RANGE.log"
+    },
+    {
+      "id": "O-AUDIO-GATES",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260321-new-song-baseline-reset/logs/O-AUDIO-GATES.log"
     }
   ],
   "contracts": [
@@ -34,13 +72,15 @@
   ],
   "browser_verification": {
     "status": "VERIFIED",
-    "details": "E2E test verifies: enable extension → new song → extension toggle is OFF. Pattern cell active → new song → cell cleared. 52/52 tests pass including the formerly-fixme test."
+    "details": "E2E test verifies: enable extension → new song → extension toggle is OFF, pattern cleared. Mixer leak fixed: setState({levels:null}) now resets faders to 0.8. 52/52 tests pass."
   },
   "artifacts": [
     "verdict.json",
     "oracles/off_transparent.json",
     "oracles/on_audible.json",
     "oracles/clip_guard.json",
-    "oracles/default_safety.json"
+    "oracles/default_safety.json",
+    "oracles/low_end_continuity.json",
+    "oracles/persistence_roundtrip.json"
   ]
 }

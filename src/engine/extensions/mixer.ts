@@ -225,8 +225,11 @@ export function createMixer(): Extension {
     setState(s: ExtensionState): void {
       if (Array.isArray(s.levels)) {
         state.levels = [...(s.levels as number[])];
-        applyLevels();
+      } else if ('levels' in s && s.levels === null) {
+        // Explicit null = reset to defaults
+        state.levels = null;
       }
+      applyLevels();
     },
 
     setEnabled(on: boolean): void {

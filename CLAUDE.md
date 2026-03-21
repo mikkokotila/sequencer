@@ -8,6 +8,7 @@ Read the relevant contract BEFORE starting work. Not all contracts apply to ever
 **Read:** `docs/contracts/quality-gates.md`
 **Read:** `docs/contracts/governance-compiler.md`
 **Read:** `docs/contracts/capability-proof-guardrails.md`
+**Read:** `docs/contracts/mid-task-termination.md`
 
 ### Required Task Staging
 
@@ -47,6 +48,19 @@ Direct `git commit` for product changes is non-compliant when compiler verdict i
 
 Compiler determines blocking task-regression gates from staged diff (`ci`, `e2e`, delta contract/architecture gates, `audio:gates` when bound, and `gate:commit-range`).
 Global-debt full scans are tracked non-blocking during compiler execution.
+
+### Operator Stand-Down Override
+
+If operator says `stand down`, stop all work immediately and run:
+
+- `npm run gov:standdown -- --task-id <task-id> --reason "<operator reason>"`
+
+After stand-down:
+
+1. do not edit
+2. do not stage
+3. do not commit
+4. do not continue task work until explicit operator reactivation
 
 ## When changing audio code
 

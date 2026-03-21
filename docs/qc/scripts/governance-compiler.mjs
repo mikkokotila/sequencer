@@ -8,6 +8,7 @@ const root = process.cwd();
 const RULES_PATH = path.join(root, 'docs/qc/compiler/obligation-rules.json');
 const DIAGNOSTICS_PATH = path.join(root, 'docs/qc/compiler/diagnostics.json');
 const COMPILER_LOG_PATH = path.join(root, 'logs/compiler.log');
+const STANDDOWN_ACTIVE_PATH = path.join(root, 'docs/qc/standdown/active.json');
 const CHAIN_GENESIS_HASH = '0'.repeat(64);
 const REPEATED_FAILURE_LOOKBACK_MS = 6 * 60 * 60 * 1000;
 const REPEATED_FAILURE_PRIOR_THRESHOLD = 2;
@@ -119,7 +120,13 @@ function matchesAnyPattern(filePath, patterns) {
   return patterns.some((pattern) => matchesPattern(filePath, pattern));
 }
 
-const COMPILER_MANAGED_ARTIFACT_PATTERNS = ['docs/qc/proofs/**', 'docs/qc/specs/**', 'logs/compiler.log'];
+const COMPILER_MANAGED_ARTIFACT_PATTERNS = [
+  'docs/qc/proofs/**',
+  'docs/qc/specs/**',
+  'docs/qc/runs/**',
+  'docs/qc/standdown/**',
+  'logs/compiler.log',
+];
 
 function isCompilerManagedArtifact(filePath) {
   return matchesAnyPattern(filePath, COMPILER_MANAGED_ARTIFACT_PATTERNS);
@@ -483,6 +490,38 @@ async function loadRules() {
   };
 }
 
+async function readStanddownActive() {
+  let raw = '';
+  try {
+    raw = await fs.readFile(STANDDOWN_ACTIVE_PATH, 'utf8');
+  } catch (err) {
+    if (err && typeof err === 'object' && 'code' in err && err.code === 'ENOENT') {
+      return { exists: false, active: false, payload: null, reportExists: false };
+    }
+    throw err;
+  }
+
+  const parsed = readJsonFileSafe(raw, path.relative(root, STANDDOWN_ACTIVE_PATH));
+  if (!parsed.ok) {
+    return { exists: true, active: true, payload: null, reportExists: false, parseError: parsed.error };
+  }
+
+  const payload = parsed.data;
+  const status = typeof payload?.status === 'string' ? payload.status.trim().toUpperCase() : '';
+  const active = status === 'ACTIVE';
+  let reportExists = false;
+  if (typeof payload?.report_path === 'string' && payload.report_path.trim() !== '') {
+    try {
+      await fs.access(path.resolve(root, payload.report_path));
+      reportExists = true;
+    } catch {
+      reportExists = false;
+    }
+  }
+
+  return { exists: true, active, payload, reportExists, parseError: null };
+}
+
 async function phaseParseSpec(ctx) {
   const phaseName = 'parse';
 
@@ -531,6 +570,40 @@ async function phaseParseSpec(ctx) {
         suggested_task_type: suggestedTaskType,
       },
     );
+  }
+
+  const standdown = await readStanddownActive();
+  const isProductTaskType = ['feature', 'bugfix', 'refactor'].includes(ctx.taskType);
+  if (standdown.active && isProductTaskType) {
+    const activePathRel = path.relative(root, STANDDOWN_ACTIVE_PATH);
+    if (standdown.parseError) {
+      ctx.addDiagnostic(
+        'GOV-PROC-008',
+        `Stand-down lock is active but invalid JSON: ${activePathRel}.`,
+        { active_path: activePathRel, parse_error: standdown.parseError },
+      );
+    } else if (!standdown.payload?.report_path || !standdown.reportExists) {
+      ctx.addDiagnostic(
+        'GOV-PROC-008',
+        `Stand-down lock active in ${activePathRel} but report artifact is missing.`,
+        {
+          active_path: activePathRel,
+          report_path: standdown.payload?.report_path || null,
+          report_exists: standdown.reportExists,
+        },
+      );
+    } else {
+      ctx.addDiagnostic(
+        'GOV-PROC-008',
+        `Stand-down lock is ACTIVE for product tasks. Wait for operator reactivation.`,
+        {
+          active_path: activePathRel,
+          report_path: standdown.payload.report_path,
+          activated_at_utc: standdown.payload.activated_at_utc || null,
+          standdown_task_id: standdown.payload.task_id || null,
+        },
+      );
+    }
   }
 
   const capability = spec.capability;

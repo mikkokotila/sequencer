@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "diagnostics": {
     "GOV-SPEC-001": {
       "severity": "BLOCKED",
@@ -1170,6 +1170,35 @@
         "src/**"
       ],
       "recheck_protocol": "request operator guidance, apply approved direction, then rerun npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-PROC-008": {
+      "severity": "BLOCKED",
+      "title": "Stand-down lock active",
+      "why_failed": "Mid-task termination lock is active; product task execution is paused until operator reactivation.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROC-STANDDOWN",
+          "summary": "Run stand-down protocol, ensure report artifact exists, and wait for explicit operator reactivation."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Continuing edits while stand-down is active",
+        "Committing despite active stand-down lock",
+        "Deleting lock without operator instruction"
+      ],
+      "required_evidence": [
+        "docs/qc/standdown/active.json",
+        "docs/qc/standdown/reports/<timestamp>-<task-id>.json"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/standdown/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**",
+        "tests/**",
+        "e2e/**"
+      ],
+      "recheck_protocol": "after operator clears stand-down lock, rerun npm run gov:check -- --spec <same-spec>"
     }
   }
 }

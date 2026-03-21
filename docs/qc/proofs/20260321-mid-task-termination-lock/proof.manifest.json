@@ -1,0 +1,36 @@
+{
+  "task_id": "20260321-mid-task-termination-lock",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260321-mid-task-termination-lock/logs/O-CI.log"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/mid-task-termination.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/governance-compiler.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/commit.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "NOT_VERIFIED",
+    "details": "Governance-only task; no runtime product behavior change."
+  },
+  "artifacts": [
+    "proof.manifest.json",
+    "verdict.json",
+    "../../../../logs/compiler.log"
+  ]
+}

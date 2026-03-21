@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "task_types": [
     "feature",
     "bugfix",
@@ -23,6 +23,7 @@
       "docs/qc/proofs/**",
       "docs/qc/specs/**",
       "docs/qc/runs/**",
+      "docs/qc/standdown/**",
       "logs/compiler.log"
     ],
     "product": [

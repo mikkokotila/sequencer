@@ -1,0 +1,82 @@
+{
+  "task_id": "20260321-mid-task-termination-lock",
+  "task_type": "governance-change",
+  "spec_path": "docs/qc/specs/20260321-mid-task-termination-lock.task.spec.json",
+  "policy_version": "1.1.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-21T20:09:36.138Z",
+  "finished_at_utc": "2026-03-21T20:09:41.016Z",
+  "head_sha": "07c7ed1",
+  "tree_sha": "c001df2b8836f13485877a624b188e199c73d7e2",
+  "subject_sha": "8d09587473316c5774b12bc70e1062b862db58782955536c7f15e069ed8d7ad6",
+  "subject_files": [
+    "CLAUDE.md",
+    "docs/contracts/governance-compiler.md",
+    "docs/contracts/mid-task-termination.md",
+    "docs/qc/compiler/diagnostics.json",
+    "docs/qc/compiler/obligation-rules.json",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "docs/qc/scripts/standdown.mjs",
+    "package.json"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "CLAUDE.md",
+    "docs/contracts/governance-compiler.md",
+    "docs/contracts/mid-task-termination.md",
+    "docs/qc/compiler/diagnostics.json",
+    "docs/qc/compiler/obligation-rules.json",
+    "docs/qc/proofs/20260321-mid-task-termination-lock.md",
+    "docs/qc/proofs/20260321-mid-task-termination-lock/proof.manifest.json",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "docs/qc/scripts/standdown.mjs",
+    "docs/qc/specs/20260321-mid-task-termination-lock.task.spec.json",
+    "package.json"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4645,
+        "log_file": "docs/qc/proofs/20260321-mid-task-termination-lock/logs/O-CI.log"
+      }
+    ],
+    "global_debt": [],
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

@@ -1,0 +1,35 @@
+{
+  "task_id": "20260321-mid-task-termination-lock",
+  "task_type": "governance-change",
+  "capability": {
+    "summary": "Add deterministic mid-task stand-down protocol with lock/report artifacts and compiler blocking for product task execution while stand-down is active.",
+    "in_scope": [
+      "CLAUDE.md",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**",
+      "package.json",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "tests/**",
+      "e2e/**",
+      "index.html",
+      "sequencer.html"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:kick_01"
+    ],
+    "seed": "governance-seed-v5",
+    "oracles": []
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": true
+  }
+}

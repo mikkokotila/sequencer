@@ -78,6 +78,14 @@ Artifact must include:
 
 Until operator guidance is provided, task remains non-complete and uncommitted.
 
+## Stand-Down Lock Protocol
+
+Compiler enforces mid-task termination via `docs/qc/standdown/active.json`.
+
+1. If lock status is `ACTIVE`, product tasks are blocked with `GOV-PROC-008`.
+2. Stand-down lock is released only by operator clearing the lock.
+3. While lock is active, CA must remain paused and non-committing.
+
 ## Anti-Deception Rules
 
 1. Obligation selection is diff-derived, not author-selected.

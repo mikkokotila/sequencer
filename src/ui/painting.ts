@@ -2,7 +2,7 @@
  * Mouse interaction for painting notes, selection, and track replication.
  */
 
-import { STEPS, MEL_CFG } from '../config';
+import { STEPS, SPB, MEL_CFG } from '../config';
 import { drumPat, melPat, vocalPat } from '../transport/patterns';
 import {
   melCells,
@@ -111,8 +111,9 @@ export function replicateTrack(type: string, idx: number): void {
   }
   if (lastStep < 0) return;
 
-  // Use exactly lastStep+1 as the pattern length — repeat what's there
-  const patLen = lastStep + 1;
+  // Round up to nearest bar boundary so the pattern tiles musically.
+  // E.g. hits on 0,4,8,12 → lastStep=12, round to 16 (one bar).
+  const patLen = (Math.floor(lastStep / SPB) + 1) * SPB;
   if (patLen >= STEPS) return;
 
   for (let s = patLen; s < STEPS; s++) {

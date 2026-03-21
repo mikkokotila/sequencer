@@ -5,6 +5,7 @@
  */
 
 import { getAudioContext, getMixBus, initAudio } from '../engine/audio';
+import { SEQ_EXTENSIONS } from '../state';
 
 // ── State ──
 let isOpen = false;
@@ -553,18 +554,36 @@ function buildPanel(): HTMLDivElement {
   };
   ctrlSide.appendChild(makeRow('Master Limiter', limiterToggle));
 
-  // Master Bus Controls
+  // Master Bus Controls — drive Pultec EQ and Vari-Mu extension params
   ctrlSide.appendChild(makeSectionTitle('Master Bus'));
+
+  // Helper: find extension by ID and set a state key
+  function setExtParam(extId: string, key: string, value: number): void {
+    const ext = SEQ_EXTENSIONS.find((e) => e.id === extId);
+    if (!ext) return;
+    // Enable the extension if it isn't already
+    if (!ext._enabled) {
+      ext._enabled = true;
+      if (ext.setEnabled) ext.setEnabled(true);
+    }
+    // Update state and re-apply
+    ext.setState({ [key]: value });
+  }
+
   const knobRow = document.createElement('div');
   knobRow.style.cssText = 'display:flex;gap:12px;margin-top:8px;';
   knobRow.appendChild(
     makeKnob('Cutoff', masterCutoff, (v) => {
       masterCutoff = v;
+      // Map 0-100% to Pultec high-atten frequency: 100%=20kHz (open), 0%=1kHz (dark)
+      setExtParam('pultec-eq', 'highAttenFreq', 1000 + (v / 100) * 19000);
     }),
   );
   knobRow.appendChild(
     makeKnob('Resonance', masterResonance, (v) => {
       masterResonance = v;
+      // Map 0-100% to Pultec high boost: 0=flat, 100%=+10dB
+      setExtParam('pultec-eq', 'highBoost', (v / 100) * 10);
     }),
   );
   ctrlSide.appendChild(knobRow);
@@ -574,11 +593,15 @@ function buildPanel(): HTMLDivElement {
   knobRow2.appendChild(
     makeKnob('Saturation', masterSaturation, (v) => {
       masterSaturation = v;
+      // Map 0-100% to Vari-Mu drive: 0=clean, 1=full saturation
+      setExtParam('vari-mu', 'drive', v / 100);
     }),
   );
   knobRow2.appendChild(
     makeKnob('Compression', masterCompression, (v) => {
       masterCompression = v;
+      // Map 0-100% to Vari-Mu threshold: 0=-6dB (gentle), 100%=-40dB (heavy)
+      setExtParam('vari-mu', 'compress', -6 - (v / 100) * 34);
     }),
   );
   ctrlSide.appendChild(knobRow2);

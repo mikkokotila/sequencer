@@ -12,6 +12,7 @@ commit_shas:
 |---|---|---|---|
 | `npm run ci` | yes | PASS/FAIL/BLOCKED | command output summary or link |
 | `npm run e2e` | yes | PASS/FAIL/BLOCKED | command output summary or link |
+| `npm run gate:architecture` | yes | PASS/FAIL/BLOCKED | command output summary or link |
 | `tests/audio-quality.html` | conditional | PASS/FAIL/BLOCKED/N/A | assertion count + result |
 | `tests/benchmark.html` | conditional | PASS/FAIL/BLOCKED/N/A | config + p99 vs budget |
 
@@ -22,6 +23,7 @@ commit_shas:
 | `docs/contracts/commit.md` | yes/no | PASS/FAIL/BLOCKED | |
 | `docs/contracts/quality-gates.md` | yes/no | PASS/FAIL/BLOCKED | |
 | `docs/contracts/e2e.md` | yes/no | PASS/FAIL/BLOCKED | |
+| `docs/contracts/architecture-invariants.md` | yes/no | PASS/FAIL/BLOCKED | |
 | `docs/contracts/adaptive-transfer.md` | yes/no | PASS/FAIL/BLOCKED/N/A | |
 | `docs/contracts/use-of-color.md` | yes/no | PASS/FAIL/BLOCKED/N/A | |
 

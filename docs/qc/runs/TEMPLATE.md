@@ -14,8 +14,10 @@ commits_reviewed:
 | Commit contract | PASS/FAIL/BLOCKED | |
 | CI gate evidence | PASS/FAIL/BLOCKED | |
 | E2E gate evidence | PASS/FAIL/BLOCKED | |
+| Architecture gate evidence | PASS/FAIL/BLOCKED | |
 | Audio gate evidence (if applicable) | PASS/FAIL/BLOCKED/N/A | |
 | Benchmark gate evidence (if applicable) | PASS/FAIL/BLOCKED/N/A | |
+| Architecture invariants contract | PASS/FAIL/BLOCKED/N/A | |
 | Adaptive transfer contract (if applicable) | PASS/FAIL/BLOCKED/N/A | |
 | Color contract (if applicable) | PASS/FAIL/BLOCKED/N/A | |
 

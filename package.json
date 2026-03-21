@@ -15,8 +15,9 @@
     "e2e": "npx playwright test",
     "audio:gates": "node docs/qc/scripts/audio-gates.mjs",
     "gate:contracts": "node docs/qc/scripts/contract-gates.mjs",
+    "gate:architecture": "node docs/qc/scripts/architecture-gates.mjs",
     "ci": "npm run typecheck && npm run lint && npm run format:check && npm run circular",
-    "verify": "npm run ci && npm run e2e && npm run gate:contracts",
+    "verify": "npm run ci && npm run e2e && npm run gate:contracts && npm run gate:architecture",
     "verify:audio": "npm run verify && npm run audio:gates",
     "preview": "vite preview",
     "prepare": "husky"

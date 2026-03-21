@@ -30,7 +30,26 @@ Static policy checks that fail on known recurring regressions:
 5. Engine master controls must preserve non-explosive low-end response curves (squared control checks).
 6. Benchmark harness must be deterministic and worklet-driven (no random main-thread proxy timing).
 
-### 4) Audio Browser Gates (`npm run audio:gates`) — conditional
+### 4) Architecture Invariant Gates (`npm run gate:architecture`)
+
+Hard-fail checks for architectural truthfulness:
+
+1. No dummy extension pass-through node hacks.
+2. No `window.SEQ` global coupling from extensions.
+3. No dead engine interface contract.
+4. No scheduler direct transport-state imports.
+5. No persistence UI-callback lifecycle injection.
+6. No preview-node cleanup leaks.
+7. No scattered audio init ownership.
+8. No silent decode swallow paths.
+9. No duplicated transport business logic in UI layer.
+10. No non-idempotent painting listener setup.
+11. No playhead inline-style thrash paths.
+12. No empty-string paint type sentinel.
+13. No transport `innerHTML` mega-template injection.
+14. No benchmark randomness/proxy timing or near-no-op processor timing windows.
+
+### 5) Audio Browser Gates (`npm run audio:gates`) — conditional
 
 Required when changing audio code in:
 - `src/engine/**`
@@ -51,6 +70,7 @@ These pages must report passing verdicts.
 - `npm run ci`
 - `npm run e2e`
 - `npm run gate:contracts`
+- `npm run gate:architecture`
 
 For audio-code tasks, run `npm run audio:gates` in addition to `npm run verify`.
 

@@ -12,6 +12,7 @@ Every completed change must pass the full programmatic gate set:
 - `npm run ci`
 - `npm run e2e`
 - `npm run gate:contracts`
+- `npm run gate:architecture`
 Read `docs/contracts/quality-gates.md` and `docs/contracts/e2e.md` for details.
 
 **Write:** `docs/qc/proofs/<task-id>.md`
@@ -57,6 +58,7 @@ Three color families. Controls are monochrome. No color for decoration.
 
 ## When changing app structure, features, or architecture
 
+**Read:** `docs/contracts/architecture-invariants.md`
 **Update:** `README.md`
 Keep the signal flow diagram, project structure, and feature descriptions current. README must always reflect the actual state of the app.
 

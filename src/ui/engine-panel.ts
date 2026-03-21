@@ -9,7 +9,7 @@
  * they are identity (no processing). Slider changes directly set node parameters.
  */
 
-import { getAudioContext, getMixBus, setFinalOutput, initAudio } from '../engine/audio';
+import { getAudioContext, getMixBus, setFinalOutput } from '../engine/audio';
 import { makeSlider, formatPct } from './helpers';
 
 // ── State ──
@@ -111,7 +111,6 @@ function applyEngineParams(): void {
 
 export function initEngineProcessing(): void {
   if (engineInitialized) return;
-  initAudio();
   const ctx = getAudioContext();
   const mix = getMixBus();
   if (!ctx || !mix) return;

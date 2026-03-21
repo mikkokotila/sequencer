@@ -49,7 +49,7 @@ import {
   setVocalSampleData,
 } from './song';
 import { SEQ_EXTENSIONS } from '../state';
-import { getAudioContext, initAudio } from '../engine/audio';
+import { getAudioContext } from '../engine/audio';
 
 // ═══════════════════════════════════════════
 //  Helpers
@@ -279,8 +279,6 @@ export async function loadSong(song: LegacySongInput): Promise<void> {
     mutedArr[i] = !!song.mutedArr?.[i];
   }
 
-  // Ensure audio context is ready for decoding
-  initAudio();
   const ctx = getAudioContext();
 
   // Decode drum samples

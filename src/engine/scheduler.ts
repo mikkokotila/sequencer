@@ -6,7 +6,7 @@
 
 import * as Tone from 'tone';
 import { STEPS, DRUMS_CFG, MEL_CFG, HARMONY_SEMITONES } from '../config';
-import { getAudioContext, getTrackGains, initAudio, playSample } from './audio';
+import { getAudioContext, getTrackGains, playSample } from './audio';
 import { phrases, octaves, harmonies } from '../transport/patterns';
 import { drumBuf, melBuf, vocalBuf, mutedArr, bpm as getBpm } from '../transport/song';
 import { emit } from '../events';
@@ -159,8 +159,6 @@ function scheduleStep(time: number): void {
 
 /** Start playback using Tone.Transport. */
 export function startPlayback(): void {
-  initAudio();
-
   playing = true;
   curStep = 0;
   playingPhrase = _findFirstNonEmpty();

@@ -19,13 +19,7 @@ import {
 } from '../transport/song';
 import { drumPat, melPat, vocalPat } from '../transport/patterns';
 import { playing } from '../state';
-import {
-  initAudio,
-  fetchAndDecode,
-  playPreviewSample,
-  loadAudioFile,
-  getAudioContext,
-} from '../engine/audio';
+import { fetchAndDecode, playPreviewSample, loadAudioFile, getAudioContext } from '../engine/audio';
 import { el, truncName } from './helpers';
 import { scheduleSave } from '../transport/persistence';
 
@@ -438,7 +432,6 @@ function restoreOriginalBuffer(): void {
 export async function previewSample(i: number): Promise<void> {
   const item = browserItems[i];
   if (!item) return;
-  initAudio();
 
   const hasContent = trackHasContent(browserType, browserIdx);
   const isSequenceMode = playing && hasContent;

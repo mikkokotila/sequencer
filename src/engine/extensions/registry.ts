@@ -21,7 +21,6 @@ import {
   getMixBus,
   getMasterTrim,
   getFinalOutput,
-  initAudio,
 } from '../audio';
 import { DRUMS_CFG, MEL_CFG, VOCAL_CFG, TOTAL_TRACKS } from '../../config';
 import { el } from '../../ui/helpers';
@@ -254,7 +253,6 @@ export function updateExtIcons(): void {
 // ═══════════════════════════════════════════
 
 export function initExtensions(): void {
-  initAudio();
   if (SEQ_EXTENSIONS.length > 0) rebuildAudioChain();
   buildExtIcons();
 

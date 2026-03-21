@@ -34,3 +34,8 @@ Applies to: CSS in `index.html`, track colors, extension panel styling, grid cel
 
 **Read:** `docs/contracts/use-of-color.md`
 Three color families. Controls are monochrome. No color for decoration.
+
+## When changing app structure, features, or architecture
+
+**Update:** `README.md`
+Keep the signal flow diagram, project structure, and feature descriptions current. README must always reflect the actual state of the app.

@@ -122,7 +122,7 @@ class SaturationProcessor extends AudioWorkletProcessor {
     }
 
     const dryMix = 1 - mix;
-    const k = 1 + drive * 50;
+    const k = 1 + drive * drive * 50; // squared: 1%→1.005, 10%→1.5, 50%→13.5, 100%→51
 
     const buf2x = new Float64Array(blockSize * 2);
     const buf4x = new Float64Array(blockSize * 4);
@@ -144,7 +144,9 @@ class SaturationProcessor extends AudioWorkletProcessor {
 
       for (let i = 0; i < blockSize * 4; i++) {
         const x = buf4x[i] ?? 0;
-        buf4x[i] = x * (1 - drive) + saturate(x, k) * drive;
+        // Squared blend: 1% drive = 0.01% wet, perceptually linear
+        const blend = drive * drive;
+        buf4x[i] = x * (1 - blend) + saturate(x, k) * blend;
       }
 
       const downHist1 = this.downHist1[ch];

@@ -87,7 +87,7 @@ export function createVariMu(): Extension {
     if (!nodes) return;
     const { inputGain, saturation, compressor, wetGain, dryGain, outputGain } = nodes;
 
-    inputGain.gain.value = 1 + state.drive * 1.5;
+    inputGain.gain.value = 1 + state.drive * state.drive * 1.5; // squared for smooth control
     setWorkletParam(saturation, 'drive', state.drive);
     setWorkletParam(saturation, 'mix', 1);
 

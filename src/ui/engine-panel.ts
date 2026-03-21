@@ -575,15 +575,17 @@ function buildPanel(): HTMLDivElement {
   knobRow.appendChild(
     makeKnob('Cutoff', masterCutoff, (v) => {
       masterCutoff = v;
-      // Map 0-100% to Pultec high-atten frequency: 100%=20kHz (open), 0%=1kHz (dark)
-      setExtParam('pultec-eq', 'highAttenFreq', 1000 + (v / 100) * 19000);
+      // Squared mapping: 1%→19990Hz, 50%→15000Hz, 0%→1000Hz
+      const t = v / 100;
+      setExtParam('pultec-eq', 'highAttenFreq', 1000 + t * t * 19000);
     }),
   );
   knobRow.appendChild(
     makeKnob('Resonance', masterResonance, (v) => {
       masterResonance = v;
-      // Map 0-100% to Pultec high boost: 0=flat, 100%=+10dB
-      setExtParam('pultec-eq', 'highBoost', (v / 100) * 10);
+      // Squared: 1%→0.001dB, 50%→2.5dB, 100%→10dB
+      const t = v / 100;
+      setExtParam('pultec-eq', 'highBoost', t * t * 10);
     }),
   );
   ctrlSide.appendChild(knobRow);
@@ -593,15 +595,17 @@ function buildPanel(): HTMLDivElement {
   knobRow2.appendChild(
     makeKnob('Saturation', masterSaturation, (v) => {
       masterSaturation = v;
-      // Map 0-100% to Vari-Mu drive: 0=clean, 1=full saturation
-      setExtParam('vari-mu', 'drive', v / 100);
+      // Squared: 1%→0.0001, 50%→0.25, 100%→1.0
+      const t = v / 100;
+      setExtParam('vari-mu', 'drive', t * t);
     }),
   );
   knobRow2.appendChild(
     makeKnob('Compression', masterCompression, (v) => {
       masterCompression = v;
-      // Map 0-100% to Vari-Mu threshold: 0=-6dB (gentle), 100%=-40dB (heavy)
-      setExtParam('vari-mu', 'compress', -6 - (v / 100) * 34);
+      // Squared: 1%→-6.003dB, 50%→-14.5dB, 100%→-40dB
+      const t = v / 100;
+      setExtParam('vari-mu', 'compress', -6 - t * t * 34);
     }),
   );
   ctrlSide.appendChild(knobRow2);

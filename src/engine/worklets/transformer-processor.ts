@@ -147,12 +147,14 @@ class TransformerProcessor extends AudioWorkletProcessor {
     }
 
     const sr4x = sampleRate * 4;
-    const driveGain = 1 + drive * 2;
-    const outputComp = 1 / (1 + drive * 0.5); // compensate for drive boost
+    // Squared curves for perceptually linear control feel
+    const driveSq = drive * drive; // 1%→0.0001, 10%→0.01, 50%→0.25, 100%→1.0
+    const colorSq = color * color;
+    const driveGain = 1 + driveSq * 2;
+    const outputComp = 1 / (1 + driveSq * 0.5);
 
-    // LF thickening: one-pole lowshelf coefficient at 80Hz
-    // Boost amount scales with drive (0 to +1.5dB)
-    const lfBoostLin = 1 + drive * 0.19; // 0 to ~1.5dB
+    // LF thickening scales with squared drive
+    const lfBoostLin = 1 + driveSq * 0.19;
     const lfAlpha = 1 - Math.exp((-2 * Math.PI * 80) / sr4x);
 
     // HF rolloff: one-pole lowpass coefficient
@@ -199,12 +201,12 @@ class TransformerProcessor extends AudioWorkletProcessor {
         // 4th harmonic: x⁴ preserves sign
         const h4 = x * absX * absX * absX * 0.1;
 
-        // Blend: original + level-scaled even harmonics
-        sample = sample + color * levelFactor * (h2 + h4) * 0.15;
+        // Blend: original + level-scaled even harmonics (squared color for smooth control)
+        sample = sample + colorSq * levelFactor * (h2 + h4) * 0.15;
 
         // 3. LF thickening (one-pole lowshelf)
         lfS += lfAlpha * (sample - lfS);
-        sample = sample + (lfS - sample) * (lfBoostLin - 1) * drive;
+        sample = sample + (lfS - sample) * (lfBoostLin - 1) * driveSq;
 
         // 4. HF rolloff (one-pole lowpass)
         hfS += hfAlpha * (sample - hfS);

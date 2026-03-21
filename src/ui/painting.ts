@@ -2,8 +2,13 @@
  * Mouse interaction for painting notes, selection, and track replication.
  */
 
-import { STEPS, SPB, MEL_CFG } from '../config';
-import { drumPat, melPat, vocalPat } from '../transport/patterns';
+import { STEPS, MEL_CFG } from '../config';
+import {
+  drumPat,
+  melPat,
+  vocalPat,
+  replicateTrack as replicateTrackData,
+} from '../transport/patterns';
 import {
   melCells,
   painting,
@@ -93,49 +98,20 @@ export function replicateSelection(t: number): void {
 // ── Track-level replication ──
 
 export function replicateTrack(type: string, idx: number): void {
-  // Find the last step that has content
-  let lastStep = -1;
-  for (let s = STEPS - 1; s >= 0; s--) {
-    if (type === 'drum' && drumPat[idx]?.[s]) {
-      lastStep = s;
-      break;
-    }
-    if (type === 'melody' && melPat[idx]?.[s]?.some((n: boolean) => n)) {
-      lastStep = s;
-      break;
-    }
-    if (type === 'vocal' && vocalPat[s]) {
-      lastStep = s;
-      break;
-    }
-  }
-  if (lastStep < 0) return;
+  // Delegate all data mutation to the canonical patterns.ts version
+  replicateTrackData(type as 'drum' | 'melody' | 'vocal', idx);
 
-  // Round up to nearest bar boundary so the pattern tiles musically.
-  // E.g. hits on 0,4,8,12 → lastStep=12, round to 16 (one bar).
-  const patLen = (Math.floor(lastStep / SPB) + 1) * SPB;
-  if (patLen >= STEPS) return;
-
-  for (let s = patLen; s < STEPS; s++) {
-    const src = s % patLen;
-    if (type === 'drum') {
-      const trackPat = drumPat[idx];
-      if (trackPat) {
-        trackPat[s] = trackPat[src] ?? false;
-        updateDrumCell(idx, s);
-      }
-    } else if (type === 'melody') {
-      const trackPat = melPat[idx];
-      if (trackPat) {
-        const srcStep = trackPat[src];
-        if (srcStep) trackPat[s] = [...srcStep];
-        for (let d = 0; d < 12; d++) updateMelCell(idx, s, d);
-      }
-    } else {
-      vocalPat[s] = vocalPat[src] ?? false;
-      updateVocalCell(s);
+  // Refresh all visual cells for the track
+  if (type === 'drum') {
+    for (let s = 0; s < STEPS; s++) updateDrumCell(idx, s);
+  } else if (type === 'melody') {
+    for (let s = 0; s < STEPS; s++) {
+      for (let d = 0; d < 12; d++) updateMelCell(idx, s, d);
     }
+  } else {
+    for (let s = 0; s < STEPS; s++) updateVocalCell(s);
   }
+
   onSave?.();
 }
 

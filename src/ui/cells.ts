@@ -4,7 +4,13 @@
  */
 
 import { DRUMS_CFG, MEL_CFG, VOCAL_CFG, STEPS, HARMONY_LABELS } from '../config';
-import { drumPat, melPat, vocalPat, harmonies } from '../transport/patterns';
+import {
+  drumPat,
+  melPat,
+  vocalPat,
+  harmonies,
+  setMelodyCell as setMelodyCellData,
+} from '../transport/patterns';
 import { drumCells, melCells, vocalCells } from '../state';
 import { displayToSemitone } from './helpers';
 
@@ -66,25 +72,22 @@ export function updateVocalCell(s: number): void {
 
 /**
  * Set a melody cell value, enforcing mono mode when applicable.
- * In mono mode, enabling a note clears all other notes on that step.
+ * Delegates data mutation to the canonical patterns.ts version,
+ * then handles visual updates.
  */
 export function setMelodyCell(t: number, s: number, dr: number, val: boolean): void {
-  const semi = displayToSemitone(dr);
   const cfg = MEL_CFG[t];
-  const stepNotes = melPat[t]?.[s];
-  if (!cfg || !stepNotes) return;
+  if (!cfg) return;
 
+  // Delegate all data mutation (mono enforcement + step write) to patterns.ts
+  setMelodyCellData(t, s, dr, val);
+
+  // Visual update: mono mode may have cleared other rows, so refresh all 12
   if (cfg.mono && val) {
-    for (let n = 0; n < 12; n++) {
-      if (n !== semi && stepNotes[n]) {
-        stepNotes[n] = false;
-        updateMelCell(t, s, 11 - n);
-      }
-    }
+    for (let d = 0; d < 12; d++) updateMelCell(t, s, d);
+  } else {
+    updateMelCell(t, s, dr);
   }
-
-  stepNotes[semi] = val;
-  updateMelCell(t, s, dr);
 
   if (!cfg.mono) updateHarmonyDim(t);
 }

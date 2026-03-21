@@ -150,6 +150,8 @@ export function setMelodyCell(
   const cfg = MEL_CFG[track];
   if (!cfg) return;
 
+  const semi = 11 - displayRow;
+
   if (cfg.mono && value) {
     // Clear all notes in this step first (mono enforcement)
     const stepArr = melPat[track]?.[step];
@@ -159,7 +161,7 @@ export function setMelodyCell(
       }
     }
   }
-  setMelStep(track, step, displayRow, value);
+  setMelStep(track, step, semi, value);
 }
 
 // ═══════════════════════════════════════════

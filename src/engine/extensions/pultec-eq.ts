@@ -67,6 +67,7 @@ export function createPultecEq(): Extension {
   };
 
   let nodes: PultecNodes | null = null;
+  let enabled = false;
 
   function applyState(): void {
     if (!nodes) return;
@@ -203,7 +204,7 @@ export function createPultecEq(): Extension {
         (v) => v.toFixed(1) + ' dB',
         (v) => {
           state.lowBoost = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -218,7 +219,7 @@ export function createPultecEq(): Extension {
         (v) => v.toFixed(1) + ' dB',
         (v) => {
           state.lowAtten = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -235,7 +236,7 @@ export function createPultecEq(): Extension {
         ],
         (v) => {
           state.lowFreq = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -253,7 +254,7 @@ export function createPultecEq(): Extension {
         (v) => v.toFixed(1) + ' dB',
         (v) => {
           state.highBoost = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -268,7 +269,7 @@ export function createPultecEq(): Extension {
         (v) => (v < 0.33 ? 'BROAD' : v < 0.66 ? 'MEDIUM' : 'SHARP'),
         (v) => {
           state.highBandwidth = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -288,7 +289,7 @@ export function createPultecEq(): Extension {
         ],
         (v) => {
           state.highBoostFreq = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -303,7 +304,7 @@ export function createPultecEq(): Extension {
         (v) => v.toFixed(1) + ' dB',
         (v) => {
           state.highAtten = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -319,7 +320,7 @@ export function createPultecEq(): Extension {
         ],
         (v) => {
           state.highAttenFreq = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -337,7 +338,7 @@ export function createPultecEq(): Extension {
         (v) => `${Math.round(v * 100)}%`,
         (v) => {
           state.tubeColor = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -353,6 +354,7 @@ export function createPultecEq(): Extension {
     },
 
     setEnabled(on: boolean): void {
+      enabled = on;
       if (!nodes) return;
       if (on) {
         applyState();

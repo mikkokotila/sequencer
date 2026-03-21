@@ -59,6 +59,7 @@ export function createDelay(): Extension {
   }
 
   let nodes: DelayNodes | null = null;
+  let enabled = false;
   let sendGains: GainNode[] = [];
 
   function applyState(): void {
@@ -151,7 +152,7 @@ export function createDelay(): Extension {
         (v) => `${Math.round(v * 1000)}ms`,
         (v) => {
           state.time = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -166,7 +167,7 @@ export function createDelay(): Extension {
         (v) => `${Math.round(v * 100)}%`,
         (v) => {
           state.feedback = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -184,7 +185,7 @@ export function createDelay(): Extension {
         },
         (v) => {
           state.tone = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -199,7 +200,7 @@ export function createDelay(): Extension {
         (v) => `${Math.round(v * 100)}%`,
         (v) => {
           state.mix = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -251,8 +252,10 @@ export function createDelay(): Extension {
           if (!state.sends) state.sends = defaultSends();
           state.sends[idx] = v;
           val.textContent = String(Math.round(v * 100));
-          const sg = sendGains[idx];
-          if (sg) sg.gain.value = v;
+          if (enabled) {
+            const sg = sendGains[idx];
+            if (sg) sg.gain.value = v;
+          }
           window.SEQ.notifyStateChange();
         };
 
@@ -274,6 +277,7 @@ export function createDelay(): Extension {
     },
 
     setEnabled(on: boolean): void {
+      enabled = on;
       if (!nodes) return;
       if (on) {
         applyState();

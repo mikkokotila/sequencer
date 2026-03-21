@@ -31,6 +31,7 @@ export function createTransformer(): Extension {
   };
 
   let nodes: TransformerNodes | null = null;
+  let enabled = false;
 
   function applyState(): void {
     if (!nodes) return;
@@ -67,19 +68,19 @@ export function createTransformer(): Extension {
 
       makeSlider(container, 'DRIVE', state.drive, 0, 1, 0.01, formatPct, (v) => {
         state.drive = v;
-        applyState();
+        if (enabled) applyState();
         window.SEQ.notifyStateChange();
       });
 
       makeSlider(container, 'COLOR', state.color, 0, 1, 0.01, formatPct, (v) => {
         state.color = v;
-        applyState();
+        if (enabled) applyState();
         window.SEQ.notifyStateChange();
       });
 
       makeSlider(container, 'AIR', state.air, 0, 1, 0.01, formatPct, (v) => {
         state.air = v;
-        applyState();
+        if (enabled) applyState();
         window.SEQ.notifyStateChange();
       });
     },
@@ -94,6 +95,7 @@ export function createTransformer(): Extension {
     },
 
     setEnabled(on: boolean): void {
+      enabled = on;
       if (!nodes) return;
       if (on) {
         applyState();

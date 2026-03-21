@@ -75,6 +75,7 @@ export function createVariMu(): Extension {
   ];
 
   let nodes: VariMuNodes | null = null;
+  let enabled = false;
   let grFill: HTMLElement | null = null;
   let grVal: HTMLElement | null = null;
   let grRAF: number | null = null;
@@ -184,7 +185,7 @@ export function createVariMu(): Extension {
           state.model = i;
           // Only send model to worklet — don't call applyState() which
           // would override the disabled state if extension is off
-          if (nodes) {
+          if (enabled && nodes) {
             nodes.compressor.port.postMessage({ type: 'setModel', model: i });
           }
           window.SEQ.notifyStateChange();
@@ -205,7 +206,7 @@ export function createVariMu(): Extension {
         (v) => formatPct(v),
         (v) => {
           state.drive = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -220,7 +221,7 @@ export function createVariMu(): Extension {
         (v) => `${Math.round(v)} dB`,
         (v) => {
           state.compress = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -235,7 +236,7 @@ export function createVariMu(): Extension {
         (v) => v.toFixed(1) + ':1',
         (v) => {
           state.ratio = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -250,7 +251,7 @@ export function createVariMu(): Extension {
         (v) => `${Math.round(v)} dB`,
         (v) => {
           state.knee = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -265,7 +266,7 @@ export function createVariMu(): Extension {
         (v) => SPEED_PRESETS[Math.round(v)]?.label ?? '',
         (v) => {
           state.speed = Math.round(v);
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -280,7 +281,7 @@ export function createVariMu(): Extension {
         (v) => formatPct(v),
         (v) => {
           state.mix = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -295,7 +296,7 @@ export function createVariMu(): Extension {
         (v) => formatPct(v),
         (v) => {
           state.output = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -341,6 +342,7 @@ export function createVariMu(): Extension {
     },
 
     setEnabled(on: boolean): void {
+      enabled = on;
       if (!nodes) return;
       if (on) {
         applyState();

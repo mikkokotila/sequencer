@@ -57,6 +57,7 @@ export function createReverb(): Extension {
   }
 
   let nodes: ReverbNodes | null = null;
+  let enabled = false;
   let sendGains: GainNode[] = [];
 
   function applyState(): void {
@@ -147,7 +148,7 @@ export function createReverb(): Extension {
         (v) => `${Math.round(v * 100)}%`,
         (v) => {
           state.decay = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -162,7 +163,7 @@ export function createReverb(): Extension {
         (v) => `${Math.round(v * 100)}%`,
         (v) => {
           state.damping = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -177,7 +178,7 @@ export function createReverb(): Extension {
         (v) => `${Math.round(v * 100)}%`,
         (v) => {
           state.mix = v;
-          applyState();
+          if (enabled) applyState();
           window.SEQ.notifyStateChange();
         },
       );
@@ -229,8 +230,10 @@ export function createReverb(): Extension {
           if (!state.sends) state.sends = defaultSends();
           state.sends[idx] = v;
           val.textContent = String(Math.round(v * 100));
-          const sg = sendGains[idx];
-          if (sg) sg.gain.value = v;
+          if (enabled) {
+            const sg = sendGains[idx];
+            if (sg) sg.gain.value = v;
+          }
           window.SEQ.notifyStateChange();
         };
 
@@ -252,6 +255,7 @@ export function createReverb(): Extension {
     },
 
     setEnabled(on: boolean): void {
+      enabled = on;
       if (!nodes) return;
       if (on) {
         applyState();

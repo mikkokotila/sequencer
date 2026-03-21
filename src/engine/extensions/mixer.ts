@@ -23,6 +23,7 @@ const TRACK_COUNT = 9;
 
 export function createMixer(): Extension {
   const state: MixerState = { levels: null };
+  let enabled = false;
   let analysers: AnalyserNode[] = [];
   let meterRAF: number | null = null;
   let meterBars: HTMLElement[] = [];
@@ -114,8 +115,10 @@ export function createMixer(): Extension {
       if (!state.levels) state.levels = defaults();
       state.levels[idx] = v;
       val.textContent = `${Math.round(v * 100)}%`;
-      const g = window.SEQ.channelFaders[idx];
-      if (g) g.gain.value = v;
+      if (enabled) {
+        const g = window.SEQ.channelFaders[idx];
+        if (g) g.gain.value = v;
+      }
       window.SEQ.notifyStateChange();
     };
     row.appendChild(slider);
@@ -202,8 +205,10 @@ export function createMixer(): Extension {
       slider.style.cssText = 'width:100%;accent-color:#888;cursor:pointer;height:4px;';
       slider.oninput = () => {
         const v = parseFloat(slider.value);
-        const mg = window.SEQ.masterGain;
-        if (mg) mg.gain.value = v;
+        if (enabled) {
+          const mg = window.SEQ.masterGain;
+          if (mg) mg.gain.value = v;
+        }
         val.textContent = `${Math.round(v * 100)}%`;
       };
       row.appendChild(slider);
@@ -224,6 +229,7 @@ export function createMixer(): Extension {
     },
 
     setEnabled(on: boolean): void {
+      enabled = on;
       const gains = window.SEQ.channelFaders;
       if (on) {
         applyLevels();

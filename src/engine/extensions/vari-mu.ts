@@ -54,13 +54,13 @@ function setWorkletParam(node: AudioWorkletNode, name: string, value: number): v
 
 export function createVariMu(): Extension {
   let state: VariMuState & { model?: number } = {
-    drive: 0.05, // very gentle saturation
-    compress: -10, // only catch peaks
-    ratio: 2, // gentle 2:1 ratio
+    drive: 0.0, // no saturation until user adds it
+    compress: -6, // only catch the loudest peaks
+    ratio: 1.5, // very gentle ratio
     knee: 30, // soft knee
     speed: 1, // medium speed (10ms attack, 150ms release)
-    mix: 0.5, // 50/50 wet/dry parallel compression
-    output: 0.65, // slight makeup
+    mix: 0.3, // mostly dry — subtle glue
+    output: 0.7, // compensate for gentle GR
     model: 0, // 0=FET, 1=OPTO, 2=VCA
   };
 
@@ -182,7 +182,11 @@ export function createVariMu(): Extension {
         };
         btn.onclick = () => {
           state.model = i;
-          applyState();
+          // Only send model to worklet — don't call applyState() which
+          // would override the disabled state if extension is off
+          if (nodes) {
+            nodes.compressor.port.postMessage({ type: 'setModel', model: i });
+          }
           window.SEQ.notifyStateChange();
           // Re-render the whole UI to update button states + title
           this.createUI(container);

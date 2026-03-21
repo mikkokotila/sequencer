@@ -89,8 +89,25 @@ export function initEngineProcessing(): void {
   const ctx = getAudioContext();
   if (!ctx) return;
 
-  // Create the engine input node — this becomes the finalOutput that
-  // the extension chain (or masterGain directly) connects to
+  // At neutral settings (all defaults), use a simple pass-through.
+  // Processing nodes are created but NOT connected until a knob moves.
+  demoGain = ctx.createGain();
+  demoGain.gain.value = 1.0;
+  demoGain.connect(ctx.destination);
+
+  // Create analysers (read-only taps, always connected for visualizations)
+  analyser = ctx.createAnalyser();
+  analyser.fftSize = 4096;
+  analyser.smoothingTimeConstant = 0.8;
+
+  analyserTime = ctx.createAnalyser();
+  analyserTime.fftSize = 2048;
+  analyserTime.smoothingTimeConstant = 0;
+
+  demoGain.connect(analyser);
+  demoGain.connect(analyserTime);
+
+  // Create processing nodes (disconnected until needed)
   demoFilter = ctx.createBiquadFilter();
   demoFilter.type = 'lowpass';
   demoFilter.frequency.value = pctToFreq(filterCutoff);
@@ -103,33 +120,52 @@ export function initEngineProcessing(): void {
   demoCompressor = ctx.createDynamicsCompressor();
   applyCompression(compression);
 
-  demoGain = ctx.createGain();
-  demoGain.gain.value = 1.0;
-
-  analyser = ctx.createAnalyser();
-  analyser.fftSize = 4096;
-  analyser.smoothingTimeConstant = 0.8;
-
-  analyserTime = ctx.createAnalyser();
-  analyserTime.fftSize = 2048;
-  analyserTime.smoothingTimeConstant = 0;
-
-  // Wire the permanent engine chain
-  demoFilter.connect(demoSaturator);
-  demoSaturator.connect(demoCompressor);
-  demoCompressor.connect(demoGain);
-  demoGain.connect(ctx.destination);
-  demoGain.connect(analyser);
-  demoGain.connect(analyserTime);
-
-  // Set the engine filter as the final output — everything upstream
-  // (masterGain, extensions) now connects here instead of ctx.destination
-  setFinalOutput(demoFilter);
-
-  // Rebuild the extension chain so it connects to the new finalOutput
+  // At defaults (cutoff=100, res=0, sat=0, comp=0), all processing is bypassed.
+  // The finalOutput is just demoGain (pass-through).
+  setFinalOutput(demoGain);
   rebuildAudioChain();
 
   engineInitialized = true;
+}
+
+// Check if any engine processing is active (not at neutral defaults)
+function isProcessingActive(): boolean {
+  return filterCutoff < 100 || filterRes > 0 || saturation > 0 || compression > 0;
+}
+
+// Rebuild the engine chain: either bypass (pass-through) or insert processing
+function rebuildEngineChain(): void {
+  const ctx = getAudioContext();
+  if (!ctx || !demoGain || !demoFilter || !demoSaturator || !demoCompressor) return;
+
+  // Disconnect everything from demoGain input
+  try {
+    demoFilter.disconnect();
+  } catch {
+    /* */
+  }
+  try {
+    demoSaturator.disconnect();
+  } catch {
+    /* */
+  }
+  try {
+    demoCompressor.disconnect();
+  } catch {
+    /* */
+  }
+
+  if (isProcessingActive()) {
+    // Insert processing: finalOutput → filter → saturator → compressor → demoGain → destination
+    setFinalOutput(demoFilter);
+    demoFilter.connect(demoSaturator);
+    demoSaturator.connect(demoCompressor);
+    demoCompressor.connect(demoGain);
+  } else {
+    // Bypass: finalOutput → demoGain → destination (zero processing)
+    setFinalOutput(demoGain);
+  }
+  rebuildAudioChain();
 }
 
 function applyCompression(pct: number): void {
@@ -679,12 +715,14 @@ function buildPanel(): HTMLDivElement {
     makeKnob('Cutoff', filterCutoff, (v) => {
       filterCutoff = v;
       if (demoFilter) demoFilter.frequency.value = pctToFreq(v);
+      rebuildEngineChain();
     }),
   );
   knobRow.appendChild(
     makeKnob('Resonance', filterRes, (v) => {
       filterRes = v;
       if (demoFilter) demoFilter.Q.value = pctToQ(v);
+      rebuildEngineChain();
     }),
   );
   ctrlSide.appendChild(knobRow);
@@ -696,12 +734,14 @@ function buildPanel(): HTMLDivElement {
       saturation = v;
       if (demoSaturator)
         demoSaturator.curve = makeSatCurve(v) as unknown as Float32Array<ArrayBuffer>;
+      rebuildEngineChain();
     }),
   );
   knobRow2.appendChild(
     makeKnob('Compression', compression, (v) => {
       compression = v;
       applyCompression(v);
+      rebuildEngineChain();
     }),
   );
   ctrlSide.appendChild(knobRow2);

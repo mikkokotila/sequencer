@@ -228,11 +228,13 @@ export function createMixer(): Extension {
       if (on) {
         applyLevels();
       } else {
+        // Reset all track gains to unity
         for (const g of gains) {
           g.gain.value = 1;
         }
+        // Restore master to baseline headroom (0.8), not unity
         const mg = window.SEQ.masterGain;
-        if (mg) mg.gain.value = 1;
+        if (mg) mg.gain.value = 0.8;
       }
     },
 

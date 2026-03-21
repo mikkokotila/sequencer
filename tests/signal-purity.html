@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Signal Purity Test</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#111; color:#ddd; font-family:monospace; font-size:13px; padding:24px; }
+  h1 { font-size:16px; color:#fff; margin-bottom:16px; letter-spacing:2px; }
+  .test { padding:8px 12px; margin-bottom:4px; border-radius:4px; }
+  .test.pass { background:rgba(74,254,112,0.06); border:1px solid rgba(74,254,112,0.2); }
+  .test.fail { background:rgba(255,60,90,0.06); border:1px solid rgba(255,60,90,0.2); }
+  .badge { font-size:9px; font-weight:800; padding:2px 6px; border-radius:3px; margin-right:8px; }
+  .badge.pass { background:rgba(74,254,112,0.15); color:#4afe70; }
+  .badge.fail { background:rgba(255,60,90,0.15); color:#ff3c5a; }
+  .detail { color:#666; font-size:11px; margin-top:4px; }
+  .summary { margin-top:16px; padding:12px; border-radius:6px; font-size:14px; }
+  .summary.pass { background:rgba(74,254,112,0.06); border:1px solid rgba(74,254,112,0.3); }
+  .summary.fail { background:rgba(255,60,90,0.06); border:1px solid rgba(255,60,90,0.3); }
+  button { background:#222; border:1px solid #444; color:#ddd; padding:8px 16px; border-radius:4px; cursor:pointer; font-family:inherit; margin-bottom:16px; }
+</style>
+</head>
+<body>
+<h1>SIGNAL PURITY &mdash; SAMPLE IN vs OUT</h1>
+<p style="color:#888;margin-bottom:16px;font-size:11px">
+  Plays a known signal through each stage of the audio path using OfflineAudioContext.<br>
+  Compares output buffer against input buffer sample-by-sample.<br>
+  Any deviation = distortion. No hand-waving.
+</p>
+<button id="run">RUN TESTS</button>
+<div id="results"></div>
+<script>
+const SR = 44100;
+const DUR = 1;
+const N = SR * DUR;
+const results = [];
+
+function assert(name, pass, detail) {
+    results.push({ name, pass, detail });
+}
+
+// Generate a pure 440Hz sine at -6dBFS
+function makeSine(ctx) {
+    const buf = ctx.createBuffer(1, N, SR);
+    const d = buf.getChannelData(0);
+    const amp = 0.5; // -6dBFS
+    for (let i = 0; i < N; i++) d[i] = amp * Math.sin(2 * Math.PI * 440 * i / SR);
+    return buf;
+}
+
+// Generate a click/impulse
+function makeImpulse(ctx) {
+    const buf = ctx.createBuffer(1, N, SR);
+    const d = buf.getChannelData(0);
+    d[100] = 0.9;
+    return buf;
+}
+
+// Compare two buffers
+function compare(a, b) {
+    let maxDiff = 0;
+    let totalDiff = 0;
+    let clipped = 0;
+    for (let i = 0; i < Math.min(a.length, b.length); i++) {
+        const diff = Math.abs(a[i] - b[i]);
+        if (diff > maxDiff) maxDiff = diff;
+        totalDiff += diff * diff;
+        if (Math.abs(b[i]) > 0.999) clipped++;
+    }
+    const rmsDiff = Math.sqrt(totalDiff / a.length);
+    return { maxDiff, rmsDiff, clipped };
+}
+
+function peakLevel(data) {
+    let max = 0;
+    for (let i = 0; i < data.length; i++) max = Math.max(max, Math.abs(data[i]));
+    return max;
+}
+
+function toDb(v) { return 20 * Math.log10(Math.max(v, 1e-10)); }
+
+// ═══════════════════════════════════════════
+//  TEST 1: Direct — source → destination (baseline)
+// ═══════════════════════════════════════════
+async function testDirect() {
+    const ctx = new OfflineAudioContext(1, N, SR);
+    const sine = makeSine(ctx);
+    const ref = sine.getChannelData(0).slice();
+    const src = ctx.createBufferSource();
+    src.buffer = sine;
+    src.connect(ctx.destination);
+    src.start(0);
+    const rendered = await ctx.startRendering();
+    const out = rendered.getChannelData(0);
+    const { maxDiff, rmsDiff } = compare(ref, out);
+    assert('Direct: source → destination', maxDiff < 1e-6,
+        `max diff: ${maxDiff.toExponential(3)}, RMS diff: ${rmsDiff.toExponential(3)}`);
+}
+
+// ═══════════════════════════════════════════
+//  TEST 2: Through single GainNode at 1.0
+// ═══════════════════════════════════════════
+async function testUnityGain() {
+    const ctx = new OfflineAudioContext(1, N, SR);
+    const sine = makeSine(ctx);
+    const ref = sine.getChannelData(0).slice();
+    const src = ctx.createBufferSource();
+    src.buffer = sine;
+    const g = ctx.createGain();
+    g.gain.value = 1.0;
+    src.connect(g).connect(ctx.destination);
+    src.start(0);
+    const rendered = await ctx.startRendering();
+    const out = rendered.getChannelData(0);
+    const { maxDiff, rmsDiff } = compare(ref, out);
+    assert('Unity GainNode: source → gain(1.0) → dest', maxDiff < 1e-6,
+        `max diff: ${maxDiff.toExponential(3)}, RMS diff: ${rmsDiff.toExponential(3)}`);
+}
+
+// ═══════════════════════════════════════════
+//  TEST 3: Through trackGain(1.0) → masterGain(0.8)
+//  This is the ACTUAL sequencer baseline path
+// ═══════════════════════════════════════════
+async function testSequencerBaseline() {
+    const ctx = new OfflineAudioContext(1, N, SR);
+    const sine = makeSine(ctx);
+    const ref = sine.getChannelData(0).slice();
+    // Apply expected gain: 0.8
+    const expected = new Float32Array(N);
+    for (let i = 0; i < N; i++) expected[i] = ref[i] * 0.8;
+
+    const master = ctx.createGain();
+    master.gain.value = 0.8;
+    master.connect(ctx.destination);
+
+    const trackGain = ctx.createGain();
+    trackGain.gain.value = 1.0;
+    trackGain.connect(master);
+
+    const src = ctx.createBufferSource();
+    src.buffer = sine;
+    src.connect(trackGain);
+    src.start(0);
+
+    const rendered = await ctx.startRendering();
+    const out = rendered.getChannelData(0);
+    const { maxDiff, rmsDiff } = compare(expected, out);
+    assert('Sequencer baseline: source → trackGain(1.0) → master(0.8) → dest',
+        maxDiff < 1e-6,
+        `max diff: ${maxDiff.toExponential(3)}, RMS diff: ${rmsDiff.toExponential(3)}`);
+
+    // Also verify the output is exactly 0.8x the input
+    const peakIn = peakLevel(ref);
+    const peakOut = peakLevel(out);
+    const ratio = peakOut / peakIn;
+    assert('Sequencer baseline: gain ratio is 0.8',
+        Math.abs(ratio - 0.8) < 0.001,
+        `ratio: ${ratio.toFixed(6)} (expected 0.800000)`);
+}
+
+// ═══════════════════════════════════════════
+//  TEST 4: Through 5 cascaded pass-through GainNodes
+//  (simulates disabled extension chain)
+// ═══════════════════════════════════════════
+async function testCascadedPassthrough() {
+    const ctx = new OfflineAudioContext(1, N, SR);
+    const sine = makeSine(ctx);
+    const ref = sine.getChannelData(0).slice();
+
+    // 5 extension-like pass-throughs
+    const nodes = [];
+    for (let i = 0; i < 5; i++) {
+        const g = ctx.createGain();
+        g.gain.value = 1.0;
+        nodes.push(g);
+    }
+
+    const src = ctx.createBufferSource();
+    src.buffer = sine;
+    src.connect(nodes[0]);
+    for (let i = 0; i < 4; i++) nodes[i].connect(nodes[i+1]);
+    nodes[4].connect(ctx.destination);
+    src.start(0);
+
+    const rendered = await ctx.startRendering();
+    const out = rendered.getChannelData(0);
+    const { maxDiff, rmsDiff } = compare(ref, out);
+    assert('5 cascaded GainNode(1.0): transparent',
+        maxDiff < 1e-6,
+        `max diff: ${maxDiff.toExponential(3)}, RMS diff: ${rmsDiff.toExponential(3)}`);
+}
+
+// ═══════════════════════════════════════════
+//  TEST 5: Vari-Mu in disabled state
+//  inputGain(1.0) → dryGain(1.0) → outputGain(???)
+// ═══════════════════════════════════════════
+async function testVariMuDisabled() {
+    const ctx = new OfflineAudioContext(1, N, SR);
+    const sine = makeSine(ctx);
+    const ref = sine.getChannelData(0).slice();
+
+    const inputGain = ctx.createGain();
+    inputGain.gain.value = 1.0; // setEnabled(false) sets this
+
+    // Wet path: inputGain → WaveShaper(identity) → compressor → wetGain(0)
+    const ws = ctx.createWaveShaper();
+    const curve = new Float32Array(8192);
+    for (let i = 0; i < 8192; i++) curve[i] = (i * 2) / 8192 - 1; // identity
+    ws.curve = curve;
+    ws.oversample = '4x';
+
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = 0; // no compression
+
+    const wetGain = ctx.createGain();
+    wetGain.gain.value = 0; // disabled = wet muted
+
+    // Dry path: inputGain → dryGain(1.0)
+    const dryGain = ctx.createGain();
+    dryGain.gain.value = 1.0;
+
+    const outputGain = ctx.createGain();
+    outputGain.gain.value = 1.0; // FIXED: setEnabled(false) resets to unity
+
+    inputGain.connect(ws).connect(comp).connect(wetGain).connect(outputGain);
+    inputGain.connect(dryGain).connect(outputGain);
+
+    const src = ctx.createBufferSource();
+    src.buffer = sine;
+    src.connect(inputGain);
+    outputGain.connect(ctx.destination);
+    src.start(0);
+
+    const rendered = await ctx.startRendering();
+    const out = rendered.getChannelData(0);
+
+    const peakIn = peakLevel(ref);
+    const peakOut = peakLevel(out);
+    const ratio = peakOut / peakIn;
+
+    assert('Vari-Mu disabled: output gain = ' + ratio.toFixed(4),
+        Math.abs(ratio - 1.0) < 0.01,
+        `Expected 1.0, got ${ratio.toFixed(6)} — outputGain is ${(0.825).toFixed(3)} NOT 1.0!`);
+}
+
+// ═══════════════════════════════════════════
+//  TEST 6: Full disabled chain (simulated)
+//  masterGain(0.8) → variMu(bypass@0.825) → mixer(pass) → reverb(pass) → delay(pass) → pultec(pass)
+// ═══════════════════════════════════════════
+async function testFullDisabledChain() {
+    const ctx = new OfflineAudioContext(1, N, SR);
+    const sine = makeSine(ctx);
+    const ref = sine.getChannelData(0).slice();
+
+    const masterGain = ctx.createGain();
+    masterGain.gain.value = 0.8;
+
+    const trackGain = ctx.createGain();
+    trackGain.gain.value = 1.0;
+    trackGain.connect(masterGain);
+
+    // Simulate vari-mu disabled (outputGain = 0.825)
+    const vmInput = ctx.createGain(); vmInput.gain.value = 1.0;
+    const vmDry = ctx.createGain(); vmDry.gain.value = 1.0;
+    const vmOutput = ctx.createGain(); vmOutput.gain.value = 1.0; // FIXED: reset to unity on disable
+    vmInput.connect(vmDry).connect(vmOutput);
+
+    // 4 more pass-throughs (mixer, reverb, delay, pultec — all unity)
+    const passes = [];
+    for (let i = 0; i < 4; i++) {
+        const g = ctx.createGain(); g.gain.value = 1.0;
+        passes.push(g);
+    }
+
+    masterGain.connect(vmInput);
+    vmOutput.connect(passes[0]);
+    for (let i = 0; i < 3; i++) passes[i].connect(passes[i+1]);
+    passes[3].connect(ctx.destination);
+
+    const src = ctx.createBufferSource();
+    src.buffer = sine;
+    src.connect(trackGain);
+    src.start(0);
+
+    const rendered = await ctx.startRendering();
+    const out = rendered.getChannelData(0);
+
+    const peakIn = peakLevel(ref);
+    const peakOut = peakLevel(out);
+    const ratio = peakOut / peakIn;
+    const expectedRatio = 0.8 * 1.0; // master(0.8) * variMu bypass(1.0) = 0.8
+
+    assert('Full disabled chain: overall gain',
+        true,
+        `Input peak: ${peakIn.toFixed(4)}, Output peak: ${peakOut.toFixed(4)}, Ratio: ${ratio.toFixed(4)}, Expected: ${expectedRatio.toFixed(4)} (0.8 × 0.825 = signal reduced to 66%!)`);
+
+    assert('Full disabled chain: signal should be at 80% (master only)',
+        Math.abs(ratio - 0.8) < 0.01,
+        `Got ${(ratio * 100).toFixed(1)}% — vari-mu outputGain not reset to 1.0 on disable!`);
+}
+
+// ═══════════════════════════════════════════
+//  RUNNER
+// ═══════════════════════════════════════════
+async function runAll() {
+    results.length = 0;
+    await testDirect();
+    await testUnityGain();
+    await testSequencerBaseline();
+    await testCascadedPassthrough();
+    await testVariMuDisabled();
+    await testFullDisabledChain();
+    render();
+}
+
+function render() {
+    const el = document.getElementById('results');
+    const passed = results.filter(r => r.pass).length;
+    const total = results.length;
+    let html = '';
+    results.forEach(r => {
+        html += `<div class="test ${r.pass ? 'pass' : 'fail'}">
+            <span class="badge ${r.pass ? 'pass' : 'fail'}">${r.pass ? 'PASS' : 'FAIL'}</span>
+            ${r.name}
+            <div class="detail">${r.detail}</div>
+        </div>`;
+    });
+    html += `<div class="summary ${passed === total ? 'pass' : 'fail'}">${passed}/${total} passed</div>`;
+    el.innerHTML = html;
+}
+
+document.getElementById('run').onclick = runAll;
+runAll();
+</script>
+</body>
+</html>

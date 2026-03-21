@@ -309,13 +309,17 @@ export function createVariMu(): Extension {
       if (on) {
         applyState();
       } else {
+        // Full bypass: unity gain through dry path, zero wet
         nodes.wetGain.gain.value = 0;
         nodes.dryGain.gain.value = 1;
         nodes.inputGain.gain.value = 1;
+        nodes.outputGain.gain.value = 1; // MUST reset to unity
         // Bypass saturation: drive=0 means identity
         setWorkletParam(nodes.saturation, 'drive', 0);
+        setWorkletParam(nodes.saturation, 'mix', 0);
         // Bypass compressor: threshold=0 means no compression
         setWorkletParam(nodes.compressor, 'threshold', 0);
+        setWorkletParam(nodes.compressor, 'makeupGain', 1);
       }
     },
 

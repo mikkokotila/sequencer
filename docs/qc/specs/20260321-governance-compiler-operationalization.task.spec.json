@@ -1,0 +1,32 @@
+{
+  "task_id": "20260321-governance-compiler-operationalization",
+  "task_type": "governance-change",
+  "capability": {
+    "summary": "Operationalize compiler-based capability-proof-guardrails governance across router, contracts, and QC artifacts.",
+    "in_scope": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "package.json",
+      "docs/contracts/**",
+      "docs/qc/**"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "tests/**",
+      "e2e/**"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:kick_01"
+    ],
+    "seed": "governance-seed-v1",
+    "oracles": []
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": true
+  }
+}

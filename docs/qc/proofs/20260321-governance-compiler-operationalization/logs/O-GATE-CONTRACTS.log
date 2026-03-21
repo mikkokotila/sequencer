@@ -1,0 +1,30 @@
+command: npm run gate:contracts
+status: 1
+elapsed_ms: 205
+
+--- stdout ---
+
+> sequencer@1.0.0 gate:contracts
+> node docs/qc/scripts/contract-gates.mjs
+
+FAIL | No fixme debt | e2e/sequencer.spec.ts:274:  test.fixme('new song clears patterns', async ({ page }) => {
+FAIL | No informational assertions | tests/e2e-signal.html:214:  assert('Engine chain: THD documented', true,
+tests/audio-quality.html:208:    assert('Track summing: peak documented', true,
+tests/audio-quality.html:251:    assert('Worst-case summing: documents peak level', true,
+tests/audio-quality.html:253:    assert('Worst-case summing: peak documented (same-freq pathological)', true,
+tests/audio-quality.html:306:    assert('WaveShaper drive=0.3: documents THD', true,
+tests/audio-quality.html:359:    assert('Vari-Mu defaults: THD documented', true, `THD: ${thd.toFixed(3)}%`);
+tests/audio-quality.html:386:    assert('Aux sends: normalized summing documented', true,
+tests/audio-quality.html:519:    assert('Full chain: peak level documented', true,
+tests/audio-quality.html:567:    assert('Headroom fix: master=0.8 documented for 9 tracks', true,
+FAIL | newSong deterministic reset | Expected newSong() to reset extension state and enabled flags; pattern not found.
+FAIL | src/engine/extensions/pultec-eq.ts: setState respects disabled state | setState applies state without enabled guard (risk: off is not transparent).
+FAIL | src/engine/extensions/compressor.ts: setState respects disabled state | setState applies state without enabled guard (risk: off is not transparent).
+FAIL | src/engine/extensions/transformer.ts: setState respects disabled state | setState applies state without enabled guard (risk: off is not transparent).
+FAIL | Engine low-end control curve safety | Missing tokens: t * t * 19000, t * t * 10, setExtParam('vari-mu', 'drive', t * t), setExtParam('vari-mu', 'compress', -6 - t * t * 34)
+FAIL | Benchmark deterministic harness | hasRealChain=false; forbidden=Math.random(
+
+
+--- stderr ---
+
+contract-gates: 8 failure(s), 0 pass(es).

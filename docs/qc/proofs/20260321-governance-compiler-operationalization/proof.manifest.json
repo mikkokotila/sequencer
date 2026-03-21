@@ -1,5 +1,5 @@
 {
-  "task_id": "YYYYMMDD-short-name",
+  "task_id": "20260321-governance-compiler-operationalization",
   "tree_sha": "__AUTO__",
   "commit_shas": [],
   "required_gates": [
@@ -21,14 +21,18 @@
     {
       "path": "docs/contracts/governance-compiler.md",
       "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/capability-proof-guardrails.md",
+      "status": "PASS"
     }
   ],
   "browser_verification": {
     "status": "NOT_VERIFIED",
-    "details": "Governance-only task; no product behavior change."
+    "details": "Governance-only task; no runtime product behavior was changed."
   },
   "artifacts": [
-    "verdict.json",
-    "compiler-report.md"
+    "proof.manifest.json",
+    "verdict.json"
   ]
 }

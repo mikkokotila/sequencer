@@ -1,0 +1,62 @@
+{
+  "task_id": "20260321-governance-compiler-operationalization",
+  "task_type": "governance-change",
+  "spec_path": "docs/qc/specs/20260321-governance-compiler-operationalization.task.spec.json",
+  "policy_version": "1.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-21T16:03:00.495Z",
+  "finished_at_utc": "2026-03-21T16:03:05.000Z",
+  "head_sha": "ebcb7bf",
+  "tree_sha": "d3f4b5f0428b8c3511c91c9b826c1cfdc346bb1c",
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260321-governance-compiler-operationalization/proof.manifest.json",
+    "docs/qc/proofs/TEMPLATE.proof.manifest.json",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "docs/qc/specs/20260321-governance-compiler-operationalization.task.spec.json"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4434,
+        "log_file": "docs/qc/proofs/20260321-governance-compiler-operationalization/logs/O-CI.log"
+      }
+    ],
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

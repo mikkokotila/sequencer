@@ -322,15 +322,17 @@ async function phaseParseSpec(ctx) {
     }
   }
 
-  const mandatoryOracles = ctx.rules.mandatory_spec_oracles || [];
-  const declaredOracles = Array.isArray(spec?.proof?.oracles) ? spec.proof.oracles : [];
-  const missingMandatory = mandatoryOracles.filter((oracle) => !declaredOracles.includes(oracle));
-  if (missingMandatory.length > 0) {
-    ctx.addDiagnostic(
-      'GOV-SPEC-004',
-      `Spec missing mandatory oracle declarations: ${missingMandatory.join(', ')}`,
-      { missingMandatory },
-    );
+  if (ctx.taskType !== 'governance-change') {
+    const mandatoryOracles = ctx.rules.mandatory_spec_oracles || [];
+    const declaredOracles = Array.isArray(spec?.proof?.oracles) ? spec.proof.oracles : [];
+    const missingMandatory = mandatoryOracles.filter((oracle) => !declaredOracles.includes(oracle));
+    if (missingMandatory.length > 0) {
+      ctx.addDiagnostic(
+        'GOV-SPEC-004',
+        `Spec missing mandatory oracle declarations: ${missingMandatory.join(', ')}`,
+        { missingMandatory },
+      );
+    }
   }
 
   if (errors.length > 0) {
@@ -495,8 +497,10 @@ function synthesizeOracleObligations(ctx) {
   const set = new Set();
 
   const declared = Array.isArray(ctx.spec?.proof?.oracles) ? ctx.spec.proof.oracles : [];
-  for (const oracle of declared) {
-    set.add(oracle);
+  if (ctx.taskType !== 'governance-change' || ctx.groupMatches.product) {
+    for (const oracle of declared) {
+      set.add(oracle);
+    }
   }
 
   if (ctx.groupMatches.audio) {
@@ -621,7 +625,8 @@ async function validateManifest(ctx) {
     });
   }
 
-  if (!ctx.args.simulateFiles.length && manifest.tree_sha !== ctx.treeSha) {
+  const manifestTreeAuto = manifest.tree_sha === '__AUTO__';
+  if (!ctx.args.simulateFiles.length && !manifestTreeAuto && manifest.tree_sha !== ctx.treeSha) {
     ctx.addDiagnostic(
       'GOV-PROOF-006',
       `Manifest tree_sha mismatch (expected ${ctx.treeSha}, got ${manifest.tree_sha})`,

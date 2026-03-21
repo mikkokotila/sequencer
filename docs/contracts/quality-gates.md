@@ -2,9 +2,25 @@
 
 ## Mandate
 
-After ANY completed task, run `npm run verify`. All required gates must pass.
+After ANY completed task, run governance compiler first:
+
+`npm run gov:check -- --spec docs/qc/specs/<task-id>.task.spec.json`
+
+The compiler derives required gates from staged diff and contracts.
+All required obligations must pass.
 
 ## Required Programmatic Gates
+
+### 0) Governance Compiler (`npm run gov:check -- --spec ...`)
+
+Mandatory compiler phases:
+
+1. Parse task spec.
+2. Bind staged diff to contracts.
+3. Synthesize required obligations.
+4. Execute required gates and proof checks.
+5. Verify final verdict.
+6. Attest `verdict.json`.
 
 ### 1) CI Pipeline (`npm run ci`)
 
@@ -64,15 +80,23 @@ Automated browser checks run:
 
 These pages must report passing verdicts.
 
-## Aggregate Command
+## Aggregate Commands
 
-`npm run verify` runs the required non-conditional gates:
+Underlying gate bundle:
+
+`npm run verify` runs:
 - `npm run ci`
 - `npm run e2e`
 - `npm run gate:contracts`
 - `npm run gate:architecture`
 
 For audio-code tasks, run `npm run audio:gates` in addition to `npm run verify`.
+
+Completion flow:
+
+1. Stage the intended files.
+2. Run `npm run gov:check -- --spec docs/qc/specs/<task-id>.task.spec.json`.
+3. If verdict is `PASS`, commit with `npm run gov:commit -- --spec ... -m \"type(scope): description\"`.
 
 ## Gain Staging Rules
 

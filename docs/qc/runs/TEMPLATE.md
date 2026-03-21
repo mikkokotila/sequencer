@@ -11,6 +11,7 @@ commits_reviewed:
 
 | Item | Status | Evidence |
 |---|---|---|
+| Governance compiler attestation | PASS/FAIL/BLOCKED | `docs/qc/proofs/<task-id>/verdict.json` |
 | Commit contract | PASS/FAIL/BLOCKED | |
 | CI gate evidence | PASS/FAIL/BLOCKED | |
 | E2E gate evidence | PASS/FAIL/BLOCKED | |

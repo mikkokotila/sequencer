@@ -5,62 +5,66 @@ Read the relevant contract BEFORE starting work. Not all contracts apply to ever
 ## Always
 
 **Read:** `docs/contracts/commit.md`
-Every completed change gets a conventional commit.
+**Read:** `docs/contracts/quality-gates.md`
+**Read:** `docs/contracts/governance-compiler.md`
+**Read:** `docs/contracts/capability-proof-guardrails.md`
 
-**Run:** `npm run verify`
-Every completed change must pass the full programmatic gate set:
-- `npm run ci`
-- `npm run e2e`
-- `npm run gate:contracts`
-- `npm run gate:architecture`
-Read `docs/contracts/quality-gates.md` and `docs/contracts/e2e.md` for details.
+### Required Task Staging
 
-**Write:** `docs/qc/proofs/<task-id>.md`
-Every completed task must include a committed proof artifact with:
-- task id
-- commit SHA(s)
-- required gate results
-- contract applicability checklist
-- browser verification status
+Before coding, create task spec:
+
+- `docs/qc/specs/<task-id>.task.spec.json`
+
+Spec must define:
+
+1. capability
+2. proof
+3. guardrails
+
+Before commit, ensure proof artifacts exist:
+
+1. `docs/qc/proofs/<task-id>/proof.manifest.json`
+2. `docs/qc/proofs/<task-id>/verdict.json` (written by compiler)
+3. `docs/qc/proofs/<task-id>.md`
+
+### Required Commands
+
+1. Stage intended files only.
+2. Run compiler:
+   - `npm run gov:check -- --spec docs/qc/specs/<task-id>.task.spec.json`
+3. If and only if compiler verdict is `PASS`, commit with:
+   - `npm run gov:commit -- --spec docs/qc/specs/<task-id>.task.spec.json -m "type(scope): description"`
+
+Compiler determines which gates must run from staged diff (`ci`, `e2e`, `gate:contracts`, `gate:architecture`, `audio:gates`).
 
 ## When changing audio code
 
 Applies to: any file in `src/engine/`, `src/engine/worklets/`, `src/engine/extensions/`.
 
-**Read:** `docs/contracts/quality-gates.md`
 **Read:** `docs/contracts/audio-determinism.md`
-**Run:** `npm run audio:gates`
-This runs browser automation for:
-- `tests/audio-quality.html`
-- `tests/e2e-signal.html`
-- `tests/signal-purity.html`
-- `tests/benchmark.html`
 
-Audio changes are blocked if these fail or if `npm run gate:contracts` reports:
-- non-deterministic/default-state risks
-- off/on semantics regressions
-- control-curve regressions
-- unresolved `test.fixme` or informational assertions
+Compiler-bound requirements include:
+
+- `npm run audio:gates`
+- audio oracle artifacts (`off_transparent`, `on_audible`, `low_end_continuity`, `clip_guard`, `default_safety`)
+- deterministic fixtures + fixed seed
 
 ## When writing or modifying nonlinear audio processors
 
-Applies to: compressor, saturation, waveshaper, tape emulation, transformer — any processor that distorts, clips, or shapes the signal nonlinearly.
+Applies to: compressor, saturation, waveshaper, tape emulation, transformer, and other nonlinear processors.
 
 **Read:** `docs/contracts/adaptive-transfer.md`
-Transfer function must vary with input level/frequency/history. Static curves are rejected.
 
 ## When changing colors, styles, or visual identity
 
 Applies to: CSS in `index.html`, track colors, extension panel styling, grid cell colors, text colors.
 
 **Read:** `docs/contracts/use-of-color.md`
-Three color families. Controls are monochrome. No color for decoration.
 
 ## When changing app structure, features, or architecture
 
 **Read:** `docs/contracts/architecture-invariants.md`
 **Update:** `README.md`
-Keep the signal flow diagram, project structure, and feature descriptions current. README must always reflect the actual state of the app.
 
 ## When running on-demand QC
 
@@ -72,6 +76,7 @@ QC is evidence inspection unless explicitly asked to rerun gates.
 
 **Write:** `docs/qc/runs/<timestamp>-<headsha>.md`
 Include:
+
 - reviewed commit range
 - commit list
 - contract/gate matrix (`PASS | FAIL | BLOCKED`)

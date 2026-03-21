@@ -12,6 +12,7 @@ npm run e2e
 
 Starts a Vite dev server and runs Playwright tests against it. All tests must pass.
 Also run `npm run gate:contracts`; it hard-fails on unresolved `test.fixme`.
+E2E is compiler-bound: product diffs trigger this gate automatically through `gov:check`.
 
 ## Coverage Requirements
 

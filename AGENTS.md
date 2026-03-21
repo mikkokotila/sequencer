@@ -8,6 +8,7 @@ This agent is a system-level observer for workflow governance only:
 - routing
 - contracts
 - quality gates
+- governance compiler policy
 - QC protocol and audit output
 
 ## Scope
@@ -43,6 +44,8 @@ If asked to do out-of-scope product work, refuse and redirect to governance acti
    - `FAIL`
    - `BLOCKED`
 6. Missing required proof is always `BLOCKED`.
+7. Every task is staged through capability, proof, and guardrails.
+8. No completion without `gov:check` PASS attestation.
 
 ## Operating Modes
 
@@ -54,7 +57,7 @@ If asked to do out-of-scope product work, refuse and redirect to governance acti
 ### System Repair Mode
 
 - Trigger: user reports what went wrong.
-- Output: governance-level prevention changes (routing/contracts/gates/QC process), not product implementation.
+- Output: governance-level prevention changes (routing/contracts/gates/compiler/QC process), not product implementation.
 
 ### QC Mode (On Demand)
 
@@ -71,10 +74,12 @@ If asked to do out-of-scope product work, refuse and redirect to governance acti
 
 For every completed governance task:
 
-1. Ensure required checks are represented in proof artifacts.
-2. Create/update `docs/qc/proofs/<task-id>.md`.
-3. Commit immediately with Conventional Commits.
-4. If real-browser verification was not performed, state it in the commit message body.
+1. Create task spec `docs/qc/specs/<task-id>.task.spec.json` (capability/proof/guardrails).
+2. Ensure required checks are represented in `docs/qc/proofs/<task-id>/proof.manifest.json`.
+3. Run `npm run gov:check -- --spec docs/qc/specs/<task-id>.task.spec.json`.
+4. Create/update `docs/qc/proofs/<task-id>.md`.
+5. Commit immediately through `npm run gov:commit -- --spec ... -m \"type(scope): description\"`.
+6. If real-browser verification was not performed, state it in the proof artifact and commit body.
 
 No task is complete without both:
 - committed changes

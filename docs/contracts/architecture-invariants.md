@@ -26,6 +26,7 @@ No "paper architecture" is allowed where interfaces/contracts say one thing but 
 
 `npm run gate:architecture` is mandatory and blocking.
 All invariant checks must pass for a `PASS` verdict.
+For product tasks, this gate is auto-bound by governance compiler based on staged diff.
 
 ## Evidence Requirement
 
@@ -34,3 +35,4 @@ Proof artifacts must include:
 1. `npm run gate:architecture` result summary.
 2. Any blocked invariants with file/line evidence.
 3. Rationale for any temporary exception approved explicitly by the user.
+4. If violated, include compiler diagnostic code and the accepted remediation recipe used.

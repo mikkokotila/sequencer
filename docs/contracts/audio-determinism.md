@@ -19,7 +19,8 @@ No change may make default sound quality worse.
 
 For audio-impacting tasks, proof artifacts must include:
 
-1. `npm run audio:gates` result.
-2. `npm run gate:contracts` result.
-3. Explicit note on defaults touched and why they are safe.
-4. Explicit note on off/on transparency verification.
+1. `npm run audio:gates` result (if bound by compiler).
+2. `npm run gate:contracts` result (if bound by compiler).
+3. Oracle artifacts for `off_transparent`, `on_audible`, `low_end_continuity`, `clip_guard`, and `default_safety`.
+4. Explicit note on defaults touched and why they are safe.
+5. Explicit note on off/on transparency verification.

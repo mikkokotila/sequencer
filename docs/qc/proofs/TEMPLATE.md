@@ -1,17 +1,21 @@
 # Task Proof Template
 
 task_id: <YYYYMMDD-short-name>
+spec_path: docs/qc/specs/<task-id>.task.spec.json
 completed_at_utc: <ISO-8601>
 author: <agent-or-human>
 commit_shas:
 - <sha1>
+attestation_path: docs/qc/proofs/<task-id>/verdict.json
 
 ## Required Gates
 
 | Gate | Required | Result | Evidence |
 |---|---|---|---|
+| `npm run gov:check -- --spec ...` | yes | PASS/FAIL/BLOCKED | verdict code + path |
 | `npm run ci` | yes | PASS/FAIL/BLOCKED | command output summary or link |
 | `npm run e2e` | yes | PASS/FAIL/BLOCKED | command output summary or link |
+| `npm run gate:contracts` | conditional (diff-bound) | PASS/FAIL/BLOCKED/N/A | command output summary or link |
 | `npm run gate:architecture` | yes | PASS/FAIL/BLOCKED | command output summary or link |
 | `tests/audio-quality.html` | conditional | PASS/FAIL/BLOCKED/N/A | assertion count + result |
 | `tests/benchmark.html` | conditional | PASS/FAIL/BLOCKED/N/A | config + p99 vs budget |

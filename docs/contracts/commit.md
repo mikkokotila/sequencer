@@ -31,17 +31,18 @@ docs(contracts): add commit and quality-gates contracts
 ## Rules
 
 1. One commit per logical change. Don't batch unrelated work.
-2. Run `npm run ci` and `npm run e2e` before committing.
-3. Commit message describes the *why*, not the *what*.
-4. Never amend previous commits unless explicitly asked.
+2. Run `npm run gov:check -- --spec docs/qc/specs/<task-id>.task.spec.json` before committing.
+3. Commit through `npm run gov:commit -- --spec docs/qc/specs/<task-id>.task.spec.json -m \"type(scope): description\"`.
+4. Commit message describes the *why*, not the *what*.
+5. Never amend previous commits unless explicitly asked.
 
 ## Verification Before Commit
 
 No committing without verifying the actual app works in a real browser. Automated checks (CI, preview screenshots) are necessary but not sufficient. The duplicate-handler bug that made clicking do nothing was invisible to every automated check.
 
 Before every commit:
-1. `npm run ci` passes (typecheck, lint, format, circular)
-2. `npm run e2e` passes (all Playwright tests)
+1. `npm run gov:check -- --spec docs/qc/specs/<task-id>.task.spec.json` returns `PASS`
+2. All compiler-required command obligations pass (`ci`, `e2e`, `gate:contracts`, `gate:architecture`, and `audio:gates` if bound)
 3. The app has been opened in an actual browser and the changed feature manually confirmed to work
 
 If you cannot verify in a real browser, the commit message must state this explicitly.

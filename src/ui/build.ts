@@ -317,14 +317,121 @@ export function buildUI(): void {
 
   // ── Transport ──
   const transport = el('div', 'transport');
-  transport.innerHTML = `
-    <div class="transport-btns"><button class="tb" id="play-btn" title="Play (Space)"><svg width="8" height="10" viewBox="0 0 14 16" fill="none"><path d="M1 1.5L13 8L1 14.5V1.5Z" fill="currentColor"/></svg></button><button class="tb" id="stop-btn" title="Stop"><svg width="7" height="7" viewBox="0 0 12 12" fill="none"><rect width="12" height="12" rx="1.5" fill="currentColor"/></svg></button></div>
-    <div class="song-ctrl"><div id="song-name" class="song-name" title="Double-click to rename">Untitled</div><div class="song-btns"><button class="tb" id="song-new" title="New Song"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><button class="tb" id="song-del" title="Delete Song"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M3 4.5h10M5.5 4.5V3a1 1 0 011-1h3a1 1 0 011 1v1.5M4.5 4.5l.7 8.5a1 1 0 001 .9h3.6a1 1 0 001-.9l.7-8.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div>
-    <div class="file-btns"><button class="tb" id="save-btn" title="Export Pattern"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3M3 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="tb" id="load-btn" title="Import Pattern"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 10V2M5 5l3-3 3 3M3 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
-    <div class="bpm-ctrl"><label>BPM</label><input type="range" id="bpm-range" min="40" max="220" value="${bpm}"><input type="number" id="bpm-num" min="40" max="220" value="${bpm}"></div>
-    <div class="ext-icons" id="ext-icons"></div>
-    <div class="engine-divider"></div>
-    <button class="ext-icon-btn" id="engine-icon-btn" title="Engine Control Panel"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/></svg></button>`;
+
+  // Transport buttons (play / stop)
+  const transportBtns = el('div', 'transport-btns');
+  const playBtn = el('button', 'tb');
+  playBtn.id = 'play-btn';
+  playBtn.title = 'Play (Space)';
+  playBtn.innerHTML =
+    '<svg width="8" height="10" viewBox="0 0 14 16" fill="none"><path d="M1 1.5L13 8L1 14.5V1.5Z" fill="currentColor"/></svg>';
+  playBtn.onclick = togglePlay;
+  transportBtns.appendChild(playBtn);
+  const stopBtn = el('button', 'tb');
+  stopBtn.id = 'stop-btn';
+  stopBtn.title = 'Stop';
+  stopBtn.innerHTML =
+    '<svg width="7" height="7" viewBox="0 0 12 12" fill="none"><rect width="12" height="12" rx="1.5" fill="currentColor"/></svg>';
+  stopBtn.onclick = stopPlayback;
+  transportBtns.appendChild(stopBtn);
+  transport.appendChild(transportBtns);
+
+  // Song control (name + new/delete)
+  const songCtrl = el('div', 'song-ctrl');
+  const songNameEl = el('div', 'song-name');
+  songNameEl.id = 'song-name';
+  songNameEl.title = 'Double-click to rename';
+  songNameEl.textContent = 'Untitled';
+  songCtrl.appendChild(songNameEl);
+  const songBtns = el('div', 'song-btns');
+  const songNewBtn = el('button', 'tb');
+  songNewBtn.id = 'song-new';
+  songNewBtn.title = 'New Song';
+  songNewBtn.innerHTML =
+    '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  songNewBtn.onclick = () => {
+    void newSong();
+  };
+  songBtns.appendChild(songNewBtn);
+  const songDelBtn = el('button', 'tb');
+  songDelBtn.id = 'song-del';
+  songDelBtn.title = 'Delete Song';
+  songDelBtn.innerHTML =
+    '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M3 4.5h10M5.5 4.5V3a1 1 0 011-1h3a1 1 0 011 1v1.5M4.5 4.5l.7 8.5a1 1 0 001 .9h3.6a1 1 0 001-.9l.7-8.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  songDelBtn.onclick = () => {
+    void deleteSong();
+  };
+  songBtns.appendChild(songDelBtn);
+  songCtrl.appendChild(songBtns);
+  transport.appendChild(songCtrl);
+
+  // File buttons (export / import)
+  const fileBtns = el('div', 'file-btns');
+  const saveBtn = el('button', 'tb');
+  saveBtn.id = 'save-btn';
+  saveBtn.title = 'Export Pattern';
+  saveBtn.innerHTML =
+    '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3M3 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  saveBtn.onclick = savePatternFile;
+  fileBtns.appendChild(saveBtn);
+  const loadBtn = el('button', 'tb');
+  loadBtn.id = 'load-btn';
+  loadBtn.title = 'Import Pattern';
+  loadBtn.innerHTML =
+    '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 10V2M5 5l3-3 3 3M3 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  loadBtn.onclick = loadPatternFile;
+  fileBtns.appendChild(loadBtn);
+  transport.appendChild(fileBtns);
+
+  // BPM control
+  const bpmCtrl = el('div', 'bpm-ctrl');
+  const bpmLabel = el('label', '');
+  bpmLabel.textContent = 'BPM';
+  bpmCtrl.appendChild(bpmLabel);
+  const bpmRange = document.createElement('input');
+  bpmRange.type = 'range';
+  bpmRange.id = 'bpm-range';
+  bpmRange.min = '40';
+  bpmRange.max = '220';
+  bpmRange.value = String(bpm);
+  bpmRange.oninput = () => {
+    setBpm(Number(bpmRange.value));
+    bpmNum.value = String(bpm);
+    scheduleSave();
+  };
+  bpmCtrl.appendChild(bpmRange);
+  const bpmNum = document.createElement('input');
+  bpmNum.type = 'number';
+  bpmNum.id = 'bpm-num';
+  bpmNum.min = '40';
+  bpmNum.max = '220';
+  bpmNum.value = String(bpm);
+  bpmNum.onchange = () => {
+    setBpm(Math.max(40, Math.min(220, Number(bpmNum.value))));
+    bpmRange.value = String(bpm);
+    bpmNum.value = String(bpm);
+    scheduleSave();
+  };
+  bpmCtrl.appendChild(bpmNum);
+  transport.appendChild(bpmCtrl);
+
+  // Extension icons container
+  const extIcons = el('div', 'ext-icons');
+  extIcons.id = 'ext-icons';
+  transport.appendChild(extIcons);
+
+  // Engine divider
+  transport.appendChild(el('div', 'engine-divider'));
+
+  // Engine control panel button
+  const engineBtn = el('button', 'ext-icon-btn');
+  engineBtn.id = 'engine-icon-btn';
+  engineBtn.title = 'Engine Control Panel';
+  engineBtn.innerHTML =
+    '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/></svg>';
+  engineBtn.onclick = () => toggleEnginePanel();
+  transport.appendChild(engineBtn);
+
   app.appendChild(transport);
 
   // ── Drums ──
@@ -532,48 +639,8 @@ export function buildUI(): void {
   vocSec.appendChild(vpanel);
   app.appendChild(vocSec);
 
-  // ── Wire transport buttons ──
-  const playBtn = document.getElementById('play-btn');
-  if (playBtn) playBtn.onclick = togglePlay;
-  const stopBtn = document.getElementById('stop-btn');
-  if (stopBtn) stopBtn.onclick = stopPlayback;
-  const saveBtn = document.getElementById('save-btn');
-  if (saveBtn) saveBtn.onclick = savePatternFile;
-  const loadBtn = document.getElementById('load-btn');
-  if (loadBtn) loadBtn.onclick = loadPatternFile;
-  const songNewBtn = document.getElementById('song-new');
-  if (songNewBtn)
-    songNewBtn.onclick = () => {
-      void newSong();
-    };
-  const songDelBtn = document.getElementById('song-del');
-  if (songDelBtn)
-    songDelBtn.onclick = () => {
-      void deleteSong();
-    };
-
-  // Song name inline editing
-  const songNameEl = document.getElementById('song-name');
-  if (songNameEl) setupSongNameEdit(songNameEl);
-
-  // BPM controls
-  const bpmRange = document.getElementById('bpm-range') as HTMLInputElement | null;
-  const bpmNum = document.getElementById('bpm-num') as HTMLInputElement | null;
-  if (bpmRange) {
-    bpmRange.oninput = () => {
-      setBpm(Number(bpmRange.value));
-      if (bpmNum) bpmNum.value = String(bpm);
-      scheduleSave();
-    };
-  }
-  if (bpmNum) {
-    bpmNum.onchange = () => {
-      setBpm(Math.max(40, Math.min(220, Number(bpmNum.value))));
-      if (bpmRange) bpmRange.value = String(bpm);
-      bpmNum.value = String(bpm);
-      scheduleSave();
-    };
-  }
+  // Song name inline editing (songNameEl created above in transport)
+  setupSongNameEdit(songNameEl);
 
   // Keyboard shortcuts
   document.addEventListener('keydown', (e: KeyboardEvent) => {
@@ -634,10 +701,6 @@ export function buildUI(): void {
     songPane.appendChild(slot);
   }
   document.body.appendChild(songPane);
-
-  // Engine control panel icon
-  const engineBtn = document.getElementById('engine-icon-btn');
-  if (engineBtn) engineBtn.onclick = () => toggleEnginePanel();
 
   // Escape also closes engine panel
   document.addEventListener('keydown', (e: KeyboardEvent) => {

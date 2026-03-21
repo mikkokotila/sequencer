@@ -60,13 +60,11 @@ export function setMuted(track: number, value: boolean): void {
 //  AUDIO BUFFERS (decoded, loaded at runtime)
 // ═══════════════════════════════════════════
 
-export const drumBuf: (AudioBuffer | null)[] = Array<AudioBuffer | null>(
-  DRUMS_CFG.length,
-).fill(null);
+export const drumBuf: (AudioBuffer | null)[] = Array<AudioBuffer | null>(DRUMS_CFG.length).fill(
+  null,
+);
 
-export const melBuf: (AudioBuffer | null)[] = Array<AudioBuffer | null>(
-  MEL_CFG.length,
-).fill(null);
+export const melBuf: (AudioBuffer | null)[] = Array<AudioBuffer | null>(MEL_CFG.length).fill(null);
 
 export let vocalBuf: AudioBuffer | null = null;
 
@@ -82,9 +80,9 @@ export const drumSampleData: (SampleData | null)[] = Array<SampleData | null>(
   DRUMS_CFG.length,
 ).fill(null);
 
-export const melSampleData: (SampleData | null)[] = Array<SampleData | null>(
-  MEL_CFG.length,
-).fill(null);
+export const melSampleData: (SampleData | null)[] = Array<SampleData | null>(MEL_CFG.length).fill(
+  null,
+);
 
 export let vocalSampleData: SampleData | null = null;
 

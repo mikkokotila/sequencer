@@ -7,10 +7,25 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
-    "preview": "vite preview"
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write 'src/**/*.ts'",
+    "format:check": "prettier --check 'src/**/*.ts'",
+    "circular": "madge --circular --extensions ts src/",
+    "ci": "npm run typecheck && npm run lint && npm run format:check && npm run circular",
+    "preview": "vite preview",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "madge": "^8.0.0",
+    "prettier": "^3.8.1",
     "typescript": "^5.7.0",
+    "typescript-eslint": "^8.57.1",
     "vite": "^6.0.0"
   },
   "dependencies": {

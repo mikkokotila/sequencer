@@ -3,24 +3,9 @@
  * melody‐cell mono enforcement, multi‐note detection, and harmony cycling.
  */
 
-import {
-  DRUMS_CFG,
-  MEL_CFG,
-  VOCAL_CFG,
-  STEPS,
-  HARMONY_LABELS,
-} from '../config';
-import {
-  drumPat,
-  melPat,
-  vocalPat,
-  harmonies,
-} from '../transport/patterns';
-import {
-  drumCells,
-  melCells,
-  vocalCells,
-} from '../state';
+import { DRUMS_CFG, MEL_CFG, VOCAL_CFG, STEPS, HARMONY_LABELS } from '../config';
+import { drumPat, melPat, vocalPat, harmonies } from '../transport/patterns';
+import { drumCells, melCells, vocalCells } from '../state';
 import { displayToSemitone } from './helpers';
 
 // ═══════════════════════════════════════════
@@ -83,12 +68,7 @@ export function updateVocalCell(s: number): void {
  * Set a melody cell value, enforcing mono mode when applicable.
  * In mono mode, enabling a note clears all other notes on that step.
  */
-export function setMelodyCell(
-  t: number,
-  s: number,
-  dr: number,
-  val: boolean,
-): void {
+export function setMelodyCell(t: number, s: number, dr: number, val: boolean): void {
   const semi = displayToSemitone(dr);
   const cfg = MEL_CFG[t];
   const stepNotes = melPat[t]?.[s];
@@ -131,9 +111,7 @@ export function checkMultiNote(t: number): boolean {
 
 /** Dim or un-dim the harmony toggle button based on multi-note status. */
 export function updateHarmonyDim(t: number): void {
-  const b = document.querySelector(
-    `.melody-track[data-track="${t}"] .harmony-toggle`,
-  );
+  const b = document.querySelector(`.melody-track[data-track="${t}"] .harmony-toggle`);
   if (b) b.classList.toggle('dimmed', checkMultiNote(t));
 }
 
@@ -147,9 +125,7 @@ export function cycleHarmony(t: number): number {
   const next = (prev + 1) % HARMONY_LABELS.length;
   harmonies[t] = next;
 
-  const b = document.querySelector(
-    `.melody-track[data-track="${t}"] .harmony-toggle`,
-  );
+  const b = document.querySelector(`.melody-track[data-track="${t}"] .harmony-toggle`);
   if (b) {
     const label = HARMONY_LABELS[next];
     b.textContent = 'HARM: ' + (label ?? '—');

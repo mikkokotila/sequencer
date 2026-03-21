@@ -2,9 +2,18 @@
 
 ## Mandate
 
-After ANY change to the package, the `audio-gate` test suite MUST pass before the change is considered complete.
+After ANY change that touches code, run `npm run ci`. All gates must pass.
 
-## audio-gate
+## CI Pipeline (`npm run ci`)
+
+Runs four gates in sequence. All must pass:
+
+1. **typecheck** — `tsc --noEmit`. Zero errors.
+2. **lint** — `eslint src/`. Zero errors. DSP worklet files have extra no-allocation rules.
+3. **format** — `prettier --check`. All files formatted.
+4. **circular** — `madge --circular`. No circular imports.
+
+## audio-gate (manual, run when audio code changes)
 
 **Location:** `tests/audio-quality.html`
 **Run:** Open in browser. Tests auto-run. All 25 assertions must pass.

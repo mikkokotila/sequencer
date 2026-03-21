@@ -8,7 +8,7 @@ const HALFBAND_COEFS: readonly number[] = [
 ];
 
 function saturate(x: number, k: number): number {
-  return (Math.PI + k) * x / (Math.PI + k * Math.abs(x));
+  return ((Math.PI + k) * x) / (Math.PI + k * Math.abs(x));
 }
 
 class SaturationProcessor extends AudioWorkletProcessor {
@@ -36,7 +36,9 @@ class SaturationProcessor extends AudioWorkletProcessor {
     history[writeIdx % HALFBAND_TAPS] = sample;
     let sum = 0;
     for (let t = 0; t < HALFBAND_TAPS; t++) {
-      sum += (HALFBAND_COEFS[t] ?? 0) * (history[(writeIdx - t + HALFBAND_TAPS * 2) % HALFBAND_TAPS] ?? 0);
+      sum +=
+        (HALFBAND_COEFS[t] ?? 0) *
+        (history[(writeIdx - t + HALFBAND_TAPS * 2) % HALFBAND_TAPS] ?? 0);
     }
     return sum;
   }

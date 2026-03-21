@@ -25,11 +25,29 @@ class CompressorProcessor extends AudioWorkletProcessor {
 
   static get parameterDescriptors(): AudioParamDescriptor[] {
     return [
-      { name: 'threshold', defaultValue: -18, minValue: -60, maxValue: 0, automationRate: 'k-rate' },
+      {
+        name: 'threshold',
+        defaultValue: -18,
+        minValue: -60,
+        maxValue: 0,
+        automationRate: 'k-rate',
+      },
       { name: 'ratio', defaultValue: 4, minValue: 1, maxValue: 20, automationRate: 'k-rate' },
       { name: 'knee', defaultValue: 30, minValue: 0, maxValue: 40, automationRate: 'k-rate' },
-      { name: 'attack', defaultValue: 0.01, minValue: 0.001, maxValue: 0.3, automationRate: 'k-rate' },
-      { name: 'release', defaultValue: 0.15, minValue: 0.01, maxValue: 1, automationRate: 'k-rate' },
+      {
+        name: 'attack',
+        defaultValue: 0.01,
+        minValue: 0.001,
+        maxValue: 0.3,
+        automationRate: 'k-rate',
+      },
+      {
+        name: 'release',
+        defaultValue: 0.15,
+        minValue: 0.01,
+        maxValue: 1,
+        automationRate: 'k-rate',
+      },
       { name: 'makeupGain', defaultValue: 1, minValue: 0, maxValue: 2, automationRate: 'k-rate' },
     ];
   }
@@ -38,7 +56,9 @@ class CompressorProcessor extends AudioWorkletProcessor {
     history[writeIdx % HALFBAND_TAPS] = sample;
     let sum = 0;
     for (let t = 0; t < HALFBAND_TAPS; t++) {
-      sum += (HALFBAND_COEFS[t] ?? 0) * (history[(writeIdx - t + HALFBAND_TAPS * 2) % HALFBAND_TAPS] ?? 0);
+      sum +=
+        (HALFBAND_COEFS[t] ?? 0) *
+        (history[(writeIdx - t + HALFBAND_TAPS * 2) % HALFBAND_TAPS] ?? 0);
     }
     return sum;
   }

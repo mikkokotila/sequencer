@@ -22,8 +22,20 @@ class DelayProcessor extends AudioWorkletProcessor {
 
   static get parameterDescriptors(): AudioParamDescriptor[] {
     return [
-      { name: 'delayTime', defaultValue: 0.375, minValue: MIN_DELAY_SECONDS, maxValue: MAX_DELAY_SECONDS, automationRate: 'k-rate' },
-      { name: 'feedback', defaultValue: 0.35, minValue: 0, maxValue: MAX_FEEDBACK, automationRate: 'k-rate' },
+      {
+        name: 'delayTime',
+        defaultValue: 0.375,
+        minValue: MIN_DELAY_SECONDS,
+        maxValue: MAX_DELAY_SECONDS,
+        automationRate: 'k-rate',
+      },
+      {
+        name: 'feedback',
+        defaultValue: 0.35,
+        minValue: 0,
+        maxValue: MAX_FEEDBACK,
+        automationRate: 'k-rate',
+      },
       { name: 'tone', defaultValue: 0.3, minValue: 0, maxValue: 1, automationRate: 'k-rate' },
       { name: 'mix', defaultValue: 0.25, minValue: 0, maxValue: 1, automationRate: 'k-rate' },
     ];

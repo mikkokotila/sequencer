@@ -2,9 +2,11 @@
 
 ## Mandate
 
-After ANY change that touches code, run `npm run ci`. All gates must pass.
+After ANY completed task, run `npm run verify`. All required gates must pass.
 
-## CI Pipeline (`npm run ci`)
+## Required Programmatic Gates
+
+### 1) CI Pipeline (`npm run ci`)
 
 Runs four gates in sequence. All must pass:
 
@@ -13,12 +15,46 @@ Runs four gates in sequence. All must pass:
 3. **format** — `prettier --check`. All files formatted.
 4. **circular** — `madge --circular`. No circular imports.
 
-## audio-gate (manual, run when audio code changes)
+### 2) E2E Pipeline (`npm run e2e`)
 
-**Location:** `tests/audio-quality.html`
-**Run:** Open in browser. Tests auto-run. All 25 assertions must pass.
+Playwright suite must pass with zero failures.
 
-## Gain Staging Rules (enforced by tests)
+### 3) Contract Static Gates (`npm run gate:contracts`)
+
+Static policy checks that fail on known recurring regressions:
+
+1. No `test.fixme` debt in `e2e/` and `tests/`.
+2. No informational `assert(..., true, ...)` assertions in audio test pages.
+3. `newSong()` must reset extension state to deterministic defaults.
+4. Master insert extensions must keep `setState` non-audible while disabled (`off` means off).
+5. Engine master controls must preserve non-explosive low-end response curves (squared control checks).
+6. Benchmark harness must be deterministic and worklet-driven (no random main-thread proxy timing).
+
+### 4) Audio Browser Gates (`npm run audio:gates`) — conditional
+
+Required when changing audio code in:
+- `src/engine/**`
+- `src/engine/worklets/**`
+- `src/engine/extensions/**`
+
+Automated browser checks run:
+- `tests/audio-quality.html`
+- `tests/e2e-signal.html`
+- `tests/signal-purity.html`
+- `tests/benchmark.html`
+
+These pages must report passing verdicts.
+
+## Aggregate Command
+
+`npm run verify` runs the required non-conditional gates:
+- `npm run ci`
+- `npm run e2e`
+- `npm run gate:contracts`
+
+For audio-code tasks, run `npm run audio:gates` in addition to `npm run verify`.
+
+## Gain Staging Rules
 
 | Node | Max Gain | Notes |
 |------|----------|-------|
@@ -31,29 +67,27 @@ Runs four gates in sequence. All must pass:
 | Aux per-track send | 0.15 (reverb), 0.12 (delay) | Conservative defaults |
 | Delay feedback | 0.95 max | Hard-capped |
 
-## WaveShaper Curve Rules
+## Control Truthfulness Rules
+
+1. `off` must be acoustically transparent, not just visually toggled.
+2. `on` must audibly apply only the intended processing.
+3. Enabling a control from 0% to 1% must not cause disproportionate jumps.
+4. New-song/default-state flows must reset extension behavior deterministically.
+
+## WaveShaper Curve Rules (nonlinear processors)
 
 1. At amount=0, curve MUST be identity: `f(x) = x`.
 2. Use crossfade: `curve[i] = x * (1 - amount) + shaped * amount`.
 3. No raw asymmetry. Use `Math.sin(x * PI)` for even harmonics.
 
-## benchmark-gate (manual, run when DSP code changes)
+## Benchmark Gate Rules
 
-**Location:** `tests/benchmark.html`
-**Run:** Open in browser. Click RUN STRESS TEST. p99 must be within budget.
+`tests/benchmark.html` is valid only when benchmark measurement is deterministic and tied to worklet processing (not random oscillator/main-thread interval proxies).
 
 **Pass condition:** p99 process() duration < block budget (bufferSize / sampleRate * 1000 ms).
 At 128 samples / 48kHz, budget is 2.67ms. p99 must be under that.
 
 **Config:** Run with 16 voices, all effects active, 10-second duration minimum.
-
-**What it measures:**
-- Real AudioContext timing under maximum polyphony stress
-- p50 (median), p99, and max process() duration
-- DSP load as percentage of budget
-- Visualizes duration over time with budget line
-
-**When to run:** After any change to worklet processors, effect chain topology, or signal routing.
 
 ## Adding Tests
 
@@ -62,4 +96,4 @@ At 128 samples / 48kHz, budget is 2.67ms. p99 must be under that.
 3. Aux effects → summing normalization test.
 4. Feedback paths → stability at max feedback.
 5. All tests use `OfflineAudioContext`.
-6. New worklet processor → run benchmark-gate with max polyphony.
+6. New worklet processor → run benchmark gate with max polyphony.

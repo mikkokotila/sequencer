@@ -11,6 +11,7 @@ npm run e2e
 ```
 
 Starts a Vite dev server and runs Playwright tests against it. All tests must pass.
+Also run `npm run gate:contracts`; it hard-fails on unresolved `test.fixme`.
 
 ## Coverage Requirements
 
@@ -40,5 +41,5 @@ Every feature category must be tested:
 2. **Every bug fix gets a test.** The test must fail without the fix and pass with it.
 3. **Tests must be deterministic.** No flaky assertions. Use explicit waits, not timeouts where possible.
 4. **Tests must be independent.** Each test starts from a fresh page load. No test depends on another.
-5. **`test.fixme()` marks known bugs.** These are tracked, not ignored. Zero fixme is the goal.
+5. **`test.fixme()` is release-blocking.** Zero fixme is mandatory.
 6. **Audio tests use OfflineAudioContext** in separate test files (signal-purity, audio-quality, benchmark). E2E tests verify DOM state, not audio output.

@@ -7,11 +7,12 @@ Read the relevant contract BEFORE starting work. Not all contracts apply to ever
 **Read:** `docs/contracts/commit.md`
 Every completed change gets a conventional commit.
 
-**Run:** `npm run ci`
-Every completed change must pass all four CI gates (typecheck, lint, format, circular). Read `docs/contracts/quality-gates.md` for details.
-
-**Run:** `npm run e2e`
-Every completed change must pass all E2E tests. Read `docs/contracts/e2e.md` for details. Every new feature or bug fix must add corresponding tests.
+**Run:** `npm run verify`
+Every completed change must pass the full programmatic gate set:
+- `npm run ci`
+- `npm run e2e`
+- `npm run gate:contracts`
+Read `docs/contracts/quality-gates.md` and `docs/contracts/e2e.md` for details.
 
 **Write:** `docs/qc/proofs/<task-id>.md`
 Every completed task must include a committed proof artifact with:
@@ -26,8 +27,19 @@ Every completed task must include a committed proof artifact with:
 Applies to: any file in `src/engine/`, `src/engine/worklets/`, `src/engine/extensions/`.
 
 **Read:** `docs/contracts/quality-gates.md`
-Run `tests/audio-quality.html` after changes. All 25 assertions must pass.
-Run `tests/benchmark.html` after worklet/DSP changes. p99 must be within budget.
+**Read:** `docs/contracts/audio-determinism.md`
+**Run:** `npm run audio:gates`
+This runs browser automation for:
+- `tests/audio-quality.html`
+- `tests/e2e-signal.html`
+- `tests/signal-purity.html`
+- `tests/benchmark.html`
+
+Audio changes are blocked if these fail or if `npm run gate:contracts` reports:
+- non-deterministic/default-state risks
+- off/on semantics regressions
+- control-curve regressions
+- unresolved `test.fixme` or informational assertions
 
 ## When writing or modifying nonlinear audio processors
 

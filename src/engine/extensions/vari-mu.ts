@@ -54,13 +54,13 @@ function setWorkletParam(node: AudioWorkletNode, name: string, value: number): v
 
 export function createVariMu(): Extension {
   let state: VariMuState = {
-    drive: 0.15,
-    compress: -18,
-    ratio: 4,
-    knee: 30,
-    speed: 2,
-    mix: 1.0,
-    output: 0.55,
+    drive: 0.05, // very gentle saturation
+    compress: -10, // only catch peaks
+    ratio: 2, // gentle 2:1 ratio
+    knee: 30, // soft knee
+    speed: 1, // medium speed (10ms attack, 150ms release)
+    mix: 0.5, // 50/50 wet/dry parallel compression
+    output: 0.65, // slight makeup
   };
 
   const SPEED_PRESETS: readonly SpeedPreset[] = [

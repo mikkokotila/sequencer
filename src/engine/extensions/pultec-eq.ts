@@ -63,7 +63,7 @@ export function createPultecEq(): Extension {
     highAtten: 0,
     highBoostFreq: 5000,
     highAttenFreq: 10000,
-    tubeColor: 0.2,
+    tubeColor: 0.0, // off by default — user adds warmth intentionally
   };
 
   let nodes: PultecNodes | null = null;

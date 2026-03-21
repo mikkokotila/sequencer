@@ -21,11 +21,17 @@ let waveformCanvas: HTMLCanvasElement | null = null;
 let spectrumCtx: CanvasRenderingContext2D | null = null;
 let waveformCtx: CanvasRenderingContext2D | null = null;
 
-// Settings state (informational display)
+// Settings state
 let bufferSize = 128;
 let sampleRateVal = 48000;
 let oversampleMode: OverSampleType = '4x';
 let limiterOn = true;
+
+// Master bus knob values (drive the master bus extensions)
+let masterCutoff = 100; // 0-100% — Pultec high shelf
+let masterResonance = 0; // 0-100% — Pultec Q
+let masterSaturation = 0; // 0-100% — Vari-Mu drive
+let masterCompression = 0; // 0-100% — Vari-Mu compress
 
 // Demo oscillator sources
 let demoOscs: OscillatorNode[] = [];
@@ -329,6 +335,32 @@ function makeSelect(
   return sel;
 }
 
+function makeKnob(label: string, initial: number, onChange: (v: number) => void): HTMLDivElement {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;';
+  const valDisplay = document.createElement('div');
+  valDisplay.style.cssText = 'font:11px monospace;color:#ddd;';
+  valDisplay.textContent = `${initial}%`;
+  const slider = document.createElement('input');
+  slider.type = 'range';
+  slider.min = '0';
+  slider.max = '100';
+  slider.value = String(initial);
+  slider.style.cssText = 'width:100%;accent-color:#888;cursor:pointer;';
+  slider.oninput = () => {
+    const v = Number(slider.value);
+    valDisplay.textContent = `${v}%`;
+    onChange(v);
+  };
+  const lbl = document.createElement('div');
+  lbl.style.cssText = 'font:8px monospace;color:#666;letter-spacing:1px;text-transform:uppercase;';
+  lbl.textContent = label;
+  wrap.appendChild(valDisplay);
+  wrap.appendChild(slider);
+  wrap.appendChild(lbl);
+  return wrap;
+}
+
 function makeRow(label: string, value: string | HTMLElement): HTMLDivElement {
   const row = document.createElement('div');
   row.style.cssText =
@@ -520,6 +552,36 @@ function buildPanel(): HTMLDivElement {
     limiterToggle.style.borderColor = limiterOn ? 'rgba(74,254,112,0.4)' : '#2e3150';
   };
   ctrlSide.appendChild(makeRow('Master Limiter', limiterToggle));
+
+  // Master Bus Controls
+  ctrlSide.appendChild(makeSectionTitle('Master Bus'));
+  const knobRow = document.createElement('div');
+  knobRow.style.cssText = 'display:flex;gap:12px;margin-top:8px;';
+  knobRow.appendChild(
+    makeKnob('Cutoff', masterCutoff, (v) => {
+      masterCutoff = v;
+    }),
+  );
+  knobRow.appendChild(
+    makeKnob('Resonance', masterResonance, (v) => {
+      masterResonance = v;
+    }),
+  );
+  ctrlSide.appendChild(knobRow);
+
+  const knobRow2 = document.createElement('div');
+  knobRow2.style.cssText = 'display:flex;gap:12px;margin-top:12px;';
+  knobRow2.appendChild(
+    makeKnob('Saturation', masterSaturation, (v) => {
+      masterSaturation = v;
+    }),
+  );
+  knobRow2.appendChild(
+    makeKnob('Compression', masterCompression, (v) => {
+      masterCompression = v;
+    }),
+  );
+  ctrlSide.appendChild(knobRow2);
 
   // Test signal toggle
   const demoBtn = document.createElement('button');

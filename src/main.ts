@@ -9,6 +9,7 @@ import { buildUI, refreshUI, refreshSongName, updateSongPane } from './ui/build'
 import { setupPainting, setOnSave, setOnSongPaneUpdate } from './ui/painting';
 import { installSeqAPI, initExtensions } from './engine/extensions/registry';
 import { togglePlay } from './engine/scheduler';
+import { initPlayhead } from './ui/playhead';
 import { genId } from './ui/helpers';
 import { SEQ_EXTENSIONS } from './state';
 import { currentSongId, setCurrentSongId } from './transport/song';
@@ -49,9 +50,10 @@ async function init(): Promise<void> {
   // 7. Init audio + extensions + load manifest (parallel)
   await Promise.all([openDB(), loadManifest()]);
 
-  // 8. Init audio and extensions
+  // 8. Init audio, extensions, and playhead
   initAudio();
   initExtensions();
+  initPlayhead();
 
   // 9. Load last song or create default
   const lastId = await dbGet('meta', 'currentSongId') as string | undefined;

@@ -1,16 +1,14 @@
 /**
- * Scheduler — phrase management, audio scheduling loop, transport controls.
+ * Scheduler — Tone.js Transport for tempo-accurate scheduling,
+ * AudioBufferSourceNode for sample playback.
+ * NO DOM access. Emits events for UI playhead.
  */
 
-import { STEPS, NUM_PHRASES, DRUMS_CFG, MEL_CFG, VOCAL_CFG, HARMONY_SEMITONES } from '../config';
+import * as Tone from 'tone';
+import { STEPS, DRUMS_CFG, MEL_CFG, HARMONY_SEMITONES } from '../config';
 import { getAudioContext, getTrackGains, initAudio, playSample } from './audio';
-import { displayToSemitone } from '../ui/helpers';
 import {
   phrases,
-  drumPat,
-  melPat,
-  vocalPat,
-  currentPhrase,
   octaves,
   harmonies,
 } from '../transport/patterns';
@@ -19,172 +17,61 @@ import {
   melBuf,
   vocalBuf,
   mutedArr,
-  bpm,
+  bpm as getBpm,
 } from '../transport/song';
-import {
-  drumCells,
-  melCells,
-  vocalCells,
-  playing,
-  curStep,
-  nextTime,
-  timer,
-  prevVisualStep,
-  playingPhrase,
-  seqStopCallbacks,
-  setPlaying,
-  setCurStep,
-  setNextTime,
-  setTimer,
-  setPrevVisualStep,
-  setPlayingPhrase,
-} from '../state';
+import { emit } from '../events';
 
-// ═══════════════════════════════════════════
-//  UI CALLBACK HOOKS
-// ═══════════════════════════════════════════
+// ── Internal state ──
+let playing = false;
+let curStep = 0;
+let playingPhrase = 0;
+let scheduledEventId: number | null = null;
 
+// ── Callbacks ──
 let onPhraseChange: (() => void) | null = null;
-let onScheduleSave: (() => void) | null = null;
+const stopCallbacks: Array<() => void> = [];
 
-export function setOnPhraseChange(fn: () => void): void {
-  onPhraseChange = fn;
-}
+export function setOnPhraseChange(fn: () => void): void { onPhraseChange = fn; }
+export function onStop(fn: () => void): void { stopCallbacks.push(fn); }
 
-export function setOnScheduleSave(fn: () => void): void {
-  onScheduleSave = fn;
-}
-
-// ═══════════════════════════════════════════
-//  PHRASE QUERIES
-// ═══════════════════════════════════════════
-
-/** Check whether a phrase has any active steps across all tracks. */
-export function isPhraseEmpty(idx: number): boolean {
-  const p = phrases[idx];
-  if (!p) return true;
-  for (let t = 0; t < DRUMS_CFG.length; t++) {
-    const row = p.drumPat[t];
-    if (!row) continue;
-    for (let s = 0; s < STEPS; s++) {
-      if (row[s]) return false;
-    }
-  }
-  for (let t = 0; t < MEL_CFG.length; t++) {
-    const track = p.melPat[t];
-    if (!track) continue;
-    for (let s = 0; s < STEPS; s++) {
-      const step = track[s];
-      if (!step) continue;
-      for (let n = 0; n < 12; n++) {
-        if (step[n]) return false;
-      }
-    }
-  }
-  for (let s = 0; s < STEPS; s++) {
-    if (p.vocalPat[s]) return false;
-  }
-  return true;
-}
-
-/** Find the next non-empty phrase after fromIdx, wrapping around. Returns -1 if all empty. */
-export function findNextPhrase(fromIdx: number): number {
-  for (let i = 1; i <= NUM_PHRASES; i++) {
-    const idx = (fromIdx + i) % NUM_PHRASES;
-    if (!isPhraseEmpty(idx)) return idx;
-  }
-  return -1;
-}
-
-/** Find the first non-empty phrase. Returns 0 if all are empty. */
-export function findFirstNonEmpty(): number {
-  for (let i = 0; i < NUM_PHRASES; i++) {
-    if (!isPhraseEmpty(i)) return i;
-  }
-  return 0;
-}
-
-/** Deep-copy the previous phrase's patterns into the given phrase index. */
-export function fillWithPrev(idx: number): void {
-  if (idx <= 0) return;
-  const prev = phrases[idx - 1];
-  const cur = phrases[idx];
-  if (!prev || !cur) return;
-
-  for (let t = 0; t < DRUMS_CFG.length; t++) {
-    const prevRow = prev.drumPat[t];
-    const curRow = cur.drumPat[t];
-    if (!prevRow || !curRow) continue;
-    for (let s = 0; s < STEPS; s++) {
-      curRow[s] = prevRow[s]!;
-    }
-  }
-  for (let t = 0; t < MEL_CFG.length; t++) {
-    const prevTrack = prev.melPat[t];
-    const curTrack = cur.melPat[t];
-    if (!prevTrack || !curTrack) continue;
-    for (let s = 0; s < STEPS; s++) {
-      const prevStep = prevTrack[s];
-      const curStep_ = curTrack[s];
-      if (!prevStep || !curStep_) continue;
-      for (let n = 0; n < 12; n++) {
-        curStep_[n] = prevStep[n]!;
-      }
-    }
-  }
-  for (let s = 0; s < STEPS; s++) {
-    cur.vocalPat[s] = prev.vocalPat[s]!;
-  }
-
-  if (currentPhrase === idx) {
-    // The caller's refreshUI will pick up the new pattern via the active references.
-    // We just need to notify.
-  }
-  onPhraseChange?.();
-  onScheduleSave?.();
-}
+// ── Accessors ──
+export function isPlaying(): boolean { return playing; }
+export function getPlayingPhrase(): number { return playingPhrase; }
+export function setPlayingPhrase(p: number): void { playingPhrase = p; }
 
 // ═══════════════════════════════════════════
-//  PHRASE ADVANCE (called when curStep wraps)
+//  PHRASE QUERIES (re-exported from patterns)
+// ═══════════════════════════════════════════
+export { isPhraseEmpty, findNextPhrase, findFirstNonEmpty, fillWithPrev } from '../transport/patterns';
+import {
+  isPhraseEmpty as _isPhraseEmpty,
+  findNextPhrase as _findNextPhrase,
+  findFirstNonEmpty as _findFirstNonEmpty,
+} from '../transport/patterns';
+
+// ═══════════════════════════════════════════
+//  PHRASE ADVANCE
 // ═══════════════════════════════════════════
 
 function advancePhrase(): void {
-  const next = findNextPhrase(playingPhrase);
+  const next = _findNextPhrase(playingPhrase);
   if (next < 0) {
     stopPlayback();
     return;
   }
-  setPlayingPhrase(next);
+  playingPhrase = next;
   onPhraseChange?.();
 }
 
 // ═══════════════════════════════════════════
-//  SCHEDULER LOOP
+//  STEP SCHEDULING (called by Tone.Transport)
 // ═══════════════════════════════════════════
 
-/** The main 25ms scheduling loop. Looks ahead 100ms and schedules audio events. */
-function scheduler(): void {
+function scheduleStep(time: number): void {
   const ctx = getAudioContext();
   if (!ctx) return;
 
-  while (nextTime < ctx.currentTime + 0.1) {
-    scheduleStep(curStep, nextTime);
-    setNextTime(nextTime + (60 / bpm) / 4);
-    const next = curStep + 1;
-    if (next >= STEPS) {
-      setCurStep(0);
-      advancePhrase();
-    } else {
-      setCurStep(next);
-    }
-  }
-}
-
-/** Play all active notes for a given step from the PLAYING phrase. */
-function scheduleStep(s: number, time: number): void {
-  const ctx = getAudioContext();
-  if (!ctx) return;
-
+  const s = curStep;
   const phrase = phrases[playingPhrase];
   if (!phrase) return;
 
@@ -222,16 +109,20 @@ function scheduleStep(s: number, time: number): void {
     }
 
     for (const n of activeNotes) {
-      const rate = Math.pow(2, ((octaves[t]! - 1) * 12 + n) / 12);
+      const oct = octaves[t];
+      if (oct === undefined) continue;
+      const rate = Math.pow(2, ((oct - 1) * 12 + n) / 12);
       playSample(buf, time, rate, dest);
 
-      // Harmony interval for poly tracks with exactly 1 note active
-      if (activeNotes.length === 1 && cfg && !cfg.mono && harmonies[t]! > 0) {
-        const harmIdx = harmonies[t]!;
-        const semitones = HARMONY_SEMITONES[harmIdx];
-        if (semitones !== undefined) {
-          const harmRate = Math.pow(2, ((octaves[t]! - 1) * 12 + n + semitones) / 12);
-          playSample(buf, time, harmRate, dest);
+      // Harmony interval for poly tracks with exactly 1 note
+      if (activeNotes.length === 1 && cfg && !cfg.mono) {
+        const harmIdx = harmonies[t];
+        if (harmIdx !== undefined && harmIdx > 0) {
+          const semitones = HARMONY_SEMITONES[harmIdx];
+          if (semitones !== undefined) {
+            const harmRate = Math.pow(2, ((oct - 1) * 12 + n + semitones) / 12);
+            playSample(buf, time, harmRate, dest);
+          }
         }
       }
     }
@@ -246,116 +137,14 @@ function scheduleStep(s: number, time: number): void {
     }
   }
 
-  // Schedule visual highlight
-  const delay = Math.max(0, (time - ctx.currentTime) * 1000);
-  setTimeout(() => { highlightStep(s); }, delay);
-}
+  // Emit step event for UI playhead (no DOM here)
+  emit('engine:step', { step: s, phrase: playingPhrase });
 
-// ═══════════════════════════════════════════
-//  VISUAL PLAYHEAD
-// ═══════════════════════════════════════════
-
-/** Highlight the current step in the grid (only when viewing the playing phrase). */
-function highlightStep(s: number): void {
-  // Only show playhead if we're viewing the playing phrase
-  if (playingPhrase !== currentPhrase) {
-    setPrevVisualStep(-1);
-    return;
-  }
-  if (prevVisualStep >= 0) clearHL(prevVisualStep);
-
-  // Drum cells
-  for (let t = 0; t < DRUMS_CFG.length; t++) {
-    const c = drumCells[t]?.[s];
-    const cfg = DRUMS_CFG[t];
-    const row = drumPat[t];
-    if (!c || !cfg) continue;
-    c.classList.add('playing');
-    if (row?.[s]) {
-      c.style.background = cfg.bright;
-      c.style.boxShadow = `0 0 16px ${cfg.bright}80, 0 0 6px ${cfg.color}60`;
-    }
-  }
-
-  // Melody cells
-  for (let t = 0; t < MEL_CFG.length; t++) {
-    const cfg = MEL_CFG[t];
-    if (!cfg) continue;
-    for (let n = 0; n < 12; n++) {
-      const c = melCells[t]?.[s]?.[n];
-      if (!c) continue;
-      c.classList.add('playing');
-      const semi = displayToSemitone(n);
-      const step = melPat[t]?.[s];
-      if (step?.[semi]) {
-        c.style.background = cfg.bright;
-        c.style.boxShadow = `0 0 16px ${cfg.bright}80, 0 0 6px ${cfg.color}60`;
-      }
-    }
-  }
-
-  // Vocal cell
-  const vc = vocalCells[s];
-  if (vc) {
-    vc.classList.add('playing');
-    if (vocalPat[s]) {
-      vc.style.background = VOCAL_CFG.bright;
-      vc.style.boxShadow = `0 0 16px ${VOCAL_CFG.bright}80, 0 0 6px ${VOCAL_CFG.color}60`;
-    }
-  }
-
-  setPrevVisualStep(s);
-}
-
-/** Remove the visual highlight from a step. */
-function clearHL(s: number): void {
-  // Drum cells
-  for (let t = 0; t < DRUMS_CFG.length; t++) {
-    const c = drumCells[t]?.[s];
-    const cfg = DRUMS_CFG[t];
-    const row = drumPat[t];
-    if (!c || !cfg) continue;
-    c.classList.remove('playing');
-    if (row?.[s]) {
-      c.style.background = cfg.idle;
-      c.style.boxShadow = '';
-    } else {
-      c.style.background = '';
-      c.style.boxShadow = '';
-    }
-  }
-
-  // Melody cells
-  for (let t = 0; t < MEL_CFG.length; t++) {
-    const cfg = MEL_CFG[t];
-    if (!cfg) continue;
-    for (let n = 0; n < 12; n++) {
-      const c = melCells[t]?.[s]?.[n];
-      if (!c) continue;
-      c.classList.remove('playing');
-      const semi = displayToSemitone(n);
-      const step = melPat[t]?.[s];
-      if (step?.[semi]) {
-        c.style.background = cfg.idle;
-        c.style.boxShadow = '';
-      } else {
-        c.style.background = '';
-        c.style.boxShadow = '';
-      }
-    }
-  }
-
-  // Vocal cell
-  const vc = vocalCells[s];
-  if (vc) {
-    vc.classList.remove('playing');
-    if (vocalPat[s]) {
-      vc.style.background = VOCAL_CFG.idle;
-      vc.style.boxShadow = '';
-    } else {
-      vc.style.background = '';
-      vc.style.boxShadow = '';
-    }
+  // Advance step
+  curStep++;
+  if (curStep >= STEPS) {
+    curStep = 0;
+    advancePhrase();
   }
 }
 
@@ -363,51 +152,60 @@ function clearHL(s: number): void {
 //  TRANSPORT
 // ═══════════════════════════════════════════
 
-/** Start playback: init audio, reset step counter, begin scheduler loop. */
+/** Start playback using Tone.Transport. */
 export function startPlayback(): void {
   initAudio();
-  const audioCtx = getAudioContext();
-  if (!audioCtx) return;
 
-  setPlaying(true);
-  setCurStep(0);
-  setPlayingPhrase(findFirstNonEmpty());
-  setNextTime(audioCtx.currentTime + 0.05);
-  setTimer(setInterval(scheduler, 25));
+  playing = true;
+  curStep = 0;
+  playingPhrase = _findFirstNonEmpty();
 
-  const playBtn = document.getElementById('play-btn');
-  if (playBtn) playBtn.classList.add('active');
+  // Sync Tone.js BPM
+  Tone.getTransport().bpm.value = getBpm;
 
+  // Schedule repeating callback: 16th notes (4 per beat)
+  scheduledEventId = Tone.getTransport().scheduleRepeat(
+    (time) => { scheduleStep(time); },
+    '16n',
+  );
+
+  Tone.getTransport().start();
   onPhraseChange?.();
 }
 
-/** Stop playback: clear interval, reset state, remove highlights. */
+/** Stop playback. */
 export function stopPlayback(): void {
-  setPlaying(false);
-  if (timer) clearInterval(timer);
-  setTimer(null);
-  setCurStep(0);
+  playing = false;
 
-  if (prevVisualStep >= 0) {
-    clearHL(prevVisualStep);
-    setPrevVisualStep(-1);
+  if (scheduledEventId !== null) {
+    Tone.getTransport().clear(scheduledEventId);
+    scheduledEventId = null;
   }
+  Tone.getTransport().stop();
+  Tone.getTransport().position = 0;
 
-  const playBtn = document.getElementById('play-btn');
-  if (playBtn) playBtn.classList.remove('active');
+  curStep = 0;
 
-  for (const fn of seqStopCallbacks) {
+  // Notify UI to clear playhead
+  emit('engine:stop', {} as Record<string, never>);
+
+  for (const fn of stopCallbacks) {
     try { fn(); } catch (_e) { /* swallow */ }
   }
 
   onPhraseChange?.();
 }
 
-/** Toggle between play and stop. */
+/** Toggle play/stop. */
 export function togglePlay(): void {
   if (playing) {
     stopPlayback();
   } else {
-    startPlayback();
+    void Tone.start().then(() => { startPlayback(); });
   }
+}
+
+/** Update BPM on the Tone.Transport (call when user changes BPM). */
+export function syncBpm(newBpm: number): void {
+  Tone.getTransport().bpm.value = newBpm;
 }

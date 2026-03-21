@@ -57,14 +57,14 @@ export interface Extension {
   readonly id: string;
   readonly name: string;
   readonly icon: string;
-  init(ctx: AudioContext): NodePair;
+  init(ctx: AudioContext): NodePair | null;
   createUI(container: HTMLElement): void;
   getState(): ExtensionState;
   setState(s: ExtensionState): void;
   setEnabled?(on: boolean): void;
   destroy(): void;
   _enabled?: boolean;
-  _nodes?: NodePair;
+  _nodes?: NodePair | null;
 }
 
 export type TrackType = 'drum' | 'melody' | 'vocal';

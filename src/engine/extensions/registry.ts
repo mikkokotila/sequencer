@@ -140,15 +140,16 @@ export function rebuildAudioChain(): void {
     return;
   }
 
-  // Ensure all extensions have their nodes initialised
+  // Ensure all extensions have been initialised.
+  // _nodes === undefined means "not yet init'd"; null means "no serial chain"
   for (const ext of SEQ_EXTENSIONS) {
-    if (!ext._nodes) ext._nodes = ext.init(audioCtx);
+    if (ext._nodes === undefined) ext._nodes = ext.init(audioCtx);
   }
 
   let prev: AudioNode = masterGain;
   for (const ext of SEQ_EXTENSIONS) {
     const nodes = ext._nodes;
-    if (!nodes) continue;
+    if (!nodes) continue; // null = aux-send or utility extension, not in serial chain
     try {
       nodes.output.disconnect();
     } catch {

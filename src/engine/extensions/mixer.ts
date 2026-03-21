@@ -131,7 +131,7 @@ export function createMixer(): Extension {
     name: 'Mixer',
     icon: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="7" width="2" height="7" rx="1" fill="currentColor"/><rect x="5" y="3" width="2" height="11" rx="1" fill="currentColor"/><rect x="9" y="5" width="2" height="9" rx="1" fill="currentColor"/><rect x="13" y="1" width="2" height="13" rx="1" fill="currentColor"/></svg>',
 
-    init(ctx: AudioContext): NodePair {
+    init(ctx: AudioContext): NodePair | null {
       const gains = window.SEQ.channelFaders;
       analysers = [];
       for (const g of gains) {
@@ -142,8 +142,8 @@ export function createMixer(): Extension {
         analysers.push(a);
       }
       applyLevels();
-      const pass = ctx.createGain();
-      return { input: pass, output: pass };
+      // Mixer controls channel faders directly — it doesn't sit in the serial chain.
+      return null;
     },
 
     createUI(container: HTMLElement): void {

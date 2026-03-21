@@ -80,7 +80,7 @@ export function createReverb(): Extension {
     name: 'Plate Reverb',
     icon: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8c0-3 2-5 5-5s5 2 5 5-2 5-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M5 8c0-2 1.3-3 3-3s3 1 3 3-1.3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity="0.6"/><circle cx="8" cy="8" r="1" fill="currentColor" opacity="0.4"/></svg>',
 
-    init(ctx: AudioContext): NodePair {
+    init(ctx: AudioContext): NodePair | null {
       const freeverb = new AudioWorkletNode(ctx, 'freeverb-processor');
 
       const wetGain = ctx.createGain();
@@ -125,8 +125,9 @@ export function createReverb(): Extension {
         }, 500);
       });
 
-      const pass = ctx.createGain();
-      return { input: pass, output: pass };
+      // Reverb is an aux-send effect — it taps from channelPans, not the serial chain.
+      // Returning null tells the registry to skip this extension in the insert chain.
+      return null;
     },
 
     createUI(container: HTMLElement): void {

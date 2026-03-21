@@ -81,7 +81,7 @@ export function createDelay(): Extension {
     name: 'Tape Delay',
     icon: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="5" cy="8" r="3.5" stroke="currentColor" stroke-width="1.3"/><circle cx="11" cy="8" r="3.5" stroke="currentColor" stroke-width="1.3"/><line x1="5" y1="4.5" x2="11" y2="4.5" stroke="currentColor" stroke-width="1" opacity="0.4"/><line x1="5" y1="11.5" x2="11" y2="11.5" stroke="currentColor" stroke-width="1" opacity="0.4"/></svg>',
 
-    init(ctx: AudioContext): NodePair {
+    init(ctx: AudioContext): NodePair | null {
       const sendBus = ctx.createGain();
       sendBus.gain.value = 1 / Math.sqrt(TRACK_COUNT);
 
@@ -129,8 +129,8 @@ export function createDelay(): Extension {
         }, 300);
       });
 
-      const pass = ctx.createGain();
-      return { input: pass, output: pass };
+      // Delay is an aux-send effect — it taps from channelPans, not the serial chain.
+      return null;
     },
 
     createUI(container: HTMLElement): void {

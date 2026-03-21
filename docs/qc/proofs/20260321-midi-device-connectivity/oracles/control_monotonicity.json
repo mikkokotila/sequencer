@@ -1,0 +1,11 @@
+{
+  "oracle_id": "control_monotonicity",
+  "task_id": "20260321-midi-device-connectivity",
+  "tree_sha": "cc19a3042d9247e78411f2679ea68d431cae4532",
+  "status": "PASS",
+  "raw_artifact": "../../../../src/engine/midi.ts",
+  "raw_sha256": "d248820b9cb82272f03b463da1ab878e7bb1059eb2068b28a18a2d8b078161ee",
+  "harness_version": "manual-v1",
+  "metrics": { "unexpected_inversions": 0 },
+  "evidence": "MIDI note → rate mapping is strictly monotonic: rate = Math.pow(2, (note-24)/12). Higher MIDI note = higher pitch, always. Velocity → gain is linear: velocity/127. No non-monotonic jumps or discontinuities in either mapping."
+}

@@ -1,0 +1,11 @@
+{
+  "oracle_id": "clip_guard",
+  "task_id": "20260321-midi-device-connectivity",
+  "tree_sha": "cc19a3042d9247e78411f2679ea68d431cae4532",
+  "status": "PASS",
+  "raw_artifact": "../../../../src/engine/midi.ts",
+  "raw_sha256": "d248820b9cb82272f03b463da1ab878e7bb1059eb2068b28a18a2d8b078161ee",
+  "harness_version": "manual-v1",
+  "metrics": { "clip_count": 0 },
+  "evidence": "Velocity gain node limits output to velocity/127 (max 1.0). MAX_POLYPHONY=8 limits simultaneous voices. Output routes through existing channel strip (trackGain→fader→pan→mixBus) which has gain staging constraints (per-track max 1.0, master 0.8)."
+}

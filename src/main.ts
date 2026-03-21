@@ -15,6 +15,8 @@ import { genId } from './ui/helpers';
 import { SEQ_EXTENSIONS } from './engine/extensions/store';
 import { currentSongId, setCurrentSongId, setOnBpmChange } from './transport/song';
 import { initEngineProcessing } from './ui/engine-panel';
+import { initMidi, disconnectAllMidi } from './engine/midi';
+import { buildMidiBrowserDOM, wireMidiBrowserEvents } from './ui/midi-browser';
 
 // Register all extensions
 import { createCompressor } from './engine/extensions/compressor';
@@ -45,6 +47,10 @@ async function init(): Promise<void> {
   // 3. Build the UI
   buildUI();
 
+  // 3b. Build MIDI browser overlay
+  buildMidiBrowserDOM();
+  wireMidiBrowserEvents();
+
   // 4. Wire painting callbacks + BPM sync
   setOnSave(scheduleSave);
   setOnSongPaneUpdate(updateSongPane);
@@ -53,6 +59,7 @@ async function init(): Promise<void> {
   // 4b. Wire persistence lifecycle events
   on('persistence:songCreated', () => {
     stopPlayback();
+    disconnectAllMidi();
     refreshUI();
     refreshSongName();
     updateSongPane();
@@ -64,6 +71,7 @@ async function init(): Promise<void> {
   });
   on('persistence:songSwitched', () => {
     stopPlayback();
+    disconnectAllMidi();
     refreshUI();
     refreshSongName();
     updateSongPane();
@@ -91,6 +99,9 @@ async function init(): Promise<void> {
   initEngineProcessing();
   initExtensions();
   initPlayhead();
+
+  // 8b. Init MIDI (non-blocking — permission prompt is async)
+  void initMidi();
 
   // 9. Load last song or create default
   const lastId = await dbGet<string>('meta', 'currentSongId');

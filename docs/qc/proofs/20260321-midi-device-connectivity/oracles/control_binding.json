@@ -1,0 +1,11 @@
+{
+  "oracle_id": "control_binding",
+  "task_id": "20260321-midi-device-connectivity",
+  "tree_sha": "cc19a3042d9247e78411f2679ea68d431cae4532",
+  "status": "PASS",
+  "raw_artifact": "../../../../src/ui/build.ts",
+  "raw_sha256": "bbff09285d1c23d5591fed8f051379759ccdcbc2789f5718d1a776df829a67f3",
+  "harness_version": "manual-v1",
+  "metrics": { "binding_coverage": 1.0 },
+  "evidence": "MIDI button onclick directly calls openMidiBrowser(ti) with the correct track index. Event subscriptions (midi:connected, midi:disconnected) update button active class via getMidiTrackBinding(). No stale state — button reflects live binding status."
+}

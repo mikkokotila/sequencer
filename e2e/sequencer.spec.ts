@@ -575,3 +575,53 @@ test.describe('Grid Alignment', () => {
     expect(Math.abs(drumLeft - melLeft)).toBeLessThan(2); // within 2px
   });
 });
+
+// ═══════════════════════════════════════════
+//  MIDI Controls
+// ═══════════════════════════════════════════
+
+test.describe('MIDI Controls', () => {
+  test('MIDI button visible on all 3 melody tracks', async ({ page }) => {
+    await waitForApp(page);
+    const midiBtns = page.locator('.melody-track[data-type="melody"] .midi-btn');
+    await expect(midiBtns).toHaveCount(3);
+  });
+
+  test('MIDI button not on drum tracks', async ({ page }) => {
+    await waitForApp(page);
+    const drumMidi = page.locator('.melody-track[data-type="drum"] .midi-btn');
+    await expect(drumMidi).toHaveCount(0);
+  });
+
+  test('clicking MIDI button opens midi browser', async ({ page }) => {
+    await waitForApp(page);
+    const midiBtn = page.locator('.melody-track[data-type="melody"] .midi-btn').first();
+    await midiBtn.click();
+    await expect(page.locator('#midi-overlay')).toHaveClass(/open/);
+  });
+
+  test('Escape closes midi browser', async ({ page }) => {
+    await waitForApp(page);
+    const midiBtn = page.locator('.melody-track[data-type="melody"] .midi-btn').first();
+    await midiBtn.click();
+    await expect(page.locator('#midi-overlay')).toHaveClass(/open/);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#midi-overlay')).not.toHaveClass(/open/);
+  });
+
+  test('close button closes midi browser', async ({ page }) => {
+    await waitForApp(page);
+    const midiBtn = page.locator('.melody-track[data-type="melody"] .midi-btn').first();
+    await midiBtn.click();
+    await expect(page.locator('#midi-overlay')).toHaveClass(/open/);
+    await page.locator('#midi-close').click();
+    await expect(page.locator('#midi-overlay')).not.toHaveClass(/open/);
+  });
+
+  test('midi browser shows status element', async ({ page }) => {
+    await waitForApp(page);
+    const midiBtn = page.locator('.melody-track[data-type="melody"] .midi-btn').first();
+    await midiBtn.click();
+    await expect(page.locator('#midi-status')).toBeVisible();
+  });
+});

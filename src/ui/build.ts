@@ -53,6 +53,9 @@ import { replicateTrack, clearSelection } from './painting';
 import { openBrowser, wireBrowserEvents, setupDragDrop, closeBrowser } from './browser';
 import { toggle as toggleEnginePanel, isEngineOpen } from './engine-panel';
 import { togglePlay, stopPlayback, isPhraseEmpty, fillWithPrev } from '../engine/scheduler';
+import { getMidiTrackBinding } from '../engine/midi';
+import { openMidiBrowser, closeMidiBrowser, isMidiBrowserOpen } from './midi-browser';
+import { on } from '../events';
 import {
   scheduleSave,
   saveSong,
@@ -547,6 +550,14 @@ export function buildUI(): void {
     ou.onclick = () => changeOctave(ti, 1);
     oc.appendChild(ou);
     header.appendChild(oc);
+
+    // MIDI connect button
+    const midiBtn = el('button', 'midi-btn');
+    midiBtn.textContent = 'MIDI';
+    midiBtn.title = 'Connect MIDI Input';
+    midiBtn.onclick = () => openMidiBrowser(ti);
+    header.appendChild(midiBtn);
+
     panel.appendChild(header);
 
     // Melody grid with note labels
@@ -650,11 +661,15 @@ export function buildUI(): void {
       togglePlay();
     }
     if (e.code === 'Escape') {
-      const browserOverlay = document.getElementById('browser-overlay');
-      if (browserOverlay?.classList.contains('open')) {
-        closeBrowser();
+      if (isMidiBrowserOpen()) {
+        closeMidiBrowser();
       } else {
-        clearSelection();
+        const browserOverlay = document.getElementById('browser-overlay');
+        if (browserOverlay?.classList.contains('open')) {
+          closeBrowser();
+        } else {
+          clearSelection();
+        }
       }
     }
   });
@@ -712,4 +727,17 @@ export function buildUI(): void {
   // NOTE: setupPainting() is called by main.ts, NOT here.
   // Calling it twice registers duplicate mousedown handlers
   // that toggle cells on then immediately off.
+
+  // MIDI button state updates
+  function updateMidiBtn(trackIndex: number): void {
+    const btns = document.querySelectorAll<HTMLElement>('.midi-btn');
+    const btn = btns[trackIndex];
+    if (!btn) return;
+    const binding = getMidiTrackBinding(trackIndex);
+    btn.classList.toggle('active', binding !== null);
+    btn.title = binding ? `MIDI: ${binding.inputName} (click to manage)` : 'Connect MIDI Input';
+  }
+
+  on('midi:connected', (data) => updateMidiBtn(data.trackIndex));
+  on('midi:disconnected', (data) => updateMidiBtn(data.trackIndex));
 }

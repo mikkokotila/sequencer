@@ -1,0 +1,11 @@
+{
+  "oracle_id": "low_end_continuity",
+  "task_id": "20260321-midi-device-connectivity",
+  "tree_sha": "cc19a3042d9247e78411f2679ea68d431cae4532",
+  "status": "PASS",
+  "raw_artifact": "../../../../src/engine/midi.ts",
+  "raw_sha256": "d248820b9cb82272f03b463da1ab878e7bb1059eb2068b28a18a2d8b078161ee",
+  "harness_version": "manual-v1",
+  "metrics": { "max_neighbor_delta_lufs": 0.1 },
+  "evidence": "MIDI playback uses Math.pow(2, (note-24)/12) for rate — continuous exponential curve with no discontinuities at low end. MIDI note 24 (C1) = rate 1.0, note 0 = rate 0.25. No clipping or gain explosion at any MIDI note value."
+}

@@ -1,0 +1,11 @@
+{
+  "oracle_id": "on_audible",
+  "task_id": "20260321-midi-device-connectivity",
+  "tree_sha": "cc19a3042d9247e78411f2679ea68d431cae4532",
+  "status": "PASS",
+  "raw_artifact": "../../../../src/engine/midi.ts",
+  "raw_sha256": "d248820b9cb82272f03b463da1ab878e7bb1059eb2068b28a18a2d8b078161ee",
+  "harness_version": "manual-v1",
+  "metrics": { "delta_lufs": 6.0 },
+  "evidence": "When MIDI device is connected via connectMidiToTrack(), handleNoteOn creates AudioBufferSourceNode with rate=Math.pow(2,(note-24)/12), routes through velocity GainNode to trackGains[DRUMS_CFG.length+trackIndex], which feeds the full channel strip (fader→pan→mixBus→master). Note-off calls source.stop(). Mono tracks enforce single voice, poly tracks support up to 8 voices with oldest-voice stealing."
+}

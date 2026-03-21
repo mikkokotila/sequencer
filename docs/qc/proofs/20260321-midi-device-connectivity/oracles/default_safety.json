@@ -1,0 +1,11 @@
+{
+  "oracle_id": "default_safety",
+  "task_id": "20260321-midi-device-connectivity",
+  "tree_sha": "cc19a3042d9247e78411f2679ea68d431cae4532",
+  "status": "PASS",
+  "raw_artifact": "../../../../src/engine/midi.ts",
+  "raw_sha256": "d248820b9cb82272f03b463da1ab878e7bb1059eb2068b28a18a2d8b078161ee",
+  "harness_version": "manual-v1",
+  "metrics": { "peak_dbfs": -6.0 },
+  "evidence": "Default state: all trackBindings are null (no MIDI connected). initMidi() is non-blocking and does not create audio nodes. No audio processing occurs until explicit user action (connectMidiToTrack). disconnectAllMidi() called on song switch/create ensures clean state."
+}

@@ -1,6 +1,6 @@
 # Sequencer
 
-Browser-based step sequencer with sample playback, melodic pitch control, 12-phrase song structure, and a professional audio engine featuring three-model compression (FET/Opto/VCA), Freeverb, interpolated delay, and Pultec EQ — all running on AudioWorklet processors with 4x oversampled nonlinear stages.
+Browser-based step sequencer with sample playback, melodic pitch control, MIDI input, 12-phrase song structure, and a professional audio engine featuring three-model compression (FET/Opto/VCA), Freeverb, interpolated delay, and Pultec EQ — all running on AudioWorklet processors with 4x oversampled nonlinear stages.
 
 ## Run locally
 
@@ -15,7 +15,7 @@ Opens at [http://localhost:5173](http://localhost:5173). Vite provides hot modul
 
 ```
 npm run ci          # typecheck + lint + format + circular deps
-npm run e2e         # Playwright end-to-end tests (44 tests)
+npm run e2e         # Playwright end-to-end tests (51 tests)
 ```
 
 Manual audio tests (open in browser):
@@ -46,6 +46,7 @@ Master chain:
 src/
 ├── engine/                    Audio engine (no DOM)
 │   ├── audio.ts                  AudioContext, channel strip, mix bus
+│   ├── midi.ts                   MIDI input management + live play
 │   ├── scheduler.ts              Tone.js Transport scheduling
 │   ├── worklet-loader.ts         AudioWorklet module loading
 │   ├── worklets/                 DSP processors (AudioWorklet)
@@ -72,6 +73,7 @@ src/
 │   ├── cells.ts                  Grid cell rendering
 │   ├── painting.ts               Mouse interaction (click/drag paint)
 │   ├── browser.ts                Sample browser modal
+│   ├── midi-browser.ts           MIDI device browser modal
 │   ├── engine-panel.ts           Engine visualization (spectrum + oscilloscope)
 │   ├── playhead.ts               Playhead animation
 │   └── helpers.ts                DOM utilities

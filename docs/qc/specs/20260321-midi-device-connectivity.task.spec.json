@@ -1,0 +1,46 @@
+{
+  "task_id": "20260321-midi-device-connectivity",
+  "task_type": "feature",
+  "capability": {
+    "summary": "Connect MIDI input devices to synth channels for live sample playback at pitched rates",
+    "in_scope": [
+      "src/engine/midi.ts",
+      "src/ui/midi-browser.ts",
+      "src/ui/build.ts",
+      "src/main.ts",
+      "src/events.ts",
+      "index.html",
+      "e2e/sequencer.spec.ts",
+      "README.md"
+    ],
+    "out_of_scope": [
+      "src/engine/worklets/**",
+      "src/engine/extensions/**"
+    ],
+    "controls": [
+      {
+        "id": "midi.connect",
+        "default": "disconnected",
+        "range": ["disconnected", "connected"],
+        "unit": "state",
+        "off_semantics": "no MIDI input, sequencer plays normally",
+        "on_semantics": "MIDI note-on triggers sample at pitched rate through track gain chain"
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:kick_01"
+    ],
+    "seed": "fixed-seed-v1",
+    "oracles": [
+      "off_transparent",
+      "on_audible"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "task_id": "20260321-midi-device-connectivity",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "evidence": "npm run ci — typecheck + lint + format + circular deps all pass"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "evidence": "npm run e2e — 51 passed (45 existing + 6 new MIDI tests)"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/commit.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/quality-gates.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/governance-compiler.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/architecture-invariants.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "MIDI button visible on all 3 melody tracks. Clicking opens MIDI browser modal with track name. Modal shows appropriate error state (permission denied in headless). Close button and Escape both close modal. Preview server screenshot confirmed."
+  },
+  "artifacts": [
+    "verdict.json",
+    "oracles/off_transparent.json",
+    "oracles/on_audible.json"
+  ]
+}

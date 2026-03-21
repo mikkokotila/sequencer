@@ -1,0 +1,746 @@
+{
+  "task_id": "20260321-midi-device-connectivity",
+  "task_type": "feature",
+  "spec_path": "docs/qc/specs/20260321-midi-device-connectivity.task.spec.json",
+  "policy_version": "1.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-21T16:44:47.222Z",
+  "finished_at_utc": "2026-03-21T16:45:25.968Z",
+  "head_sha": "e276bd6",
+  "tree_sha": "63403139305e79578d001626f7b112ebe4cd28c2",
+  "simulated_files": [],
+  "changed_files": [
+    "README.md",
+    "docs/qc/proofs/20260321-midi-device-connectivity.md",
+    "docs/qc/proofs/20260321-midi-device-connectivity/logs/O-AUDIO-GATES.log",
+    "docs/qc/proofs/20260321-midi-device-connectivity/logs/O-CI.log",
+    "docs/qc/proofs/20260321-midi-device-connectivity/logs/O-E2E.log",
+    "docs/qc/proofs/20260321-midi-device-connectivity/logs/O-GATE-ARCH.log",
+    "docs/qc/proofs/20260321-midi-device-connectivity/logs/O-GATE-CONTRACTS.log",
+    "docs/qc/proofs/20260321-midi-device-connectivity/oracles/clip_guard.json",
+    "docs/qc/proofs/20260321-midi-device-connectivity/oracles/control_binding.json",
+    "docs/qc/proofs/20260321-midi-device-connectivity/oracles/control_monotonicity.json",
+    "docs/qc/proofs/20260321-midi-device-connectivity/oracles/default_safety.json",
+    "docs/qc/proofs/20260321-midi-device-connectivity/oracles/low_end_continuity.json",
+    "docs/qc/proofs/20260321-midi-device-connectivity/oracles/mutation_guard.json",
+    "docs/qc/proofs/20260321-midi-device-connectivity/oracles/off_transparent.json",
+    "docs/qc/proofs/20260321-midi-device-connectivity/oracles/on_audible.json",
+    "docs/qc/proofs/20260321-midi-device-connectivity/proof.manifest.json",
+    "docs/qc/proofs/20260321-midi-device-connectivity/verdict.json",
+    "docs/qc/specs/20260321-midi-device-connectivity.task.spec.json",
+    "e2e/sequencer.spec.ts",
+    "index.html",
+    "src/engine/midi.ts",
+    "src/events.ts",
+    "src/main.ts",
+    "src/ui/build.ts",
+    "src/ui/midi-browser.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "WARN",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=5, oracles=8, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "FAIL",
+      "detail": "commands=5, oracles=8, diagnostics=17"
+    },
+    {
+      "name": "verify",
+      "status": "FAIL",
+      "detail": "Final verdict: FAIL"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4467,
+        "log_file": "docs/qc/proofs/20260321-midi-device-connectivity/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 21381,
+        "log_file": "docs/qc/proofs/20260321-midi-device-connectivity/logs/O-E2E.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS",
+        "label": "Contract static gates",
+        "command": "npm run gate:contracts",
+        "status": "FAIL",
+        "exit_code": 1,
+        "elapsed_ms": 170,
+        "log_file": "docs/qc/proofs/20260321-midi-device-connectivity/logs/O-GATE-CONTRACTS.log"
+      },
+      {
+        "id": "O-GATE-ARCH",
+        "label": "Architecture gates",
+        "command": "npm run gate:architecture",
+        "status": "FAIL",
+        "exit_code": 1,
+        "elapsed_ms": 173,
+        "log_file": "docs/qc/proofs/20260321-midi-device-connectivity/logs/O-GATE-ARCH.log"
+      },
+      {
+        "id": "O-AUDIO-GATES",
+        "label": "Audio browser gates",
+        "command": "npm run audio:gates",
+        "status": "FAIL",
+        "exit_code": 1,
+        "elapsed_ms": 12479,
+        "log_file": "docs/qc/proofs/20260321-midi-device-connectivity/logs/O-AUDIO-GATES.log"
+      }
+    ],
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "FAIL",
+        "artifact": "docs/qc/proofs/20260321-midi-device-connectivity/oracles/off_transparent.json",
+        "raw_artifact": "e2e/sequencer.spec.ts",
+        "raw_sha256": "390f8db12a0d9101d19caabaf616ad9d646fc1a41e7b03cb3f90db02f70eba39"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260321-midi-device-connectivity/oracles/on_audible.json",
+        "raw_artifact": "src/engine/midi.ts",
+        "raw_sha256": "d248820b9cb82272f03b463da1ab878e7bb1059eb2068b28a18a2d8b078161ee"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260321-midi-device-connectivity/oracles/low_end_continuity.json",
+        "raw_artifact": "src/engine/midi.ts",
+        "raw_sha256": "d248820b9cb82272f03b463da1ab878e7bb1059eb2068b28a18a2d8b078161ee"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260321-midi-device-connectivity/oracles/clip_guard.json",
+        "raw_artifact": "src/engine/midi.ts",
+        "raw_sha256": "d248820b9cb82272f03b463da1ab878e7bb1059eb2068b28a18a2d8b078161ee"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260321-midi-device-connectivity/oracles/default_safety.json",
+        "raw_artifact": "src/engine/midi.ts",
+        "raw_sha256": "d248820b9cb82272f03b463da1ab878e7bb1059eb2068b28a18a2d8b078161ee"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260321-midi-device-connectivity/oracles/control_binding.json",
+        "raw_artifact": "src/ui/build.ts",
+        "raw_sha256": "bbff09285d1c23d5591fed8f051379759ccdcbc2789f5718d1a776df829a67f3"
+      },
+      {
+        "oracle_id": "control_monotonicity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260321-midi-device-connectivity/oracles/control_monotonicity.json",
+        "raw_artifact": "src/engine/midi.ts",
+        "raw_sha256": "d248820b9cb82272f03b463da1ab878e7bb1059eb2068b28a18a2d8b078161ee"
+      },
+      {
+        "oracle_id": "mutation_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260321-midi-device-connectivity/oracles/mutation_guard.json",
+        "raw_artifact": "src/engine/midi.ts",
+        "raw_sha256": "d248820b9cb82272f03b463da1ab878e7bb1059eb2068b28a18a2d8b078161ee"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [
+    {
+      "code": "GOV-BIND-001",
+      "severity": "FAIL",
+      "title": "Unbound changed file",
+      "message": "Unbound changed files: README.md",
+      "why_failed": "Changed file has no contract binding in obligation rules.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-BIND-ADD-RULE",
+          "summary": "Add explicit path binding and obligations for the file category in obligation rules."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Ignoring unbound files",
+        "Marking task as docs-only while staging code"
+      ],
+      "required_evidence": [
+        "binding rule update or restaged file set"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/compiler/obligation-rules.json"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>",
+      "context": {
+        "unboundFiles": [
+          "README.md"
+        ]
+      }
+    },
+    {
+      "code": "GOV-BIND-004",
+      "severity": "FAIL",
+      "title": "Policy freeze violation",
+      "message": "Non-governance task (feature) modified governance files.",
+      "why_failed": "Governance files were modified by non-governance task type.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-BIND-USE-GOV-TASK",
+          "summary": "Retype task as governance-change or unstage governance files."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Silently editing contracts in product task",
+        "Changing compiler rules to permit this in same task"
+      ],
+      "required_evidence": [
+        "restaged file set"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/specs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/contracts/**",
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>",
+      "context": {
+        "taskType": "feature"
+      }
+    },
+    {
+      "code": "GOV-BIND-002",
+      "severity": "FAIL",
+      "title": "Audio change without audio obligations",
+      "message": "Missing declared audio oracles: low_end_continuity, clip_guard, default_safety",
+      "why_failed": "Audio-impacting diff requires audio gates and audio oracle evidence.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-BIND-AUDIO-OBLIGATIONS",
+          "summary": "Run required audio gates and include oracle artifacts for transparency/safety/continuity."
+        }
+      ],
+      "disallowed_workarounds": [
+        "UI-only verification for audio changes",
+        "Disabling audio gate command"
+      ],
+      "required_evidence": [
+        "audio gate logs",
+        "oracle artifacts"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**",
+        "tests/**",
+        "src/engine/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>",
+      "context": {
+        "missing": [
+          "low_end_continuity",
+          "clip_guard",
+          "default_safety"
+        ]
+      }
+    },
+    {
+      "code": "GOV-BIND-003",
+      "severity": "FAIL",
+      "title": "Control change without control obligations",
+      "message": "Missing declared control oracles: control_binding, control_monotonicity, low_end_continuity, mutation_guard",
+      "why_failed": "Control mapping changes require control truthfulness oracles.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-BIND-CONTROL-OBLIGATIONS",
+          "summary": "Add control oracles for off/on semantics and low-end continuity."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Replacing behavior checks with DOM class assertions",
+        "Marking control tests N/A"
+      ],
+      "required_evidence": [
+        "control oracle artifacts"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**",
+        "src/ui/**",
+        "src/engine/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>",
+      "context": {
+        "missing": [
+          "control_binding",
+          "control_monotonicity",
+          "low_end_continuity",
+          "mutation_guard"
+        ]
+      }
+    },
+    {
+      "code": "GOV-PROC-002",
+      "severity": "FAIL",
+      "title": "Governance check failed",
+      "message": "O-GATE-CONTRACTS failed: npm run gate:contracts",
+      "why_failed": "A required command obligation exited non-zero.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROC-FIX-GATE",
+          "summary": "Fix root cause in code/tests; rerun failed command obligation."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Ignoring non-zero gate output",
+        "Removing failing gate from obligation rules in same task"
+      ],
+      "required_evidence": [
+        "failed command log",
+        "subsequent passing rerun log"
+      ],
+      "allowed_change_scope": [
+        "src/**",
+        "tests/**",
+        "e2e/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "rerun npm run gov:check -- --spec <same-spec>",
+      "context": {
+        "command": "npm run gate:contracts",
+        "log_file": "docs/qc/proofs/20260321-midi-device-connectivity/logs/O-GATE-CONTRACTS.log",
+        "exit_code": 1
+      }
+    },
+    {
+      "code": "GOV-PROC-002",
+      "severity": "FAIL",
+      "title": "Governance check failed",
+      "message": "O-GATE-ARCH failed: npm run gate:architecture",
+      "why_failed": "A required command obligation exited non-zero.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROC-FIX-GATE",
+          "summary": "Fix root cause in code/tests; rerun failed command obligation."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Ignoring non-zero gate output",
+        "Removing failing gate from obligation rules in same task"
+      ],
+      "required_evidence": [
+        "failed command log",
+        "subsequent passing rerun log"
+      ],
+      "allowed_change_scope": [
+        "src/**",
+        "tests/**",
+        "e2e/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "rerun npm run gov:check -- --spec <same-spec>",
+      "context": {
+        "command": "npm run gate:architecture",
+        "log_file": "docs/qc/proofs/20260321-midi-device-connectivity/logs/O-GATE-ARCH.log",
+        "exit_code": 1
+      }
+    },
+    {
+      "code": "GOV-PROC-002",
+      "severity": "FAIL",
+      "title": "Governance check failed",
+      "message": "O-AUDIO-GATES failed: npm run audio:gates",
+      "why_failed": "A required command obligation exited non-zero.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROC-FIX-GATE",
+          "summary": "Fix root cause in code/tests; rerun failed command obligation."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Ignoring non-zero gate output",
+        "Removing failing gate from obligation rules in same task"
+      ],
+      "required_evidence": [
+        "failed command log",
+        "subsequent passing rerun log"
+      ],
+      "allowed_change_scope": [
+        "src/**",
+        "tests/**",
+        "e2e/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "rerun npm run gov:check -- --spec <same-spec>",
+      "context": {
+        "command": "npm run audio:gates",
+        "log_file": "docs/qc/proofs/20260321-midi-device-connectivity/logs/O-AUDIO-GATES.log",
+        "exit_code": 1
+      }
+    },
+    {
+      "code": "GOV-PROOF-008",
+      "severity": "BLOCKED",
+      "title": "Proof manifest missing required fields",
+      "message": "Manifest missing required gate records: O-GATE-CONTRACTS, O-GATE-ARCH, O-AUDIO-GATES",
+      "why_failed": "Manifest does not include mandatory metadata or gate matrix.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-MANIFEST-FIELDS",
+          "summary": "Populate manifest fields from template and include gate outcomes and contract matrix."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Leaving fields blank",
+        "Using free-form text without matrix"
+      ],
+      "required_evidence": [
+        "manifest with required keys"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>",
+      "context": {
+        "missingGateRecords": [
+          "O-GATE-CONTRACTS",
+          "O-GATE-ARCH",
+          "O-AUDIO-GATES"
+        ]
+      }
+    },
+    {
+      "code": "GOV-PROOF-006",
+      "severity": "FAIL",
+      "title": "Artifact tree mismatch",
+      "message": "Oracle tree_sha mismatch for off_transparent (expected 63403139305e79578d001626f7b112ebe4cd28c2, got cc19a3042d9247e78411f2679ea68d431cae4532)",
+      "why_failed": "Artifact tree_sha does not match staged tree being validated.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-BIND-TREE",
+          "summary": "Regenerate proof artifacts for current staged tree and update tree_sha."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Copying artifacts from previous commit",
+        "Omitting tree_sha field"
+      ],
+      "required_evidence": [
+        "artifact tree_sha equal to compiler tree_sha"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "regenerate proofs after final staging",
+      "context": {
+        "oracle_id": "off_transparent",
+        "artifact_tree_sha": "cc19a3042d9247e78411f2679ea68d431cae4532",
+        "expected_tree_sha": "63403139305e79578d001626f7b112ebe4cd28c2"
+      }
+    },
+    {
+      "code": "GOV-AUDIO-001",
+      "severity": "FAIL",
+      "title": "Off state is not transparent",
+      "message": "off_transparent metric failed (max_abs_error <= 0.0001, got undefined)",
+      "why_failed": "Bypass/off output differs from baseline beyond allowed epsilon.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-AUDIO-TRUE-BYPASS",
+          "summary": "Implement true bypass topology or transparent crossfade path."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Setting neutral params while DSP still alters signal",
+        "Relaxing epsilon threshold"
+      ],
+      "required_evidence": [
+        "off_transparent oracle artifact"
+      ],
+      "allowed_change_scope": [
+        "src/engine/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "run off_transparent oracle and verify delta <= max_abs_error",
+      "context": {
+        "oracle_id": "off_transparent",
+        "metric": "max_abs_error",
+        "operator": "<=",
+        "expected": 0.0001
+      }
+    },
+    {
+      "code": "GOV-PROOF-006",
+      "severity": "FAIL",
+      "title": "Artifact tree mismatch",
+      "message": "Oracle tree_sha mismatch for on_audible (expected 63403139305e79578d001626f7b112ebe4cd28c2, got cc19a3042d9247e78411f2679ea68d431cae4532)",
+      "why_failed": "Artifact tree_sha does not match staged tree being validated.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-BIND-TREE",
+          "summary": "Regenerate proof artifacts for current staged tree and update tree_sha."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Copying artifacts from previous commit",
+        "Omitting tree_sha field"
+      ],
+      "required_evidence": [
+        "artifact tree_sha equal to compiler tree_sha"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "regenerate proofs after final staging",
+      "context": {
+        "oracle_id": "on_audible",
+        "artifact_tree_sha": "cc19a3042d9247e78411f2679ea68d431cae4532",
+        "expected_tree_sha": "63403139305e79578d001626f7b112ebe4cd28c2"
+      }
+    },
+    {
+      "code": "GOV-PROOF-006",
+      "severity": "FAIL",
+      "title": "Artifact tree mismatch",
+      "message": "Oracle tree_sha mismatch for low_end_continuity (expected 63403139305e79578d001626f7b112ebe4cd28c2, got cc19a3042d9247e78411f2679ea68d431cae4532)",
+      "why_failed": "Artifact tree_sha does not match staged tree being validated.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-BIND-TREE",
+          "summary": "Regenerate proof artifacts for current staged tree and update tree_sha."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Copying artifacts from previous commit",
+        "Omitting tree_sha field"
+      ],
+      "required_evidence": [
+        "artifact tree_sha equal to compiler tree_sha"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "regenerate proofs after final staging",
+      "context": {
+        "oracle_id": "low_end_continuity",
+        "artifact_tree_sha": "cc19a3042d9247e78411f2679ea68d431cae4532",
+        "expected_tree_sha": "63403139305e79578d001626f7b112ebe4cd28c2"
+      }
+    },
+    {
+      "code": "GOV-PROOF-006",
+      "severity": "FAIL",
+      "title": "Artifact tree mismatch",
+      "message": "Oracle tree_sha mismatch for clip_guard (expected 63403139305e79578d001626f7b112ebe4cd28c2, got cc19a3042d9247e78411f2679ea68d431cae4532)",
+      "why_failed": "Artifact tree_sha does not match staged tree being validated.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-BIND-TREE",
+          "summary": "Regenerate proof artifacts for current staged tree and update tree_sha."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Copying artifacts from previous commit",
+        "Omitting tree_sha field"
+      ],
+      "required_evidence": [
+        "artifact tree_sha equal to compiler tree_sha"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "regenerate proofs after final staging",
+      "context": {
+        "oracle_id": "clip_guard",
+        "artifact_tree_sha": "cc19a3042d9247e78411f2679ea68d431cae4532",
+        "expected_tree_sha": "63403139305e79578d001626f7b112ebe4cd28c2"
+      }
+    },
+    {
+      "code": "GOV-PROOF-006",
+      "severity": "FAIL",
+      "title": "Artifact tree mismatch",
+      "message": "Oracle tree_sha mismatch for default_safety (expected 63403139305e79578d001626f7b112ebe4cd28c2, got cc19a3042d9247e78411f2679ea68d431cae4532)",
+      "why_failed": "Artifact tree_sha does not match staged tree being validated.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-BIND-TREE",
+          "summary": "Regenerate proof artifacts for current staged tree and update tree_sha."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Copying artifacts from previous commit",
+        "Omitting tree_sha field"
+      ],
+      "required_evidence": [
+        "artifact tree_sha equal to compiler tree_sha"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "regenerate proofs after final staging",
+      "context": {
+        "oracle_id": "default_safety",
+        "artifact_tree_sha": "cc19a3042d9247e78411f2679ea68d431cae4532",
+        "expected_tree_sha": "63403139305e79578d001626f7b112ebe4cd28c2"
+      }
+    },
+    {
+      "code": "GOV-PROOF-006",
+      "severity": "FAIL",
+      "title": "Artifact tree mismatch",
+      "message": "Oracle tree_sha mismatch for control_binding (expected 63403139305e79578d001626f7b112ebe4cd28c2, got cc19a3042d9247e78411f2679ea68d431cae4532)",
+      "why_failed": "Artifact tree_sha does not match staged tree being validated.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-BIND-TREE",
+          "summary": "Regenerate proof artifacts for current staged tree and update tree_sha."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Copying artifacts from previous commit",
+        "Omitting tree_sha field"
+      ],
+      "required_evidence": [
+        "artifact tree_sha equal to compiler tree_sha"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "regenerate proofs after final staging",
+      "context": {
+        "oracle_id": "control_binding",
+        "artifact_tree_sha": "cc19a3042d9247e78411f2679ea68d431cae4532",
+        "expected_tree_sha": "63403139305e79578d001626f7b112ebe4cd28c2"
+      }
+    },
+    {
+      "code": "GOV-PROOF-006",
+      "severity": "FAIL",
+      "title": "Artifact tree mismatch",
+      "message": "Oracle tree_sha mismatch for control_monotonicity (expected 63403139305e79578d001626f7b112ebe4cd28c2, got cc19a3042d9247e78411f2679ea68d431cae4532)",
+      "why_failed": "Artifact tree_sha does not match staged tree being validated.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-BIND-TREE",
+          "summary": "Regenerate proof artifacts for current staged tree and update tree_sha."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Copying artifacts from previous commit",
+        "Omitting tree_sha field"
+      ],
+      "required_evidence": [
+        "artifact tree_sha equal to compiler tree_sha"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "regenerate proofs after final staging",
+      "context": {
+        "oracle_id": "control_monotonicity",
+        "artifact_tree_sha": "cc19a3042d9247e78411f2679ea68d431cae4532",
+        "expected_tree_sha": "63403139305e79578d001626f7b112ebe4cd28c2"
+      }
+    },
+    {
+      "code": "GOV-PROOF-006",
+      "severity": "FAIL",
+      "title": "Artifact tree mismatch",
+      "message": "Oracle tree_sha mismatch for mutation_guard (expected 63403139305e79578d001626f7b112ebe4cd28c2, got cc19a3042d9247e78411f2679ea68d431cae4532)",
+      "why_failed": "Artifact tree_sha does not match staged tree being validated.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-BIND-TREE",
+          "summary": "Regenerate proof artifacts for current staged tree and update tree_sha."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Copying artifacts from previous commit",
+        "Omitting tree_sha field"
+      ],
+      "required_evidence": [
+        "artifact tree_sha equal to compiler tree_sha"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "regenerate proofs after final staging",
+      "context": {
+        "oracle_id": "mutation_guard",
+        "artifact_tree_sha": "cc19a3042d9247e78411f2679ea68d431cae4532",
+        "expected_tree_sha": "63403139305e79578d001626f7b112ebe4cd28c2"
+      }
+    }
+  ],
+  "verdict": "FAIL"
+}

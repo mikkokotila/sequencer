@@ -27,6 +27,11 @@ export interface EventMap {
   'persistence:songDeleted': Record<string, never>;
   'persistence:songSwitched': Record<string, never>;
   'persistence:fileLoaded': Record<string, never>;
+
+  // MIDI
+  'midi:connected': { trackIndex: number; inputId: string; inputName: string };
+  'midi:disconnected': { trackIndex: number };
+  'midi:devicesChanged': Record<string, never>;
 }
 
 // ── Bus implementation ──

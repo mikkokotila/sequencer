@@ -1,0 +1,21 @@
+command: npm run audio:gates
+status: 1
+elapsed_ms: 12479
+
+--- stdout ---
+
+> sequencer@1.0.0 audio:gates
+> node docs/qc/scripts/audio-gates.mjs
+
+PASS | audio-quality | 25/25 passed, 0 failed
+PASS | e2e-signal | 14/14 passed, 0 failed
+PASS | signal-purity | 8/8 passed, 0 failed
+FAIL | benchmark | FAIL — p99 13.333ms exceeds 2.67ms budget (500.0% load)
+VITE v6.4.1  ready in 99 ms
+
+  ➜  Local:   http://localhost:5174/
+  ➜  Network: use --host to expose
+
+
+--- stderr ---
+audio-gates failed (1/4)

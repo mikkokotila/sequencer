@@ -5,18 +5,14 @@
     "moduleResolution": "bundler",
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
     "isolatedModules": true,
     "skipLibCheck": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "types": ["vite/client"],
-    "outDir": "dist",
+    "lib": ["ES2020"],
+    "outDir": "dist/worklets",
     "sourceMap": true
   },
-  "include": ["src"],
-  "exclude": ["src/engine/worklets"]
+  "include": ["src/engine/worklets"]
 }

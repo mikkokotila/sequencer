@@ -57,7 +57,7 @@ import {
   updateHarmonyDim,
 } from './cells';
 import { setupPainting, replicateTrack, clearSelection } from './painting';
-import { openBrowser, wireBrowserEvents, setupDragDrop } from './browser';
+import { openBrowser, wireBrowserEvents, setupDragDrop, closeBrowser } from './browser';
 import { togglePlay, stopPlayback, isPhraseEmpty, fillWithPrev } from '../engine/scheduler';
 import {
   scheduleSave,
@@ -553,8 +553,7 @@ export function buildUI(): void {
     if (e.code === 'Escape') {
       const browserOverlay = document.getElementById('browser-overlay');
       if (browserOverlay?.classList.contains('open')) {
-        const { closeBrowser: closeBr } = require('./browser') as { closeBrowser: () => void };
-        closeBr();
+        closeBrowser();
       } else {
         clearSelection();
       }

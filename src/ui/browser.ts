@@ -23,7 +23,7 @@ import {
   vocalPat,
 } from '../transport/patterns';
 import { playing } from '../state';
-import { initAudio, fetchAndDecode, playPreviewSample, loadAudioFile } from '../engine/audio';
+import { initAudio, fetchAndDecode, playPreviewSample, loadAudioFile, getAudioContext } from '../engine/audio';
 import { el, truncName } from './helpers';
 import { scheduleSave } from '../transport/persistence';
 
@@ -351,7 +351,6 @@ function trackHasContent(type: TrackType | '', idx: number): boolean {
 // ═══════════════════════════════════════════
 
 function restoreOriginalBuffer(): void {
-  const { getAudioContext } = require('../engine/audio') as { getAudioContext: () => AudioContext | null };
   const ctx = getAudioContext();
   if (!ctx) return;
 

@@ -144,8 +144,12 @@ class SaturationProcessor extends AudioWorkletProcessor {
 
       for (let i = 0; i < blockSize * 4; i++) {
         const x = buf4x[i] ?? 0;
-        // Squared blend: 1% drive = 0.01% wet, perceptually linear
-        const blend = drive * drive;
+        // Signal-dependent blend: quiet signals pass cleaner than loud signals.
+        // levelFactor scales from 0 (silence) to 1 (loud), so the saturation
+        // amount is proportional to the input level — not a static curve.
+        const absX = Math.abs(x);
+        const levelFactor = Math.min(1, absX * 2.5);
+        const blend = drive * drive * levelFactor;
         buf4x[i] = x * (1 - blend) + saturate(x, k) * blend;
       }
 

@@ -192,17 +192,16 @@ class TransformerProcessor extends AudioWorkletProcessor {
         const x = sample * driveGain;
 
         // 2. Even-harmonic generation (level-dependent)
+        // Uses sin(x*PI) per waveshaper contract — generates true even harmonics
+        // (2nd, 4th) without DC bias or raw asymmetry.
         const absX = Math.abs(x);
         const levelFactor = Math.min(1, absX * 2); // quiet=0, loud=1
-        const sign = x >= 0 ? 1 : -1;
 
-        // 2nd harmonic: x² preserves sign → even harmonic
-        const h2 = x * absX * 0.5; // = x * |x| * 0.5, same sign as x
-        // 4th harmonic: x⁴ preserves sign
-        const h4 = x * absX * absX * absX * 0.1;
+        // sin(x*PI) produces even harmonics of the input signal
+        const evenHarmonic = Math.sin(x * Math.PI);
 
         // Blend: original + level-scaled even harmonics (squared color for smooth control)
-        sample = sample + colorSq * levelFactor * (h2 + h4) * 0.15;
+        sample = sample + colorSq * levelFactor * evenHarmonic * 0.08;
 
         // 3. LF thickening (one-pole lowshelf)
         lfS += lfAlpha * (sample - lfS);

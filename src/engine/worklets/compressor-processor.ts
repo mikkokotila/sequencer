@@ -359,10 +359,12 @@ class CompressorProcessor extends AudioWorkletProcessor {
         const gainLin = Math.pow(10, envDb / 20) * makeupGain;
 
         if (model === MODEL_FET) {
-          // FET: add 2nd harmonic grit proportional to GR depth
+          // FET: even-harmonic warmth proportional to GR depth.
+          // Uses sin(x*PI) per waveshaper contract — no raw asymmetry, no DC bias.
           const grNorm = Math.min(1, Math.max(0, -envDb) / 30);
-          const asymmetry = FET_ASYM_MAX * grNorm;
-          buf4x[i] = sample * gainLin * (1 + asymmetry * sample);
+          const warmth = FET_ASYM_MAX * grNorm;
+          const compressed = sample * gainLin;
+          buf4x[i] = compressed + warmth * Math.sin(compressed * Math.PI);
         } else {
           // Opto + VCA: clean gain application
           buf4x[i] = sample * gainLin;

@@ -31,10 +31,10 @@ let bufferSize = 128;
 let sampleRateVal = 48000;
 let oversampleMode: OverSampleType = '4x';
 let limiterOn = true;
-let filterCutoff = 75; // 0-100%
-let filterRes = 30; // 0-100%
-let saturation = 30; // 0-100%
-let compression = 25; // 0-100%
+let filterCutoff = 100; // 0-100% — wide open by default
+let filterRes = 0; // 0-100% — no resonance by default
+let saturation = 0; // 0-100% — no saturation by default
+let compression = 0; // 0-100% — no compression by default
 
 // Demo oscillator sources
 let demoOscs: OscillatorNode[] = [];

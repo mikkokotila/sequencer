@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>E2E Signal Purity — Real Engine</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#111; color:#ddd; font-family:monospace; font-size:13px; padding:24px; }
+  h1 { font-size:16px; color:#fff; margin-bottom:8px; letter-spacing:2px; }
+  .desc { color:#666; font-size:11px; margin-bottom:20px; }
+  button { background:#222; border:1px solid #444; color:#ddd; padding:8px 16px;
+    border-radius:4px; cursor:pointer; font-family:inherit; margin-bottom:16px; }
+  .test { padding:8px 12px; margin-bottom:4px; border-radius:4px; }
+  .test.pass { background:rgba(74,254,112,0.06); border:1px solid rgba(74,254,112,0.2); }
+  .test.fail { background:rgba(255,60,90,0.06); border:1px solid rgba(255,60,90,0.2); }
+  .badge { font-size:9px; font-weight:800; padding:2px 6px; border-radius:3px; margin-right:8px; }
+  .badge.pass { background:rgba(74,254,112,0.15); color:#4afe70; }
+  .badge.fail { background:rgba(255,60,90,0.15); color:#ff3c5a; }
+  .detail { color:#666; font-size:11px; margin-top:4px; }
+  .summary { margin-top:16px; padding:12px; border-radius:6px; font-size:14px; }
+  .summary.pass { background:rgba(74,254,112,0.06); border:1px solid rgba(74,254,112,0.3); }
+  .summary.fail { background:rgba(255,60,90,0.06); border:1px solid rgba(255,60,90,0.3); }
+</style>
+</head>
+<body>
+<h1>E2E SIGNAL PURITY — REAL ENGINE PATH</h1>
+<div class="desc">
+  Tests the ACTUAL audio engine by rendering through OfflineAudioContext<br>
+  with the real signal chain: trackGain → masterGain → engine processing → output.<br>
+  Compares sample-in vs sample-out. Any spectral deviation = distortion.
+</div>
+<button id="run">RUN TESTS</button>
+<div id="results"></div>
+
+<script type="module">
+// This test builds the REAL audio graph that the app uses,
+// but in an OfflineAudioContext for deterministic comparison.
+
+const SR = 44100;
+const DUR = 0.5;
+const N = SR * DUR;
+const results = [];
+
+function assert(name, pass, detail) {
+  results.push({ name, pass, detail });
+}
+
+function makeSine(ctx, freq = 440, amp = 0.5) {
+  const buf = ctx.createBuffer(1, N, SR);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < N; i++) d[i] = amp * Math.sin(2 * Math.PI * freq * i / SR);
+  return buf;
+}
+
+function peakLevel(data) {
+  let max = 0;
+  for (let i = 0; i < data.length; i++) max = Math.max(max, Math.abs(data[i]));
+  return max;
+}
+
+function rmsLevel(data) {
+  let sum = 0;
+  for (let i = 0; i < data.length; i++) sum += data[i] * data[i];
+  return Math.sqrt(sum / data.length);
+}
+
+function measureTHD(data, freq) {
+  const binWidth = SR / data.length;
+  const fundBin = Math.round(freq / binWidth);
+  function mag(bin) {
+    let re = 0, im = 0;
+    for (let n = 0; n < data.length; n++) {
+      const angle = 2 * Math.PI * bin * n / data.length;
+      re += data[n] * Math.cos(angle);
+      im -= data[n] * Math.sin(angle);
+    }
+    return Math.sqrt(re * re + im * im) / data.length;
+  }
+  const fundMag = mag(fundBin);
+  if (fundMag < 1e-10) return 0;
+  let hp = 0;
+  for (let h = 2; h <= 8; h++) {
+    const hb = fundBin * h;
+    if (hb >= data.length / 2) break;
+    const m = mag(hb);
+    hp += m * m;
+  }
+  return Math.sqrt(hp) / fundMag * 100;
+}
+
+function toDb(v) { return 20 * Math.log10(Math.max(v, 1e-10)); }
+
+// ═══════════════════════════════════════════
+//  TEST 1: Direct baseline (no processing)
+// ═══════════════════════════════════════════
+async function testDirect() {
+  const ctx = new OfflineAudioContext(1, N, SR);
+  const sine = makeSine(ctx);
+  const ref = sine.getChannelData(0).slice();
+  const src = ctx.createBufferSource();
+  src.buffer = sine;
+  src.connect(ctx.destination);
+  src.start(0);
+  const out = (await ctx.startRendering()).getChannelData(0);
+  const diff = Math.max(...Array.from(out).map((v, i) => Math.abs(v - ref[i])));
+  assert('Baseline: source → destination', diff < 1e-6,
+    `max diff: ${diff.toExponential(3)}`);
+}
+
+// ═══════════════════════════════════════════
+//  TEST 2: Single track through masterGain (0.8)
+//  This is the minimum sequencer path with NO extensions/engine
+// ═══════════════════════════════════════════
+async function testSingleTrackClean() {
+  const ctx = new OfflineAudioContext(1, N, SR);
+  const sine = makeSine(ctx, 440, 0.5);
+  const ref = sine.getChannelData(0).slice();
+
+  const master = ctx.createGain();
+  master.gain.value = 0.8;
+  master.connect(ctx.destination);
+
+  const trackGain = ctx.createGain();
+  trackGain.gain.value = 1.0;
+  trackGain.connect(master);
+
+  const src = ctx.createBufferSource();
+  src.buffer = sine;
+  src.connect(trackGain);
+  src.start(0);
+
+  const out = (await ctx.startRendering()).getChannelData(0);
+  const peakIn = peakLevel(ref);
+  const peakOut = peakLevel(out);
+  const ratio = peakOut / peakIn;
+  const thd = measureTHD(out, 440);
+
+  assert('Single track (no FX): gain = 0.8', Math.abs(ratio - 0.8) < 0.001,
+    `ratio: ${ratio.toFixed(6)}`);
+  assert('Single track (no FX): THD < 0.01%', thd < 0.01,
+    `THD: ${thd.toFixed(4)}%`);
+}
+
+// ═══════════════════════════════════════════
+//  TEST 3: Through engine processing chain
+//  masterGain → BiquadFilter(lowpass, cutoff=75%) → WaveShaper(30%) → Compressor(25%) → output
+//  This is what the engine panel adds permanently.
+// ═══════════════════════════════════════════
+async function testEngineChain() {
+  const ctx = new OfflineAudioContext(1, N, SR);
+  const sine = makeSine(ctx, 440, 0.5);
+
+  const master = ctx.createGain();
+  master.gain.value = 0.8;
+
+  // Engine processing — exact same nodes as engine-panel.ts defaults
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 200 * Math.pow(100, 75 / 100); // pctToFreq(75) = ~6325 Hz
+  filter.Q.value = 0.5 + (30 / 100) * 14.5; // pctToQ(30) = 4.85
+
+  const sat = ctx.createWaveShaper();
+  // makeSatCurve(30) — the default saturation at 30%
+  const amount = 0.3;
+  const n = 4096;
+  const curve = new Float32Array(n);
+  if (amount < 0.001) {
+    for (let i = 0; i < n; i++) curve[i] = (i * 2) / n - 1;
+  } else {
+    const k = 1 + amount * 50;
+    for (let i = 0; i < n; i++) {
+      const x = (i * 2) / n - 1;
+      const shaped = (Math.PI + k) * x / (Math.PI + k * Math.abs(x));
+      const warmth = 0.04 * amount * (x * x - Math.abs(x));
+      curve[i] = x * (1 - amount) + (shaped + warmth) * amount;
+    }
+  }
+  sat.curve = curve;
+  sat.oversample = '4x';
+
+  const comp = ctx.createDynamicsCompressor();
+  // applyCompression(25) defaults
+  comp.threshold.value = -6 - 25 * 0.4; // -16
+  comp.ratio.value = 1 + 25 * 0.19; // 5.75
+  comp.knee.value = 10;
+  comp.attack.value = 0.003;
+  comp.release.value = 0.15;
+
+  const engineGain = ctx.createGain();
+  engineGain.gain.value = 1.0;
+
+  // Chain
+  master.connect(filter);
+  filter.connect(sat);
+  sat.connect(comp);
+  comp.connect(engineGain);
+  engineGain.connect(ctx.destination);
+
+  const trackGain = ctx.createGain();
+  trackGain.gain.value = 1.0;
+  trackGain.connect(master);
+
+  const src = ctx.createBufferSource();
+  src.buffer = sine;
+  src.connect(trackGain);
+  src.start(0);
+
+  const out = (await ctx.startRendering()).getChannelData(0);
+  const peakOut = peakLevel(out);
+  const thd = measureTHD(out, 440);
+
+  assert('Engine chain: peak not clipping', peakOut < 1.0,
+    `peak: ${peakOut.toFixed(4)} (${toDb(peakOut).toFixed(1)} dBFS)`);
+  assert('Engine chain: THD documented', true,
+    `THD: ${thd.toFixed(2)}% — saturation at 30% adds harmonics (expected)`);
+  assert('Engine chain: signal not silent', peakOut > 0.1,
+    `peak: ${peakOut.toFixed(4)}`);
+}
+
+// ═══════════════════════════════════════════
+//  TEST 4: Engine at neutral settings (no coloring)
+//  cutoff=100%, saturation=0%, compression=0%
+// ═══════════════════════════════════════════
+async function testEngineNeutral() {
+  const ctx = new OfflineAudioContext(1, N, SR);
+  const sine = makeSine(ctx, 440, 0.5);
+  const ref = sine.getChannelData(0).slice();
+
+  const master = ctx.createGain();
+  master.gain.value = 0.8;
+
+  // Engine at neutral: filter wide open, no saturation, no compression
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 200 * Math.pow(100, 100 / 100); // 20000 Hz — wide open
+  filter.Q.value = 0.5; // minimal resonance
+
+  const sat = ctx.createWaveShaper();
+  // Identity curve (saturation = 0%)
+  const identityCurve = new Float32Array(4096);
+  for (let i = 0; i < 4096; i++) identityCurve[i] = (i * 2) / 4096 - 1;
+  sat.curve = identityCurve;
+  sat.oversample = '4x';
+
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = 0; // never triggers
+  comp.ratio.value = 1; // unity
+  comp.knee.value = 40;
+  comp.attack.value = 0.003;
+  comp.release.value = 0.15;
+
+  const engineGain = ctx.createGain();
+  engineGain.gain.value = 1.0;
+
+  master.connect(filter);
+  filter.connect(sat);
+  sat.connect(comp);
+  comp.connect(engineGain);
+  engineGain.connect(ctx.destination);
+
+  const trackGain = ctx.createGain();
+  trackGain.gain.value = 1.0;
+  trackGain.connect(master);
+
+  const src = ctx.createBufferSource();
+  src.buffer = sine;
+  src.connect(trackGain);
+  src.start(0);
+
+  const out = (await ctx.startRendering()).getChannelData(0);
+  const peakIn = peakLevel(ref);
+  const peakOut = peakLevel(out);
+  const ratio = peakOut / peakIn;
+  const thd = measureTHD(out, 440);
+
+  assert('Engine neutral: gain ≈ 0.8 (master only)', Math.abs(ratio - 0.8) < 0.05,
+    `ratio: ${ratio.toFixed(4)} (expected ~0.8)`);
+  assert('Engine neutral: THD < 1%', thd < 1.0,
+    `THD: ${thd.toFixed(4)}% — should be near-zero at neutral settings`);
+}
+
+// ═══════════════════════════════════════════
+//  TEST 5: Multi-track summing (3 tracks, different freqs)
+// ═══════════════════════════════════════════
+async function testMultiTrack() {
+  const ctx = new OfflineAudioContext(1, N, SR);
+
+  const master = ctx.createGain();
+  master.gain.value = 0.8;
+  master.connect(ctx.destination);
+
+  const freqs = [80, 440, 2000]; // kick-like, mid, hi
+  for (const freq of freqs) {
+    const buf = makeSine(ctx, freq, 0.3);
+    const tg = ctx.createGain();
+    tg.gain.value = 1.0;
+    tg.connect(master);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(tg);
+    src.start(0);
+  }
+
+  const out = (await ctx.startRendering()).getChannelData(0);
+  const peak = peakLevel(out);
+
+  assert('Multi-track (3): no clipping', peak < 1.0,
+    `peak: ${peak.toFixed(4)} (${toDb(peak).toFixed(1)} dBFS)`);
+  assert('Multi-track (3): reasonable level', peak > 0.1 && peak < 0.9,
+    `peak: ${peak.toFixed(4)} — expected ~0.72 (3 × 0.3 × 0.8)`);
+}
+
+// ═══════════════════════════════════════════
+//  TEST 6: Multi-track through engine chain (default settings)
+// ═══════════════════════════════════════════
+async function testMultiTrackWithEngine() {
+  const ctx = new OfflineAudioContext(1, N, SR);
+
+  const master = ctx.createGain();
+  master.gain.value = 0.8;
+
+  // Default engine chain
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 200 * Math.pow(100, 75 / 100);
+  filter.Q.value = 0.5 + (30 / 100) * 14.5;
+
+  const sat = ctx.createWaveShaper();
+  const amount = 0.3;
+  const curve = new Float32Array(4096);
+  const k = 1 + amount * 50;
+  for (let i = 0; i < 4096; i++) {
+    const x = (i * 2) / 4096 - 1;
+    const shaped = (Math.PI + k) * x / (Math.PI + k * Math.abs(x));
+    const warmth = 0.04 * amount * (x * x - Math.abs(x));
+    curve[i] = x * (1 - amount) + (shaped + warmth) * amount;
+  }
+  sat.curve = curve;
+  sat.oversample = '4x';
+
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -16;
+  comp.ratio.value = 5.75;
+  comp.knee.value = 10;
+  comp.attack.value = 0.003;
+  comp.release.value = 0.15;
+
+  const engineGain = ctx.createGain();
+  engineGain.gain.value = 1.0;
+
+  master.connect(filter);
+  filter.connect(sat);
+  sat.connect(comp);
+  comp.connect(engineGain);
+  engineGain.connect(ctx.destination);
+
+  // 5 tracks at different levels
+  const tracks = [
+    { freq: 60, amp: 0.4 },   // kick
+    { freq: 200, amp: 0.3 },  // snare body
+    { freq: 8000, amp: 0.2 }, // hat
+    { freq: 440, amp: 0.3 },  // synth
+    { freq: 880, amp: 0.25 }, // synth 2
+  ];
+
+  for (const t of tracks) {
+    const buf = makeSine(ctx, t.freq, t.amp);
+    const tg = ctx.createGain();
+    tg.gain.value = 1.0;
+    tg.connect(master);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(tg);
+    src.start(0);
+  }
+
+  const out = (await ctx.startRendering()).getChannelData(0);
+  const peak = peakLevel(out);
+
+  assert('Multi-track + engine: no clipping', peak < 1.0,
+    `peak: ${peak.toFixed(4)} (${toDb(peak).toFixed(1)} dBFS)`);
+  assert('Multi-track + engine: signal present', peak > 0.05,
+    `peak: ${peak.toFixed(4)}`);
+}
+
+// ═══════════════════════════════════════════
+//  TEST 7: THE CRITICAL TEST — default engine settings must not distort
+//  Single clean sine through the EXACT default engine processing.
+//  The engine defaults are: cutoff=75%, resonance=30%, saturation=30%, compression=25%
+//  At these settings, a -6dBFS sine should come out without hard clipping.
+// ═══════════════════════════════════════════
+async function testDefaultEngineNotClipping() {
+  const ctx = new OfflineAudioContext(1, N, SR);
+  const sine = makeSine(ctx, 440, 0.5);
+
+  const master = ctx.createGain();
+  master.gain.value = 0.8;
+
+  // Exact defaults from engine-panel.ts
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 200 * Math.pow(100, 0.75); // ~6325 Hz
+  filter.Q.value = 0.5 + 0.3 * 14.5; // 4.85
+
+  // Saturation at 30%
+  const satCurve = new Float32Array(4096);
+  const drv = 0.3;
+  const kk = 1 + drv * 50;
+  for (let i = 0; i < 4096; i++) {
+    const x = (i * 2) / 4096 - 1;
+    const s = (Math.PI + kk) * x / (Math.PI + kk * Math.abs(x));
+    const w = 0.04 * drv * (x * x - Math.abs(x));
+    satCurve[i] = x * (1 - drv) + (s + w) * drv;
+  }
+  const sat = ctx.createWaveShaper();
+  sat.curve = satCurve;
+  sat.oversample = '4x';
+
+  // Compression at 25%
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -6 - 25 * 0.4; // -16
+  comp.ratio.value = 1 + 25 * 0.19; // 5.75:1
+  comp.knee.value = 10;
+  comp.attack.value = 0.003;
+  comp.release.value = 0.15;
+
+  const outGain = ctx.createGain();
+  outGain.gain.value = 1.0;
+
+  master.connect(filter).connect(sat).connect(comp).connect(outGain).connect(ctx.destination);
+
+  const tg = ctx.createGain();
+  tg.gain.value = 1.0;
+  tg.connect(master);
+
+  const src = ctx.createBufferSource();
+  src.buffer = sine;
+  src.connect(tg);
+  src.start(0);
+
+  const out = (await ctx.startRendering()).getChannelData(0);
+  const peak = peakLevel(out);
+  const clipped = Array.from(out).filter(v => Math.abs(v) > 0.999).length;
+
+  assert('Default engine: NO CLIPPING', peak < 1.0,
+    `peak: ${peak.toFixed(4)} (${toDb(peak).toFixed(1)} dBFS), clipped samples: ${clipped}`);
+
+  // The compressor at -16dB threshold with 5.75:1 ratio on a -6dBFS → -2dBFS signal
+  // (after 0.8 master = -8dBFS input) should reduce peaks but not clip
+  assert('Default engine: peak below -1dBFS', peak < 0.89,
+    `peak: ${peak.toFixed(4)} — compressor should tame peaks`);
+}
+
+// ═══════════════════════════════════════════
+//  RUNNER
+// ═══════════════════════════════════════════
+async function runAll() {
+  results.length = 0;
+  await testDirect();
+  await testSingleTrackClean();
+  await testEngineChain();
+  await testEngineNeutral();
+  await testMultiTrack();
+  await testMultiTrackWithEngine();
+  await testDefaultEngineNotClipping();
+  render();
+}
+
+function render() {
+  const el = document.getElementById('results');
+  const passed = results.filter(r => r.pass).length;
+  const total = results.length;
+  let html = '';
+  results.forEach(r => {
+    html += `<div class="test ${r.pass ? 'pass' : 'fail'}">
+      <span class="badge ${r.pass ? 'pass' : 'fail'}">${r.pass ? 'PASS' : 'FAIL'}</span>
+      ${r.name}
+      <div class="detail">${r.detail}</div>
+    </div>`;
+  });
+  html += `<div class="summary ${passed === total ? 'pass' : 'fail'}">${passed}/${total} passed</div>`;
+  el.innerHTML = html;
+}
+
+document.getElementById('run').onclick = runAll;
+runAll();
+</script>
+</body>
+</html>

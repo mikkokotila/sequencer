@@ -18,7 +18,7 @@ import {
   setVocalSampleData,
 } from '../transport/song';
 import { drumPat, melPat, vocalPat } from '../transport/patterns';
-import { playing } from '../state';
+import { isPlaying } from '../engine/scheduler';
 import { fetchAndDecode, playPreviewSample, loadAudioFile, getAudioContext } from '../engine/audio';
 import { el, truncName } from './helpers';
 import { scheduleSave } from '../transport/persistence';
@@ -434,7 +434,7 @@ export async function previewSample(i: number): Promise<void> {
   if (!item) return;
 
   const hasContent = trackHasContent(browserType, browserIdx);
-  const isSequenceMode = playing && hasContent;
+  const isSequenceMode = isPlaying() && hasContent;
 
   // In sequence mode, clicking same item toggles the swap off
   if (isSequenceMode && previewingIdx === i) {

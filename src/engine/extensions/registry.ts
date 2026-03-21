@@ -4,13 +4,8 @@
  */
 
 import type { Extension, TrackInfo, TrackType } from '../../types';
-import {
-  SEQ_EXTENSIONS,
-  activeExtensionId,
-  setActiveExtensionId,
-  seqStopCallbacks,
-  playing,
-} from '../../state';
+import { SEQ_EXTENSIONS, activeExtensionId, setActiveExtensionId, seqStopCallbacks } from './store';
+import { isPlaying } from '../scheduler';
 import { drumNames, melNames, vocalName } from '../../transport/song';
 import {
   getAudioContext,
@@ -83,7 +78,7 @@ export function installSeqAPI(): void {
       return TOTAL_TRACKS;
     },
     get playing(): boolean {
-      return playing;
+      return isPlaying();
     },
     onStop(fn: () => void): void {
       seqStopCallbacks.push(fn);

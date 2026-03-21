@@ -48,7 +48,7 @@ import {
   vocalSampleData,
   setVocalSampleData,
 } from './song';
-import { SEQ_EXTENSIONS } from '../state';
+import { SEQ_EXTENSIONS } from '../engine/extensions/store';
 import { getAudioContext } from '../engine/audio';
 
 // ═══════════════════════════════════════════

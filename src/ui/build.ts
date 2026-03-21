@@ -39,15 +39,8 @@ import {
   currentSongName,
   setCurrentSongName,
 } from '../transport/song';
-import {
-  drumCells,
-  melCells,
-  setVocalCells,
-  playing,
-  playingPhrase,
-  setCurStep,
-  setPlayingPhrase,
-} from '../state';
+import { drumCells, melCells, setVocalCells } from '../state';
+import { isPlaying, getPlayingPhrase, setPlayingPhrase } from '../engine/scheduler';
 import { el, makeEditable, truncName } from './helpers';
 import {
   updateDrumCell,
@@ -171,7 +164,7 @@ export function updateSongPane(): void {
   slots.forEach((slot, i) => {
     slot.classList.toggle('active', i === currentPhrase);
     slot.classList.toggle('has-content', !isPhraseEmpty(i));
-    slot.classList.toggle('playing-phrase', playing && i === playingPhrase);
+    slot.classList.toggle('playing-phrase', isPlaying() && i === getPlayingPhrase());
   });
 }
 
@@ -621,9 +614,8 @@ export function buildUI(): void {
     });
     slot.addEventListener('dblclick', (e: MouseEvent) => {
       if ((e.target as HTMLElement).classList.contains('phrase-fill-btn')) return;
-      if (playing) {
+      if (isPlaying()) {
         setPlayingPhrase(i);
-        setCurStep(0);
         updateSongPane();
       }
     });

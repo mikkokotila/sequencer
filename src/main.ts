@@ -11,7 +11,7 @@ import { installSeqAPI, initExtensions } from './engine/extensions/registry';
 import { togglePlay, syncBpm } from './engine/scheduler';
 import { initPlayhead } from './ui/playhead';
 import { genId } from './ui/helpers';
-import { SEQ_EXTENSIONS } from './state';
+import { SEQ_EXTENSIONS } from './engine/extensions/store';
 import { currentSongId, setCurrentSongId, setOnBpmChange } from './transport/song';
 import { initEngineProcessing } from './ui/engine-panel';
 

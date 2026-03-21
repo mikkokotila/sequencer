@@ -3,21 +3,23 @@
  * side panel UI, and icon rendering.
  */
 
-import type { Extension, TrackInfo, TrackType } from '../types';
+import type { Extension, TrackInfo, TrackType } from '../../types';
 import {
   SEQ_EXTENSIONS,
   activeExtensionId,
   setActiveExtensionId,
   seqStopCallbacks,
+  playing,
+} from '../../state';
+import {
   drumNames,
   melNames,
   vocalName,
-  playing,
-} from '../state';
+} from '../../transport/song';
 import { getAudioContext, getMasterGain, getTrackGains, initAudio } from '../audio';
-import { DRUMS_CFG, MEL_CFG, VOCAL_CFG, TOTAL_TRACKS } from '../config';
-import { el } from '../ui/helpers';
-import { scheduleSave } from '../persistence';
+import { DRUMS_CFG, MEL_CFG, VOCAL_CFG, TOTAL_TRACKS } from '../../config';
+import { el } from '../../ui/helpers';
+import { scheduleSave } from '../../transport/persistence';
 
 // ═══════════════════════════════════════════
 //  SEQ API (exposed on window for extensions)

@@ -5,8 +5,8 @@
  * that returns an Extension conforming to types.ts.
  */
 
-import type { Extension, ExtensionState, NodePair } from '../types';
-import { makeSlider } from '../ui/helpers';
+import type { Extension, ExtensionState, NodePair } from '../../types';
+import { makeSlider } from '../../ui/helpers';
 
 // ═══════════════════════════════════════════
 //  Internal types

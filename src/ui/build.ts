@@ -17,30 +17,34 @@ import {
   HARMONY_LABELS,
 } from '../config';
 import {
+  drumPat,
+  melPat,
+  vocalPat,
+  currentPhrase,
+  octaves,
+  harmonies,
+  switchToPhrase,
+} from '../transport/patterns';
+import {
   bpm,
   setBpm,
   drumNames,
   melNames,
   vocalName,
   setVocalName,
-  octaves,
-  harmonies,
   mutedArr,
-  drumCells,
-  melCells,
-  setVocalCells,
   drumSampleData,
   melSampleData,
   vocalSampleData,
-  drumPat,
-  melPat,
-  vocalPat,
-  currentPhrase,
-  playing,
-  playingPhrase,
   currentSongName,
   setCurrentSongName,
-  switchToPhrase,
+} from '../transport/song';
+import {
+  drumCells,
+  melCells,
+  setVocalCells,
+  playing,
+  playingPhrase,
   setCurStep,
   setPlayingPhrase,
 } from '../state';
@@ -54,7 +58,7 @@ import {
 } from './cells';
 import { setupPainting, replicateTrack, clearSelection } from './painting';
 import { openBrowser, wireBrowserEvents, setupDragDrop } from './browser';
-import { togglePlay, stopPlayback, isPhraseEmpty, fillWithPrev } from '../scheduler';
+import { togglePlay, stopPlayback, isPhraseEmpty, fillWithPrev } from '../engine/scheduler';
 import {
   scheduleSave,
   saveSong,
@@ -62,7 +66,7 @@ import {
   loadPatternFile,
   newSong,
   deleteSong,
-} from '../persistence';
+} from '../transport/persistence';
 
 // ═══════════════════════════════════════════
 //  Track controls

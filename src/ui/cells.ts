@@ -14,10 +14,12 @@ import {
   drumPat,
   melPat,
   vocalPat,
+  harmonies,
+} from '../transport/patterns';
+import {
   drumCells,
   melCells,
   vocalCells,
-  harmonies,
 } from '../state';
 import { displayToSemitone } from './helpers';
 

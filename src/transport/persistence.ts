@@ -2,7 +2,7 @@
  * Persistence — IndexedDB operations, song save/load, file import/export.
  */
 
-import type { ExtensionState, Phrase, SampleData, SongData } from './types';
+import type { ExtensionState, Phrase, SampleData, SongData } from '../types';
 import {
   DRUMS_CFG,
   MEL_CFG,
@@ -11,7 +11,17 @@ import {
   DEFAULT_DRUM_NAMES,
   DEFAULT_MEL_NAMES,
   DEFAULT_VOCAL_NAME,
-} from './config';
+} from '../config';
+import {
+  phrases,
+  octaves,
+  harmonies,
+  currentPhrase,
+  setCurrentPhrase,
+  setDrumPat,
+  setMelPat,
+  setVocalPat,
+} from './patterns';
 import {
   db,
   setDb,
@@ -23,14 +33,6 @@ import {
   setCurrentSongName,
   saveTimer,
   setSaveTimer,
-  currentPhrase,
-  setCurrentPhrase,
-  phrases,
-  setDrumPat,
-  setMelPat,
-  setVocalPat,
-  octaves,
-  harmonies,
   drumNames,
   setDrumNames,
   melNames,
@@ -45,9 +47,11 @@ import {
   melSampleData,
   vocalSampleData,
   setVocalSampleData,
+} from './song';
+import {
   SEQ_EXTENSIONS,
-} from './state';
-import { getAudioContext, initAudio } from './audio';
+} from '../state';
+import { getAudioContext, initAudio } from '../engine/audio';
 
 // ═══════════════════════════════════════════
 //  Helpers

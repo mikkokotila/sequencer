@@ -2,8 +2,8 @@
  * Audio engine — AudioContext lifecycle, sample playback, file loading.
  */
 
-import { TOTAL_TRACKS } from './config';
-import type { LoadedSample } from './types';
+import { TOTAL_TRACKS } from '../config';
+import type { LoadedSample } from '../types';
 
 // ── Module state ──
 let audioCtx: AudioContext | null = null;

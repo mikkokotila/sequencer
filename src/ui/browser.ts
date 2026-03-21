@@ -14,16 +14,18 @@ import {
   vocalSampleData,
   drumNames,
   melNames,
-  playing,
+  setVocalBuf,
+  setVocalSampleData,
+} from '../transport/song';
+import {
   drumPat,
   melPat,
   vocalPat,
-  setVocalBuf,
-  setVocalSampleData,
-} from '../state';
-import { initAudio, fetchAndDecode, playPreviewSample, loadAudioFile } from '../audio';
+} from '../transport/patterns';
+import { playing } from '../state';
+import { initAudio, fetchAndDecode, playPreviewSample, loadAudioFile } from '../engine/audio';
 import { el, truncName } from './helpers';
-import { scheduleSave } from '../persistence';
+import { scheduleSave } from '../transport/persistence';
 
 // ═══════════════════════════════════════════
 //  Module state
@@ -349,7 +351,7 @@ function trackHasContent(type: TrackType | '', idx: number): boolean {
 // ═══════════════════════════════════════════
 
 function restoreOriginalBuffer(): void {
-  const { getAudioContext } = require('../audio') as { getAudioContext: () => AudioContext | null };
+  const { getAudioContext } = require('../engine/audio') as { getAudioContext: () => AudioContext | null };
   const ctx = getAudioContext();
   if (!ctx) return;
 

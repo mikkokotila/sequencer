@@ -5,7 +5,7 @@
  * that returns an Extension conforming to types.ts.
  */
 
-import type { Extension, ExtensionState, NodePair } from '../types';
+import type { Extension, ExtensionState, NodePair } from '../../types';
 
 // ═══════════════════════════════════════════
 //  Internal types

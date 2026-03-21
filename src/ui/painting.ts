@@ -4,7 +4,10 @@
 
 import { STEPS, SPB, MEL_CFG } from '../config';
 import {
-  drumPat, melPat, vocalPat, melCells,
+  drumPat, melPat, vocalPat,
+} from '../transport/patterns';
+import {
+  melCells,
   painting, paintVal, paintType,
   selecting, selection, setPainting, setPaintVal, setPaintType,
   setSelecting, setSelection,

@@ -2,25 +2,29 @@
  * Scheduler — phrase management, audio scheduling loop, transport controls.
  */
 
-import { STEPS, NUM_PHRASES, DRUMS_CFG, MEL_CFG, VOCAL_CFG, HARMONY_SEMITONES } from './config';
+import { STEPS, NUM_PHRASES, DRUMS_CFG, MEL_CFG, VOCAL_CFG, HARMONY_SEMITONES } from '../config';
 import { getAudioContext, getTrackGains, initAudio, playSample } from './audio';
-import { displayToSemitone } from './ui/helpers';
+import { displayToSemitone } from '../ui/helpers';
 import {
   phrases,
   drumPat,
   melPat,
   vocalPat,
   currentPhrase,
+  octaves,
+  harmonies,
+} from '../transport/patterns';
+import {
   drumBuf,
   melBuf,
   vocalBuf,
   mutedArr,
-  octaves,
-  harmonies,
+  bpm,
+} from '../transport/song';
+import {
   drumCells,
   melCells,
   vocalCells,
-  bpm,
   playing,
   curStep,
   nextTime,
@@ -34,7 +38,7 @@ import {
   setTimer,
   setPrevVisualStep,
   setPlayingPhrase,
-} from './state';
+} from '../state';
 
 // ═══════════════════════════════════════════
 //  UI CALLBACK HOOKS

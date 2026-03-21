@@ -28,6 +28,12 @@ function parsePassedSummary(text) {
   return { passed, total, failed };
 }
 
+function parseFiniteNumber(text) {
+  if (typeof text !== 'string') return null;
+  const value = Number.parseFloat(text.trim());
+  return Number.isFinite(value) ? value : null;
+}
+
 async function run() {
   const server = spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], {
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -74,14 +80,38 @@ async function run() {
     await page.goto(`${BASE}/tests/benchmark.html`, { waitUntil: 'domcontentloaded' });
     await page.click('#run-btn');
     await page.waitForFunction(() => {
-      const t = document.querySelector('#gate')?.textContent || '';
-      return t.includes('PASS') || t.includes('FAIL');
+      const p99 = document.querySelector('#p99')?.textContent || '';
+      const budget = document.querySelector('#budget')?.textContent || '';
+      const p99Value = Number.parseFloat(p99.trim());
+      const budgetValue = Number.parseFloat(budget.trim());
+      return Number.isFinite(p99Value) && Number.isFinite(budgetValue);
     }, null, { timeout: 60000 });
-    const gateText = (await page.textContent('#gate'))?.trim() || '';
+
+    const benchmark = await page.evaluate(() => {
+      const gateText = (document.querySelector('#gate')?.textContent || '').trim();
+      const p99Text = (document.querySelector('#p99')?.textContent || '').trim();
+      const budgetText = (document.querySelector('#budget')?.textContent || '').trim();
+      const sampleMatch = gateText.match(/(\d+)\s*samples/i);
+      return {
+        gateText,
+        p99Text,
+        budgetText,
+        sampleCount: sampleMatch ? Number(sampleMatch[1]) : null,
+      };
+    });
+
+    const p99 = parseFiniteNumber(benchmark.p99Text);
+    const budget = parseFiniteNumber(benchmark.budgetText);
+    const sampleCount = Number.isFinite(benchmark.sampleCount) ? benchmark.sampleCount : null;
+    const benchmarkOk = p99 !== null && budget !== null && sampleCount !== null && sampleCount >= 50 && p99 <= budget;
+
     results.push({
       name: 'benchmark',
-      ok: gateText.includes('PASS'),
-      detail: gateText || 'Missing gate text',
+      ok: benchmarkOk,
+      detail:
+        p99 === null || budget === null || sampleCount === null
+          ? `Missing benchmark metrics (p99="${benchmark.p99Text}", budget="${benchmark.budgetText}", gate="${benchmark.gateText}")`
+          : `p99=${p99.toFixed(3)}ms budget=${budget.toFixed(3)}ms samples=${sampleCount} gate="${benchmark.gateText}"`,
     });
 
     await browser.close();

@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "diagnostics": {
     "GOV-SPEC-001": {
       "severity": "BLOCKED",
@@ -1018,6 +1018,8 @@
       "severity": "FAIL",
       "title": "Governance check failed",
       "why_failed": "A required command obligation exited non-zero.",
+      "root_cause_reminder": "Solve the real cause. Do not modify gates or assertions just to force PASS.",
+      "operator_escalation": "If remediation reveals a real contract/runtime conflict, pause and request operator guidance.",
       "acceptable_recipes": [
         {
           "id": "RCP-PROC-FIX-GATE",
@@ -1135,6 +1137,39 @@
       "allowed_change_scope": [],
       "forbidden_change_scope": [],
       "recheck_protocol": "npm run gov:commit -- --spec <spec> -m \"...\""
+    },
+    "GOV-PROC-007": {
+      "severity": "BLOCKED",
+      "title": "Repeated blocking failure requires operator guidance",
+      "why_failed": "The same blocking command diagnostic repeated across remediation attempts; likely contract/runtime conflict or unresolved root cause.",
+      "root_cause_reminder": "Do not keep patching around the symptom. Stop and escalate with evidence.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROC-ESCALATE-OPERATOR",
+          "summary": "Create operator-guidance artifact with logs and conflict rationale, request decision, then continue with that direction."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Continuing blind retries with same failing command",
+        "Relaxing gate semantics to make text say PASS",
+        "Direct git commit while unresolved"
+      ],
+      "required_evidence": [
+        "docs/qc/proofs/<task-id>/operator-guidance.md",
+        "failing command log(s)",
+        "diagnostic repetition context"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**",
+        "docs/contracts/**",
+        "docs/qc/compiler/**",
+        "docs/qc/scripts/**",
+        "CLAUDE.md"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "request operator guidance, apply approved direction, then rerun npm run gov:check -- --spec <same-spec>"
     }
   }
 }

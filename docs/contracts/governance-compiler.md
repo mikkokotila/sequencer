@@ -53,6 +53,31 @@ When verdict is not `PASS`, CA must follow this loop:
 
 Direct commit attempts before `PASS` are non-compliant.
 
+Root-cause rule:
+
+1. Do not optimize for gate text or bypass behavior.
+2. Do not weaken gates to make failures disappear.
+3. Fix the underlying cause and prove it with deterministic evidence.
+
+## Operator Escalation Protocol
+
+If the same blocking diagnostic repeats and remediation reveals an actual contract/runtime conflict (for example, an environment cannot satisfy a contract as written), CA must pause and escalate instead of inventing workarounds.
+
+Compiler enforces this with `GOV-PROC-007` when repeated gate failures are detected for the same task/spec/command window.
+
+Required escalation artifact:
+
+1. `docs/qc/proofs/<task-id>/operator-guidance.md`
+
+Artifact must include:
+
+1. repeated diagnostic code(s) and failing command(s)
+2. exact evidence/log paths
+3. why root-cause remediation is blocked in current environment
+4. requested operator decision (policy/profile/infrastructure direction)
+
+Until operator guidance is provided, task remains non-complete and uncommitted.
+
 ## Anti-Deception Rules
 
 1. Obligation selection is diff-derived, not author-selected.

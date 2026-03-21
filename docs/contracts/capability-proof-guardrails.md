@@ -58,6 +58,7 @@ Default policy for normal product tasks:
 3. `on` must create intended audible effect.
 4. low-end range continuity must be verified with dense near-zero sampling.
 5. defaults must satisfy non-clipping safety limits.
+6. failing gates must be solved at root cause; gate-text workarounds are non-compliant.
 
 ## Required Paths and Templates
 

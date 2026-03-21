@@ -9,6 +9,8 @@ const RULES_PATH = path.join(root, 'docs/qc/compiler/obligation-rules.json');
 const DIAGNOSTICS_PATH = path.join(root, 'docs/qc/compiler/diagnostics.json');
 const COMPILER_LOG_PATH = path.join(root, 'logs/compiler.log');
 const CHAIN_GENESIS_HASH = '0'.repeat(64);
+const REPEATED_FAILURE_LOOKBACK_MS = 6 * 60 * 60 * 1000;
+const REPEATED_FAILURE_PRIOR_THRESHOLD = 2;
 
 function parseArgs(argv) {
   const args = {
@@ -182,6 +184,13 @@ function summarizeVerdict(diagnostics) {
   return 'PASS';
 }
 
+function parseTimestampMs(value) {
+  if (typeof value !== 'string') return null;
+  const ms = Date.parse(value);
+  if (!Number.isFinite(ms)) return null;
+  return ms;
+}
+
 async function ensureDir(dir) {
   await fs.mkdir(dir, { recursive: true });
 }
@@ -197,11 +206,17 @@ async function getCompilerLogChainState(logPath) {
     throw err;
   }
 
+  const parsed = parseCompilerLogContent(raw);
+  return { exists: true, lineCount: parsed.lineCount, lastHash: parsed.lastHash };
+}
+
+function parseCompilerLogContent(raw) {
   const lines = raw
     .split('\n')
     .map((line) => line.trim())
     .filter(Boolean);
 
+  const entries = [];
   let prevHash = CHAIN_GENESIS_HASH;
   for (let i = 0; i < lines.length; i++) {
     let entry;
@@ -226,10 +241,24 @@ async function getCompilerLogChainState(logPath) {
       );
     }
 
+    entries.push(entry);
     prevHash = entry.hash;
   }
 
-  return { exists: true, lineCount: lines.length, lastHash: prevHash };
+  return { entries, lineCount: lines.length, lastHash: prevHash };
+}
+
+async function readCompilerLogEntries(logPath) {
+  let raw = '';
+  try {
+    raw = await fs.readFile(logPath, 'utf8');
+  } catch (err) {
+    if (err && typeof err === 'object' && 'code' in err && err.code === 'ENOENT') {
+      return [];
+    }
+    throw err;
+  }
+  return parseCompilerLogContent(raw).entries;
 }
 
 async function appendCompilerAuditLog(entries) {
@@ -316,6 +345,8 @@ class CompilerContext {
       severity: 'FAIL',
       title: 'Unknown diagnostic',
       why_failed: 'No diagnostic metadata registered for this code.',
+      root_cause_reminder: 'Solve root cause. Avoid workaround edits.',
+      operator_escalation: null,
       acceptable_recipes: [],
       disallowed_workarounds: [],
       required_evidence: [],
@@ -330,6 +361,8 @@ class CompilerContext {
       title: template.title,
       message: message || template.title,
       why_failed: template.why_failed,
+      root_cause_reminder: template.root_cause_reminder || null,
+      operator_escalation: template.operator_escalation || null,
       acceptable_recipes: template.acceptable_recipes,
       disallowed_workarounds: template.disallowed_workarounds,
       required_evidence: template.required_evidence,
@@ -364,6 +397,67 @@ class CompilerContext {
       tree_sha: this.treeSha,
       ...extra,
     });
+  }
+}
+
+async function detectRepeatedBlockingFailures(ctx) {
+  if (!ctx.taskId || !ctx.specPath) return;
+
+  const currentFailures = ctx.diagnostics.filter(
+    (d) => d.code === 'GOV-PROC-002' && typeof d.context?.command === 'string' && d.context.command.trim() !== '',
+  );
+  if (currentFailures.length === 0) return;
+
+  let entries = [];
+  try {
+    entries = await readCompilerLogEntries(COMPILER_LOG_PATH);
+  } catch (err) {
+    ctx.addAuditEvent(
+      'WARN',
+      'diagnostic',
+      `Could not inspect compiler.log for repeated-failure detection: ${err instanceof Error ? err.message : String(err)}`,
+      { code: 'GOV-PROC-007', severity: 'WARN', context: {} },
+    );
+    return;
+  }
+
+  const now = Date.now();
+  const emitted = new Set();
+  for (const diagnostic of currentFailures) {
+    const command = diagnostic.context.command.trim();
+    const key = `GOV-PROC-002|${command}`;
+    if (!command || emitted.has(key)) continue;
+
+    const priorAttempts = entries.filter((entry) => {
+      if (entry.category !== 'diagnostic') return false;
+      if (entry.code !== 'GOV-PROC-002') return false;
+      if (entry.task_id !== ctx.taskId) return false;
+      if ((entry.spec_path || '') !== ctx.specPath) return false;
+
+      const entryCommand =
+        entry && typeof entry === 'object' && entry.context && typeof entry.context.command === 'string'
+          ? entry.context.command.trim()
+          : '';
+      if (entryCommand !== command) return false;
+
+      const ts = parseTimestampMs(entry.ts);
+      if (ts === null) return true;
+      return now - ts <= REPEATED_FAILURE_LOOKBACK_MS;
+    }).length;
+
+    if (priorAttempts >= REPEATED_FAILURE_PRIOR_THRESHOLD) {
+      ctx.addDiagnostic(
+        'GOV-PROC-007',
+        `Repeated failure on ${command} (${priorAttempts + 1} attempts including current run). Request operator guidance before further edits.`,
+        {
+          repeated_code: 'GOV-PROC-002',
+          command,
+          prior_attempts: priorAttempts,
+          lookback_hours: REPEATED_FAILURE_LOOKBACK_MS / (60 * 60 * 1000),
+        },
+      );
+      emitted.add(key);
+    }
   }
 }
 
@@ -1054,6 +1148,7 @@ async function phaseExecute(ctx) {
 
 async function phaseVerify(ctx) {
   const phaseName = 'verify';
+  await detectRepeatedBlockingFailures(ctx);
   const verdict = summarizeVerdict(ctx.diagnostics);
   ctx.addPhase(phaseName, verdict, `Final verdict: ${verdict}`);
 }
@@ -1148,6 +1243,12 @@ function printSummary(ctx, attestationResult) {
         const recipes = diagnostic.acceptable_recipes.map((r) => `${r.id}: ${r.summary}`).join(' || ');
         console.log(`  acceptable: ${recipes}`);
       }
+      if (diagnostic.root_cause_reminder) {
+        console.log(`  reminder: ${diagnostic.root_cause_reminder}`);
+      }
+      if (diagnostic.operator_escalation) {
+        console.log(`  escalate: ${diagnostic.operator_escalation}`);
+      }
       if (diagnostic.disallowed_workarounds?.length) {
         console.log(`  disallowed: ${diagnostic.disallowed_workarounds.join(' || ')}`);
       }
@@ -1162,9 +1263,10 @@ function printSummary(ctx, attestationResult) {
   if (ctx.diagnostics.length > 0) {
     console.log('\nrequired remediation loop');
     console.log('1. Read the highest-severity diagnostic and pick one acceptable recipe.');
-    console.log('2. Apply only that remediation; do not bypass with direct commit.');
+    console.log('2. Apply only root-cause remediation; do not bypass with direct commit.');
     console.log('3. Re-run: npm run gov:check -- --spec <same-spec>');
-    console.log('4. Repeat until final verdict is PASS, then run gov:commit.');
+    console.log('4. If conflict is truly unresolvable in-task, request operator guidance with evidence.');
+    console.log('5. Repeat until final verdict is PASS, then run gov:commit.');
   }
 
   if (attestationResult?.verdictPath && !ctx.args.noWrite) {

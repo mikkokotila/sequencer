@@ -36,8 +36,10 @@ Before commit, ensure proof artifacts exist:
 3. If compiler verdict is `FAIL`/`BLOCKED`/`ERROR`:
    - read the highest-severity diagnostic
    - apply one listed acceptable recipe
+   - solve root cause only (no bypass/workaround edits)
    - rerun `gov:check` with the same spec
    - repeat until compiler verdict is `PASS`
+   - if repeated remediation exposes a real contract/runtime conflict that cannot be resolved in-task, stop and ask operator for guidance before any further edits or commit attempts
 4. If and only if compiler verdict is `PASS`, commit with:
    - `npm run gov:commit -- --spec docs/qc/specs/<task-id>.task.spec.json -m "type(scope): description"`
 

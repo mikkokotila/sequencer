@@ -215,18 +215,17 @@ async function checkBenchmarkHarnessDeterminism() {
   );
 }
 
-async function checkBenchmarkProcessorMeaningfulTiming() {
-  const text = await read('src/engine/worklets/benchmark-processor.ts');
-  const hasNearNoopWindow =
-    text.includes('const t0 = performance.now();') &&
-    text.includes('const elapsed = performance.now() - t0;') &&
-    text.includes('void blockSize;');
+async function checkBenchmarkProcessorRemoved() {
+  // The fake benchmark-processor.ts was removed because it measured nothing
+  // (performance.now() immediately before and after with no work in between).
+  // benchmark.html uses its own real stress-test chain instead.
+  const exists = await fs.access(path.join(root, 'src/engine/worklets/benchmark-processor.ts')).then(() => true).catch(() => false);
   record(
-    !hasNearNoopWindow,
-    'Benchmark processor timing window is meaningful',
-    hasNearNoopWindow
-      ? 'Detected near-no-op timing window in benchmark processor.'
-      : 'No near-no-op timing window pattern detected.',
+    !exists,
+    'Fake benchmark processor removed',
+    exists
+      ? 'benchmark-processor.ts still exists — should be deleted.'
+      : 'benchmark-processor.ts correctly removed.',
   );
 }
 
@@ -245,7 +244,7 @@ async function main() {
   await checkNoEmptyStringPaintTypeSentinel();
   await checkNoTransportInnerHtmlTemplate();
   await checkBenchmarkHarnessDeterminism();
-  await checkBenchmarkProcessorMeaningfulTiming();
+  await checkBenchmarkProcessorRemoved();
 
   for (const p of passes) {
     console.log(`PASS | ${p.name} | ${p.detail}`);

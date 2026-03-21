@@ -53,7 +53,7 @@ src/
 │   │   ├── saturation-processor.ts   4x oversampled waveshaper
 │   │   ├── freeverb-processor.ts     Schroeder-Moorer reverb
 │   │   ├── delay-processor.ts        Hermite-interpolated delay line
-│   │   └── benchmark-processor.ts    DSP load measurement
+│   │   └── transformer-processor.ts  Analog core saturation
 │   └── extensions/               Plug-and-play audio processors
 │       ├── registry.ts               Extension chain + SEQ API
 │       ├── vari-mu.ts                Bus compressor (FET/Opto/VCA models)

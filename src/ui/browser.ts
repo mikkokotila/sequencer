@@ -40,6 +40,7 @@ let browserSelected: number | null = null;
 let browserPreviewBuf: AudioBuffer | null = null;
 let browserPreviewBufIdx = -1;
 let previewingIdx = -1;
+let prevPreviewSource: AudioBufferSourceNode | null = null;
 
 // ═══════════════════════════════════════════
 //  Callbacks (set by main/build)
@@ -274,6 +275,15 @@ export function closeBrowser(): void {
   const overlay = document.getElementById('browser-overlay');
   if (overlay) overlay.classList.remove('open');
   previewingIdx = -1;
+  // Stop any playing preview
+  if (prevPreviewSource) {
+    try {
+      prevPreviewSource.stop();
+    } catch {
+      /* already stopped */
+    }
+    prevPreviewSource = null;
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -468,7 +478,11 @@ export async function previewSample(i: number): Promise<void> {
       else setVocalBuf(buffer);
     } else {
       // Simple playback: always play on click (repeatable), soft cutoff previous
-      playPreviewSample(buffer, browserType === 'melody' ? 1 : undefined);
+      prevPreviewSource = playPreviewSample(
+        buffer,
+        browserType === 'melody' ? 1 : undefined,
+        prevPreviewSource,
+      );
     }
   } catch (e) {
     console.error('Preview failed:', e);

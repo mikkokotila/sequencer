@@ -140,6 +140,7 @@
         .drum-track.drag-over,.vocal-track.drag-over,.melody-track.drag-over { background:rgba(74,138,254,0.06); }
         .step-grid { display:flex; gap:6px; flex:1; }
         .bar-group { display:flex; gap:1px; flex:1; }
+        .bar-group + .bar-group { border-left:1px solid rgba(255,255,255,0.06); padding-left:5px; }
         .step-cell {
             flex:1; min-width:0; height:28px; border-radius:3px; cursor:pointer;
             transition:background 0.08s,box-shadow 0.15s,transform 0.1s; position:relative;

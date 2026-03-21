@@ -58,11 +58,13 @@ async function init(): Promise<void> {
   // 7. Init audio + extensions + load manifest (parallel)
   await Promise.all([openDB(), loadManifest()]);
 
-  // 8. Init audio, load worklets, extensions, engine processing, and playhead
+  // 8. Init audio, load worklets, engine processing, extensions, and playhead
+  // Engine processing MUST init before extensions so that setFinalOutput()
+  // points to the engine chain BEFORE the extension chain is built.
   initAudio();
   await loadWorklets();
+  initEngineProcessing();
   initExtensions();
-  initEngineProcessing(); // visualization analysers only
   initPlayhead();
 
   // 9. Load last song or create default

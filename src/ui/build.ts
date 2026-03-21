@@ -58,6 +58,7 @@ import {
 } from './cells';
 import { setupPainting, replicateTrack, clearSelection } from './painting';
 import { openBrowser, wireBrowserEvents, setupDragDrop, closeBrowser } from './browser';
+import { toggle as toggleEnginePanel, isEngineOpen } from './engine-panel';
 import { togglePlay, stopPlayback, isPhraseEmpty, fillWithPrev } from '../engine/scheduler';
 import {
   scheduleSave,
@@ -323,7 +324,9 @@ export function buildUI(): void {
     <div class="song-ctrl"><div id="song-name" class="song-name" title="Double-click to rename">Untitled</div><div class="song-btns"><button class="tb" id="song-new" title="New Song"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><button class="tb" id="song-del" title="Delete Song"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M3 4.5h10M5.5 4.5V3a1 1 0 011-1h3a1 1 0 011 1v1.5M4.5 4.5l.7 8.5a1 1 0 001 .9h3.6a1 1 0 001-.9l.7-8.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div>
     <div class="file-btns"><button class="tb" id="save-btn" title="Export Pattern"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3M3 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="tb" id="load-btn" title="Import Pattern"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 10V2M5 5l3-3 3 3M3 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
     <div class="bpm-ctrl"><label>BPM</label><input type="range" id="bpm-range" min="40" max="220" value="${bpm}"><input type="number" id="bpm-num" min="40" max="220" value="${bpm}"></div>
-    <div class="ext-icons" id="ext-icons"></div>`;
+    <div class="ext-icons" id="ext-icons"></div>
+    <div class="engine-divider"></div>
+    <button class="ext-icon-btn" id="engine-icon-btn" title="Engine Control Panel"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/></svg></button>`;
   app.appendChild(transport);
 
   // ── Drums ──
@@ -603,6 +606,17 @@ export function buildUI(): void {
     songPane.appendChild(slot);
   }
   document.body.appendChild(songPane);
+
+  // Engine control panel icon
+  const engineBtn = document.getElementById('engine-icon-btn');
+  if (engineBtn) engineBtn.onclick = () => toggleEnginePanel();
+
+  // Escape also closes engine panel
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.code === 'Escape' && isEngineOpen()) {
+      toggleEnginePanel();
+    }
+  });
 
   // Set up painting interaction
   setupPainting();

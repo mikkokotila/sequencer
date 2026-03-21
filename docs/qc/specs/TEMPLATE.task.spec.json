@@ -1,0 +1,43 @@
+{
+  "task_id": "YYYYMMDD-short-name",
+  "task_type": "feature",
+  "capability": {
+    "summary": "One-sentence slice scope",
+    "in_scope": [
+      "src/ui/engine-panel.ts"
+    ],
+    "out_of_scope": [
+      "src/engine/worklets/**"
+    ],
+    "controls": [
+      {
+        "id": "engine.drive",
+        "default": 0,
+        "range": [0, 100],
+        "unit": "percent",
+        "curve": "custom-v1",
+        "off_semantics": "transparent",
+        "on_semantics": "audible"
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:kick_01",
+      "builtin:snare_01"
+    ],
+    "seed": "fixed-seed-v1",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false
+  }
+}

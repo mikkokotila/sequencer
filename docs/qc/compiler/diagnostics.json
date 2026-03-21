@@ -1,0 +1,1080 @@
+{
+  "version": "1.0.0",
+  "diagnostics": {
+    "GOV-SPEC-001": {
+      "severity": "BLOCKED",
+      "title": "Missing task spec",
+      "why_failed": "Compiler cannot bind obligations without a declared capability/proof/guardrails spec.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-SPEC-CREATE",
+          "summary": "Create docs/qc/specs/<task-id>.task.spec.json from template with all required fields."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Running compiler without --spec",
+        "Reusing another task's spec without updating task_id and scope"
+      ],
+      "required_evidence": [
+        "task.spec.json"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/specs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec docs/qc/specs/<task-id>.task.spec.json"
+    },
+    "GOV-SPEC-002": {
+      "severity": "BLOCKED",
+      "title": "Invalid task spec schema",
+      "why_failed": "Spec JSON is malformed or missing required schema keys.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-SPEC-FIX-SCHEMA",
+          "summary": "Fix schema violations reported by compiler and rerun."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Deleting failing fields to silence parser",
+        "Downgrading schema checks in compiler policy"
+      ],
+      "required_evidence": [
+        "validated task.spec.json"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/specs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-SPEC-003": {
+      "severity": "BLOCKED",
+      "title": "Missing control truth table",
+      "why_failed": "Spec omitted control semantics required for deterministic behavior proof.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-SPEC-CONTROL-TABLE",
+          "summary": "Add controls[] entries with default/range/off_semantics/on_semantics."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Replacing controls list with free text",
+        "Marking control obligations N/A without diff support"
+      ],
+      "required_evidence": [
+        "capability.controls[]"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/specs/**"
+      ],
+      "forbidden_change_scope": [
+        "tests/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-SPEC-004": {
+      "severity": "BLOCKED",
+      "title": "Missing deterministic fixtures",
+      "why_failed": "Proof section is missing fixed fixtures and seed used for deterministic reruns.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-SPEC-FIXTURES",
+          "summary": "Declare built-in fixtures and fixed seed in proof.fixtures/proof.seed."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Using random fixture selection",
+        "Using runtime-generated seed"
+      ],
+      "required_evidence": [
+        "proof.fixtures",
+        "proof.seed"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/specs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-SPEC-005": {
+      "severity": "FAIL",
+      "title": "Governance and product changes mixed",
+      "why_failed": "task_type=governance-change must be isolated from product implementation files.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-SPLIT-CHANGES",
+          "summary": "Split governance and product changes into separate tasks/commits/specs."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Marking product files as out_of_scope while still staged",
+        "Relaxing policy freeze in same task"
+      ],
+      "required_evidence": [
+        "separate staged diff per task"
+      ],
+      "allowed_change_scope": [
+        "docs/contracts/**",
+        "docs/qc/**",
+        "AGENTS.md",
+        "CLAUDE.md",
+        "package.json",
+        ".husky/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**",
+        "tests/**",
+        "e2e/**"
+      ],
+      "recheck_protocol": "restage split slices then run gov:check for each"
+    },
+    "GOV-SPEC-006": {
+      "severity": "BLOCKED",
+      "title": "Guardrails missing",
+      "why_failed": "Spec must explicitly declare skip/fixme/contract-edit guardrails.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-SPEC-GUARDRAILS",
+          "summary": "Set guardrails.allow_fixme=false and allow_skip=false unless governance-approved."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Leaving guardrails empty",
+        "Using implicit defaults"
+      ],
+      "required_evidence": [
+        "guardrails object"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/specs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-BIND-001": {
+      "severity": "FAIL",
+      "title": "Unbound changed file",
+      "why_failed": "Changed file has no contract binding in obligation rules.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-BIND-ADD-RULE",
+          "summary": "Add explicit path binding and obligations for the file category in obligation rules."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Ignoring unbound files",
+        "Marking task as docs-only while staging code"
+      ],
+      "required_evidence": [
+        "binding rule update or restaged file set"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/compiler/obligation-rules.json"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-BIND-002": {
+      "severity": "FAIL",
+      "title": "Audio change without audio obligations",
+      "why_failed": "Audio-impacting diff requires audio gates and audio oracle evidence.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-BIND-AUDIO-OBLIGATIONS",
+          "summary": "Run required audio gates and include oracle artifacts for transparency/safety/continuity."
+        }
+      ],
+      "disallowed_workarounds": [
+        "UI-only verification for audio changes",
+        "Disabling audio gate command"
+      ],
+      "required_evidence": [
+        "audio gate logs",
+        "oracle artifacts"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**",
+        "tests/**",
+        "src/engine/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-BIND-003": {
+      "severity": "FAIL",
+      "title": "Control change without control obligations",
+      "why_failed": "Control mapping changes require control truthfulness oracles.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-BIND-CONTROL-OBLIGATIONS",
+          "summary": "Add control oracles for off/on semantics and low-end continuity."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Replacing behavior checks with DOM class assertions",
+        "Marking control tests N/A"
+      ],
+      "required_evidence": [
+        "control oracle artifacts"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**",
+        "src/ui/**",
+        "src/engine/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-BIND-004": {
+      "severity": "FAIL",
+      "title": "Policy freeze violation",
+      "why_failed": "Governance files were modified by non-governance task type.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-BIND-USE-GOV-TASK",
+          "summary": "Retype task as governance-change or unstage governance files."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Silently editing contracts in product task",
+        "Changing compiler rules to permit this in same task"
+      ],
+      "required_evidence": [
+        "restaged file set"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/specs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/contracts/**",
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-BIND-005": {
+      "severity": "FAIL",
+      "title": "Persistence change without roundtrip obligation",
+      "why_failed": "Persistence diff requires deterministic save/load behavior proof.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-BIND-PERSISTENCE",
+          "summary": "Add persistence_roundtrip oracle artifact bound to tree SHA."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Skipping roundtrip checks",
+        "Using only unit mocks without behavior hash"
+      ],
+      "required_evidence": [
+        "persistence_roundtrip oracle artifact"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**",
+        "src/transport/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-BIND-006": {
+      "severity": "FAIL",
+      "title": "Spec declared scope does not match staged diff",
+      "why_failed": "Staged files are outside capability.in_scope declarations.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-BIND-SCOPE-ALIGN",
+          "summary": "Update in_scope or split staged files into separate scoped task."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Leaving surprise files staged",
+        "Broad wildcard scope with no intent"
+      ],
+      "required_evidence": [
+        "scope alignment"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/specs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-PROOF-001": {
+      "severity": "BLOCKED",
+      "title": "Missing proof manifest",
+      "why_failed": "Required machine proof manifest file is absent.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-MANIFEST",
+          "summary": "Create docs/qc/proofs/<task-id>/proof.manifest.json with required fields."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Only writing narrative markdown proof",
+        "Creating manifest without task/tree binding"
+      ],
+      "required_evidence": [
+        "proof.manifest.json"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-PROOF-002": {
+      "severity": "BLOCKED",
+      "title": "Required suite skipped or fixme present",
+      "why_failed": "Required obligations cannot be skipped or marked fixme.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-NO-SKIP",
+          "summary": "Remove skip/fixme from required suites and provide real pass/fail result."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Marking required suites conditional",
+        "Silencing skip checks in compiler"
+      ],
+      "required_evidence": [
+        "required suite logs with zero skip/fixme"
+      ],
+      "allowed_change_scope": [
+        "tests/**",
+        "e2e/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-PROOF-003": {
+      "severity": "FAIL",
+      "title": "Non-deterministic proof run",
+      "why_failed": "Repeated run with same seed/fixtures produced mismatched hash.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-DET",
+          "summary": "Remove randomness and bind run to fixed seed and fixture set."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Overwriting one run hash with another",
+        "Expanding tolerances without approval"
+      ],
+      "required_evidence": [
+        "dual-run hash report"
+      ],
+      "allowed_change_scope": [
+        "tests/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "rerun deterministic harness twice and compare hashes"
+    },
+    "GOV-PROOF-004": {
+      "severity": "BLOCKED",
+      "title": "Required proof artifact missing",
+      "why_failed": "A required oracle artifact file is missing.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-ADD-ARTIFACT",
+          "summary": "Generate the missing oracle artifact from harness and store in required path."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Marking missing artifact as assumed pass",
+        "Backfilling with hand-written metrics"
+      ],
+      "required_evidence": [
+        "oracle artifact file"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-PROOF-005": {
+      "severity": "FAIL",
+      "title": "Proof artifact hash mismatch",
+      "why_failed": "Artifact declared hash does not match raw evidence content.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-REGENERATE",
+          "summary": "Regenerate artifact and recompute hash from raw output."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Editing hash manually",
+        "Disabling hash verification"
+      ],
+      "required_evidence": [
+        "raw file",
+        "matching sha256 field"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-PROOF-006": {
+      "severity": "FAIL",
+      "title": "Artifact tree mismatch",
+      "why_failed": "Artifact tree_sha does not match staged tree being validated.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-BIND-TREE",
+          "summary": "Regenerate proof artifacts for current staged tree and update tree_sha."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Copying artifacts from previous commit",
+        "Omitting tree_sha field"
+      ],
+      "required_evidence": [
+        "artifact tree_sha equal to compiler tree_sha"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "regenerate proofs after final staging"
+    },
+    "GOV-PROOF-007": {
+      "severity": "BLOCKED",
+      "title": "Mutation checks missing",
+      "why_failed": "Critical control tasks require mutation-fail evidence.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-MUTATION",
+          "summary": "Run mutation scenario and attach failing mutant evidence in oracle artifact."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Marking mutation test optional",
+        "Using synthetic pass result"
+      ],
+      "required_evidence": [
+        "mutation oracle artifact"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**",
+        "tests/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "rerun harness with mutation mode"
+    },
+    "GOV-PROOF-008": {
+      "severity": "BLOCKED",
+      "title": "Proof manifest missing required fields",
+      "why_failed": "Manifest does not include mandatory metadata or gate matrix.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROOF-MANIFEST-FIELDS",
+          "summary": "Populate manifest fields from template and include gate outcomes and contract matrix."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Leaving fields blank",
+        "Using free-form text without matrix"
+      ],
+      "required_evidence": [
+        "manifest with required keys"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-AUDIO-001": {
+      "severity": "FAIL",
+      "title": "Off state is not transparent",
+      "why_failed": "Bypass/off output differs from baseline beyond allowed epsilon.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-AUDIO-TRUE-BYPASS",
+          "summary": "Implement true bypass topology or transparent crossfade path."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Setting neutral params while DSP still alters signal",
+        "Relaxing epsilon threshold"
+      ],
+      "required_evidence": [
+        "off_transparent oracle artifact"
+      ],
+      "allowed_change_scope": [
+        "src/engine/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "run off_transparent oracle and verify delta <= max_abs_error"
+    },
+    "GOV-AUDIO-002": {
+      "severity": "FAIL",
+      "title": "On state has no audible effect",
+      "why_failed": "Enabled state did not cross minimum audible delta threshold.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-AUDIO-ENABLE-PATH",
+          "summary": "Fix control wiring so enabled path modulates intended processing."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Inflating UI state assertions",
+        "Changing threshold in same product task"
+      ],
+      "required_evidence": [
+        "on_audible oracle artifact"
+      ],
+      "allowed_change_scope": [
+        "src/engine/**",
+        "src/ui/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "run on_audible oracle and verify delta >= min_delta"
+    },
+    "GOV-AUDIO-003": {
+      "severity": "FAIL",
+      "title": "Low-end 0->1% explosion",
+      "why_failed": "Near-zero control sweep exceeded continuity budget.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-AUDIO-CURVE-BOUNDED",
+          "summary": "Apply bounded curve mapping near zero and verify monotonic increments."
+        },
+        {
+          "id": "RCP-AUDIO-CURVE-SMOOTHED",
+          "summary": "Use smoothing or log taper that preserves low-end continuity."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Skipping low-end sample points",
+        "Adding limiter only to hide mapping error"
+      ],
+      "required_evidence": [
+        "low_end_continuity oracle artifact"
+      ],
+      "allowed_change_scope": [
+        "src/engine/**",
+        "src/ui/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**",
+        "docs/contracts/**"
+      ],
+      "recheck_protocol": "run low_end_continuity oracle with dense points (0,0.25,0.5,1,2,5,10..100)"
+    },
+    "GOV-AUDIO-004": {
+      "severity": "FAIL",
+      "title": "Control response non-monotonic",
+      "why_failed": "Measured effect curve reverses direction unexpectedly.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-AUDIO-MONOTONIC",
+          "summary": "Correct transfer mapping to preserve declared monotonic trend."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Removing problematic sweep points",
+        "Declaring curve custom without documenting expected inversions"
+      ],
+      "required_evidence": [
+        "control_monotonicity oracle artifact"
+      ],
+      "allowed_change_scope": [
+        "src/engine/**",
+        "src/ui/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "run monotonicity oracle and verify no forbidden inversion"
+    },
+    "GOV-AUDIO-005": {
+      "severity": "FAIL",
+      "title": "Clip guard violated",
+      "why_failed": "Render introduced clipping or exceeded peak budget.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-AUDIO-GAIN-STAGING",
+          "summary": "Reduce default gain staging and enforce bounded internal levels."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Normalizing output after clipping",
+        "Raising allowed peak threshold"
+      ],
+      "required_evidence": [
+        "clip_guard oracle artifact"
+      ],
+      "allowed_change_scope": [
+        "src/engine/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/contracts/**",
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "run clip_guard oracle and verify clip_count==0 and peak<=max_peak"
+    },
+    "GOV-AUDIO-006": {
+      "severity": "FAIL",
+      "title": "Unsafe default audio profile",
+      "why_failed": "Defaults violate loudness/peak safety thresholds.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-AUDIO-DEFAULTS-SAFE",
+          "summary": "Tune default params to conservative values and remeasure."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Changing threshold profile in same task",
+        "Marking defaults as intentionally aggressive without approval"
+      ],
+      "required_evidence": [
+        "default_safety oracle artifact"
+      ],
+      "allowed_change_scope": [
+        "src/engine/**",
+        "src/ui/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/contracts/**",
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "run default_safety oracle and compare against profile thresholds"
+    },
+    "GOV-AUDIO-007": {
+      "severity": "FAIL",
+      "title": "Deterministic render hash mismatch",
+      "why_failed": "Render hash changed between repeated deterministic runs.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-AUDIO-REMOVE-RANDOMNESS",
+          "summary": "Eliminate random/time-dependent sources in render path."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Ignoring hash mismatch",
+        "Hashing downsampled output only"
+      ],
+      "required_evidence": [
+        "render hash report"
+      ],
+      "allowed_change_scope": [
+        "src/engine/**",
+        "tests/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "run deterministic render twice with same fixtures and compare hashes"
+    },
+    "GOV-AUDIO-008": {
+      "severity": "FAIL",
+      "title": "Bypass is placebo CPU path",
+      "why_failed": "DSP remains active in bypass path and violates bypass CPU policy.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-AUDIO-CPU-BYPASS",
+          "summary": "Use true bypass/disconnect or low-cost transparent branch with verified CPU delta."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Setting neutral params only",
+        "Masking CPU load with coarse benchmark"
+      ],
+      "required_evidence": [
+        "bypass_cpu oracle artifact"
+      ],
+      "allowed_change_scope": [
+        "src/engine/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "run bypass_cpu oracle and verify active_vs_bypass CPU delta"
+    },
+    "GOV-CTRL-001": {
+      "severity": "FAIL",
+      "title": "Control not bound to engine",
+      "why_failed": "UI control changed but no observable engine parameter binding evidence.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-CTRL-BIND",
+          "summary": "Wire control through typed engine API and prove effect with control oracle."
+        }
+      ],
+      "disallowed_workarounds": [
+        "UI-only tests",
+        "Local placeholder variables not wired to audio"
+      ],
+      "required_evidence": [
+        "control_binding oracle artifact"
+      ],
+      "allowed_change_scope": [
+        "src/ui/**",
+        "src/engine/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "run control_binding oracle and verify parameter telemetry changes"
+    },
+    "GOV-CTRL-002": {
+      "severity": "FAIL",
+      "title": "Toggle truthfulness mismatch",
+      "why_failed": "Toggle UI state does not match declared off/on audio semantics.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-CTRL-TOGGLE-TRUTH",
+          "summary": "Align toggle state with engine bypass/enable behavior and prove off/on oracles."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Only changing CSS class toggling",
+        "Suppressing toggle-specific obligations"
+      ],
+      "required_evidence": [
+        "off_transparent oracle",
+        "on_audible oracle"
+      ],
+      "allowed_change_scope": [
+        "src/ui/**",
+        "src/engine/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "run toggle truthfulness oracle pack"
+    },
+    "GOV-CTRL-003": {
+      "severity": "FAIL",
+      "title": "Control endpoint behavior invalid",
+      "why_failed": "Control min/max endpoints fail declared expected behavior.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-CTRL-ENDPOINTS",
+          "summary": "Fix endpoint mapping and verify endpoint oracle metrics."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Shrinking visible range in UI only",
+        "Changing defaults to avoid endpoint checks"
+      ],
+      "required_evidence": [
+        "endpoint oracle artifact"
+      ],
+      "allowed_change_scope": [
+        "src/ui/**",
+        "src/engine/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "run endpoint oracle across declared min/max"
+    },
+    "GOV-CTRL-004": {
+      "severity": "FAIL",
+      "title": "Runtime default mismatch",
+      "why_failed": "Runtime defaults differ from capability declaration.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-CTRL-DEFAULT-ALIGN",
+          "summary": "Align declared default and runtime default or split into migration task."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Changing spec defaults only",
+        "Masking default mismatch in UI initialization"
+      ],
+      "required_evidence": [
+        "default_alignment oracle artifact"
+      ],
+      "allowed_change_scope": [
+        "src/ui/**",
+        "src/engine/**",
+        "docs/qc/specs/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "run default_alignment oracle and compare declared/runtime values"
+    },
+    "GOV-CTRL-005": {
+      "severity": "BLOCKED",
+      "title": "UI-only evidence submitted",
+      "why_failed": "Control proof bundle lacks audio-behavior evidence.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-CTRL-AUDIO-PROOF",
+          "summary": "Add audio oracles to prove control behavior, not only DOM state."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Asserting visual toggle equals functional success",
+        "Marking audio oracle N/A for control task"
+      ],
+      "required_evidence": [
+        "audio behavior oracle artifacts"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**",
+        "tests/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "run required control+audio oracle set"
+    },
+    "GOV-CTRL-006": {
+      "severity": "FAIL",
+      "title": "Persistence control mismatch",
+      "why_failed": "Control state after save/load does not match pre-save state.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-CTRL-PERSISTENCE",
+          "summary": "Fix serialization/deserialization and prove roundtrip hash equality."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Force-resetting controls on load",
+        "Ignoring non-default state mismatches"
+      ],
+      "required_evidence": [
+        "persistence_roundtrip oracle artifact"
+      ],
+      "allowed_change_scope": [
+        "src/transport/**",
+        "src/engine/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "run persistence_roundtrip oracle with pre/post behavior hash"
+    },
+    "GOV-PERF-002": {
+      "severity": "FAIL",
+      "title": "Worklet p99 budget exceeded",
+      "why_failed": "Benchmark oracle reported p99 process duration above block budget.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PERF-P99",
+          "summary": "Optimize processor path or reduce default workload until p99 <= budget."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Timing a no-op benchmark path",
+        "Raising p99 threshold in same product task"
+      ],
+      "required_evidence": [
+        "benchmark_worklet_budget oracle artifact"
+      ],
+      "allowed_change_scope": [
+        "src/engine/**",
+        "tests/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**",
+        "docs/contracts/**"
+      ],
+      "recheck_protocol": "run benchmark_worklet_budget oracle and verify p99 <= block budget"
+    },
+    "GOV-PROC-001": {
+      "severity": "BLOCKED",
+      "title": "No staged changes",
+      "why_failed": "Compiler validates staged content; nothing is staged.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROC-STAGE",
+          "summary": "Stage intended files, then run compiler again."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Running compiler against unstaged working tree and committing later"
+      ],
+      "required_evidence": [
+        "staged diff"
+      ],
+      "allowed_change_scope": [
+        "git index"
+      ],
+      "forbidden_change_scope": [],
+      "recheck_protocol": "git add <files> && npm run gov:check -- --spec <spec>"
+    },
+    "GOV-PROC-002": {
+      "severity": "FAIL",
+      "title": "Governance check failed",
+      "why_failed": "A required command obligation exited non-zero.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROC-FIX-GATE",
+          "summary": "Fix root cause in code/tests; rerun failed command obligation."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Ignoring non-zero gate output",
+        "Removing failing gate from obligation rules in same task"
+      ],
+      "required_evidence": [
+        "failed command log",
+        "subsequent passing rerun log"
+      ],
+      "allowed_change_scope": [
+        "src/**",
+        "tests/**",
+        "e2e/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/compiler/**"
+      ],
+      "recheck_protocol": "rerun npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-PROC-003": {
+      "severity": "ERROR",
+      "title": "Compiler internal error",
+      "why_failed": "Compiler crashed before completing all phases.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROC-COMPILER-FIX",
+          "summary": "Fix compiler/runtime issue in a governance-change task and rerun."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Treating crash as pass",
+        "Skipping compiler for this task"
+      ],
+      "required_evidence": [
+        "error stack and reproduction"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/scripts/**",
+        "docs/qc/compiler/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-PROC-004": {
+      "severity": "FAIL",
+      "title": "Attestation mismatch",
+      "why_failed": "Commit wrapper expected PASS verdict but received non-PASS or mismatched task/tree.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROC-RECHECK-COMMIT",
+          "summary": "Rerun compiler, ensure PASS, then commit with matching spec and staged tree."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Hand-editing verdict.json",
+        "Committing without wrapper/trailers"
+      ],
+      "required_evidence": [
+        "verdict.json bound to current tree"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "npm run gov:commit -- --spec <spec> -m \"<message>\""
+    },
+    "GOV-PROC-005": {
+      "severity": "BLOCKED",
+      "title": "Missing commit message for gov:commit",
+      "why_failed": "Commit wrapper requires explicit conventional commit message.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROC-COMMIT-MSG",
+          "summary": "Provide -m \"type(scope): description\" to gov:commit."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Using empty message",
+        "Invoking interactive editor through wrapper"
+      ],
+      "required_evidence": [
+        "commit message argument"
+      ],
+      "allowed_change_scope": [],
+      "forbidden_change_scope": [],
+      "recheck_protocol": "npm run gov:commit -- --spec <spec> -m \"type(scope): description\""
+    },
+    "GOV-PROC-006": {
+      "severity": "BLOCKED",
+      "title": "Missing commit attestation trailer",
+      "why_failed": "Commit must include Gov-Task and Gov-Attestation trailers.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-PROC-USE-WRAPPER",
+          "summary": "Commit through gov:commit so trailers are attached automatically."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Manual commit without trailers",
+        "Post-hoc trailer edits"
+      ],
+      "required_evidence": [
+        "commit trailers"
+      ],
+      "allowed_change_scope": [],
+      "forbidden_change_scope": [],
+      "recheck_protocol": "npm run gov:commit -- --spec <spec> -m \"...\""
+    }
+  }
+}

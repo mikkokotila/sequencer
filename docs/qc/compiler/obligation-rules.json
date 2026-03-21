@@ -1,0 +1,195 @@
+{
+  "version": "1.0.0",
+  "task_types": [
+    "feature",
+    "bugfix",
+    "refactor",
+    "governance-change",
+    "qc"
+  ],
+  "path_groups": {
+    "governance": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "docs/contracts/**",
+      "docs/qc/**",
+      "package.json",
+      "package-lock.json",
+      ".husky/**"
+    ],
+    "product": [
+      "src/**",
+      "tests/**",
+      "e2e/**",
+      "index.html",
+      "sequencer.html"
+    ],
+    "audio": [
+      "src/engine/**",
+      "src/engine/worklets/**",
+      "src/engine/extensions/**"
+    ],
+    "controls": [
+      "src/ui/**",
+      "src/engine/extensions/**",
+      "src/engine/audio.ts",
+      "src/engine/scheduler.ts"
+    ],
+    "persistence": [
+      "src/transport/persistence.ts",
+      "src/transport/song.ts",
+      "src/state.ts"
+    ],
+    "benchmark": [
+      "tests/benchmark.html",
+      "src/engine/worklets/**"
+    ]
+  },
+  "mandatory_spec_oracles": [
+    "off_transparent",
+    "on_audible"
+  ],
+  "required_oracles": {
+    "audio": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety"
+    ],
+    "controls": [
+      "control_binding",
+      "control_monotonicity",
+      "low_end_continuity",
+      "mutation_guard"
+    ],
+    "persistence": [
+      "persistence_roundtrip"
+    ],
+    "benchmark": [
+      "benchmark_worklet_budget"
+    ]
+  },
+  "command_obligations": {
+    "O-CI": {
+      "label": "CI",
+      "command": "npm run ci",
+      "failure_code": "GOV-PROC-002"
+    },
+    "O-E2E": {
+      "label": "E2E",
+      "command": "npm run e2e",
+      "failure_code": "GOV-PROC-002"
+    },
+    "O-GATE-CONTRACTS": {
+      "label": "Contract static gates",
+      "command": "npm run gate:contracts",
+      "failure_code": "GOV-PROC-002"
+    },
+    "O-GATE-ARCH": {
+      "label": "Architecture gates",
+      "command": "npm run gate:architecture",
+      "failure_code": "GOV-PROC-002"
+    },
+    "O-AUDIO-GATES": {
+      "label": "Audio browser gates",
+      "command": "npm run audio:gates",
+      "failure_code": "GOV-PROC-002"
+    }
+  },
+  "oracle_artifact": {
+    "base_dir": "docs/qc/proofs/{task_id}/oracles",
+    "required_fields": [
+      "oracle_id",
+      "task_id",
+      "tree_sha",
+      "harness_version",
+      "status",
+      "metrics",
+      "raw_artifact",
+      "raw_sha256"
+    ]
+  },
+  "oracle_thresholds": {
+    "off_transparent": {
+      "metric": "max_abs_error",
+      "operator": "<=",
+      "value": 0.0001,
+      "failure_code": "GOV-AUDIO-001"
+    },
+    "on_audible": {
+      "metric": "delta_lufs",
+      "operator": ">=",
+      "value": 0.5,
+      "failure_code": "GOV-AUDIO-002"
+    },
+    "low_end_continuity": {
+      "metric": "max_neighbor_delta_lufs",
+      "operator": "<=",
+      "value": 1.5,
+      "failure_code": "GOV-AUDIO-003"
+    },
+    "clip_guard": {
+      "metric": "clip_count",
+      "operator": "<=",
+      "value": 0,
+      "failure_code": "GOV-AUDIO-005"
+    },
+    "default_safety": {
+      "metric": "peak_dbfs",
+      "operator": "<=",
+      "value": -1.0,
+      "failure_code": "GOV-AUDIO-006"
+    },
+    "control_binding": {
+      "metric": "binding_coverage",
+      "operator": ">=",
+      "value": 1,
+      "failure_code": "GOV-CTRL-001"
+    },
+    "control_monotonicity": {
+      "metric": "unexpected_inversions",
+      "operator": "<=",
+      "value": 0,
+      "failure_code": "GOV-AUDIO-004"
+    },
+    "persistence_roundtrip": {
+      "metric": "state_hash_match",
+      "operator": "==",
+      "value": 1,
+      "failure_code": "GOV-CTRL-006"
+    },
+    "benchmark_worklet_budget": {
+      "metric": "p99_ms",
+      "operator": "<=",
+      "value": 2.67,
+      "failure_code": "GOV-PERF-002"
+    },
+    "mutation_guard": {
+      "metric": "mutant_failures",
+      "operator": ">=",
+      "value": 1,
+      "failure_code": "GOV-PROOF-007"
+    },
+    "bypass_cpu": {
+      "metric": "bypass_cpu_ratio",
+      "operator": "<=",
+      "value": 0.25,
+      "failure_code": "GOV-AUDIO-008"
+    }
+  },
+  "manifest": {
+    "required_fields": [
+      "task_id",
+      "tree_sha",
+      "commit_shas",
+      "required_gates",
+      "contracts",
+      "browser_verification",
+      "artifacts"
+    ]
+  },
+  "scope": {
+    "allow_unmatched_scope": false
+  }
+}

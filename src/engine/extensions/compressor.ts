@@ -6,7 +6,7 @@
  *   - compressor-processor (threshold, ratio, knee, attack, release, makeupGain)
  */
 
-import type { Extension, ExtensionState, NodePair } from '../../types';
+import type { Extension, ExtensionHost, ExtensionState, NodePair } from '../../types';
 import { makeSlider, formatPct } from '../../ui/helpers';
 
 // ═══════════════════════════════════════════
@@ -53,6 +53,8 @@ function setWorkletParam(node: AudioWorkletNode, name: string, value: number): v
 // ═══════════════════════════════════════════
 
 export function createCompressor(): Extension {
+  let hostRef: ExtensionHost | null = null;
+
   let state: CompressorState & { model?: number } = {
     drive: 0.0, // no saturation until user adds it
     compress: 0, // threshold 0dB = no compression until user lowers it
@@ -134,7 +136,8 @@ export function createCompressor(): Extension {
     name: 'Compressor',
     icon: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 12L5 4L8 10L11 2L14 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 
-    init(ctx: AudioContext): NodePair {
+    init(ctx: AudioContext, host: ExtensionHost): NodePair | null {
+      hostRef = host;
       const inputGain = ctx.createGain();
       const saturation = new AudioWorkletNode(ctx, 'saturation-processor');
       const compressor = new AudioWorkletNode(ctx, 'compressor-processor');
@@ -188,7 +191,7 @@ export function createCompressor(): Extension {
           if (enabled && nodes) {
             nodes.compressor.port.postMessage({ type: 'setModel', model: i });
           }
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
           // Re-render the whole UI to update button states + title
           this.createUI(container);
         };
@@ -207,7 +210,7 @@ export function createCompressor(): Extension {
         (v) => {
           state.drive = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -222,7 +225,7 @@ export function createCompressor(): Extension {
         (v) => {
           state.compress = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -237,7 +240,7 @@ export function createCompressor(): Extension {
         (v) => {
           state.ratio = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -252,7 +255,7 @@ export function createCompressor(): Extension {
         (v) => {
           state.knee = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -267,7 +270,7 @@ export function createCompressor(): Extension {
         (v) => {
           state.speed = Math.round(v);
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -282,7 +285,7 @@ export function createCompressor(): Extension {
         (v) => {
           state.mix = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -297,7 +300,7 @@ export function createCompressor(): Extension {
         (v) => {
           state.output = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 

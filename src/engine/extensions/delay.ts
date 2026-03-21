@@ -5,7 +5,7 @@
  *   - delay-processor (delayTime, feedback, tone, mix)
  */
 
-import type { Extension, ExtensionState, NodePair } from '../../types';
+import type { Extension, ExtensionHost, ExtensionState, NodePair } from '../../types';
 import { makeSlider } from '../../ui/helpers';
 
 // ═══════════════════════════════════════════
@@ -43,6 +43,8 @@ function setWorkletParam(node: AudioWorkletNode, name: string, value: number): v
 // ═══════════════════════════════════════════
 
 export function createDelay(): Extension {
+  let hostRef: ExtensionHost | null = null;
+
   let state: DelayState = {
     time: 0.375,
     feedback: 0.45,
@@ -81,7 +83,8 @@ export function createDelay(): Extension {
     name: 'Tape Delay',
     icon: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="5" cy="8" r="3.5" stroke="currentColor" stroke-width="1.3"/><circle cx="11" cy="8" r="3.5" stroke="currentColor" stroke-width="1.3"/><line x1="5" y1="4.5" x2="11" y2="4.5" stroke="currentColor" stroke-width="1" opacity="0.4"/><line x1="5" y1="11.5" x2="11" y2="11.5" stroke="currentColor" stroke-width="1" opacity="0.4"/></svg>',
 
-    init(ctx: AudioContext): NodePair | null {
+    init(ctx: AudioContext, host: ExtensionHost): NodePair | null {
+      hostRef = host;
       const sendBus = ctx.createGain();
       sendBus.gain.value = 1 / Math.sqrt(TRACK_COUNT);
 
@@ -95,7 +98,7 @@ export function createDelay(): Extension {
 
       sendGains = [];
       // Post-fader post-pan sends: tap from channelPan outputs
-      const channelPans = window.SEQ.channelPans;
+      const channelPans = host.channelPans;
       const sends = getSends();
       for (let i = 0; i < channelPans.length; i++) {
         const pan = channelPans[i];
@@ -108,13 +111,12 @@ export function createDelay(): Extension {
       }
 
       // Wet return goes to mixBus (not masterGain)
-      const mixBus = window.SEQ.mixBus;
-      if (mixBus) wetGain.connect(mixBus);
+      wetGain.connect(host.mixBus);
 
       nodes = { sendBus, delay, wetGain, ctx };
       applyState();
 
-      window.SEQ.onStop(() => {
+      host.onStop(() => {
         if (!nodes) return;
         const now = nodes.ctx.currentTime;
         // Ramp down feedback and wet to stop repeats
@@ -153,7 +155,7 @@ export function createDelay(): Extension {
         (v) => {
           state.time = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -168,7 +170,7 @@ export function createDelay(): Extension {
         (v) => {
           state.feedback = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -186,7 +188,7 @@ export function createDelay(): Extension {
         (v) => {
           state.tone = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -201,7 +203,7 @@ export function createDelay(): Extension {
         (v) => {
           state.mix = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -216,10 +218,10 @@ export function createDelay(): Extension {
       auxSec.appendChild(auxTitle);
 
       const sends = getSends();
-      const count = window.SEQ.trackCount;
+      const count = hostRef!.trackCount;
 
       for (let i = 0; i < count; i++) {
-        const info = window.SEQ.getTrackInfo(i);
+        const info = hostRef!.getTrackInfo(i);
         const row = document.createElement('div');
         row.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:8px;';
 
@@ -256,7 +258,7 @@ export function createDelay(): Extension {
             const sg = sendGains[idx];
             if (sg) sg.gain.value = v;
           }
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         };
 
         row.appendChild(slider);

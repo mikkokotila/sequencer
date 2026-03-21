@@ -53,11 +53,23 @@ export interface NodePair {
   output: AudioNode;
 }
 
+/** Host API passed to extensions via init() — replaces window.SEQ for internal extensions. */
+export interface ExtensionHost {
+  readonly channelFaders: GainNode[];
+  readonly channelPans: StereoPannerNode[];
+  readonly mixBus: GainNode;
+  readonly masterGain: GainNode;
+  readonly trackCount: number;
+  onStop(fn: () => void): void;
+  getTrackInfo(i: number): TrackInfo;
+  notifyStateChange(): void;
+}
+
 export interface Extension {
   readonly id: string;
   readonly name: string;
   readonly icon: string;
-  init(ctx: AudioContext): NodePair | null;
+  init(ctx: AudioContext, host: ExtensionHost): NodePair | null;
   createUI(container: HTMLElement): void;
   getState(): ExtensionState;
   setState(s: ExtensionState): void;

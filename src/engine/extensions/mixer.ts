@@ -5,7 +5,7 @@
  * that returns an Extension conforming to types.ts.
  */
 
-import type { Extension, ExtensionState, NodePair } from '../../types';
+import type { Extension, ExtensionHost, ExtensionState, NodePair } from '../../types';
 
 // ═══════════════════════════════════════════
 //  Internal types
@@ -22,6 +22,8 @@ const TRACK_COUNT = 9;
 // ═══════════════════════════════════════════
 
 export function createMixer(): Extension {
+  let hostRef: ExtensionHost | null = null;
+
   const state: MixerState = { levels: null };
   let enabled = false;
   let analysers: AnalyserNode[] = [];
@@ -36,7 +38,7 @@ export function createMixer(): Extension {
   }
 
   function applyLevels(): void {
-    const gains = window.SEQ.channelFaders;
+    const gains = hostRef!.channelFaders;
     const lvls = getLevels();
     for (let i = 0; i < gains.length; i++) {
       const g = gains[i];
@@ -116,10 +118,10 @@ export function createMixer(): Extension {
       state.levels[idx] = v;
       val.textContent = `${Math.round(v * 100)}%`;
       if (enabled) {
-        const g = window.SEQ.channelFaders[idx];
+        const g = hostRef!.channelFaders[idx];
         if (g) g.gain.value = v;
       }
-      window.SEQ.notifyStateChange();
+      hostRef!.notifyStateChange();
     };
     row.appendChild(slider);
 
@@ -131,8 +133,9 @@ export function createMixer(): Extension {
     name: 'Mixer',
     icon: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="7" width="2" height="7" rx="1" fill="currentColor"/><rect x="5" y="3" width="2" height="11" rx="1" fill="currentColor"/><rect x="9" y="5" width="2" height="9" rx="1" fill="currentColor"/><rect x="13" y="1" width="2" height="13" rx="1" fill="currentColor"/></svg>',
 
-    init(ctx: AudioContext): NodePair | null {
-      const gains = window.SEQ.channelFaders;
+    init(ctx: AudioContext, host: ExtensionHost): NodePair | null {
+      hostRef = host;
+      const gains = host.channelFaders;
       analysers = [];
       for (const g of gains) {
         const a = ctx.createAnalyser();
@@ -157,10 +160,10 @@ export function createMixer(): Extension {
       container.appendChild(title);
 
       const lvls = getLevels();
-      const count = window.SEQ.trackCount;
+      const count = hostRef!.trackCount;
 
       for (let i = 0; i < count; i++) {
-        const info = window.SEQ.getTrackInfo(i);
+        const info = hostRef!.getTrackInfo(i);
         makeChannelRow(container, info, lvls[i] ?? 0.8, i);
       }
 
@@ -169,8 +172,7 @@ export function createMixer(): Extension {
       sep.style.cssText = 'margin-top:14px;padding-top:12px;border-top:1px solid #2a2a32;';
       container.appendChild(sep);
 
-      const masterGain = window.SEQ.masterGain;
-      const masterLvl = masterGain ? masterGain.gain.value : 1;
+      const masterLvl = hostRef!.masterGain.gain.value;
 
       const row = document.createElement('div');
       row.style.cssText = 'margin-bottom:8px;';
@@ -206,8 +208,7 @@ export function createMixer(): Extension {
       slider.oninput = () => {
         const v = parseFloat(slider.value);
         if (enabled) {
-          const mg = window.SEQ.masterGain;
-          if (mg) mg.gain.value = v;
+          hostRef!.masterGain.gain.value = v;
         }
         val.textContent = `${Math.round(v * 100)}%`;
       };
@@ -230,7 +231,7 @@ export function createMixer(): Extension {
 
     setEnabled(on: boolean): void {
       enabled = on;
-      const gains = window.SEQ.channelFaders;
+      const gains = hostRef!.channelFaders;
       if (on) {
         applyLevels();
       } else {
@@ -239,8 +240,7 @@ export function createMixer(): Extension {
           g.gain.value = 1;
         }
         // Restore master to baseline headroom (0.8), not unity
-        const mg = window.SEQ.masterGain;
-        if (mg) mg.gain.value = 0.8;
+        hostRef!.masterGain.gain.value = 0.8;
       }
     },
 

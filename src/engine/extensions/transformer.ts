@@ -4,7 +4,7 @@
  * Level-dependent: quiet signals pass clean, loud signals get colored.
  */
 
-import type { Extension, ExtensionState, NodePair } from '../../types';
+import type { Extension, ExtensionHost, ExtensionState, NodePair } from '../../types';
 import { makeSlider, formatPct } from '../../ui/helpers';
 
 interface TransformerState {
@@ -24,6 +24,8 @@ function setWorkletParam(node: AudioWorkletNode, name: string, value: number): v
 }
 
 export function createTransformer(): Extension {
+  let hostRef: ExtensionHost | null = null;
+
   let state: TransformerState = {
     drive: 0.15, // gentle push into the core
     color: 0.1, // subtle even-harmonic warmth
@@ -45,7 +47,8 @@ export function createTransformer(): Extension {
     name: 'Transformer',
     icon: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="4" width="10" height="8" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M6 4V2M10 4V2M6 12v2M10 12v2M1 7h2M13 7h2M1 9h2M13 9h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
 
-    init(ctx: AudioContext): NodePair {
+    init(ctx: AudioContext, host: ExtensionHost): NodePair | null {
+      hostRef = host;
       const transformer = new AudioWorkletNode(ctx, 'transformer-processor');
       nodes = { transformer, ctx };
       applyState();
@@ -69,19 +72,19 @@ export function createTransformer(): Extension {
       makeSlider(container, 'DRIVE', state.drive, 0, 1, 0.01, formatPct, (v) => {
         state.drive = v;
         if (enabled) applyState();
-        window.SEQ.notifyStateChange();
+        hostRef!.notifyStateChange();
       });
 
       makeSlider(container, 'COLOR', state.color, 0, 1, 0.01, formatPct, (v) => {
         state.color = v;
         if (enabled) applyState();
-        window.SEQ.notifyStateChange();
+        hostRef!.notifyStateChange();
       });
 
       makeSlider(container, 'AIR', state.air, 0, 1, 0.01, formatPct, (v) => {
         state.air = v;
         if (enabled) applyState();
-        window.SEQ.notifyStateChange();
+        hostRef!.notifyStateChange();
       });
     },
 

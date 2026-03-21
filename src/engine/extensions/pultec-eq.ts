@@ -6,7 +6,7 @@
  *   - saturation-processor (drive, mix)
  */
 
-import type { Extension, ExtensionState, NodePair } from '../../types';
+import type { Extension, ExtensionHost, ExtensionState, NodePair } from '../../types';
 import { makeSlider } from '../../ui/helpers';
 
 // ═══════════════════════════════════════════
@@ -54,6 +54,8 @@ function setWorkletParam(node: AudioWorkletNode, name: string, value: number): v
 // ═══════════════════════════════════════════
 
 export function createPultecEq(): Extension {
+  let hostRef: ExtensionHost | null = null;
+
   let state: PultecState = {
     lowBoost: 0,
     lowAtten: 0,
@@ -135,7 +137,8 @@ export function createPultecEq(): Extension {
     name: 'Pultec EQ',
     icon: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1 10 Q4 4 8 8 Q12 12 15 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="1" y1="13" x2="15" y2="13" stroke="currentColor" stroke-width="0.8" opacity="0.3"/></svg>',
 
-    init(ctx: AudioContext): NodePair {
+    init(ctx: AudioContext, host: ExtensionHost): NodePair | null {
+      hostRef = host;
       const lowBoostFilter = ctx.createBiquadFilter();
       lowBoostFilter.type = 'lowshelf';
       lowBoostFilter.frequency.value = state.lowFreq;
@@ -205,7 +208,7 @@ export function createPultecEq(): Extension {
         (v) => {
           state.lowBoost = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -220,7 +223,7 @@ export function createPultecEq(): Extension {
         (v) => {
           state.lowAtten = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -237,7 +240,7 @@ export function createPultecEq(): Extension {
         (v) => {
           state.lowFreq = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -255,7 +258,7 @@ export function createPultecEq(): Extension {
         (v) => {
           state.highBoost = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -270,7 +273,7 @@ export function createPultecEq(): Extension {
         (v) => {
           state.highBandwidth = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -290,7 +293,7 @@ export function createPultecEq(): Extension {
         (v) => {
           state.highBoostFreq = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -305,7 +308,7 @@ export function createPultecEq(): Extension {
         (v) => {
           state.highAtten = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -321,7 +324,7 @@ export function createPultecEq(): Extension {
         (v) => {
           state.highAttenFreq = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -339,7 +342,7 @@ export function createPultecEq(): Extension {
         (v) => {
           state.tubeColor = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
     },

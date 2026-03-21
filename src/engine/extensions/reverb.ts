@@ -5,7 +5,7 @@
  *   - freeverb-processor (roomSize, damping, wet, dry)
  */
 
-import type { Extension, ExtensionState, NodePair } from '../../types';
+import type { Extension, ExtensionHost, ExtensionState, NodePair } from '../../types';
 import { makeSlider } from '../../ui/helpers';
 
 // ═══════════════════════════════════════════
@@ -42,6 +42,8 @@ function setWorkletParam(node: AudioWorkletNode, name: string, value: number): v
 // ═══════════════════════════════════════════
 
 export function createReverb(): Extension {
+  let hostRef: ExtensionHost | null = null;
+
   let state: ReverbState = {
     decay: 0.6,
     damping: 0.5,
@@ -80,7 +82,8 @@ export function createReverb(): Extension {
     name: 'Plate Reverb',
     icon: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8c0-3 2-5 5-5s5 2 5 5-2 5-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M5 8c0-2 1.3-3 3-3s3 1 3 3-1.3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity="0.6"/><circle cx="8" cy="8" r="1" fill="currentColor" opacity="0.4"/></svg>',
 
-    init(ctx: AudioContext): NodePair | null {
+    init(ctx: AudioContext, host: ExtensionHost): NodePair | null {
+      hostRef = host;
       const freeverb = new AudioWorkletNode(ctx, 'freeverb-processor');
 
       const wetGain = ctx.createGain();
@@ -91,7 +94,7 @@ export function createReverb(): Extension {
 
       sendGains = [];
       // Post-fader post-pan sends: tap from channelPan outputs
-      const channelPans = window.SEQ.channelPans;
+      const channelPans = host.channelPans;
       const sends = getSends();
       for (let i = 0; i < channelPans.length; i++) {
         const pan = channelPans[i];
@@ -110,10 +113,9 @@ export function createReverb(): Extension {
       applyState();
 
       // Wet return goes to mixBus (not masterGain — no feedback loop)
-      const mixBus = window.SEQ.mixBus;
-      if (mixBus) wetGain.connect(mixBus);
+      wetGain.connect(host.mixBus);
 
-      window.SEQ.onStop(() => {
+      host.onStop(() => {
         if (!nodes) return;
         const now = nodes.ctx.currentTime;
         nodes.wetGain.gain.setValueAtTime(nodes.wetGain.gain.value, now);
@@ -150,7 +152,7 @@ export function createReverb(): Extension {
         (v) => {
           state.decay = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -165,7 +167,7 @@ export function createReverb(): Extension {
         (v) => {
           state.damping = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -180,7 +182,7 @@ export function createReverb(): Extension {
         (v) => {
           state.mix = v;
           if (enabled) applyState();
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         },
       );
 
@@ -195,10 +197,10 @@ export function createReverb(): Extension {
       auxSec.appendChild(auxTitle);
 
       const sends = getSends();
-      const count = window.SEQ.trackCount;
+      const count = hostRef!.trackCount;
 
       for (let i = 0; i < count; i++) {
-        const info = window.SEQ.getTrackInfo(i);
+        const info = hostRef!.getTrackInfo(i);
         const row = document.createElement('div');
         row.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:8px;';
 
@@ -235,7 +237,7 @@ export function createReverb(): Extension {
             const sg = sendGains[idx];
             if (sg) sg.gain.value = v;
           }
-          window.SEQ.notifyStateChange();
+          hostRef!.notifyStateChange();
         };
 
         row.appendChild(slider);

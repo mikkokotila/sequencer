@@ -1,0 +1,29 @@
+{
+  "task_id": "20260321-oracle-harness-vite-root-fix",
+  "task_type": "governance-change",
+  "execution_profile": "headless",
+  "capability": {
+    "summary": "Fix harness benchmark server boot and runtime interval instrumentation filtering for benchmark-page-only calls.",
+    "in_scope": [
+      "docs/qc/scripts/oracle-harness.mjs"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "tests/**",
+      "e2e/**"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "governance:harness-runtime-self-test"
+    ],
+    "seed": "oracle-harness-vite-root-fix-v1",
+    "oracles": []
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false
+  }
+}

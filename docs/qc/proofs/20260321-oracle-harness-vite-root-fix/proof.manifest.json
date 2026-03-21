@@ -1,0 +1,27 @@
+{
+  "task_id": "20260321-oracle-harness-vite-root-fix",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260321-oracle-harness-vite-root-fix/logs/O-CI.log"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/governance-compiler.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "NOT_VERIFIED",
+    "details": "Governance script fix validated through headless runtime harness execution."
+  },
+  "artifacts": [
+    "verdict.json",
+    "logs/O-CI.log"
+  ]
+}

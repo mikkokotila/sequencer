@@ -312,7 +312,7 @@ async function runBenchmarkProbe(page, repoRoot) {
   const port = Number(process.env.ORACLE_BENCH_PORT || '5197');
   const base = `http://127.0.0.1:${port}`;
 
-  const server = spawn('npx', ['vite', '--port', String(port), '--strictPort', '--host', '127.0.0.1', '--root', repoRoot], {
+  const server = spawn('npx', ['vite', repoRoot, '--port', String(port), '--strictPort', '--host', '127.0.0.1'], {
     cwd: toolRoot,
     stdio: ['ignore', 'pipe', 'pipe'],
     env: process.env,
@@ -338,12 +338,18 @@ async function runBenchmarkProbe(page, repoRoot) {
       window.__oracleRandomCalls = 0;
 
       window.setInterval = function (...args) {
-        window.__oracleIntervalCalls += 1;
+        const stack = new Error().stack || '';
+        if (stack.includes('benchmark.html')) {
+          window.__oracleIntervalCalls += 1;
+        }
         return origInterval.apply(this, args);
       };
 
       Math.random = function (...args) {
-        window.__oracleRandomCalls += 1;
+        const stack = new Error().stack || '';
+        if (stack.includes('benchmark.html')) {
+          window.__oracleRandomCalls += 1;
+        }
         return origRandom.apply(this, args);
       };
     });

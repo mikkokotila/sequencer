@@ -1,0 +1,69 @@
+{
+  "task_id": "20260321-oracle-harness-vite-root-fix",
+  "task_type": "governance-change",
+  "execution_profile": "headless",
+  "spec_path": "docs/qc/specs/20260321-oracle-harness-vite-root-fix.task.spec.json",
+  "policy_version": "1.2.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-21T20:51:10.900Z",
+  "finished_at_utc": "2026-03-21T20:51:15.604Z",
+  "head_sha": "c190968",
+  "tree_sha": "b148c577eb371bdc660bbfa64b154f956736440d",
+  "subject_sha": "60473746ae38cd8f72adeb0579750674e532d7048230fd5c35ef7299a78f0050",
+  "subject_files": [
+    "docs/qc/scripts/oracle-harness.mjs"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260321-oracle-harness-vite-root-fix.md",
+    "docs/qc/proofs/20260321-oracle-harness-vite-root-fix/proof.manifest.json",
+    "docs/qc/scripts/oracle-harness.mjs",
+    "docs/qc/specs/20260321-oracle-harness-vite-root-fix.task.spec.json"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4590,
+        "log_file": "docs/qc/proofs/20260321-oracle-harness-vite-root-fix/logs/O-CI.log"
+      }
+    ],
+    "global_debt": [],
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

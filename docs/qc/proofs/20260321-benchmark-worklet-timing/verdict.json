@@ -1,0 +1,178 @@
+{
+  "task_id": "20260321-benchmark-worklet-timing",
+  "task_type": "bugfix",
+  "execution_profile": "headless",
+  "spec_path": "docs/qc/specs/20260321-benchmark-worklet-timing.task.spec.json",
+  "policy_version": "1.2.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-21T20:33:25.842Z",
+  "finished_at_utc": "2026-03-21T20:33:54.979Z",
+  "head_sha": "81fba5c",
+  "tree_sha": "fc302a962ca3a778b768d7f9c3ad88d90bfbe3bf",
+  "subject_sha": "499655d52e96b3239a59b56ef42964fc909be684821c9f5c3d6cdcc361e1fc3e",
+  "subject_files": [
+    "tests/benchmark.html"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260321-benchmark-worklet-timing.md",
+    "docs/qc/proofs/20260321-benchmark-worklet-timing/logs/O-CI.log",
+    "docs/qc/proofs/20260321-benchmark-worklet-timing/logs/O-COMMIT-RANGE.log",
+    "docs/qc/proofs/20260321-benchmark-worklet-timing/logs/O-E2E.log",
+    "docs/qc/proofs/20260321-benchmark-worklet-timing/logs/O-GATE-ARCH-DELTA.log",
+    "docs/qc/proofs/20260321-benchmark-worklet-timing/logs/O-GATE-ARCH-FULL.log",
+    "docs/qc/proofs/20260321-benchmark-worklet-timing/logs/O-GATE-CONTRACTS-DELTA.log",
+    "docs/qc/proofs/20260321-benchmark-worklet-timing/logs/O-GATE-CONTRACTS-FULL.log",
+    "docs/qc/proofs/20260321-benchmark-worklet-timing/operator-guidance.md",
+    "docs/qc/proofs/20260321-benchmark-worklet-timing/oracles/benchmark_worklet_budget.json",
+    "docs/qc/proofs/20260321-benchmark-worklet-timing/oracles/off_transparent.json",
+    "docs/qc/proofs/20260321-benchmark-worklet-timing/oracles/on_audible.json",
+    "docs/qc/proofs/20260321-benchmark-worklet-timing/proof.manifest.json",
+    "docs/qc/proofs/20260321-benchmark-worklet-timing/verdict.json",
+    "docs/qc/specs/20260321-benchmark-worklet-timing.task.spec.json",
+    "tests/benchmark.html"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=7, oracles=3, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=7, oracles=3, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4392,
+        "log_file": "docs/qc/proofs/20260321-benchmark-worklet-timing/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 24211,
+        "log_file": "docs/qc/proofs/20260321-benchmark-worklet-timing/logs/O-E2E.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-DELTA",
+        "label": "Contract static gates (task regression)",
+        "command": "node docs/qc/scripts/contract-gates.mjs --mode delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 74,
+        "log_file": "docs/qc/proofs/20260321-benchmark-worklet-timing/logs/O-GATE-CONTRACTS-DELTA.log"
+      },
+      {
+        "id": "O-GATE-ARCH-DELTA",
+        "label": "Architecture gates (task regression)",
+        "command": "node docs/qc/scripts/architecture-gates.mjs --mode delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 36,
+        "log_file": "docs/qc/proofs/20260321-benchmark-worklet-timing/logs/O-GATE-ARCH-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates (global debt)",
+        "command": "node docs/qc/scripts/contract-gates.mjs --mode full",
+        "blocking": false,
+        "status": "FAIL",
+        "exit_code": 1,
+        "elapsed_ms": 53,
+        "log_file": "docs/qc/proofs/20260321-benchmark-worklet-timing/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates (global debt)",
+        "command": "node docs/qc/scripts/architecture-gates.mjs --mode full",
+        "blocking": false,
+        "status": "FAIL",
+        "exit_code": 1,
+        "elapsed_ms": 62,
+        "log_file": "docs/qc/proofs/20260321-benchmark-worklet-timing/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 221,
+        "log_file": "docs/qc/proofs/20260321-benchmark-worklet-timing/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates (global debt)",
+        "command": "node docs/qc/scripts/contract-gates.mjs --mode full",
+        "status": "FAIL",
+        "log_file": "docs/qc/proofs/20260321-benchmark-worklet-timing/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates (global debt)",
+        "command": "node docs/qc/scripts/architecture-gates.mjs --mode full",
+        "status": "FAIL",
+        "log_file": "docs/qc/proofs/20260321-benchmark-worklet-timing/logs/O-GATE-ARCH-FULL.log"
+      }
+    ],
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260321-benchmark-worklet-timing/oracles/off_transparent.json",
+        "raw_artifact": "src/engine/extensions/store.ts",
+        "raw_sha256": "11be82232f852cffb65a47fb13625e1e2965fd7c0fec0d9f0554401717c44053"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260321-benchmark-worklet-timing/oracles/on_audible.json",
+        "raw_artifact": "src/engine/extensions/store.ts",
+        "raw_sha256": "11be82232f852cffb65a47fb13625e1e2965fd7c0fec0d9f0554401717c44053"
+      },
+      {
+        "oracle_id": "benchmark_worklet_budget",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260321-benchmark-worklet-timing/oracles/benchmark_worklet_budget.json",
+        "raw_artifact": "src/engine/extensions/store.ts",
+        "raw_sha256": "11be82232f852cffb65a47fb13625e1e2965fd7c0fec0d9f0554401717c44053"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

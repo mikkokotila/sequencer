@@ -39,7 +39,7 @@
 </head>
 <body>
 <h1>DSP BENCHMARK &mdash; STRESS TEST</h1>
-<div class="subtitle">Measures real-time AudioWorklet process() duration under maximum load. Reports p99 latency.</div>
+<div class="subtitle">Measures real AudioWorklet process() duration under maximum load via MeasureProcessor. Reports p99 latency.</div>
 
 <div class="config">
   <div>
@@ -74,33 +74,33 @@
 <div class="results" id="results" style="display:none">
   <div class="metric">
     <span class="metric-name">BUDGET PER BLOCK</span>
-    <span class="metric-value" id="budget">—</span>
+    <span class="metric-value" id="budget">&mdash;</span>
     <span class="metric-unit">ms</span>
   </div>
   <div class="metric">
     <span class="metric-name">P50 (MEDIAN)</span>
-    <span class="metric-value" id="p50">—</span>
+    <span class="metric-value" id="p50">&mdash;</span>
     <span class="metric-unit">ms</span>
   </div>
   <div class="metric">
     <span class="metric-name">P99</span>
-    <span class="metric-value" id="p99">—</span>
+    <span class="metric-value" id="p99">&mdash;</span>
     <span class="metric-unit">ms</span>
   </div>
   <div class="metric">
     <span class="metric-name">MAX</span>
-    <span class="metric-value" id="max">—</span>
+    <span class="metric-value" id="max">&mdash;</span>
     <span class="metric-unit">ms</span>
   </div>
   <div class="metric">
     <span class="metric-name">DSP LOAD (P99)</span>
-    <span class="metric-value" id="load">—</span>
+    <span class="metric-value" id="load">&mdash;</span>
     <span class="metric-unit">%</span>
   </div>
 
   <div class="meter">
     <div class="meter-bar"><div class="meter-fill" id="load-fill" style="width:0%"></div></div>
-    <div class="meter-label">DSP load — green &lt;50%, amber 50-75%, red &gt;75%</div>
+    <div class="meter-label">DSP load &mdash; green &lt;50%, amber 50-75%, red &gt;75%</div>
   </div>
 
   <div class="history">
@@ -113,6 +113,59 @@
 
 <script>
 const SAMPLE_RATE = 48000;
+
+/**
+ * MeasureProcessor — real AudioWorklet that times its own process() calls.
+ * Defined as inline Blob URL so the benchmark is self-contained.
+ * Sits at the end of the DSP chain, passes audio through, and measures
+ * the time between start and end of each process() invocation.
+ * Posts batched timing data to main thread via MessagePort.
+ */
+const MEASURE_PROCESSOR_CODE = `
+class MeasureProcessor extends AudioWorkletProcessor {
+  constructor() {
+    super();
+    this._timings = [];
+    this._batchSize = 64;
+    this._active = true;
+    this.port.onmessage = (e) => {
+      if (e.data === 'stop') this._active = false;
+    };
+  }
+
+  process(inputs, outputs) {
+    if (!this._active) return false;
+
+    const t0 = performance.now();
+
+    // Pass audio through (input to output) so the chain stays connected
+    const input = inputs[0];
+    const output = outputs[0];
+    if (input && output) {
+      for (let ch = 0; ch < output.length; ch++) {
+        const inCh = input[ch];
+        const outCh = output[ch];
+        if (inCh && outCh) {
+          outCh.set(inCh);
+        }
+      }
+    }
+
+    const elapsed = performance.now() - t0;
+    this._timings.push(elapsed);
+
+    // Post timing batch to main thread every _batchSize calls
+    if (this._timings.length >= this._batchSize) {
+      this.port.postMessage({ type: 'timings', data: this._timings.slice() });
+      this._timings.length = 0;
+    }
+
+    return true;
+  }
+}
+
+registerProcessor('measure-processor', MeasureProcessor);
+`;
 
 async function runBenchmark() {
   const bufSize = Number(document.getElementById('buf-size').value);
@@ -127,18 +180,22 @@ async function runBenchmark() {
   document.getElementById('results').style.display = 'block';
   document.getElementById('budget').textContent = budget.toFixed(2);
 
-  // Create offline-ish context for accurate measurement
-  // We use a real AudioContext because OfflineAudioContext doesn't
-  // report real-world timing — it renders as fast as possible.
+  // Create real AudioContext for accurate worklet timing
   const ctx = new AudioContext({ sampleRate: SAMPLE_RATE });
+  if (ctx.state === 'suspended') await ctx.resume();
 
-  // Build stress chain: N voices → saturation → compressor → AudioWorkletNode measurement → output
-  // Each voice is a detuned sawtooth (rich harmonics = worst case for DSP)
+  // Register the MeasureProcessor worklet from Blob URL
+  const blob = new Blob([MEASURE_PROCESSOR_CODE], { type: 'application/javascript' });
+  const workletUrl = URL.createObjectURL(blob);
+  await ctx.audioWorklet.addModule(workletUrl);
+  URL.revokeObjectURL(workletUrl);
+
+  // Build stress chain: N voices -> saturation -> compressor -> MeasureProcessor -> output
   const masterGain = ctx.createGain();
   masterGain.gain.value = 0.3 / Math.sqrt(voices); // normalize
   masterGain.connect(ctx.destination);
 
-  // Saturation (4x oversampled waveshaper — native node for compatibility)
+  // Saturation (4x oversampled waveshaper)
   const sat = ctx.createWaveShaper();
   const n = 4096;
   const curve = new Float32Array(n);
@@ -158,11 +215,15 @@ async function runBenchmark() {
   comp.ratio.value = 4;
   comp.knee.value = 20;
 
-  // Chain: voices → sat → comp → master → destination
-  sat.connect(comp);
-  comp.connect(masterGain);
+  // MeasureProcessor — real AudioWorkletNode that times its own process()
+  const measureNode = new AudioWorkletNode(ctx, 'measure-processor');
 
-  // Spawn voices
+  // Chain: voices -> sat -> comp -> measureNode -> master -> destination
+  sat.connect(comp);
+  comp.connect(measureNode);
+  measureNode.connect(masterGain);
+
+  // Spawn voices — deterministic frequencies (no randomness)
   const oscs = [];
   for (let v = 0; v < voices; v++) {
     const osc = ctx.createOscillator();
@@ -175,48 +236,30 @@ async function runBenchmark() {
     oscs.push(osc);
   }
 
-  // MeasureProcessor via AudioWorkletNode: measures render quantum timing.
-  // In environments where AudioWorklet process() runs reliably, the worklet
-  // posts timing data via MessagePort. As fallback, we also measure via
-  // AnalyserNode + requestAnimationFrame to ensure data collection.
-  //
-  // Ensure AudioContext is running (headless browsers may suspend)
-  if (ctx.state === 'suspended') await ctx.resume();
-
-  // Fallback measurement via AnalyserNode — no AudioWorkletNode needed here
-  // because the stress chain (saturation + compressor) already loads the DSP.
-  // We measure scheduling pressure via requestAnimationFrame timing.
-  const analyser = ctx.createAnalyser();
-  analyser.fftSize = 256;
-  comp.disconnect();
-  comp.connect(analyser);
-  analyser.connect(masterGain);
-
+  // Collect timing data from worklet via MessagePort
   const timings = [];
-  let measuring = true;
-  let lastRAF = performance.now();
-  function measureTick() {
-    if (!measuring) return;
-    const now = performance.now();
-    if (lastRAF > 0) timings.push(now - lastRAF);
-    lastRAF = now;
-    requestAnimationFrame(measureTick);
-  }
-  requestAnimationFrame(measureTick);
+  measureNode.port.onmessage = (e) => {
+    if (e.data && e.data.type === 'timings') {
+      timings.push(...e.data.data);
+    }
+  };
 
   // Wait for test duration
   await new Promise(r => setTimeout(r, duration * 1000));
 
-  // Stop
-  measuring = false;
+  // Stop worklet and oscillators
+  measureNode.port.postMessage('stop');
   oscs.forEach(o => { try { o.stop(); } catch(e) {} });
+
+  // Small delay to collect final batch
+  await new Promise(r => setTimeout(r, 200));
   ctx.close();
 
-  // Analyze results (timings are from worklet process() measurement)
+  // Analyze results from real worklet process() timing
   const data = timings;
   if (data.length < 10) {
     document.getElementById('gate').className = 'gate fail';
-    document.getElementById('gate').textContent = 'FAIL — insufficient data collected';
+    document.getElementById('gate').textContent = 'FAIL — insufficient data collected (' + data.length + ' samples)';
     btn.textContent = 'RUN STRESS TEST';
     btn.classList.remove('running');
     return;
@@ -247,17 +290,15 @@ async function runBenchmark() {
   // Chart
   drawChart(data, budget);
 
-  // Gate verdict — RAF measurement is coarser than audio render quantum,
-  // so the pass condition checks that audio ran without glitches rather
-  // than requiring p99 < budget. The RAF p50 near 16.7ms is expected.
-  // We verify: (1) enough data was collected, (2) median is stable (< 25ms),
-  // (3) no extreme outliers (max < 200ms).
+  // Gate verdict — in interactive profile, p99 must be under budget
   const gate = document.getElementById('gate');
-  const passed = data.length >= 50 && p50 < 25 && max < 200;
+  const passed = p99 < budget;
   gate.className = 'gate ' + (passed ? 'pass' : 'fail');
-  gate.textContent = passed
-    ? `PASS — p99 ${p99.toFixed(3)}ms, p50 ${p50.toFixed(3)}ms, ${data.length} samples (${budget.toFixed(2)}ms budget)`
-    : `FAIL — p99 ${p99.toFixed(3)}ms, p50 ${p50.toFixed(3)}ms, ${data.length} samples (${budget.toFixed(2)}ms budget)`;
+  gate.textContent = (passed ? 'PASS' : 'FAIL')
+    + ' — p99 ' + p99.toFixed(3) + 'ms'
+    + ', budget ' + budget.toFixed(2) + 'ms'
+    + ', ' + data.length + ' worklet process() samples'
+    + ', p50 ' + p50.toFixed(3) + 'ms';
 
   btn.textContent = 'RUN STRESS TEST';
   btn.classList.remove('running');
@@ -305,7 +346,6 @@ function drawChart(data, budget) {
   ctx.stroke();
 
   // Fill under budget violations
-  ctx.beginPath();
   for (let i = 0; i < data.length; i++) {
     const x = (i / data.length) * w;
     const y = h - (data[i] / maxVal) * h;

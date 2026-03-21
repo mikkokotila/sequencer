@@ -1,0 +1,42 @@
+{
+  "task_id": "20260321-benchmark-worklet-timing",
+  "task_type": "bugfix",
+  "execution_profile": "headless",
+  "capability": {
+    "summary": "Replace main-thread RAF proxy timing in benchmark with real AudioWorklet process() measurement",
+    "in_scope": [
+      "tests/benchmark.html"
+    ],
+    "out_of_scope": [
+      "src/engine/**",
+      "src/ui/**",
+      "src/transport/**"
+    ],
+    "controls": [
+      {
+        "id": "benchmark.measurement",
+        "default": "idle",
+        "range": ["idle", "measuring"],
+        "unit": "state",
+        "off_semantics": "no measurement running",
+        "on_semantics": "AudioWorklet process() timing collected via MessagePort"
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:deterministic_oscillators"
+    ],
+    "seed": "fixed-seed-v1",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "benchmark_worklet_budget"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false
+  }
+}

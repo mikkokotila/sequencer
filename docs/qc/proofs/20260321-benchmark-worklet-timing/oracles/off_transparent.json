@@ -1,0 +1,14 @@
+{
+  "oracle_id": "off_transparent",
+  "task_id": "20260321-benchmark-worklet-timing",
+  "subject_sha": "499655d52e96b3239a59b56ef42964fc909be684821c9f5c3d6cdcc361e1fc3e",
+  "harness_version": "oracle-harness-v1",
+  "status": "PASS",
+  "metrics": {
+    "max_abs_error": 0,
+    "delta_lufs": 0
+  },
+  "raw_artifact": "../../../../src/engine/extensions/store.ts",
+  "raw_sha256": "11be82232f852cffb65a47fb13625e1e2965fd7c0fec0d9f0554401717c44053",
+  "evidence": "resetAllExtensions: true, _enabled=false: true, setEnabled(false): true"
+}

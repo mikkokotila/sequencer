@@ -8,11 +8,11 @@ import { loadManifest, wireBrowserEvents } from './ui/browser';
 import { buildUI, refreshUI, refreshSongName, updateSongPane } from './ui/build';
 import { setupPainting, setOnSave, setOnSongPaneUpdate } from './ui/painting';
 import { installSeqAPI, initExtensions } from './engine/extensions/registry';
-import { togglePlay } from './engine/scheduler';
+import { togglePlay, syncBpm } from './engine/scheduler';
 import { initPlayhead } from './ui/playhead';
 import { genId } from './ui/helpers';
 import { SEQ_EXTENSIONS } from './state';
-import { currentSongId, setCurrentSongId } from './transport/song';
+import { currentSongId, setCurrentSongId, setOnBpmChange } from './transport/song';
 
 // Register all extensions
 import { createVariMu } from './engine/extensions/vari-mu';
@@ -37,9 +37,10 @@ async function init(): Promise<void> {
   // 3. Build the UI
   buildUI();
 
-  // 4. Wire painting callbacks
+  // 4. Wire painting callbacks + BPM sync
   setOnSave(scheduleSave);
   setOnSongPaneUpdate(updateSongPane);
+  setOnBpmChange(syncBpm);
 
   // 5. Setup mouse painting
   setupPainting();

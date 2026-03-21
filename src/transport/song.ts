@@ -22,8 +22,14 @@ import {
 
 export let bpm = 120;
 
+let onBpmChange: ((v: number) => void) | null = null;
+export function setOnBpmChange(fn: (v: number) => void): void {
+  onBpmChange = fn;
+}
+
 export function setBpm(v: number): void {
   bpm = v;
+  onBpmChange?.(v);
 }
 
 // ═══════════════════════════════════════════

@@ -130,6 +130,11 @@ export function rebuildAudioChain(): void {
     }
     prev.connect(nodes.input);
     prev = nodes.output;
+
+    // Re-apply enabled/disabled state after reconnecting
+    if (ext.setEnabled) {
+      ext.setEnabled(ext._enabled ?? false);
+    }
   }
   prev.connect(audioCtx.destination);
 }

@@ -5,6 +5,7 @@
  */
 
 import { getAudioContext, getMasterGain, initAudio } from '../engine/audio';
+import { rebuildAudioChain } from '../engine/extensions/registry';
 
 // ── State ──
 let isOpen = false;
@@ -871,6 +872,8 @@ export function close(): void {
   if (animFrame) cancelAnimationFrame(animFrame);
   stopDemoOscs();
   removeDemoChain();
+  // Restore extension chain after demo chain teardown
+  rebuildAudioChain();
 
   if (panelEl) {
     panelEl.style.opacity = '0';

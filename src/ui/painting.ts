@@ -2,7 +2,7 @@
  * Mouse interaction for painting notes, selection, and track replication.
  */
 
-import { STEPS, SPB, MEL_CFG } from '../config';
+import { STEPS, MEL_CFG } from '../config';
 import { drumPat, melPat, vocalPat } from '../transport/patterns';
 import {
   melCells,
@@ -93,6 +93,7 @@ export function replicateSelection(t: number): void {
 // ── Track-level replication ──
 
 export function replicateTrack(type: string, idx: number): void {
+  // Find the last step that has content
   let lastStep = -1;
   for (let s = STEPS - 1; s >= 0; s--) {
     if (type === 'drum' && drumPat[idx]?.[s]) {
@@ -110,7 +111,8 @@ export function replicateTrack(type: string, idx: number): void {
   }
   if (lastStep < 0) return;
 
-  const patLen = (Math.floor(lastStep / SPB) + 1) * SPB;
+  // Use exactly lastStep+1 as the pattern length — repeat what's there
+  const patLen = lastStep + 1;
   if (patLen >= STEPS) return;
 
   for (let s = patLen; s < STEPS; s++) {

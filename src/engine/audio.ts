@@ -34,6 +34,9 @@ let masterGain: GainNode | null = null; // first node in master insert chain
 // Final output — master chain connects to this (defaults to ctx.destination)
 let finalOutput: AudioNode | null = null;
 
+// Persistent preview gain — reused for all sample previews (avoids node accumulation)
+let previewGain: GainNode | null = null;
+
 // ── Accessors ──
 export function getAudioContext(): AudioContext | null {
   return audioCtx;
@@ -100,6 +103,11 @@ export function initAudio(): void {
     // Default output
     finalOutput = audioCtx.destination;
 
+    // Persistent preview gain (reused, not recreated per preview)
+    previewGain = audioCtx.createGain();
+    previewGain.gain.value = 1;
+    previewGain.connect(mixBus);
+
     // Wire: mixBus → masterTrim → masterGain → destination
     mixBus.connect(masterTrim);
     masterTrim.connect(masterGain);
@@ -161,7 +169,7 @@ export function playPreviewSample(
   rate?: number,
   prevSource?: AudioBufferSourceNode | null,
 ): AudioBufferSourceNode | null {
-  if (!audioCtx || !mixBus) return null;
+  if (!audioCtx || !previewGain) return null;
 
   if (prevSource) {
     try {
@@ -174,10 +182,6 @@ export function playPreviewSample(
   const src = audioCtx.createBufferSource();
   src.buffer = buffer;
   if (rate !== undefined) src.playbackRate.value = rate;
-
-  const previewGain = audioCtx.createGain();
-  previewGain.gain.value = 1;
-  previewGain.connect(mixBus); // preview goes to mix bus
   src.connect(previewGain);
   src.start(0);
   return src;

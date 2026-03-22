@@ -1,0 +1,166 @@
+{
+  "task_id": "20260322-debt-final-cleanup",
+  "task_type": "refactor",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260322-debt-final-cleanup.task.spec.json",
+  "policy_version": "1.4.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-22T09:09:01.158Z",
+  "finished_at_utc": "2026-03-22T09:09:33.941Z",
+  "head_sha": "9e1b597",
+  "tree_sha": "8ebfde0c64d9040e62366dce4235b73d994c89b2",
+  "subject_sha": "0b5b92ed4e7cc51497d0bfb602aaf1df4d6260d6e3710bb40949735c8a688f04",
+  "subject_files": [
+    "index.html",
+    "src/ui/build.ts",
+    "src/ui/cells.ts",
+    "src/ui/painting.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260322-debt-final-cleanup.md",
+    "docs/qc/proofs/20260322-debt-final-cleanup/proof.manifest.json",
+    "docs/qc/specs/20260322-debt-final-cleanup.task.spec.json",
+    "index.html",
+    "src/ui/build.ts",
+    "src/ui/cells.ts",
+    "src/ui/painting.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=7, oracles=3, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=7, oracles=3, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4285,
+        "log_file": "docs/qc/proofs/20260322-debt-final-cleanup/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 24631,
+        "log_file": "docs/qc/proofs/20260322-debt-final-cleanup/logs/O-E2E.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-DELTA",
+        "label": "Contract static gates (task regression)",
+        "command": "node docs/qc/scripts/contract-gates.mjs --mode delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 268,
+        "log_file": "docs/qc/proofs/20260322-debt-final-cleanup/logs/O-GATE-CONTRACTS-DELTA.log"
+      },
+      {
+        "id": "O-GATE-ARCH-DELTA",
+        "label": "Architecture gates (task regression)",
+        "command": "node docs/qc/scripts/architecture-gates.mjs --mode delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 319,
+        "log_file": "docs/qc/proofs/20260322-debt-final-cleanup/logs/O-GATE-ARCH-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates (global debt)",
+        "command": "node docs/qc/scripts/contract-gates.mjs --mode full",
+        "blocking": false,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 340,
+        "log_file": "docs/qc/proofs/20260322-debt-final-cleanup/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates (global debt)",
+        "command": "node docs/qc/scripts/architecture-gates.mjs --mode full",
+        "blocking": false,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 352,
+        "log_file": "docs/qc/proofs/20260322-debt-final-cleanup/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 410,
+        "log_file": "docs/qc/proofs/20260322-debt-final-cleanup/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": true,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-debt-final-cleanup/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260322-debt-final-cleanup/raw/off_transparent.json",
+        "raw_sha256": "fe9f46aab7f88612c5966e3b2cb749bcf5352970ce97ab0ef0e2b3ef51c33ef6"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-debt-final-cleanup/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260322-debt-final-cleanup/raw/on_audible.json",
+        "raw_sha256": "218d702dafb61b0ba082f91457e5f5e723f6b73b28b57a3fb8f787095a9dbcbd"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-debt-final-cleanup/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260322-debt-final-cleanup/raw/control_binding.json",
+        "raw_sha256": "08475ac4c59fa72b39438c9b0fd684b4bc6c581ec63c93a5c035a634474e4674"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

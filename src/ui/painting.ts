@@ -24,7 +24,7 @@ import {
 } from '../state';
 import type { PaintType } from '../state';
 import { displayToSemitone } from './helpers';
-import { updateDrumCell, updateMelCell, updateVocalCell, setMelodyCell } from './cells';
+import { updateDrumCell, updateMelCell, updateVocalCell, setMelodyCellUI } from './cells';
 
 // ── Callbacks (wired by main.ts) ──
 let onSave: (() => void) | null = null;
@@ -97,7 +97,7 @@ export function replicateSelection(t: number): void {
 
 // ── Track-level replication ──
 
-export function replicateTrack(type: string, idx: number): void {
+export function replicateTrackUI(type: string, idx: number): void {
   // Delegate all data mutation to the canonical patterns.ts version
   replicateTrackData(type as 'drum' | 'melody' | 'vocal', idx);
 
@@ -162,7 +162,7 @@ export function setupPainting(): void {
       const stepPat = trackPat?.[s];
       if (stepPat) {
         setPaintVal(!(stepPat[semi] ?? false));
-        setMelodyCell(t, s, dr, paintVal);
+        setMelodyCellUI(t, s, dr, paintVal);
       }
     } else {
       const current = vocalPat[s] ?? false;
@@ -201,7 +201,7 @@ export function setupPainting(): void {
       const semi = displayToSemitone(dr);
       const stepPat = melPat[t]?.[s];
       if (stepPat && stepPat[semi] !== paintVal) {
-        setMelodyCell(t, s, dr, paintVal);
+        setMelodyCellUI(t, s, dr, paintVal);
       }
     } else {
       if (vocalPat[s] !== paintVal) {

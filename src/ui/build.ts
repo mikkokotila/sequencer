@@ -49,7 +49,7 @@ import {
   cycleHarmony,
   updateHarmonyDim,
 } from './cells';
-import { replicateTrack, clearSelection } from './painting';
+import { replicateTrackUI, clearSelection } from './painting';
 import { openBrowser, wireBrowserEvents, setupDragDrop, closeBrowser } from './browser';
 import { toggle as toggleEnginePanel, isEngineOpen } from './engine-panel';
 import { togglePlay, stopPlayback } from '../engine/scheduler';
@@ -466,7 +466,7 @@ export function buildUI(): void {
     header.appendChild(sb);
     const fill = el('button', 'fill-btn');
     fill.textContent = 'FILL';
-    fill.onclick = () => replicateTrack('drum', ti);
+    fill.onclick = () => replicateTrackUI('drum', ti);
     header.appendChild(fill);
     const clr = el('button', 'clear-btn');
     clr.textContent = 'CLR';
@@ -525,7 +525,7 @@ export function buildUI(): void {
     header.appendChild(sb);
     const fill = el('button', 'fill-btn');
     fill.textContent = 'FILL';
-    fill.onclick = () => replicateTrack('melody', ti);
+    fill.onclick = () => replicateTrackUI('melody', ti);
     header.appendChild(fill);
     const clr = el('button', 'clear-btn');
     clr.textContent = 'CLR';
@@ -631,7 +631,7 @@ export function buildUI(): void {
   vheader.appendChild(vsb);
   const vfill = el('button', 'fill-btn');
   vfill.textContent = 'FILL';
-  vfill.onclick = () => replicateTrack('vocal', 0);
+  vfill.onclick = () => replicateTrackUI('vocal', 0);
   vheader.appendChild(vfill);
   const vclr = el('button', 'clear-btn');
   vclr.textContent = 'CLR';

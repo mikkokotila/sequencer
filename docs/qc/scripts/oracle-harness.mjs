@@ -11,8 +11,8 @@ import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { spawn } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
+import { createServer } from 'vite';
 
 const toolRoot = process.cwd();
 const HARNESS_VERSION = 'oracle-harness-v2';
@@ -157,33 +157,6 @@ async function launchBrowser() {
     throw new Error('Real oracle harness requires a display server. Run compiler under xvfb-run.');
   }
   return chromium.launch({ headless: false });
-}
-
-async function terminateChild(proc, graceMs = 1000) {
-  if (!proc || proc.exitCode !== null) return;
-  let settled = false;
-  const exited = new Promise((resolve) => {
-    proc.once('exit', () => {
-      settled = true;
-      resolve();
-    });
-  });
-
-  try {
-    proc.kill('SIGTERM');
-  } catch {
-    // process may already be gone
-  }
-
-  await Promise.race([exited, delay(graceMs)]);
-  if (!settled && proc.exitCode === null) {
-    try {
-      proc.kill('SIGKILL');
-    } catch {
-      // process may already be gone
-    }
-    await Promise.race([exited, delay(500)]);
-  }
 }
 
 function toRounded(value, decimals = 6) {
@@ -343,20 +316,17 @@ async function runBenchmarkProbe(page, repoRoot) {
   const port = Number(process.env.ORACLE_BENCH_PORT || '5197');
   const base = `http://127.0.0.1:${port}`;
 
-  const server = spawn('npx', ['vite', repoRoot, '--port', String(port), '--strictPort', '--host', '127.0.0.1'], {
-    cwd: toolRoot,
-    stdio: ['ignore', 'pipe', 'pipe'],
-    env: process.env,
+  const server = await createServer({
+    root: repoRoot,
+    logLevel: 'error',
+    clearScreen: false,
+    server: {
+      port,
+      strictPort: true,
+      host: '127.0.0.1',
+    },
   });
-
-  let out = '';
-  let err = '';
-  server.stdout?.on('data', (d) => {
-    out += String(d);
-  });
-  server.stderr?.on('data', (d) => {
-    err += String(d);
-  });
+  await server.listen();
 
   try {
     await waitForServer(`${base}/`);
@@ -413,11 +383,10 @@ async function runBenchmarkProbe(page, repoRoot) {
       };
     });
   } finally {
-    await terminateChild(server);
-    if (err.trim()) {
-      process.stderr.write(`${err.trim()}\n`);
-    } else if (out.trim()) {
-      process.stderr.write(`${out.trim()}\n`);
+    try {
+      await server.close();
+    } catch {
+      // ignore shutdown issues; oracle result already determined
     }
   }
 }

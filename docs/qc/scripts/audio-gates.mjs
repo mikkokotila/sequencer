@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { spawn } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
+import { createServer } from 'vite';
 
 const PORT = Number(process.env.AUDIO_GATE_PORT || '5174');
 const BASE = `http://localhost:${PORT}`;
@@ -39,51 +39,21 @@ function parseFiniteNumber(text) {
   return Number.isFinite(value) ? value : null;
 }
 
-async function terminateChild(proc, graceMs = 1000) {
-  if (!proc || proc.exitCode !== null) return;
-  let settled = false;
-  const exited = new Promise((resolve) => {
-    proc.once('exit', () => {
-      settled = true;
-      resolve();
-    });
-  });
-
-  try {
-    proc.kill('SIGTERM');
-  } catch {
-    // process may already be gone
-  }
-
-  await Promise.race([exited, delay(graceMs)]);
-  if (!settled && proc.exitCode === null) {
-    try {
-      proc.kill('SIGKILL');
-    } catch {
-      // process may already be gone
-    }
-    await Promise.race([exited, delay(500)]);
-  }
-}
-
 async function run() {
   if (!hasDisplayServer()) {
     throw new Error('Real audio benchmark requires a display server. Run with xvfb-run -a npm run audio:gates.');
   }
 
-  const server = spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], {
-    stdio: ['ignore', 'pipe', 'pipe'],
-    env: process.env,
+  const viteServer = await createServer({
+    root: process.cwd(),
+    logLevel: 'error',
+    clearScreen: false,
+    server: {
+      port: PORT,
+      strictPort: true,
+    },
   });
-
-  let serverOut = '';
-  let serverErr = '';
-  server.stdout?.on('data', (d) => {
-    serverOut += String(d);
-  });
-  server.stderr?.on('data', (d) => {
-    serverErr += String(d);
-  });
+  await viteServer.listen();
 
   let browser = null;
 
@@ -188,13 +158,10 @@ async function run() {
         // ignore browser shutdown issues; gate outcome already captured
       }
     }
-    await terminateChild(server);
-
-    if (serverOut.trim().length > 0) {
-      console.log(serverOut.trim());
-    }
-    if (serverErr.trim().length > 0) {
-      console.error(serverErr.trim());
+    try {
+      await viteServer.close();
+    } catch {
+      // ignore server shutdown issues; gate outcome already captured
     }
   }
 }

@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: audio-gate-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   audio-gate:
     name: audio-gate

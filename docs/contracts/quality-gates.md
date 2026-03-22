@@ -105,7 +105,16 @@ Implementation invariants for architecture gates:
 2. Structural checks are AST-based (imports, callsites, inline style mutation, type sentinels, callback APIs).
 3. Line-number-specific heuristics are disallowed.
 
-### 5) Audio Browser Gates (`npm run audio:gates`) — conditional
+### 5) Governance Self-Tests (`npm run gate:governance-self`)
+
+Compiler/governance scripts must self-verify anti-regression invariants:
+
+1. Source-structure gates (`contract-gates`, `architecture-gates`) import and use TypeScript AST.
+2. Source-structure gates do not execute shell `rg/grep` scans for verdict logic.
+3. Runtime benchmark gates (`audio-gates`, `oracle-harness`) do not inspect benchmark source text for `AudioWorkletNode`/token checks.
+4. Gate output is deterministic across PATH environments (with and without `rg` available).
+
+### 6) Audio Browser Gates (`npm run audio:gates`) — conditional
 
 Required when changing audio code in:
 - `src/engine/audio.ts`
@@ -130,6 +139,7 @@ Underlying gate bundle:
 - `npm run gate:commit-range`
 
 `npm run verify:global-debt` runs full debt tracking scans:
+- `npm run gate:governance-self`
 - `npm run gate:contracts`
 - `npm run gate:architecture`
 

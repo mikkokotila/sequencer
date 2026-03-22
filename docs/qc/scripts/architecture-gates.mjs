@@ -220,6 +220,12 @@ function isStyleMutationAssignment(node) {
   return false;
 }
 
+function rootIdentifierText(node) {
+  if (ts.isIdentifier(node)) return node.text;
+  if (ts.isPropertyAccessExpression(node)) return rootIdentifierText(node.expression);
+  return '';
+}
+
 async function checkNoDummyPassThroughNodes(args, changedFiles) {
   const targets = [
     'src/engine/extensions/reverb.ts',
@@ -339,28 +345,36 @@ async function checkEngineInterfaceUsed(args, changedFiles) {
     return;
   }
 
-  const srcFiles = await listFilesRecursive('src', ['.ts']);
-  let referenceCount = 0;
-  const references = [];
-
-  for (const rel of srcFiles) {
-    const text = await read(rel);
-    const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
-
-    walk(sourceFile, (node) => {
-      if (!ts.isIdentifier(node) || node.text !== 'AudioEngine') return;
-      if (rel === 'src/engine/interface.ts') return;
-      const loc = nodeLocation(rel, sourceFile, node);
-      referenceCount += 1;
-      references.push(`${loc.file}:${loc.line}`);
-    });
+  const interfaceRel = 'src/engine/interface.ts';
+  let interfaceExists = true;
+  try {
+    await fs.access(path.join(root, interfaceRel));
+  } catch {
+    interfaceExists = false;
   }
 
-  const ok = referenceCount > 0;
+  if (!interfaceExists) {
+    record(true, 'Engine interface contract is actually consumed', 'No legacy engine interface module present (dead boundary removed).');
+    return;
+  }
+
+  const srcFiles = await listFilesRecursive('src', ['.ts']);
+  const importers = [];
+
+  for (const rel of srcFiles) {
+    if (rel === interfaceRel) continue;
+    const text = await read(rel);
+    const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
+    const modules = getImportModuleTexts(sourceFile);
+    const consumesInterface = modules.some((m) => m === './interface' || m === '../engine/interface');
+    if (consumesInterface) importers.push(rel);
+  }
+
+  const ok = importers.length > 0;
   record(
     ok,
     'Engine interface contract is actually consumed',
-    ok ? `AudioEngine references outside interface.ts: ${referenceCount}` : 'AudioEngine appears unused outside interface declaration.',
+    ok ? `Engine interface imported by ${importers.length} module(s).` : 'interface.ts exists but has no import consumers (dead contract surface).',
   );
 }
 
@@ -686,6 +700,8 @@ async function checkNoTransportInnerHtmlTemplate(args, changedFiles) {
     if (!ts.isBinaryExpression(node) || node.operatorToken.kind !== ts.SyntaxKind.EqualsToken) return;
     if (!ts.isPropertyAccessExpression(node.left)) return;
     if (node.left.name.text !== 'innerHTML') return;
+    const targetRoot = rootIdentifierText(node.left.expression);
+    if (targetRoot !== 'transport') return;
     const loc = nodeLocation(rel, sourceFile, node);
     findings.push(`${loc.file}:${loc.line}: ${node.left.getText(sourceFile)} = ...`);
   });

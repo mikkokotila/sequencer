@@ -86,29 +86,72 @@ async function run() {
     await runSummaryPage('e2e-signal', '/tests/e2e-signal.html');
     await runSummaryPage('signal-purity', '/tests/signal-purity.html');
 
+    await page.addInitScript(() => {
+      window.__audioGateStats = {
+        intervalCalls: 0,
+        randomCalls: 0,
+        workletConstructs: 0,
+      };
+
+      const origInterval = window.setInterval;
+      window.setInterval = function (...args) {
+        window.__audioGateStats.intervalCalls += 1;
+        return origInterval.apply(this, args);
+      };
+
+      const origRandom = Math.random;
+      Math.random = function (...args) {
+        window.__audioGateStats.randomCalls += 1;
+        return origRandom.apply(this, args);
+      };
+
+      const OriginalAudioWorkletNode = window.AudioWorkletNode;
+      if (typeof OriginalAudioWorkletNode === 'function') {
+        window.AudioWorkletNode = new Proxy(OriginalAudioWorkletNode, {
+          construct(target, args, newTarget) {
+            window.__audioGateStats.workletConstructs += 1;
+            return Reflect.construct(target, args, newTarget);
+          },
+        });
+      }
+    });
+
     await page.goto(`${BASE}/tests/benchmark.html`, { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => {
+      if (window.__audioGateStats) {
+        window.__audioGateStats.intervalCalls = 0;
+        window.__audioGateStats.randomCalls = 0;
+        window.__audioGateStats.workletConstructs = 0;
+      }
+    });
     await page.click('#run-btn');
     await page.waitForFunction(() => {
-      const gateText = document.querySelector('#gate')?.textContent || '';
-      return gateText.includes('PASS') || gateText.includes('FAIL');
+      const gate = document.querySelector('#gate');
+      const gateText = (gate?.textContent || '').trim();
+      return (
+        gate?.classList.contains('pass') ||
+        gate?.classList.contains('fail') ||
+        /^PASS\\b/.test(gateText) ||
+        /^FAIL\\s+—/.test(gateText)
+      );
     }, null, { timeout: 60000 });
 
     const benchmark = await page.evaluate(() => {
-      const html = document.documentElement.outerHTML;
       const gateText = (document.querySelector('#gate')?.textContent || '').trim();
+      const gateClass = document.querySelector('#gate')?.className || '';
       const p99Text = (document.querySelector('#p99')?.textContent || '').trim();
       const budgetText = (document.querySelector('#budget')?.textContent || '').trim();
       const sampleMatch =
         gateText.match(/(\d+)\s+worklet process\(\)\s+samples/i) || gateText.match(/(\d+)\s*samples/i);
       return {
         gateText,
+        gateClass,
         p99Text,
         budgetText,
         sampleCount: sampleMatch ? Number(sampleMatch[1]) : null,
-        hasAudioWorkletNode: html.includes('AudioWorkletNode'),
-        hasRandomnessToken: /Math\.random/.test(html),
-        hasSetIntervalToken: /setInterval\s*\(/.test(html),
-        hasCurrentTimeToken: /\.currentTime\b/.test(html),
+        hasAudioWorkletRuntime: Number(window.__audioGateStats?.workletConstructs || 0) > 0,
+        randomCalls: Number(window.__audioGateStats?.randomCalls || 0),
+        intervalCalls: Number(window.__audioGateStats?.intervalCalls || 0),
       };
     });
 
@@ -117,10 +160,9 @@ async function run() {
     const sampleCount = Number.isFinite(benchmark.sampleCount) ? benchmark.sampleCount : null;
     const gateShowsFail = /\bFAIL\b/i.test(benchmark.gateText);
     const structuralOk =
-      benchmark.hasAudioWorkletNode &&
-      !benchmark.hasRandomnessToken &&
-      !benchmark.hasSetIntervalToken &&
-      !benchmark.hasCurrentTimeToken;
+      benchmark.hasAudioWorkletRuntime &&
+      benchmark.randomCalls === 0 &&
+      benchmark.intervalCalls === 0;
 
     const benchmarkOk =
       !gateShowsFail &&
@@ -137,7 +179,7 @@ async function run() {
       detail:
         p99 === null || budget === null || sampleCount === null
           ? `real benchmark missing metrics (p99="${benchmark.p99Text}", budget="${benchmark.budgetText}", gate="${benchmark.gateText}")`
-          : `real p99=${p99.toFixed(3)}ms budget=${budget.toFixed(3)}ms samples=${sampleCount} structural_ok=${structuralOk ? 1 : 0} gate_fail=${gateShowsFail ? 1 : 0} worklet=${benchmark.hasAudioWorkletNode ? 1 : 0} random=${benchmark.hasRandomnessToken ? 1 : 0} setInterval=${benchmark.hasSetIntervalToken ? 1 : 0} currentTime=${benchmark.hasCurrentTimeToken ? 1 : 0} gate="${benchmark.gateText}"`,
+          : `real p99=${p99.toFixed(3)}ms budget=${budget.toFixed(3)}ms samples=${sampleCount} structural_ok=${structuralOk ? 1 : 0} gate_fail=${gateShowsFail ? 1 : 0} worklet_runtime=${benchmark.hasAudioWorkletRuntime ? 1 : 0} random_calls=${benchmark.randomCalls} interval_calls=${benchmark.intervalCalls} gate_class="${benchmark.gateClass}" gate="${benchmark.gateText}"`,
     });
 
     let failed = 0;

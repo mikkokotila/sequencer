@@ -455,8 +455,7 @@ async function checkSetStateRespectsDisabled(args, changedFiles) {
     'src/engine/extensions/compressor.ts',
     'src/engine/extensions/transformer.ts',
   ];
-  const legacyTarget = 'src/engine/extensions/vari-mu.ts';
-  const allTargets = [...preferredTargets, legacyTarget];
+  const allTargets = [...preferredTargets];
 
   if (args.mode === 'delta' && !touchesAny(changedFiles, allTargets)) {
     recordSkipped('setState respects disabled state', 'Extension processors unchanged.');
@@ -468,14 +467,6 @@ async function checkSetStateRespectsDisabled(args, changedFiles) {
     if (await fileExists(rel)) {
       if (args.mode === 'full' || changedFiles.length === 0 || changedFiles.includes(rel)) targets.push(rel);
     }
-  }
-
-  if (
-    targets.length === 0 &&
-    (args.mode === 'full' || changedFiles.length === 0 || changedFiles.includes(legacyTarget)) &&
-    (await fileExists(legacyTarget))
-  ) {
-    targets.push(legacyTarget);
   }
 
   if (targets.length === 0) {
@@ -532,6 +523,52 @@ function safeEvalMapper(expressionText) {
   return new Function('v', `return (${expressionText});`);
 }
 
+function extractIdentifierFromPropertyChain(node) {
+  if (ts.isIdentifier(node)) return node.text;
+  if (ts.isPropertyAccessExpression(node)) return extractIdentifierFromPropertyChain(node.expression);
+  return '';
+}
+
+function findControlMapperNames(sourceFile) {
+  const names = {
+    cutoffMapper: '',
+    resonanceMapper: '',
+    compMapper: '',
+  };
+
+  walk(sourceFile, (node) => {
+    if (!ts.isFunctionDeclaration(node) || !node.name || node.name.text !== 'applyEngineParams' || !node.body) return;
+
+    for (const stmt of node.body.statements) {
+      if (!ts.isIfStatement(stmt) || !stmt.thenStatement) continue;
+      const branch = stmt.thenStatement;
+      const branchStatements = ts.isBlock(branch) ? branch.statements : [branch];
+      for (const bStmt of branchStatements) {
+        if (!ts.isExpressionStatement(bStmt) || !ts.isBinaryExpression(bStmt.expression)) continue;
+        const bin = bStmt.expression;
+        if (bin.operatorToken.kind !== ts.SyntaxKind.EqualsToken) continue;
+        if (!ts.isPropertyAccessExpression(bin.left)) continue;
+        if (!ts.isCallExpression(bin.right)) continue;
+        if (!ts.isIdentifier(bin.right.expression)) continue;
+        if (bin.right.arguments.length !== 1) continue;
+
+        const mapper = bin.right.expression.text;
+        const targetRoot = extractIdentifierFromPropertyChain(bin.left.expression);
+
+        if (targetRoot === 'engineFilter' && bin.left.name.text === 'value') {
+          if (containsIdentifier(bin.left, 'frequency')) names.cutoffMapper = mapper;
+          if (containsIdentifier(bin.left, 'Q')) names.resonanceMapper = mapper;
+        }
+        if (targetRoot === 'engineCompressor' && bin.left.name.text === 'value' && containsIdentifier(bin.left, 'threshold')) {
+          names.compMapper = mapper;
+        }
+      }
+    }
+  });
+
+  return names;
+}
+
 function isFiniteNumber(value) {
   return typeof value === 'number' && Number.isFinite(value);
 }
@@ -545,13 +582,17 @@ async function checkEngineControlCurves(args, changedFiles) {
 
   const sourceText = await fs.readFile(path.join(root, rel), 'utf8');
   const sourceFile = createSourceFile(rel, sourceText, ts.ScriptKind.TS);
-
-  const cutoffExpr = extractReturnExpressionText(sourceFile, 'cutoffToFreq', sourceText);
-  const resonanceExpr = extractReturnExpressionText(sourceFile, 'resonanceToQ', sourceText);
-  const compExpr = extractReturnExpressionText(sourceFile, 'compToThreshold', sourceText);
+  const mappers = findControlMapperNames(sourceFile);
+  const cutoffExpr = extractReturnExpressionText(sourceFile, mappers.cutoffMapper, sourceText);
+  const resonanceExpr = extractReturnExpressionText(sourceFile, mappers.resonanceMapper, sourceText);
+  const compExpr = extractReturnExpressionText(sourceFile, mappers.compMapper, sourceText);
 
   if (!cutoffExpr || !resonanceExpr || !compExpr) {
-    record(false, 'Engine low-end control curve safety', 'Missing one or more control mapping functions (cutoffToFreq/resonanceToQ/compToThreshold).');
+    record(
+      false,
+      'Engine low-end control curve safety',
+      `Missing control mapper(s) bound in applyEngineParams (cutoff=${mappers.cutoffMapper || 'unset'}, resonance=${mappers.resonanceMapper || 'unset'}, comp=${mappers.compMapper || 'unset'}).`,
+    );
     return;
   }
 

@@ -188,6 +188,32 @@ async function loadViteCreateServer() {
   return createServer;
 }
 
+let tsCache = null;
+
+async function loadTypeScript() {
+  if (tsCache) return tsCache;
+
+  try {
+    const ts = await import('typescript');
+    tsCache = ts?.default ?? ts;
+    return tsCache;
+  } catch {
+    // Fall back to root-resolved typescript when running from git-index snapshots.
+  }
+
+  const requireFromRoot = createRequire(path.join(toolRoot, 'package.json'));
+  let tsEntry = '';
+  try {
+    tsEntry = requireFromRoot.resolve('typescript');
+  } catch {
+    throw new Error('Unable to resolve \"typescript\" from project root. Install dependencies before running oracle harness.');
+  }
+
+  const ts = await import(pathToFileURL(tsEntry).href);
+  tsCache = ts?.default ?? ts;
+  return tsCache;
+}
+
 function toRounded(value, decimals = 6) {
   const scale = 10 ** decimals;
   return Math.round(value * scale) / scale;
@@ -362,38 +388,58 @@ async function runBenchmarkProbe(page, repoRoot) {
     await waitForServer(`${base}/`);
 
     await page.addInitScript(() => {
+      window.__oracleStats = {
+        intervalCalls: 0,
+        randomCalls: 0,
+        workletConstructs: 0,
+      };
+
       const origInterval = window.setInterval;
-      const origRandom = Math.random;
-
-      window.__oracleIntervalCalls = 0;
-      window.__oracleRandomCalls = 0;
-
       window.setInterval = function (...args) {
-        const stack = new Error().stack || '';
-        if (stack.includes('benchmark.html')) {
-          window.__oracleIntervalCalls += 1;
-        }
+        window.__oracleStats.intervalCalls += 1;
         return origInterval.apply(this, args);
       };
 
+      const origRandom = Math.random;
       Math.random = function (...args) {
-        const stack = new Error().stack || '';
-        if (stack.includes('benchmark.html')) {
-          window.__oracleRandomCalls += 1;
-        }
+        window.__oracleStats.randomCalls += 1;
         return origRandom.apply(this, args);
       };
+
+      const OriginalAudioWorkletNode = window.AudioWorkletNode;
+      if (typeof OriginalAudioWorkletNode === 'function') {
+        window.AudioWorkletNode = new Proxy(OriginalAudioWorkletNode, {
+          construct(target, args, newTarget) {
+            window.__oracleStats.workletConstructs += 1;
+            return Reflect.construct(target, args, newTarget);
+          },
+        });
+      }
     });
 
     await page.goto(`${base}/tests/benchmark.html`, { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => {
+      if (window.__oracleStats) {
+        window.__oracleStats.intervalCalls = 0;
+        window.__oracleStats.randomCalls = 0;
+        window.__oracleStats.workletConstructs = 0;
+      }
+    });
     await page.click('#run-btn');
     await page.waitForFunction(() => {
-      const gate = document.querySelector('#gate')?.textContent || '';
-      return gate.includes('PASS') || gate.includes('FAIL') || gate.includes('insufficient data');
+      const gate = document.querySelector('#gate');
+      const gateText = (gate?.textContent || '').trim();
+      return (
+        gate?.classList.contains('pass') ||
+        gate?.classList.contains('fail') ||
+        /^PASS\\b/.test(gateText) ||
+        /^FAIL\\s+—/.test(gateText)
+      );
     }, null, { timeout: 70000 });
 
     return page.evaluate(() => {
       const gateText = (document.querySelector('#gate')?.textContent || '').trim();
+      const gateClass = document.querySelector('#gate')?.className || '';
       const p99Text = (document.querySelector('#p99')?.textContent || '').trim();
       const budgetText = (document.querySelector('#budget')?.textContent || '').trim();
 
@@ -402,14 +448,15 @@ async function runBenchmarkProbe(page, repoRoot) {
 
       return {
         gate_text: gateText,
+        gate_class: gateClass,
         p99_text: p99Text,
         budget_text: budgetText,
         sample_count: Number.isFinite(sampleCount) ? sampleCount : 0,
-        interval_calls: Number(window.__oracleIntervalCalls || 0),
-        random_calls: Number(window.__oracleRandomCalls || 0),
-        has_audio_worklet: typeof AudioWorkletNode === 'function' && !!(window.AudioContext || window.webkitAudioContext),
+        interval_calls: Number(window.__oracleStats?.intervalCalls || 0),
+        random_calls: Number(window.__oracleStats?.randomCalls || 0),
+        has_audio_worklet_runtime: Number(window.__oracleStats?.workletConstructs || 0) > 0,
         terminal_gate_state:
-          gateText.includes('PASS') || gateText.includes('FAIL') || gateText.includes('insufficient data'),
+          /^PASS\\b/.test(gateText) || /^FAIL\\s+—/.test(gateText) || /\\bFAIL\\b/.test(gateClass),
       };
     });
   } finally {
@@ -419,6 +466,50 @@ async function runBenchmarkProbe(page, repoRoot) {
       // ignore shutdown issues; oracle result already determined
     }
   }
+}
+
+function walk(node, cb) {
+  cb(node);
+  node.forEachChild((child) => walk(child, cb));
+}
+
+function createSourceFile(tsRef, filePath, sourceText) {
+  return tsRef.createSourceFile(filePath, sourceText, tsRef.ScriptTarget.Latest, true, tsRef.ScriptKind.TS);
+}
+
+function getFunctionDeclaration(tsRef, sourceFile, fnName) {
+  let found = null;
+  walk(sourceFile, (node) => {
+    if (found || !tsRef.isFunctionDeclaration(node) || !node.name) return;
+    if (node.name.text === fnName) found = node;
+  });
+  return found;
+}
+
+function hasCallNamed(tsRef, scopeNode, targetName) {
+  let found = false;
+  walk(scopeNode, (node) => {
+    if (found || !tsRef.isCallExpression(node)) return;
+    if (tsRef.isIdentifier(node.expression) && node.expression.text === targetName) {
+      found = true;
+      return;
+    }
+    if (tsRef.isPropertyAccessExpression(node.expression) && node.expression.name.text === targetName) {
+      found = true;
+    }
+  });
+  return found;
+}
+
+function hasSetEnabledFalse(tsRef, scopeNode) {
+  let found = false;
+  walk(scopeNode, (node) => {
+    if (found || !tsRef.isCallExpression(node) || !tsRef.isPropertyAccessExpression(node.expression)) return;
+    if (node.expression.name.text !== 'setEnabled') return;
+    const arg = node.arguments[0];
+    if (arg && arg.kind === tsRef.SyntaxKind.FalseKeyword) found = true;
+  });
+  return found;
 }
 
 async function generatePersistenceRoundtrip(repoRoot) {
@@ -438,11 +529,20 @@ async function generatePersistenceRoundtrip(repoRoot) {
     // keep empty
   }
 
-  const hasDefaults = storeSrc.includes('CANONICAL_DEFAULTS');
-  const hasReset = storeSrc.includes('resetAllExtensions');
-  const callsReset = persistenceSrc.includes('resetAllExtensions()');
-  const callsSave = persistenceSrc.includes('await saveSong()');
-  const pass = hasDefaults && hasReset && callsReset && callsSave;
+  const tsRef = await loadTypeScript();
+  const storeAst = createSourceFile(tsRef, storePath, storeSrc);
+  const persistenceAst = createSourceFile(tsRef, persistencePath, persistenceSrc);
+
+  const resetFn = getFunctionDeclaration(tsRef, storeAst, 'resetAllExtensions');
+  const newSongFn = getFunctionDeclaration(tsRef, persistenceAst, 'newSong');
+
+  const hasResetFn = !!resetFn && !!resetFn.body;
+  const resetCallsState = hasResetFn ? hasCallNamed(tsRef, resetFn.body, 'setState') : false;
+  const resetDisables = hasResetFn ? hasSetEnabledFalse(tsRef, resetFn.body) : false;
+  const newSongCallsReset = !!newSongFn?.body && hasCallNamed(tsRef, newSongFn.body, 'resetAllExtensions');
+  const newSongCallsSave = !!newSongFn?.body && hasCallNamed(tsRef, newSongFn.body, 'saveSong');
+
+  const pass = hasResetFn && resetCallsState && resetDisables && newSongCallsReset && newSongCallsSave;
 
   return {
     status: pass ? 'PASS' : 'FAIL',
@@ -450,15 +550,16 @@ async function generatePersistenceRoundtrip(repoRoot) {
       state_hash_match: pass ? 1 : 0,
       roundtrip_stable: pass ? 1 : 0,
     },
-    evidence: `defaults=${hasDefaults} reset_fn=${hasReset} persistence_reset=${callsReset} persistence_save=${callsSave}`,
+    evidence: `reset_fn=${hasResetFn} reset_state=${resetCallsState} reset_disable=${resetDisables} newSong_reset=${newSongCallsReset} newSong_save=${newSongCallsSave}`,
     raw: {
       store_path: path.relative(repoRoot, storePath),
       persistence_path: path.relative(repoRoot, persistencePath),
       checks: {
-        has_defaults: hasDefaults,
-        has_reset_fn: hasReset,
-        persistence_calls_reset: callsReset,
-        persistence_calls_save: callsSave,
+        has_reset_fn: hasResetFn,
+        reset_calls_state: resetCallsState,
+        reset_disables: resetDisables,
+        new_song_calls_reset: newSongCallsReset,
+        new_song_calls_save: newSongCallsSave,
       },
     },
   };
@@ -648,7 +749,7 @@ async function run() {
         const budget = parseFiniteNumber(benchmarkMetrics.budget_text);
         const gateShowsFail = /\bFAIL\b/i.test(benchmarkMetrics.gate_text || '');
         const structuralOk =
-          benchmarkMetrics.has_audio_worklet &&
+          benchmarkMetrics.has_audio_worklet_runtime &&
           benchmarkMetrics.interval_calls === 0 &&
           benchmarkMetrics.random_calls === 0 &&
           benchmarkMetrics.terminal_gate_state;
@@ -669,7 +770,7 @@ async function run() {
               structural_ok: structuralOk ? 1 : 0,
               gate_fail: gateShowsFail ? 1 : 0,
             },
-            evidence: `profile=${args.executionProfile} gate="${benchmarkMetrics.gate_text}" samples=${benchmarkMetrics.sample_count} p99=${p99} budget=${budget} interval_calls=${benchmarkMetrics.interval_calls} random_calls=${benchmarkMetrics.random_calls}`,
+            evidence: `profile=${args.executionProfile} gate="${benchmarkMetrics.gate_text}" samples=${benchmarkMetrics.sample_count} p99=${p99} budget=${budget} interval_calls=${benchmarkMetrics.interval_calls} random_calls=${benchmarkMetrics.random_calls} worklet_runtime=${benchmarkMetrics.has_audio_worklet_runtime ? 1 : 0}`,
             raw: {
               oracle: oracleId,
               profile: args.executionProfile,

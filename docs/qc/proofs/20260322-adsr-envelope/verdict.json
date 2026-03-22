@@ -5,21 +5,21 @@
   "spec_path": "docs/qc/specs/20260322-adsr-envelope.task.spec.json",
   "policy_version": "2.0.0",
   "diagnostics_version": "1.0.0",
-  "started_at_utc": "2026-03-22T11:43:06.667Z",
-  "finished_at_utc": "2026-03-22T11:43:41.256Z",
-  "head_sha": "f1738eb",
-  "tree_sha": "62e8bbe3194efac1e34ce3e3cf73b9ec05cdd667",
-  "subject_sha": "1e5d4165bc71f0469c265a7850b7ad1c44f3f9cd28517d1ba804052820f48ee4",
+  "started_at_utc": "2026-03-22T11:53:49.096Z",
+  "finished_at_utc": "2026-03-22T11:54:37.490Z",
+  "head_sha": "8fddf0e",
+  "tree_sha": "6e3b41864249267cb78b2e64101a472023e7474e",
+  "subject_sha": "f12447689a91f614bf5e66d449f8d60479bc8d8b765527aa60845592def02507",
   "subject_files": [
-    "src/engine/adsr.ts",
-    "src/engine/midi.ts",
-    "src/ui/build.ts"
+    "src/engine/audio.ts",
+    "src/main.ts",
+    "src/ui/adsr-popup.ts"
   ],
   "simulated_files": [],
   "changed_files": [
-    "src/engine/adsr.ts",
-    "src/engine/midi.ts",
-    "src/ui/build.ts"
+    "src/engine/audio.ts",
+    "src/main.ts",
+    "src/ui/adsr-popup.ts"
   ],
   "phases": [
     {
@@ -35,12 +35,12 @@
     {
       "name": "synthesize",
       "status": "PASS",
-      "detail": "commands=5, oracles=6, manifest=required"
+      "detail": "commands=6, oracles=6, manifest=required"
     },
     {
       "name": "execute",
       "status": "PASS",
-      "detail": "commands=5, oracles=6, diagnostics=0"
+      "detail": "commands=6, oracles=6, diagnostics=0"
     },
     {
       "name": "verify",
@@ -57,7 +57,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 5347,
+        "elapsed_ms": 5197,
         "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-CI.log"
       },
       {
@@ -67,7 +67,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 26414,
+        "elapsed_ms": 26555,
         "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-E2E.log"
       },
       {
@@ -77,7 +77,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 357,
+        "elapsed_ms": 381,
         "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-GATE-CONTRACTS-FULL.log"
       },
       {
@@ -87,7 +87,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 411,
+        "elapsed_ms": 405,
         "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-GATE-ARCH-FULL.log"
       },
       {
@@ -97,8 +97,18 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 238,
+        "elapsed_ms": 299,
         "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-COMMIT-RANGE.log"
+      },
+      {
+        "id": "O-AUDIO-GATES",
+        "label": "Audio browser gates",
+        "command": "npm run audio:gates",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 13720,
+        "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-AUDIO-GATES.log"
       }
     ],
     "global_debt": [],
@@ -117,35 +127,35 @@
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260322-adsr-envelope/oracles/off_transparent.json",
         "raw_artifact": "docs/qc/proofs/20260322-adsr-envelope/raw/off_transparent.json",
-        "raw_sha256": "0c454ce7e54f60978c6568512709c6083e9d23e5b5eaba4519211597828acaf2"
+        "raw_sha256": "2d5715a0fc34456e7a3d480105af4159b52dcf98de5d6494678ba97d9ed50e46"
       },
       {
         "oracle_id": "on_audible",
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260322-adsr-envelope/oracles/on_audible.json",
         "raw_artifact": "docs/qc/proofs/20260322-adsr-envelope/raw/on_audible.json",
-        "raw_sha256": "6edb4a5460419b028b6a84b8dbd7cbc20488d9f35a9736f9f4ac30e0a4e5459b"
+        "raw_sha256": "511214ae8b8d708aeeb132a6a66934cd9e6dc9cb6d671a528bc12dbbb234b6f9"
       },
       {
         "oracle_id": "low_end_continuity",
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260322-adsr-envelope/oracles/low_end_continuity.json",
         "raw_artifact": "docs/qc/proofs/20260322-adsr-envelope/raw/low_end_continuity.json",
-        "raw_sha256": "6c72b72673978e4df50e98907faac6abe8c41b8db55e95810bcd641e7a617a73"
+        "raw_sha256": "bbd3e9da3ad3c09c085e2c4ad9c6c78cb552b3196fd03fde8c3765e7342b69a8"
       },
       {
         "oracle_id": "clip_guard",
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260322-adsr-envelope/oracles/clip_guard.json",
         "raw_artifact": "docs/qc/proofs/20260322-adsr-envelope/raw/clip_guard.json",
-        "raw_sha256": "f24847708316d02c01cffe444d4bbead6cef540973a6f3e4a9d352f14da60c97"
+        "raw_sha256": "37d9356d9f1f47d778970d9450aafa63bb36339b936f2ab955694f4d3c22c805"
       },
       {
         "oracle_id": "default_safety",
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260322-adsr-envelope/oracles/default_safety.json",
         "raw_artifact": "docs/qc/proofs/20260322-adsr-envelope/raw/default_safety.json",
-        "raw_sha256": "48a0f1ac7d9ad02628e077b3f068fda3c341e198deb7e2cb6081c75cd2822c2c"
+        "raw_sha256": "470430b88730f243ad915d6e9a14af0c64f6d28215a6989b12163005e84f81b7"
       },
       {
         "oracle_id": "control_binding",

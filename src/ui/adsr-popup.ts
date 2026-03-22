@@ -138,10 +138,11 @@ export function buildAdsrPopupDOM(): void {
 
   // Close on click outside
   document.addEventListener('mousedown', (e: MouseEvent) => {
+    const target = e.target;
     if (
       popup?.classList.contains('open') &&
-      !popup.contains(e.target as Node) &&
-      !(e.target as HTMLElement).classList.contains('adsr-btn')
+      (!target || !popup.contains(target as Node)) &&
+      !(target instanceof HTMLElement && target.classList.contains('adsr-btn'))
     ) {
       closeAdsrPopup();
     }
@@ -221,7 +222,6 @@ export function isAdsrPopupOpen(): boolean {
 // ═══════════════════════════════════════════
 
 function formatTime(s: number): string {
-  if (s < 0.01) return `${Math.round(s * 1000)}ms`;
   if (s < 1) return `${Math.round(s * 1000)}ms`;
   return `${s.toFixed(1)}s`;
 }

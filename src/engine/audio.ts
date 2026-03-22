@@ -147,8 +147,9 @@ export async function loadWorklets(): Promise<void> {
 /**
  * Play a sample at a given time with optional playback rate, destination, and ADSR envelope.
  *
- * When trackIndex and stepDuration are provided, an ADSR envelope GainNode
- * is inserted between the source and destination.
+ * When trackIndex is provided and ADSR is enabled for that track, an ADSR
+ * envelope GainNode is inserted between the source and destination.
+ * `stepDuration` is optional and used to auto-release sequenced notes.
  */
 export function playSample(
   buffer: AudioBuffer,

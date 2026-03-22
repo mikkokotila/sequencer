@@ -1,7 +1,7 @@
 {
   "oracle_id": "control_binding",
   "task_id": "20260322-adsr-envelope",
-  "subject_sha": "1e5d4165bc71f0469c265a7850b7ad1c44f3f9cd28517d1ba804052820f48ee4",
+  "subject_sha": "f12447689a91f614bf5e66d449f8d60479bc8d8b765527aa60845592def02507",
   "harness_version": "oracle-harness-v2",
   "status": "PASS",
   "metrics": {
@@ -10,6 +10,6 @@
   "raw_artifact": "raw/control_binding.json",
   "raw_sha256": "55d006124fa8d2c61d0910d7d5a1eb23a723fb9b2933a1bf4b25e0ca523bf66d",
   "evidence": "controls_declared=4",
-  "challenge_id": "31aead461cbb0ca9cfe490f9ecb347ae33afb165ac7dd0cbc1a42b61e1de064e",
-  "payload_digest": "fd2d77b8765bed834f47f1262f47ede0f6bd03f7055bc247d289dade550f9d72"
+  "challenge_id": "974d12ec0711a7594550205deeddb55f18e444c9af2afc970bf14b778f561fd3",
+  "payload_digest": "28906d1e3fb9f38e3852aeb4ee1187a44a7deed1c7e23a5fe0d70187159252b7"
 }

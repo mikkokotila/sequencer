@@ -1,7 +1,7 @@
 # QC Baseline State
 
 baseline_sha: b04dd33
-last_qc_at_utc: 2026-03-21T20:36:21Z
+last_qc_at_utc: 2026-03-22T06:06:43Z
 last_verdict: FAIL
 reviewed_by: codex-observer
-notes: QC run 20260321-203621-b32a85d failed; benchmark oracle evidence binding still points to unrelated artifact; baseline not advanced.
+notes: QC run 20260322-060643-46d3542 failed; commit-range audit found historical product commits in baseline range missing governance trailers; baseline not advanced.

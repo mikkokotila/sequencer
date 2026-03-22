@@ -1,0 +1,62 @@
+
+> sequencer@1.0.0 gate:commit-range
+> node docs/qc/scripts/commit-range-gates.mjs --range b04dd33..HEAD
+
+PASS | aad6fd63b4c97953146ddcb59aae2b779c5da2cf | non-product commit; governance attestation trailers not required
+FAIL | e49b3d169a24a46427706a96756967fa39522d58 | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | efeb304959f7b7d5b2e315d3cefb6c309e669333 | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+PASS | 5ff36b879e6126746aa22410b484a72bbbb424de | non-product commit; governance attestation trailers not required
+PASS | 92eab9e7f2988d922f6bdb343c213e31de0b2a9f | non-product commit; governance attestation trailers not required
+PASS | 8486e5282b8fd0b462603607ab188d6907d28622 | non-product commit; governance attestation trailers not required
+FAIL | ce3004d85c3cc7cd6b23efc54f3d50e46d18e2e6 | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | cb99c7f7a129bef4874f283bfb48d11768a874b6 | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | 6d7e9959dd3926563c0b97fe165489447e69e5ac | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+PASS | 4a4d425734d1c7ad19fa8e9b159826b7a83a296a | non-product commit; governance attestation trailers not required
+PASS | fff919a847286197c7d189fd6805bc9df7908335 | non-product commit; governance attestation trailers not required
+PASS | 9f4e2197b918ca33ea9f308f232d758096ecee56 | non-product commit; governance attestation trailers not required
+PASS | 121fd5ebf815bec3fe614b0f3b4386b0c964cbc7 | non-product commit; governance attestation trailers not required
+FAIL | 664a212716abc1c3655551e913a1e41ccdbe213f | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | 5b80df75aaad45906c0afd79a3d2d9d017f2ae96 | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | 5de45d664043f3e8e1ca20a02c2e6163ba03eb6c | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | 05fe5c4017ef71813d9b893199a94794ee35ff5a | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | 65a9179426b9a22c8392bbe81a77fd18ff8c6bb9 | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | 26606a3f6dd608300239d229bb4e398ff8ea2f7c | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | c89384e05b87b435a3fee92dd6f2be65a408f413 | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | 8a2cbb45fe227bb166806e89ce72d8509028467e | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | af57ea8a7046f337f10f26d6e235187d2ed14df6 | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | be45a399af94ba6d20baf2a2aa451ae7be7133c2 | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | 1f57b5654ae617bc3956e512673996d760cd88b4 | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | 938dbfa854a2add26303de77dc369a1b0a44e3a3 | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | 7bb208e8d4a6ab39dfae4c6df280215ca74cbc5b | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | ece8d8941a22f2aa6f6ee6d622454838653eb71f | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | 1ddb80902fbd71418c3413fd439bdccc051dea01 | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | d51dfd114226a82905ec9f1b1cfb123857e6d32b | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+FAIL | 9b103b3194b8ca817371e2ce70d3824c5ea97fc5 | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+PASS | f3e2f698fa8a12e699c5e73e6200c31e95d0455f | non-product commit; governance attestation trailers not required
+PASS | ebcb7bfcc3cbd9942f7551cc91a7353029cde9d4 | non-product commit; governance attestation trailers not required
+PASS | 3212c4feb79b784b5bebfadb01b64e6dc5d953b4 | non-product commit; governance attestation trailers not required
+PASS | 05d66908809fb21f983ce3cfd2be5bb6ee051b08 | non-product commit; governance attestation trailers not required
+PASS | e276bd6cb2e6a61ff48f0ba377b73075277b39a0 | non-product commit; governance attestation trailers not required
+FAIL | 544c11493e08e18e95bf3b30c9413dce1c210263 | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+PASS | 6402dc7c2218947f62a6bc89ae32b46127b4d48f | non-product commit; governance attestation trailers not required
+PASS | b774bc4d60183af34e0626c7a9b036abd99b1059 | non-product commit; governance attestation trailers not required
+FAIL | e3e4b217227810e3ed8212632f6d5721b2ac6649 | missing governance trailers (Gov-Task/Gov-Verdict/Gov-Attestation)
+PASS | 0962ffb3fbca3f9c578ae5f8e5ab4a292c3c2732 | non-product commit; governance attestation trailers not required
+PASS | 7ffcb5143e87cb6cec491cc445f86798d497c4e3 | non-product commit; governance attestation trailers not required
+PASS | ca7ecf07824693463c96419f4325ee6ddda31677 | non-product commit; governance attestation trailers not required
+PASS | 12f9080bbf1ae3cccb9549703f1f5830c7f39c25 | governance trailers + PASS attestation verified (docs/qc/proofs/20260321-new-song-baseline-reset/verdict.json)
+PASS | 65fbfbfbfdbe5cdc2f32536a0a15491a12f3ff38 | non-product commit; governance attestation trailers not required
+PASS | 07c7ed161644920b050bebdce19d7e3d972b061c | non-product commit; governance attestation trailers not required
+PASS | 362099d80d48e84fd8635fb6336ffe251c773f3e | non-product commit; governance attestation trailers not required
+PASS | 46c34be311f8c7e23e61e6ba844e339394b4b5f7 | non-product commit; governance attestation trailers not required
+PASS | 227f0db0cf8182dee8da8a4964b337fb9b8f3894 | non-product commit; governance attestation trailers not required
+PASS | 81fba5c61ed9520131f357d0e691bb0bfb8f7b39 | non-product commit; governance attestation trailers not required
+PASS | b32a85d942cf058dfbf076f241aa9229008644e3 | governance trailers + PASS attestation verified (docs/qc/proofs/20260321-benchmark-worklet-timing/verdict.json)
+PASS | 6dbd21573dadd10404123f50bb6cab6743204ea0 | non-product commit; governance attestation trailers not required
+PASS | c1909683d24acd3cb47ae7d7350ffac210de7254 | non-product commit; governance attestation trailers not required
+PASS | d7b1982d90a6580e4c670dd23ff1af273f8158a4 | non-product commit; governance attestation trailers not required
+PASS | c6238a8613d458b41f60a848b19cab7961000dff | non-product commit; governance attestation trailers not required
+PASS | ef7eec2f6b7399c9419597a518fb4593adaa09c3 | non-product commit; governance attestation trailers not required
+PASS | 46d35420de3c3ec4134874cd19ac6f445d029edc | governance trailers + PASS attestation verified (docs/qc/proofs/20260322-debt-setstate-disabled-guard/verdict.json)
+
+commit-range-gates: 24 failure(s), 32 pass(es) in range b04dd33..HEAD.

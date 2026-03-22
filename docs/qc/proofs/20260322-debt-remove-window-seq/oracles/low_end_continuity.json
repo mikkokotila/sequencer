@@ -1,0 +1,15 @@
+{
+  "oracle_id": "low_end_continuity",
+  "task_id": "20260322-debt-remove-window-seq",
+  "subject_sha": "53baaed9b96f6a09d817006d86807e67112e92ec77632f9ea6c324788e38a306",
+  "harness_version": "oracle-harness-v2",
+  "status": "PASS",
+  "metrics": {
+    "max_neighbor_delta_lufs": 0.018263
+  },
+  "raw_artifact": "raw/low_end_continuity.json",
+  "raw_sha256": "fc1cfee78df0762b2e39f7e5b7d22cf352c8dbfc437814239c3c3ab57bb0e549",
+  "evidence": "max_neighbor_delta_lufs=0.01826291792680479",
+  "challenge_id": "10feecd0e300eb871b20b21594f74ec0966905e3361d9a90c89ec0fb586e48ea",
+  "payload_digest": "97a55bc65200adb84f0c9947b882428c68f7f913ec845e52305ade8509acdab9"
+}

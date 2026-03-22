@@ -1,0 +1,45 @@
+{
+  "task_id": "20260322-debt-remove-window-seq",
+  "task_type": "refactor",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Remove window.SEQ global installation in the Vite/TypeScript app — internal extensions use ExtensionHost DI; legacy sequencer.html and extensions/*.js consumers are deprecated and out of scope",
+    "in_scope": [
+      "src/engine/extensions/registry.ts",
+      "src/main.ts",
+      "src/types.ts"
+    ],
+    "out_of_scope": [
+      "src/engine/worklets/**"
+    ],
+    "controls": [
+      {
+        "id": "ext.hostDI",
+        "default": "active",
+        "range": ["active"],
+        "unit": "state",
+        "off_semantics": "n/a — ExtensionHost DI is always active after init",
+        "on_semantics": "extensions receive host dependencies via init(ctx, host)"
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:kick_01"
+    ],
+    "seed": "fixed-seed-v1",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": true
+  }
+}

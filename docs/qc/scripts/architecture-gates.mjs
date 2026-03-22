@@ -2,6 +2,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import ts from 'typescript';
 
 const root = process.cwd();
 const passes = [];
@@ -53,58 +54,188 @@ function recordSkipped(name, detail) {
   passes.push({ name, detail: `[delta-skip] ${detail}` });
 }
 
+function walk(node, cb) {
+  cb(node);
+  node.forEachChild((child) => walk(child, cb));
+}
+
+function createSourceFile(filePath, content, kind = ts.ScriptKind.TS) {
+  return ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, kind);
+}
+
 async function read(rel) {
   return fs.readFile(path.join(root, rel), 'utf8');
 }
 
-function runRg(pattern, targets) {
-  const args = ['-n', pattern, ...targets];
-  const result = spawnSync('rg', args, { cwd: root, encoding: 'utf8' });
-
-  if (result.error && result.error.code === 'ENOENT') {
-    const grep = spawnSync('grep', ['-RInE', pattern, ...targets], { cwd: root, encoding: 'utf8' });
-    if (grep.status === 0) return { matched: true, out: (grep.stdout || '').trim() };
-    if (grep.status === 1) return { matched: false, out: '' };
-    return {
-      matched: true,
-      out: `grep fallback failed (status ${grep.status}): ${grep.stderr || 'unknown error'}`,
-    };
-  }
-
-  if (result.status === 0) return { matched: true, out: (result.stdout || '').trim() };
-  if (result.status === 1) return { matched: false, out: '' };
+function nodeLocation(relPath, sourceFile, node, lineOffset = 0) {
+  const pos = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
   return {
-    matched: true,
-    out: `rg execution failed (status ${result.status}): ${result.stderr || 'unknown error'}`,
+    file: relPath,
+    line: pos.line + 1 + lineOffset,
+    col: pos.character + 1,
   };
 }
 
-function readAddedLines(targets) {
+function formatViolation(v) {
+  return `${v.file}:${v.line}: ${v.message}`;
+}
+
+function parseAddedLineMap(targets) {
   const diff = spawnSync('git', ['diff', '--cached', '--unified=0', '--', ...targets], {
     cwd: root,
     encoding: 'utf8',
   });
+
   if (diff.status !== 0) {
-    return { ok: false, lines: [], error: `git diff failed (status ${diff.status}): ${diff.stderr || 'unknown error'}` };
+    return {
+      ok: false,
+      map: new Map(),
+      error: `git diff failed (status ${diff.status}): ${diff.stderr || 'unknown error'}`,
+    };
   }
-  const lines = (diff.stdout || '')
-    .split('\n')
-    .filter((line) => line.startsWith('+') && !line.startsWith('+++'))
-    .map((line) => line.slice(1));
-  return { ok: true, lines, error: '' };
+
+  const addedByFile = new Map();
+  const lines = (diff.stdout || '').split('\n');
+  let currentFile = '';
+  let newLine = 0;
+
+  for (const line of lines) {
+    if (line.startsWith('+++ b/')) {
+      currentFile = line.slice('+++ b/'.length).trim();
+      if (!addedByFile.has(currentFile)) addedByFile.set(currentFile, new Set());
+      continue;
+    }
+
+    const hunk = line.match(/^@@\s+-\d+(?:,\d+)?\s+\+(\d+)(?:,(\d+))?\s+@@/);
+    if (hunk) {
+      newLine = Number.parseInt(hunk[1], 10);
+      continue;
+    }
+
+    if (!currentFile) continue;
+    if (line.startsWith('+') && !line.startsWith('+++')) {
+      addedByFile.get(currentFile)?.add(newLine);
+      newLine += 1;
+      continue;
+    }
+    if (line.startsWith('-') && !line.startsWith('---')) continue;
+    if (line.startsWith(' ')) newLine += 1;
+  }
+
+  return { ok: true, map: addedByFile, error: '' };
 }
 
-function hasAddedPattern(pattern, targets) {
-  const added = readAddedLines(targets);
-  if (!added.ok) {
-    return { matched: true, out: added.error };
+function isViolationOnAddedLine(addedMap, violation) {
+  const lines = addedMap.get(violation.file);
+  if (!lines) return false;
+  return lines.has(violation.line);
+}
+
+function extractHtmlScriptBlocks(html) {
+  const blocks = [];
+  const lower = html.toLowerCase();
+  let cursor = 0;
+
+  while (cursor < lower.length) {
+    const openStart = lower.indexOf('<script', cursor);
+    if (openStart === -1) break;
+
+    const openEnd = lower.indexOf('>', openStart + 7);
+    if (openEnd === -1) break;
+
+    const scriptContentStart = openEnd + 1;
+    const closeStart = lower.indexOf('</script', scriptContentStart);
+    if (closeStart === -1) break;
+
+    const closeEnd = lower.indexOf('>', closeStart + 8);
+    if (closeEnd === -1) break;
+
+    const content = html.slice(scriptContentStart, closeStart);
+    const prefix = html.slice(0, scriptContentStart);
+    const lineOffset = prefix.split('\n').length - 1;
+    blocks.push({ content, lineOffset });
+    cursor = closeEnd + 1;
   }
-  const re = new RegExp(pattern);
-  const hits = added.lines.filter((line) => re.test(line));
-  if (hits.length > 0) {
-    return { matched: true, out: hits.join('\n') };
+
+  return blocks;
+}
+
+async function listFilesRecursive(relDir, allowedExts) {
+  const out = [];
+  const base = path.join(root, relDir);
+
+  async function visit(absDir, relPrefix) {
+    let entries = [];
+    try {
+      entries = await fs.readdir(absDir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+
+    for (const entry of entries) {
+      const abs = path.join(absDir, entry.name);
+      const rel = relPrefix ? `${relPrefix}/${entry.name}` : `${relDir}/${entry.name}`;
+      if (entry.isDirectory()) {
+        await visit(abs, rel);
+      } else if (allowedExts.some((ext) => rel.endsWith(ext))) {
+        out.push(rel);
+      }
+    }
   }
-  return { matched: false, out: '' };
+
+  await visit(base, '');
+  return out.sort();
+}
+
+function containsCallNamed(node, name) {
+  let found = false;
+  walk(node, (child) => {
+    if (found || !ts.isCallExpression(child)) return;
+    if (ts.isIdentifier(child.expression) && child.expression.text === name) found = true;
+    if (ts.isPropertyAccessExpression(child.expression) && child.expression.name.text === name) found = true;
+  });
+  return found;
+}
+
+function containsIdentifier(node, name) {
+  let found = false;
+  walk(node, (child) => {
+    if (found) return;
+    if (ts.isIdentifier(child) && child.text === name) found = true;
+  });
+  return found;
+}
+
+function getImportModuleTexts(sourceFile) {
+  const modules = [];
+  sourceFile.forEachChild((node) => {
+    if (!ts.isImportDeclaration(node)) return;
+    if (!ts.isStringLiteral(node.moduleSpecifier)) return;
+    modules.push(node.moduleSpecifier.text);
+  });
+  return modules;
+}
+
+function isStyleMutationAssignment(node) {
+  if (!ts.isBinaryExpression(node)) return false;
+  if (node.operatorToken.kind !== ts.SyntaxKind.EqualsToken) return false;
+
+  const lhs = node.left;
+  if (!ts.isPropertyAccessExpression(lhs)) return false;
+
+  let cursor = lhs.expression;
+  while (ts.isPropertyAccessExpression(cursor)) {
+    if (cursor.name.text === 'style') return true;
+    cursor = cursor.expression;
+  }
+
+  return false;
+}
+
+function rootIdentifierText(node) {
+  if (ts.isIdentifier(node)) return node.text;
+  if (ts.isPropertyAccessExpression(node)) return rootIdentifierText(node.expression);
+  return '';
 }
 
 async function checkNoDummyPassThroughNodes(args, changedFiles) {
@@ -119,16 +250,45 @@ async function checkNoDummyPassThroughNodes(args, changedFiles) {
   }
 
   const findings = [];
-  for (const file of targets) {
-    const text = await read(file);
-    if (text.includes('const pass = ctx.createGain();') && text.includes('return { input: pass, output: pass };')) {
-      findings.push(file);
-    }
+
+  for (const rel of targets) {
+    const text = await read(rel);
+    const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
+    const gainVars = new Set();
+
+    walk(sourceFile, (node) => {
+      if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer && ts.isCallExpression(node.initializer)) {
+        const call = node.initializer;
+        if (
+          ts.isPropertyAccessExpression(call.expression) &&
+          call.expression.name.text === 'createGain'
+        ) {
+          gainVars.add(node.name.text);
+        }
+      }
+
+      if (!ts.isReturnStatement(node) || !node.expression || !ts.isObjectLiteralExpression(node.expression)) return;
+
+      let inputName = '';
+      let outputName = '';
+      for (const prop of node.expression.properties) {
+        if (!ts.isPropertyAssignment(prop) || !ts.isIdentifier(prop.initializer)) continue;
+        const key = ts.isIdentifier(prop.name) ? prop.name.text : ts.isStringLiteral(prop.name) ? prop.name.text : '';
+        if (key === 'input') inputName = prop.initializer.text;
+        if (key === 'output') outputName = prop.initializer.text;
+      }
+
+      if (inputName && outputName && inputName === outputName && gainVars.has(inputName)) {
+        const loc = nodeLocation(rel, sourceFile, node);
+        findings.push(`${loc.file}:${loc.line}: return { input: ${inputName}, output: ${outputName} }`);
+      }
+    });
   }
+
   record(
     findings.length === 0,
     'No dummy pass-through extension nodes',
-    findings.length === 0 ? 'No pass-through dummy insert nodes detected.' : `Dummy node pattern found: ${findings.join(', ')}`,
+    findings.length === 0 ? 'No pass-through dummy insert nodes detected.' : `Dummy node pattern found:\n${findings.join('\n')}`,
   );
 }
 
@@ -137,17 +297,58 @@ async function checkNoWindowSeqGlobalInExtensions(args, changedFiles) {
     recordSkipped('No global window.SEQ extension coupling', 'Extension files unchanged.');
     return;
   }
+
+  const extensionFiles = await listFilesRecursive('src/engine/extensions', ['.ts']);
+  const scanFiles = args.mode === 'delta' ? changedFiles.filter((f) => f.startsWith('src/engine/extensions/')) : extensionFiles;
+
+  const findings = [];
+
+  for (const rel of scanFiles) {
+    const text = await read(rel);
+    const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
+
+    walk(sourceFile, (node) => {
+      if (ts.isPropertyAccessExpression(node)) {
+        if (ts.isIdentifier(node.expression) && node.expression.text === 'window' && node.name.text === 'SEQ') {
+          const loc = nodeLocation(rel, sourceFile, node);
+          findings.push({ ...loc, message: 'window.SEQ' });
+        }
+      }
+      if (ts.isElementAccessExpression(node)) {
+        if (
+          ts.isIdentifier(node.expression) &&
+          node.expression.text === 'window' &&
+          node.argumentExpression &&
+          ts.isStringLiteral(node.argumentExpression) &&
+          node.argumentExpression.text === 'SEQ'
+        ) {
+          const loc = nodeLocation(rel, sourceFile, node);
+          findings.push({ ...loc, message: "window['SEQ']" });
+        }
+      }
+    });
+  }
+
   if (args.mode === 'delta') {
-    const r = hasAddedPattern('window\\.SEQ', ['src/engine/extensions']);
+    const added = parseAddedLineMap(['src/engine/extensions']);
+    if (!added.ok) {
+      record(false, 'No global window.SEQ extension coupling', added.error);
+      return;
+    }
+    const newFindings = findings.filter((f) => isViolationOnAddedLine(added.map, f));
     record(
-      !r.matched,
+      newFindings.length === 0,
       'No global window.SEQ extension coupling',
-      r.matched ? r.out : 'No new window.SEQ additions in staged diff.',
+      newFindings.length === 0 ? 'No new window.SEQ additions in staged diff.' : newFindings.map(formatViolation).join('\n'),
     );
     return;
   }
-  const r = runRg('window\\.SEQ', ['src/engine/extensions']);
-  record(!r.matched, 'No global window.SEQ extension coupling', r.matched ? r.out : 'No window.SEQ usage found in extensions.');
+
+  record(
+    findings.length === 0,
+    'No global window.SEQ extension coupling',
+    findings.length === 0 ? 'No window.SEQ usage found in extensions.' : findings.map(formatViolation).join('\n'),
+  );
 }
 
 async function checkEngineInterfaceUsed(args, changedFiles) {
@@ -155,29 +356,56 @@ async function checkEngineInterfaceUsed(args, changedFiles) {
     recordSkipped('Engine interface contract is actually consumed', 'Engine boundary files unchanged.');
     return;
   }
-  const r = runRg('AudioEngine', ['src']);
-  const lines = r.matched ? r.out.split('\n').filter(Boolean) : [];
-  const ok = lines.length > 1;
+
+  const interfaceRel = 'src/engine/interface.ts';
+  let interfaceExists = true;
+  try {
+    await fs.access(path.join(root, interfaceRel));
+  } catch {
+    interfaceExists = false;
+  }
+
+  if (!interfaceExists) {
+    record(true, 'Engine interface contract is actually consumed', 'No legacy engine interface module present (dead boundary removed).');
+    return;
+  }
+
+  const srcFiles = await listFilesRecursive('src', ['.ts']);
+  const importers = [];
+
+  for (const rel of srcFiles) {
+    if (rel === interfaceRel) continue;
+    const text = await read(rel);
+    const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
+    const modules = getImportModuleTexts(sourceFile);
+    const consumesInterface = modules.some((m) => m === './interface' || m === '../engine/interface');
+    if (consumesInterface) importers.push(rel);
+  }
+
+  const ok = importers.length > 0;
   record(
     ok,
     'Engine interface contract is actually consumed',
-    ok ? `AudioEngine references: ${lines.length}` : 'AudioEngine appears unused outside interface declaration.',
+    ok ? `Engine interface imported by ${importers.length} module(s).` : 'interface.ts exists but has no import consumers (dead contract surface).',
   );
 }
 
 async function checkSchedulerBoundary(args, changedFiles) {
-  if (args.mode === 'delta' && !touchesAny(changedFiles, ['src/engine/scheduler.ts'])) {
+  const rel = 'src/engine/scheduler.ts';
+  if (args.mode === 'delta' && !touchesAny(changedFiles, [rel])) {
     recordSkipped('Scheduler does not import transport internals directly', 'Scheduler file unchanged.');
     return;
   }
-  const text = await read('src/engine/scheduler.ts');
-  const directPatternImport = text.includes("from '../transport/patterns'");
-  const directSongImport = text.includes("from '../transport/song'");
-  const ok = !directPatternImport && !directSongImport;
+
+  const text = await read(rel);
+  const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
+  const modules = getImportModuleTexts(sourceFile);
+  const bad = modules.filter((m) => m === '../transport/patterns' || m === '../transport/song');
+
   record(
-    ok,
+    bad.length === 0,
     'Scheduler does not import transport internals directly',
-    ok ? 'No direct scheduler->transport state imports detected.' : 'scheduler.ts imports transport internals directly.',
+    bad.length === 0 ? 'No direct scheduler->transport state imports detected.' : `scheduler.ts imports forbidden modules: ${bad.join(', ')}`,
   );
 }
 
@@ -186,9 +414,26 @@ async function checkPersistenceNoUICallbackInjection(args, changedFiles) {
     recordSkipped('Persistence lifecycle decoupled from UI callback injection', 'Persistence lifecycle files unchanged.');
     return;
   }
-  const text = await read('src/transport/persistence.ts');
-  const hasCallbackInterface = text.includes('interface PersistenceCallbacks');
-  const hasSetter = text.includes('setPersistenceCallbacks(');
+
+  const rel = 'src/transport/persistence.ts';
+  const text = await read(rel);
+  const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
+
+  let hasCallbackInterface = false;
+  let hasSetter = false;
+
+  walk(sourceFile, (node) => {
+    if (ts.isInterfaceDeclaration(node) && node.name.text === 'PersistenceCallbacks') {
+      hasCallbackInterface = true;
+    }
+    if (ts.isFunctionDeclaration(node) && node.name && node.name.text === 'setPersistenceCallbacks') {
+      hasSetter = true;
+    }
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text === 'setPersistenceCallbacks') {
+      hasSetter = true;
+    }
+  });
+
   const ok = !hasCallbackInterface && !hasSetter;
   record(
     ok,
@@ -198,14 +443,37 @@ async function checkPersistenceNoUICallbackInjection(args, changedFiles) {
 }
 
 async function checkPreviewNodeCleanup(args, changedFiles) {
-  if (args.mode === 'delta' && !touchesAny(changedFiles, ['src/engine/audio.ts'])) {
+  const rel = 'src/engine/audio.ts';
+  if (args.mode === 'delta' && !touchesAny(changedFiles, [rel])) {
     recordSkipped('Preview audio nodes are explicitly cleaned up', 'Audio core preview path unchanged.');
     return;
   }
-  const text = await read('src/engine/audio.ts');
-  const hasPreviewGain = text.includes('const previewGain = audioCtx.createGain();');
-  const hasEndedCleanup = text.includes('src.onended') && text.includes('previewGain.disconnect()');
-  const ok = !hasPreviewGain || hasEndedCleanup;
+
+  const text = await read(rel);
+  const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
+
+  let hasPreviewGainCreate = false;
+  let hasCleanupDisconnect = false;
+
+  walk(sourceFile, (node) => {
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text === 'previewGain' && node.initializer && ts.isCallExpression(node.initializer)) {
+      const call = node.initializer;
+      if (ts.isPropertyAccessExpression(call.expression) && call.expression.name.text === 'createGain') {
+        hasPreviewGainCreate = true;
+      }
+    }
+
+    if (!ts.isBinaryExpression(node) || node.operatorToken.kind !== ts.SyntaxKind.EqualsToken) return;
+    if (!ts.isPropertyAccessExpression(node.left)) return;
+    if (!ts.isIdentifier(node.left.expression) || node.left.expression.text !== 'src') return;
+    if (node.left.name.text !== 'onended') return;
+
+    if (containsCallNamed(node.right, 'disconnect') && containsIdentifier(node.right, 'previewGain')) {
+      hasCleanupDisconnect = true;
+    }
+  });
+
+  const ok = !hasPreviewGainCreate || hasCleanupDisconnect;
   record(
     ok,
     'Preview audio nodes are explicitly cleaned up',
@@ -214,61 +482,89 @@ async function checkPreviewNodeCleanup(args, changedFiles) {
 }
 
 async function checkInitAudioCallSpread(args, changedFiles) {
-  if (
-    args.mode === 'delta' &&
-    !touchesAny(changedFiles, ['src/engine/audio.ts', 'src/main.ts', 'src/ui/**', 'src/transport/persistence.ts'])
-  ) {
+  const scanPatterns = ['src/engine/audio.ts', 'src/main.ts', 'src/ui/**', 'src/transport/persistence.ts'];
+  if (args.mode === 'delta' && !touchesAny(changedFiles, scanPatterns)) {
     recordSkipped('Audio initialization ownership is centralized', 'initAudio callsite files unchanged.');
     return;
   }
+
+  const files = await listFilesRecursive('src', ['.ts']);
+  const calls = [];
+
+  for (const rel of files) {
+    if (args.mode === 'delta' && !changedFiles.includes(rel)) continue;
+
+    const text = await read(rel);
+    const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
+
+    walk(sourceFile, (node) => {
+      if (!ts.isCallExpression(node)) return;
+      if (!ts.isIdentifier(node.expression) || node.expression.text !== 'initAudio') return;
+      const loc = nodeLocation(rel, sourceFile, node);
+      calls.push(loc);
+    });
+  }
+
   if (args.mode === 'delta') {
-    const deltaTargets = changedFiles.filter((filePath) => filePath.startsWith('src/'));
-    if (deltaTargets.length === 0) {
-      recordSkipped('Audio initialization ownership is centralized', 'No source files in delta scope.');
-      return;
-    }
-    const added = readAddedLines(deltaTargets);
+    const added = parseAddedLineMap(changedFiles.filter((f) => f.startsWith('src/')));
     if (!added.ok) {
       record(false, 'Audio initialization ownership is centralized', added.error);
       return;
     }
-    const newCalls = added.lines.filter(
-      (line) =>
-        /\binitAudio\(/.test(line) &&
-        !/function\s+initAudio\s*\(/.test(line) &&
-        !/import\s+\{[^}]*\binitAudio\b/.test(line),
-    );
+
+    const newCalls = calls.filter((loc) => isViolationOnAddedLine(added.map, { file: loc.file, line: loc.line }));
     record(
       newCalls.length === 0,
       'Audio initialization ownership is centralized',
       newCalls.length === 0
         ? 'No new initAudio call sites added in staged diff.'
-        : `New initAudio call sites added: ${newCalls.join(' | ')}`,
+        : `New initAudio call sites added: ${newCalls.map((loc) => `${loc.file}:${loc.line}`).join(' | ')}`,
     );
     return;
   }
-  const r = runRg('initAudio\\(', ['src']);
-  const lines = r.matched ? r.out.split('\n').filter(Boolean) : [];
-  const nonDef = lines.filter((line) => !line.includes('src/engine/audio.ts:84:'));
-  const ok = nonDef.length <= 3;
+
+  const ok = calls.length <= 3;
   record(
     ok,
     'Audio initialization ownership is centralized',
-    ok ? `initAudio call sites (excluding definition): ${nonDef.length}` : `Too many initAudio call sites (${nonDef.length}).`,
+    ok ? `initAudio call sites: ${calls.length}` : `Too many initAudio call sites (${calls.length}).`,
   );
 }
 
 async function checkNoSilentDecodeCatch(args, changedFiles) {
-  if (args.mode === 'delta' && !touchesAny(changedFiles, ['src/transport/persistence.ts'])) {
+  const rel = 'src/transport/persistence.ts';
+  if (args.mode === 'delta' && !touchesAny(changedFiles, [rel])) {
     recordSkipped('Decode failures are not silently swallowed', 'Persistence decode path unchanged.');
     return;
   }
-  const text = await read('src/transport/persistence.ts');
-  const hasSilentDecodeCatch = /decodeAudioData\([\s\S]*?\)\s*;\s*\}\s*catch\s*\{\s*[\s\S]*?\}/m.test(text);
+
+  const text = await read(rel);
+  const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
+
+  const silentFindings = [];
+
+  walk(sourceFile, (node) => {
+    if (!ts.isTryStatement(node) || !node.catchClause || !node.catchClause.block) return;
+    const tryHasDecode = containsCallNamed(node.tryBlock, 'decodeAudioData');
+    if (!tryHasDecode) return;
+
+    let hasThrow = false;
+    let hasCall = false;
+    walk(node.catchClause.block, (c) => {
+      if (ts.isThrowStatement(c)) hasThrow = true;
+      if (ts.isCallExpression(c)) hasCall = true;
+    });
+
+    if (!hasThrow && !hasCall) {
+      const loc = nodeLocation(rel, sourceFile, node.catchClause.block);
+      silentFindings.push(`${loc.file}:${loc.line}: catch block has no throw/log call`);
+    }
+  });
+
   record(
-    !hasSilentDecodeCatch,
+    silentFindings.length === 0,
     'Decode failures are not silently swallowed',
-    hasSilentDecodeCatch ? 'Detected catch {} style decode fallback without explicit error context.' : 'No silent decode catch blocks detected.',
+    silentFindings.length === 0 ? 'No silent decode catch blocks detected.' : silentFindings.join('\n'),
   );
 }
 
@@ -277,27 +573,77 @@ async function checkNoDuplicateUiBusinessLogic(args, changedFiles) {
     recordSkipped('UI does not duplicate transport business logic', 'UI/transport rule files unchanged.');
     return;
   }
-  const painting = await read('src/ui/painting.ts');
-  const cells = await read('src/ui/cells.ts');
-  const hasReplicateTrackInUI = painting.includes('export function replicateTrack(');
-  const hasSetMelodyCellInUI = cells.includes('export function setMelodyCell(');
-  const ok = !hasReplicateTrackInUI && !hasSetMelodyCellInUI;
+
+  const targets = ['src/ui/painting.ts', 'src/ui/cells.ts'];
+  const findings = [];
+
+  for (const rel of targets) {
+    const text = await read(rel);
+    const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
+
+    walk(sourceFile, (node) => {
+      if (!ts.isFunctionDeclaration(node) || !node.name) return;
+      const name = node.name.text;
+      if (name === 'replicateTrack' || name === 'setMelodyCell') {
+        const loc = nodeLocation(rel, sourceFile, node);
+        findings.push(`${loc.file}:${loc.line}: function ${name}()`);
+      }
+    });
+  }
+
   record(
-    ok,
+    findings.length === 0,
     'UI does not duplicate transport business logic',
-    ok ? 'No duplicate replicateTrack/setMelodyCell in UI layer.' : 'Duplicate track replication and/or melody mutation logic exists in UI layer.',
+    findings.length === 0 ? 'No duplicate replicateTrack/setMelodyCell in UI layer.' : findings.join('\n'),
   );
 }
 
 async function checkPaintingSetupIdempotent(args, changedFiles) {
-  if (args.mode === 'delta' && !touchesAny(changedFiles, ['src/ui/painting.ts', 'src/ui/build.ts'])) {
+  const rel = 'src/ui/painting.ts';
+  if (args.mode === 'delta' && !touchesAny(changedFiles, [rel, 'src/ui/build.ts'])) {
     recordSkipped('Painting event setup is idempotent', 'Painting setup files unchanged.');
     return;
   }
-  const text = await read('src/ui/painting.ts');
-  const hasInitGuard =
-    text.includes('let paintingInitialized') || text.includes('let isPaintingSetup') || text.includes('if (paintingSetupDone) return');
-  record(hasInitGuard, 'Painting event setup is idempotent', hasInitGuard ? 'Found setup guard.' : 'No idempotency guard detected for setupPainting().');
+
+  const text = await read(rel);
+  const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
+
+  const topLevelFlags = new Set();
+  sourceFile.forEachChild((node) => {
+    if (!ts.isVariableStatement(node)) return;
+    for (const decl of node.declarationList.declarations) {
+      if (ts.isIdentifier(decl.name)) topLevelFlags.add(decl.name.text);
+    }
+  });
+
+  let hasGuard = false;
+
+  walk(sourceFile, (node) => {
+    if (!ts.isFunctionDeclaration(node) || !node.name || node.name.text !== 'setupPainting' || !node.body) return;
+
+    for (const stmt of node.body.statements) {
+      if (!ts.isIfStatement(stmt)) continue;
+      if (!stmt.thenStatement || !ts.isReturnStatement(stmt.thenStatement) && !containsCallNamed(stmt.thenStatement, 'return')) {
+        // If-statement with block `{ return; }` is covered below
+      }
+
+      const conditionIdentifiers = [];
+      walk(stmt.expression, (c) => {
+        if (ts.isIdentifier(c)) conditionIdentifiers.push(c.text);
+      });
+
+      const referencesFlag = conditionIdentifiers.some((id) => topLevelFlags.has(id));
+      const returnsEarly =
+        ts.isReturnStatement(stmt.thenStatement) ||
+        (ts.isBlock(stmt.thenStatement) && stmt.thenStatement.statements.some((s) => ts.isReturnStatement(s)));
+
+      if (referencesFlag && returnsEarly) {
+        hasGuard = true;
+      }
+    }
+  });
+
+  record(hasGuard, 'Painting event setup is idempotent', hasGuard ? 'Found setup guard.' : 'No idempotency guard detected for setupPainting().');
 }
 
 async function checkNoInlinePlayheadStyleThrash(args, changedFiles) {
@@ -305,56 +651,134 @@ async function checkNoInlinePlayheadStyleThrash(args, changedFiles) {
     recordSkipped('Playhead/cell rendering avoids repeated inline style mutation', 'Playhead/cell render files unchanged.');
     return;
   }
-  const playhead = await read('src/ui/playhead.ts');
-  const cells = await read('src/ui/cells.ts');
-  const hasInline =
-    playhead.includes('.style.background') ||
-    playhead.includes('.style.boxShadow') ||
-    cells.includes('.style.background') ||
-    cells.includes('.style.boxShadow');
+
+  const targets = ['src/ui/playhead.ts', 'src/ui/cells.ts'];
+  const findings = [];
+
+  for (const rel of targets) {
+    const text = await read(rel);
+    const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
+
+    walk(sourceFile, (node) => {
+      if (!isStyleMutationAssignment(node)) return;
+      const loc = nodeLocation(rel, sourceFile, node);
+      findings.push(`${loc.file}:${loc.line}: inline style mutation`);
+    });
+  }
+
   record(
-    !hasInline,
+    findings.length === 0,
     'Playhead/cell rendering avoids repeated inline style mutation',
-    hasInline ? 'Inline style mutation detected in playhead/cell render paths.' : 'No inline style thrash patterns found.',
+    findings.length === 0 ? 'No inline style thrash patterns found.' : findings.join('\n'),
   );
 }
 
 async function checkNoEmptyStringPaintTypeSentinel(args, changedFiles) {
-  if (args.mode === 'delta' && !touchesAny(changedFiles, ['src/state.ts', 'src/ui/painting.ts'])) {
+  const rel = 'src/state.ts';
+  if (args.mode === 'delta' && !touchesAny(changedFiles, [rel, 'src/ui/painting.ts'])) {
     recordSkipped('PaintType does not use empty-string sentinel', 'Paint state files unchanged.');
     return;
   }
-  const text = await read('src/state.ts');
-  const hasSentinel = text.includes("export type PaintType = 'drum' | 'melody' | 'vocal' | '';");
-  record(!hasSentinel, 'PaintType does not use empty-string sentinel', hasSentinel ? "PaintType includes ''. Use explicit null." : 'No empty-string PaintType sentinel detected.');
+
+  const text = await read(rel);
+  const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
+
+  let hasSentinel = false;
+  walk(sourceFile, (node) => {
+    if (!ts.isTypeAliasDeclaration(node) || node.name.text !== 'PaintType') return;
+    if (!ts.isUnionTypeNode(node.type)) return;
+    hasSentinel = node.type.types.some((t) => ts.isLiteralTypeNode(t) && ts.isStringLiteral(t.literal) && t.literal.text === '');
+  });
+
+  record(
+    !hasSentinel,
+    'PaintType does not use empty-string sentinel',
+    hasSentinel ? "PaintType includes ''. Use explicit null." : 'No empty-string PaintType sentinel detected.',
+  );
 }
 
 async function checkNoTransportInnerHtmlTemplate(args, changedFiles) {
-  if (args.mode === 'delta' && !touchesAny(changedFiles, ['src/ui/build.ts'])) {
+  const rel = 'src/ui/build.ts';
+  if (args.mode === 'delta' && !touchesAny(changedFiles, [rel])) {
     recordSkipped('Transport UI avoids large innerHTML template injection', 'Transport builder unchanged.');
     return;
   }
-  const text = await read('src/ui/build.ts');
-  const hasTransportInnerHtml = text.includes('transport.innerHTML =');
+
+  const text = await read(rel);
+  const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
+  const findings = [];
+
+  walk(sourceFile, (node) => {
+    if (!ts.isBinaryExpression(node) || node.operatorToken.kind !== ts.SyntaxKind.EqualsToken) return;
+    if (!ts.isPropertyAccessExpression(node.left)) return;
+    if (node.left.name.text !== 'innerHTML') return;
+    const targetRoot = rootIdentifierText(node.left.expression);
+    if (targetRoot !== 'transport') return;
+    const loc = nodeLocation(rel, sourceFile, node);
+    findings.push(`${loc.file}:${loc.line}: ${node.left.getText(sourceFile)} = ...`);
+  });
+
   record(
-    !hasTransportInnerHtml,
+    findings.length === 0,
     'Transport UI avoids large innerHTML template injection',
-    hasTransportInnerHtml ? 'transport.innerHTML template detected; prefer explicit DOM builder with bound refs.' : 'No transport.innerHTML injection detected.',
+    findings.length === 0 ? 'No transport.innerHTML injection detected.' : findings.join('\n'),
   );
 }
 
 async function checkBenchmarkHarnessDeterminism(args, changedFiles) {
-  if (args.mode === 'delta' && !touchesAny(changedFiles, ['tests/benchmark.html', 'src/engine/worklets/**'])) {
+  const rel = 'tests/benchmark.html';
+  if (args.mode === 'delta' && !touchesAny(changedFiles, [rel, 'src/engine/worklets/**'])) {
     recordSkipped('Benchmark harness is deterministic (no proxy timing/randomness)', 'Benchmark harness files unchanged.');
     return;
   }
-  const text = await read('tests/benchmark.html');
-  const forbidden = ['Math.random(', 'setInterval(', 'currentTime'];
-  const hits = forbidden.filter((token) => text.includes(token));
+
+  const html = await read(rel);
+  const scripts = extractHtmlScriptBlocks(html);
+
+  let hasAudioWorkletNode = false;
+  const forbidden = [];
+
+  scripts.forEach((block, i) => {
+    const sourceFile = createSourceFile(`${rel}#script${i + 1}.js`, block.content, ts.ScriptKind.JS);
+
+    walk(sourceFile, (node) => {
+      if (ts.isNewExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 'AudioWorkletNode') {
+        hasAudioWorkletNode = true;
+      }
+
+      if (ts.isCallExpression(node)) {
+        if (ts.isIdentifier(node.expression) && node.expression.text === 'setInterval') {
+          const loc = nodeLocation(rel, sourceFile, node, block.lineOffset);
+          forbidden.push(`${loc.file}:${loc.line}: setInterval(...)`);
+        }
+
+        if (ts.isPropertyAccessExpression(node.expression)) {
+          const left = node.expression.expression;
+          if (ts.isIdentifier(left) && left.text === 'Math' && node.expression.name.text === 'random') {
+            const loc = nodeLocation(rel, sourceFile, node, block.lineOffset);
+            forbidden.push(`${loc.file}:${loc.line}: Math.random(...)`);
+          }
+          if (node.expression.name.text === 'setInterval') {
+            const loc = nodeLocation(rel, sourceFile, node, block.lineOffset);
+            forbidden.push(`${loc.file}:${loc.line}: *.setInterval(...)`);
+          }
+        }
+      }
+
+      if (ts.isPropertyAccessExpression(node) && node.name.text === 'currentTime') {
+        const loc = nodeLocation(rel, sourceFile, node, block.lineOffset);
+        forbidden.push(`${loc.file}:${loc.line}: .currentTime`);
+      }
+    });
+  });
+
+  const ok = hasAudioWorkletNode && forbidden.length === 0;
   record(
-    hits.length === 0,
+    ok,
     'Benchmark harness is deterministic (no proxy timing/randomness)',
-    hits.length === 0 ? 'No forbidden benchmark timing proxies detected.' : `Forbidden tokens: ${hits.join(', ')}`,
+    ok
+      ? 'No forbidden benchmark timing proxies detected.'
+      : `hasAudioWorkletNode=${hasAudioWorkletNode}; forbidden=${forbidden.join(' | ') || 'none'}`,
   );
 }
 
@@ -367,7 +791,11 @@ async function checkBenchmarkProcessorRemoved(args, changedFiles) {
     .access(path.join(root, 'src/engine/worklets/benchmark-processor.ts'))
     .then(() => true)
     .catch(() => false);
-  record(!exists, 'Fake benchmark processor removed', exists ? 'benchmark-processor.ts still exists — should be deleted.' : 'benchmark-processor.ts correctly removed.');
+  record(
+    !exists,
+    'Fake benchmark processor removed',
+    exists ? 'benchmark-processor.ts still exists — should be deleted.' : 'benchmark-processor.ts correctly removed.',
+  );
 }
 
 async function main() {

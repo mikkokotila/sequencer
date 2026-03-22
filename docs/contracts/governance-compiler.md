@@ -134,6 +134,9 @@ Profile behavior:
 9. Governance scripts must have clean staged state (no unstaged drift) before compiler executes.
 10. Product tasks cannot increase full-scan global debt relative to frozen baseline.
 11. Debt-burn tasks with `guardrails.require_debt_reduction=true` must reduce total debt by at least one finding.
+12. Static source gates must be toolchain-independent and in-process (no shell `rg/grep` dependency for verdict logic).
+13. Source-structure assertions must use AST semantics, not brittle token/line matching.
+14. Governance self-tests (`npm run gate:governance-self`) must pass and enforce these anti-regression constraints.
 
 ## Global Debt Ratchet
 

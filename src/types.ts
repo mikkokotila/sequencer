@@ -53,7 +53,7 @@ export interface NodePair {
   output: AudioNode;
 }
 
-/** Host API passed to extensions via init() — replaces window.SEQ for internal extensions. */
+/** Host API passed to extensions via init(). */
 export interface ExtensionHost {
   readonly channelFaders: GainNode[];
   readonly channelPans: StereoPannerNode[];

@@ -152,9 +152,13 @@ async function waitForServer(url, timeoutMs = 30000) {
 async function launchBrowser() {
   const requireFromRoot = createRequire(path.join(toolRoot, 'package.json'));
   const { chromium } = requireFromRoot('playwright');
-  const hasDisplay = process.platform === 'win32' || Boolean(process.env.DISPLAY || process.env.WAYLAND_DISPLAY);
+  const hasDisplay =
+    process.platform === 'win32' ||
+    process.platform === 'darwin' ||
+    Boolean(process.env.DISPLAY || process.env.WAYLAND_DISPLAY);
   if (!hasDisplay) {
-    throw new Error('Real oracle harness requires a display server. Run compiler under xvfb-run.');
+    const linuxHint = process.platform === 'linux' ? ' Run compiler under xvfb-run.' : '';
+    throw new Error(`Real oracle harness requires a display server.${linuxHint}`);
   }
   return chromium.launch({ headless: false });
 }

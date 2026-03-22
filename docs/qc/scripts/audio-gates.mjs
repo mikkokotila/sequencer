@@ -6,7 +6,7 @@ const PORT = Number(process.env.AUDIO_GATE_PORT || '5174');
 const BASE = `http://localhost:${PORT}`;
 
 function hasDisplayServer() {
-  if (process.platform === 'win32') return true;
+  if (process.platform === 'win32' || process.platform === 'darwin') return true;
   return Boolean(process.env.DISPLAY || process.env.WAYLAND_DISPLAY);
 }
 
@@ -41,7 +41,8 @@ function parseFiniteNumber(text) {
 
 async function run() {
   if (!hasDisplayServer()) {
-    throw new Error('Real audio benchmark requires a display server. Run with xvfb-run -a npm run audio:gates.');
+    const linuxHint = process.platform === 'linux' ? ' Run with xvfb-run -a npm run audio:gates.' : '';
+    throw new Error(`Real audio benchmark requires a display server.${linuxHint}`);
   }
 
   const viteServer = await createServer({

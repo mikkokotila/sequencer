@@ -125,6 +125,7 @@ class MeasureProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
     this._active = true;
+    this._lastFrame = null;
     this.port.onmessage = (e) => {
       if (e.data === 'stop') this._active = false;
     };
@@ -149,8 +150,21 @@ class MeasureProcessor extends AudioWorkletProcessor {
       }
     }
 
-    const t1 = hasPerf ? performance.now() : t0;
-    this.port.postMessage(t1 - t0);
+    if (hasPerf) {
+      const t1 = performance.now();
+      this.port.postMessage(t1 - t0);
+      return true;
+    }
+
+    // Fallback when high-resolution timer is unavailable in worklet scope:
+    // use render-frame interval timing to avoid zero/false-pass samples.
+    if (this._lastFrame === null) {
+      this._lastFrame = currentFrame;
+      return true;
+    }
+    const elapsed = ((currentFrame - this._lastFrame) / sampleRate) * 1000;
+    this._lastFrame = currentFrame;
+    this.port.postMessage(elapsed);
 
     return true;
   }
@@ -235,6 +249,10 @@ async function runBenchmark() {
     processorError = 'AudioWorklet processor error';
   };
   measureNode.port.onmessage = (e) => {
+    if (e.data && e.data.type === 'error') {
+      processorError = String(e.data.reason || 'AudioWorklet processor error');
+      return;
+    }
     const v = Number(e.data);
     if (Number.isFinite(v) && v >= 0) {
       timings.push(v);

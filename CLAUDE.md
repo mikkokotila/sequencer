@@ -74,6 +74,13 @@ Before commit, ensure proof artifacts exist:
    - if PR exists: continue on the same PR
    - if PR does not exist: create one immediately targeting `main`
    - example: `gh pr create --base main --head <current-branch> --fill`
+7. Wait for required CI checks and review feedback on that PR.
+8. Address every review conversation before reporting back:
+   - either push a fix commit and leave a thread reply
+   - or leave a thread reply explaining why no fix will be applied
+9. Run readiness gate and report completion only on `PASS`:
+   - `npm run gate:pr-ready`
+   - do not report task completion while any required check is non-green or any review conversation remains unresolved/unanswered
 
 Direct `git commit` for product changes is non-compliant when compiler verdict is not `PASS`.
 

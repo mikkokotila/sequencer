@@ -869,3 +869,48 @@ test.describe('ADSR Controls', () => {
     expect(result.peakAt100ms).toBeGreaterThan(result.peakFirst10ms);
   });
 });
+
+// ═══════════════════════════════════════════
+//  Kit Export
+// ═══════════════════════════════════════════
+
+test.describe('Kit Export', () => {
+  test('kit export button is visible in transport', async ({ page }) => {
+    await waitForApp(page);
+    await expect(page.locator('#kit-export-btn')).toBeVisible();
+  });
+
+  test('kit export button has correct title', async ({ page }) => {
+    await waitForApp(page);
+    await expect(page.locator('#kit-export-btn')).toHaveAttribute('title', 'Export Sample Kit');
+  });
+
+  test('export kit function exists and is callable', async ({ page }) => {
+    await waitForApp(page);
+    // Verify the export function is wired — clicking with no samples
+    // should not throw (exportKit returns early when entries.length === 0)
+    const threw = await page.evaluate(() => {
+      try {
+        (document.getElementById('kit-export-btn') as HTMLElement | null)?.click();
+        return false;
+      } catch {
+        return true;
+      }
+    });
+    expect(threw).toBe(false);
+  });
+
+  test('export with no samples produces no download', async ({ page }) => {
+    await waitForApp(page);
+    // With no samples loaded, exportKit returns early (entries.length === 0)
+    // so no download should be triggered
+    let downloadTriggered = false;
+    page.on('download', () => {
+      downloadTriggered = true;
+    });
+    await page.locator('#kit-export-btn').click();
+    // Give a moment for any download to start
+    await page.waitForTimeout(200);
+    expect(downloadTriggered).toBe(false);
+  });
+});

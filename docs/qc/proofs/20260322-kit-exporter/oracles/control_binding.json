@@ -1,0 +1,15 @@
+{
+  "oracle_id": "control_binding",
+  "task_id": "20260322-kit-exporter",
+  "subject_sha": "83430f9786060d7176344a4b8517110326a600dcc623f7e42703660c94d0af28",
+  "harness_version": "oracle-harness-v2",
+  "status": "PASS",
+  "metrics": {
+    "binding_coverage": 1
+  },
+  "raw_artifact": "raw/control_binding.json",
+  "raw_sha256": "7d2be031601420315c5b2d62fc8d1c9c3a6d1ee01e3cc68d587157dadbcb91b6",
+  "evidence": "controls_declared=1",
+  "challenge_id": "09fd290635e7bb2257937511f132ac602f87a6234b844dc53bd7a5ed102acdbd",
+  "payload_digest": "ac6bec22970accc5d1568202ff5655bb9a072c74c0c749566f81124bbef51c52"
+}

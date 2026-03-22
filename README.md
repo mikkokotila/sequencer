@@ -1,6 +1,6 @@
 # Sequencer
 
-Browser-based step sequencer with sample playback, melodic pitch control, per-track ADSR envelopes, MIDI input, 12-phrase song structure, and a professional audio engine featuring three-model compression (FET/Opto/VCA), Freeverb, interpolated delay, and Pultec EQ — all running on AudioWorklet processors with 4x oversampled nonlinear stages.
+Browser-based step sequencer with sample playback, melodic pitch control, per-track ADSR envelopes, MIDI input, kit export, 12-phrase song structure, and a professional audio engine featuring three-model compression (FET/Opto/VCA), Freeverb, interpolated delay, and Pultec EQ — all running on AudioWorklet processors with 4x oversampled nonlinear stages.
 
 ## Run locally
 
@@ -64,10 +64,11 @@ src/
 │       ├── delay.ts                  Tape delay aux send/return
 │       └── pultec-eq.ts              Passive EQ + tube saturation
 │
-├── transport/                 State & persistence (no DOM)
+├── transport/                 State, persistence & file I/O
 │   ├── patterns.ts               Phrase/pattern state + mutations
 │   ├── song.ts                   Song metadata, BPM, track config
-│   └── persistence.ts            IndexedDB save/load
+│   ├── persistence.ts            IndexedDB save/load
+│   └── kit-export.ts             ZIP bundle export for sample kits
 │
 ├── ui/                        User interface
 │   ├── build.ts                  DOM construction + event wiring

@@ -103,8 +103,8 @@ function runNodeScript(args, env = {}) {
 }
 
 function assertPathDeterminism(scriptRel) {
-  const normal = runNodeScript([scriptRel, '--mode', 'full']);
-  const noRg = runNodeScript([scriptRel, '--mode', 'full'], {
+  const normal = runNodeScript([scriptRel]);
+  const noRg = runNodeScript([scriptRel], {
     PATH: '/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin',
   });
 
@@ -119,6 +119,37 @@ function assertPathDeterminism(scriptRel) {
     same
       ? `status=${normal.status}`
       : `normal(status=${normal.status}) vs no-rg(status=${noRg.status}) output mismatch`,
+  );
+}
+
+async function assertNoDeltaModeReferences() {
+  const targets = [
+    'package.json',
+    'docs/qc/compiler/obligation-rules.json',
+    'docs/qc/scripts/governance-compiler.mjs',
+    'docs/qc/scripts/contract-gates.mjs',
+    'docs/qc/scripts/architecture-gates.mjs',
+    'docs/contracts/quality-gates.md',
+    'docs/contracts/e2e.md',
+    'docs/contracts/commit.md',
+  ];
+
+  const forbidden = ['--mode delta', 'delta-skip', 'O-GATE-CONTRACTS-DELTA', 'O-GATE-ARCH-DELTA'];
+  const hits = [];
+
+  for (const rel of targets) {
+    const text = await fs.readFile(path.join(root, rel), 'utf8');
+    for (const token of forbidden) {
+      if (text.includes(token)) {
+        hits.push(`${rel}:${token}`);
+      }
+    }
+  }
+
+  record(
+    hits.length === 0,
+    'Delta mode references removed',
+    hits.length === 0 ? 'No delta-mode command or obligation tokens found.' : hits.join(', '),
   );
 }
 
@@ -152,6 +183,7 @@ async function main() {
 
   assertPathDeterminism('docs/qc/scripts/contract-gates.mjs');
   assertPathDeterminism('docs/qc/scripts/architecture-gates.mjs');
+  await assertNoDeltaModeReferences();
 
   for (const pass of passes) {
     console.log(`PASS | ${pass.name} | ${pass.detail}`);

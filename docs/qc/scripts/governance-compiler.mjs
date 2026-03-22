@@ -141,6 +141,8 @@ function isGovernancePolicyFile(filePath) {
   const patterns = [
     'AGENTS.md',
     'CLAUDE.md',
+    '.github/CODEOWNERS',
+    '.github/workflows/**',
     'docs/contracts/**',
     'docs/qc/compiler/**',
     'docs/qc/scripts/**',
@@ -331,6 +333,7 @@ class CompilerContext {
     this.specPath = args.specPath;
     this.taskId = null;
     this.taskType = null;
+    this.isQcTask = false;
     this.executionProfile = (rules.execution_profiles && rules.execution_profiles.default) || 'real';
     this.executionProfileExplicit = false;
     this.requireDebtReduction = false;
@@ -341,6 +344,7 @@ class CompilerContext {
     this.headSha = 'UNSET';
     this.proofDir = null;
     this.logsDir = null;
+    this.qcAudit = null;
     this.startedAt = nowIso();
     this.runId = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
     this.auditEvents = [];
@@ -493,8 +497,21 @@ async function loadRules() {
   const diagnosticsParsed = readJsonFileSafe(diagnosticsRaw, DIAGNOSTICS_PATH);
   if (!diagnosticsParsed.ok) throw new Error(diagnosticsParsed.error);
 
+  const rules = rulesParsed.data;
+  const commandObligations = Object.values(rules.command_obligations || {});
+  const legacyDelta = commandObligations.find(
+    (obligation) =>
+      obligation &&
+      typeof obligation.command === 'string' &&
+      obligation.command.includes('--mode') &&
+      /\bdelta\b/i.test(obligation.command),
+  );
+  if (legacyDelta) {
+    throw new Error('Legacy delta mode command obligation detected. Governance compiler is full-only.');
+  }
+
   return {
-    rules: rulesParsed.data,
+    rules,
     diagnostics: diagnosticsParsed.data.diagnostics || {},
   };
 }
@@ -560,6 +577,7 @@ async function phaseParseSpec(ctx) {
   ctx.spec = spec;
   ctx.taskId = typeof spec.task_id === 'string' ? spec.task_id.trim() : '';
   ctx.taskType = typeof spec.task_type === 'string' ? spec.task_type.trim() : '';
+  ctx.isQcTask = ctx.taskType === 'qc';
   const allowedProfiles = Array.isArray(ctx.rules.execution_profiles?.allowed)
     ? ctx.rules.execution_profiles.allowed
     : ['real'];
@@ -698,7 +716,8 @@ async function phaseParseSpec(ctx) {
   }
 
   const controls = spec?.capability?.controls;
-  if (ctx.taskType !== 'governance-change') {
+  const requiresProductControls = ['feature', 'bugfix', 'refactor'].includes(ctx.taskType);
+  if (requiresProductControls) {
     if (!Array.isArray(controls) || controls.length === 0) {
       ctx.addDiagnostic(
         'GOV-SPEC-003',
@@ -707,7 +726,7 @@ async function phaseParseSpec(ctx) {
     }
   }
 
-  if (ctx.taskType !== 'governance-change') {
+  if (requiresProductControls) {
     const mandatoryOracles = ctx.rules.mandatory_spec_oracles || [];
     const declaredOracles = Array.isArray(spec?.proof?.oracles) ? spec.proof.oracles : [];
     const missingMandatory = mandatoryOracles.filter((oracle) => !declaredOracles.includes(oracle));
@@ -863,6 +882,44 @@ async function loadDebtBaseline() {
   return { ok: true, baseline };
 }
 
+function parseFailureLine(line) {
+  if (line.startsWith('FAIL-ITEM |')) {
+    const parts = line.split('|').map((part) => part.trim());
+    const suite = parts[1] || 'unknown-suite';
+    const testName = parts[2] || 'unknown-test';
+    const firstMessage = parts[3] || '';
+    const locationMatch = testName.match(/@ ([A-Za-z0-9_./-]+:\d+(?::\d+)?)/);
+    return {
+      suite,
+      test_name: locationMatch ? testName.replace(/\s*@\s*[A-Za-z0-9_./-]+:\d+(?::\d+)?/, '').trim() : testName,
+      file_line: locationMatch ? locationMatch[1] : null,
+      first_message: firstMessage || line,
+      detail: `${testName} | ${firstMessage}`,
+      line,
+    };
+  }
+
+  const parts = line.split('|').map((part) => part.trim());
+  const suite = parts[1] || 'unknown-suite';
+  const detail = parts.slice(2).join(' | ') || '';
+  const locationMatch = detail.match(/([A-Za-z0-9_./-]+:\d+(?::\d+)?)/);
+  const fileLine = locationMatch ? locationMatch[1] : null;
+  let firstMessage = detail || line;
+  if (locationMatch) {
+    const idx = detail.indexOf(locationMatch[1]);
+    const tail = detail.slice(idx + locationMatch[1].length).replace(/^:\s*/, '').trim();
+    if (tail) firstMessage = tail;
+  }
+  return {
+    suite,
+    test_name: suite,
+    file_line: fileLine,
+    first_message: firstMessage,
+    detail,
+    line,
+  };
+}
+
 function extractFailLinesFromCommandLog(raw) {
   if (typeof raw !== 'string' || raw.trim() === '') return [];
   const stdoutMarker = '--- stdout ---';
@@ -879,16 +936,39 @@ function extractFailLinesFromCommandLog(raw) {
   const lines = body
     .split('\n')
     .map((line) => line.trim())
-    .filter((line) => line.startsWith('FAIL |'));
+    .filter((line) => line.startsWith('FAIL |') || line.startsWith('FAIL-ITEM |'));
 
-  return lines.map((line) => {
-    const parts = line.split('|').map((part) => part.trim());
-    return {
-      line,
-      name: parts[1] || 'unknown',
-      detail: parts.slice(2).join(' | ') || '',
-    };
-  });
+  return lines.map((line) => parseFailureLine(line));
+}
+
+function extractFirstErrorLine(raw) {
+  if (typeof raw !== 'string' || raw.trim() === '') return null;
+  const lines = raw
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const hit =
+    lines.find((line) => /\b(error|failed|assert|exception|traceback)\b/i.test(line)) ||
+    lines.find((line) => line.startsWith('FAIL')) ||
+    null;
+  return hit;
+}
+
+function extractFailureItemsFromCommandLog(raw) {
+  const failItems = extractFailLinesFromCommandLog(raw);
+  if (failItems.length > 0) return failItems;
+  const firstError = extractFirstErrorLine(raw);
+  if (!firstError) return [];
+  return [
+    {
+      suite: 'command',
+      test_name: 'command',
+      file_line: null,
+      first_message: firstError,
+      detail: firstError,
+      line: firstError,
+    },
+  ];
 }
 
 async function parseGlobalDebtFailures(logFileRel) {
@@ -900,7 +980,11 @@ async function parseGlobalDebtFailures(logFileRel) {
   } catch {
     return [];
   }
-  return extractFailLinesFromCommandLog(raw);
+  return extractFailLinesFromCommandLog(raw).map((failure) => ({
+    name: failure.suite,
+    detail: failure.detail,
+    line: failure.line,
+  }));
 }
 
 async function enforceGlobalDebtRatchet(ctx) {
@@ -1343,8 +1427,9 @@ async function phaseBind(ctx) {
 
   const governanceTouched = ctx.changedFiles.some((filePath) => isGovernancePolicyFile(filePath));
   const productTouched = !!ctx.groupMatches.product;
+  const isProductTaskType = ['feature', 'bugfix', 'refactor'].includes(ctx.taskType);
 
-  if (ctx.taskType !== 'governance-change' && governanceTouched) {
+  if (isProductTaskType && governanceTouched) {
     ctx.addDiagnostic(
       'GOV-BIND-004',
       `Non-governance task (${ctx.taskType}) modified governance files.`,
@@ -1408,8 +1493,6 @@ function synthesizeCommandObligations(ctx) {
   if (ctx.groupMatches.product) {
     commandIds.add('O-CI');
     commandIds.add('O-E2E');
-    commandIds.add('O-GATE-CONTRACTS-DELTA');
-    commandIds.add('O-GATE-ARCH-DELTA');
     commandIds.add('O-GATE-CONTRACTS-FULL');
     commandIds.add('O-GATE-ARCH-FULL');
     commandIds.add('O-COMMIT-RANGE');
@@ -1419,8 +1502,13 @@ function synthesizeCommandObligations(ctx) {
     commandIds.add('O-AUDIO-GATES');
   }
 
-  if (ctx.taskType === 'governance-change') {
+  if (ctx.groupMatches.governance_policy || ctx.taskType === 'governance-change') {
+    commandIds.add('O-GATE-GOVERNANCE-SELF');
+  }
+
+  if (ctx.taskType === 'governance-change' || ctx.taskType === 'qc') {
     commandIds.add('O-CI');
+    commandIds.add('O-COMMIT-RANGE');
   }
 
   return [...commandIds]
@@ -1429,6 +1517,10 @@ function synthesizeCommandObligations(ctx) {
 }
 
 function synthesizeOracleObligations(ctx) {
+  if (ctx.isQcTask) {
+    return [];
+  }
+
   const set = new Set();
 
   const declared = Array.isArray(ctx.spec?.proof?.oracles) ? ctx.spec.proof.oracles : [];
@@ -1517,6 +1609,10 @@ async function executeCommandObligations(ctx) {
       log_file: path.relative(root, logFile),
     };
 
+    if (result.status !== 0) {
+      outcome.failure_items = extractFailureItemsFromCommandLog(logBody);
+    }
+
     ctx.commandResults.push(outcome);
 
     if (result.status !== 0) {
@@ -1527,20 +1623,31 @@ async function executeCommandObligations(ctx) {
           command: obligation.command,
           status: 'FAIL',
           log_file: outcome.log_file,
+          failure_items: outcome.failure_items || [],
         });
         ctx.addAuditEvent('WARN', 'global_debt', `${obligation.id} failed (tracked, non-blocking)`, {
           code: obligation.failure_code || 'GOV-PROC-002',
           severity: 'WARN',
-          context: { command: obligation.command, log_file: outcome.log_file, exit_code: result.status },
+          context: {
+            command: obligation.command,
+            log_file: outcome.log_file,
+            exit_code: result.status,
+            failure_items: outcome.failure_items || [],
+          },
         });
       } else {
+        const firstFailure = Array.isArray(outcome.failure_items) && outcome.failure_items.length > 0
+          ? outcome.failure_items[0]
+          : null;
+        const suffix = firstFailure ? ` | first_failure=${firstFailure.first_message}` : '';
         ctx.addDiagnostic(
           obligation.failure_code || 'GOV-PROC-002',
-          `${obligation.id} failed: ${obligation.command}`,
+          `${obligation.id} failed: ${obligation.command}${suffix}`,
           {
             command: obligation.command,
             log_file: outcome.log_file,
             exit_code: result.status,
+            failure_items: outcome.failure_items || [],
           },
         );
       }
@@ -1646,8 +1753,10 @@ async function phaseExecute(ctx) {
 
   await executeCommandObligations(ctx);
   await enforceGlobalDebtRatchet(ctx);
-  await validateManifest(ctx);
-  await executeOracleHarness(ctx);
+  if (!ctx.isQcTask) {
+    await validateManifest(ctx);
+    await executeOracleHarness(ctx);
+  }
 
   const failCount = ctx.diagnostics.filter((d) => d.severity === 'FAIL').length;
   const blockedCount = ctx.diagnostics.filter((d) => d.severity === 'BLOCKED').length;
@@ -1711,6 +1820,144 @@ async function phaseAttest(ctx) {
   return { verdictPath, verdict, attestation };
 }
 
+function formatMatrixStatus(item) {
+  if (item.status === 'PASS') return 'PASS';
+  if (item.status === 'FAIL') return 'FAIL';
+  if (item.status === 'BLOCKED') return 'BLOCKED';
+  return item.status || 'UNKNOWN';
+}
+
+function buildQcMatrix(ctx) {
+  const matrix = [];
+  for (const command of ctx.commandResults) {
+    matrix.push({
+      kind: 'command',
+      id: command.id,
+      label: command.label || command.id,
+      status: command.status,
+      blocking: command.blocking,
+      evidence: command.log_file,
+      failure_items: command.failure_items || [],
+    });
+  }
+  for (const oracle of ctx.oracleResults) {
+    matrix.push({
+      kind: 'oracle',
+      id: oracle.oracle_id,
+      label: oracle.oracle_id,
+      status: oracle.status,
+      blocking: true,
+      evidence: oracle.artifact,
+      failure_items: [],
+    });
+  }
+  return matrix;
+}
+
+function renderQcAuditMarkdown(qcAudit) {
+  const lines = [];
+  lines.push('# Compiler QC Audit');
+  lines.push('');
+  lines.push(`run_id: ${qcAudit.run_id}`);
+  lines.push(`task_id: ${qcAudit.task_id}`);
+  lines.push(`spec_path: ${qcAudit.spec_path}`);
+  lines.push(`head_sha: ${qcAudit.head_sha}`);
+  lines.push(`tree_sha: ${qcAudit.tree_sha}`);
+  lines.push(`subject_sha: ${qcAudit.subject_sha}`);
+  lines.push(`execution_profile: ${qcAudit.execution_profile}`);
+  lines.push(`started_at_utc: ${qcAudit.started_at_utc}`);
+  lines.push(`finished_at_utc: ${qcAudit.finished_at_utc}`);
+  lines.push(`final_verdict: ${qcAudit.verdict}`);
+  lines.push('');
+  lines.push('## Matrix');
+  lines.push('');
+  lines.push('| Kind | Item | Status | Blocking | Evidence |');
+  lines.push('|---|---|---|---|---|');
+  for (const item of qcAudit.matrix) {
+    lines.push(
+      `| ${item.kind} | ${item.id} | ${formatMatrixStatus(item)} | ${item.blocking ? 'yes' : 'no'} | ${item.evidence || ''} |`,
+    );
+    if (Array.isArray(item.failure_items) && item.failure_items.length > 0) {
+      for (const failure of item.failure_items) {
+        const location = failure.file_line ? ` @ ${failure.file_line}` : '';
+        lines.push(`|  | ↳ ${failure.suite}/${failure.test_name}${location} | FAIL |  | ${failure.first_message} |`);
+      }
+    }
+  }
+  lines.push('');
+  lines.push('## Diagnostics');
+  lines.push('');
+  if (qcAudit.diagnostics.length === 0) {
+    lines.push('- none');
+  } else {
+    for (const diagnostic of qcAudit.diagnostics) {
+      lines.push(`- ${diagnostic.severity} | ${diagnostic.code} | ${diagnostic.message}`);
+    }
+  }
+  lines.push('');
+  return `${lines.join('\n')}\n`;
+}
+
+function formatRunTimestampForPath(isoTs) {
+  return isoTs
+    .replace(/[-:]/g, '')
+    .replace('T', '-')
+    .replace(/\.\d+Z$/, 'Z');
+}
+
+async function phaseQcAudit(ctx, attestationResult) {
+  const phaseName = 'qc-audit';
+  const finishedAt = nowIso();
+  const shortHead = (ctx.headSha || 'UNSET').replace(/[^a-zA-Z0-9]/g, '').slice(0, 12) || 'UNSET';
+  const runTs = formatRunTimestampForPath(finishedAt);
+  const runStem = `${runTs}-${shortHead}-${ctx.runId}`;
+  const matrix = buildQcMatrix(ctx);
+  const verdict = attestationResult?.verdict || summarizeVerdict(ctx.diagnostics);
+
+  const qcAudit = {
+    run_id: ctx.runId,
+    task_id: ctx.taskId || null,
+    task_type: ctx.taskType || null,
+    spec_path: ctx.specPath || null,
+    execution_profile: ctx.executionProfile || null,
+    started_at_utc: ctx.startedAt,
+    finished_at_utc: finishedAt,
+    head_sha: ctx.headSha,
+    tree_sha: ctx.treeSha,
+    subject_sha: ctx.subjectSha,
+    verdict,
+    matrix,
+    diagnostics: ctx.diagnostics.map((diagnostic) => ({
+      severity: diagnostic.severity,
+      code: diagnostic.code,
+      message: diagnostic.message,
+    })),
+  };
+
+  const qcJsonPath = path.join(root, 'docs/qc/runs', `${runStem}.json`);
+  const qcMdPath = path.join(root, 'docs/qc/runs', `${runStem}.md`);
+
+  if (!ctx.args.noWrite) {
+    await ensureDir(path.dirname(qcJsonPath));
+    await fs.writeFile(qcJsonPath, `${JSON.stringify(qcAudit, null, 2)}\n`, 'utf8');
+    await fs.writeFile(qcMdPath, renderQcAuditMarkdown(qcAudit), 'utf8');
+  }
+
+  ctx.qcAudit = {
+    json: path.relative(root, qcJsonPath),
+    markdown: path.relative(root, qcMdPath),
+    verdict,
+  };
+  ctx.addPhase(
+    phaseName,
+    verdict,
+    ctx.args.noWrite
+      ? 'Deterministic QC audit generated (no-write mode).'
+      : `Deterministic QC audit written: ${ctx.qcAudit.json}, ${ctx.qcAudit.markdown}`,
+  );
+  return ctx.qcAudit;
+}
+
 async function flushAuditTrail(ctx) {
   if (ctx.auditEvents.length === 0) {
     return { written: 0, lastHash: null };
@@ -1719,7 +1966,7 @@ async function flushAuditTrail(ctx) {
   return appendCompilerAuditLog(ctx.auditEvents);
 }
 
-function printSummary(ctx, attestationResult) {
+function printSummary(ctx, attestationResult, qcAuditResult) {
   if (ctx.args.quiet) return;
 
   console.log('governance-compiler: phase summary');
@@ -1734,6 +1981,14 @@ function printSummary(ctx, attestationResult) {
       console.log(
         `- ${command.status} | ${command.id} | ${command.command} | blocking=${command.blocking} | log=${command.log_file} | exit=${command.exit_code}`,
       );
+      if (Array.isArray(command.failure_items) && command.failure_items.length > 0) {
+        for (const failure of command.failure_items) {
+          const location = failure.file_line ? ` @ ${failure.file_line}` : '';
+          console.log(
+            `  failure: suite=${failure.suite} | test=${failure.test_name}${location} | message=${failure.first_message}`,
+          );
+        }
+      }
     }
   }
 
@@ -1797,6 +2052,10 @@ function printSummary(ctx, attestationResult) {
   if (attestationResult?.verdictPath && !ctx.args.noWrite) {
     console.log(`\nattestation: ${path.relative(root, attestationResult.verdictPath)}`);
   }
+  if (qcAuditResult && !ctx.args.noWrite) {
+    console.log(`qc audit json: ${qcAuditResult.json}`);
+    console.log(`qc audit md: ${qcAuditResult.markdown}`);
+  }
 
   console.log(`\nfinal verdict: ${attestationResult?.verdict || summarizeVerdict(ctx.diagnostics)}`);
 }
@@ -1824,15 +2083,16 @@ async function runCompiler(args) {
   }
   await phaseVerify(ctx);
   const attestationResult = await phaseAttest(ctx);
+  const qcAuditResult = await phaseQcAudit(ctx, attestationResult);
   const auditWriteResult = await flushAuditTrail(ctx);
   if (auditWriteResult.written > 0) {
     ctx.addPhase('audit', 'PASS', `Appended ${auditWriteResult.written} warning/error event(s) to logs/compiler.log.`);
   }
 
-  printSummary(ctx, attestationResult);
+  printSummary(ctx, attestationResult, qcAuditResult);
 
   const verdict = attestationResult?.verdict || summarizeVerdict(ctx.diagnostics);
-  return { verdict, ctx, attestationResult, auditWriteResult };
+  return { verdict, ctx, attestationResult, qcAuditResult, auditWriteResult };
 }
 
 async function main() {

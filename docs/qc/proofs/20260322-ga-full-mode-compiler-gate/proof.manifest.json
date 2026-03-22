@@ -1,0 +1,39 @@
+{
+  "task_id": "20260322-ga-full-mode-compiler-gate",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-GATE-GOVERNANCE-SELF",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-GATE-GOVERNANCE-SELF.log"
+    },
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-CI.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [
+    "docs/contracts/governance-compiler.md",
+    "docs/contracts/quality-gates.md",
+    "docs/contracts/commit.md",
+    "docs/contracts/e2e.md"
+  ],
+  "browser_verification": {
+    "status": "not_required",
+    "reason": "governance-only change"
+  },
+  "artifacts": [
+    "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/proof.manifest.json",
+    "docs/qc/specs/20260322-ga-full-mode-compiler-gate.task.spec.json"
+  ]
+}

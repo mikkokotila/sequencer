@@ -1,0 +1,59 @@
+name: compiler-gate
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: compiler-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compiler-gate:
+    name: compiler-gate
+    runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-node-ci
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - run: npx playwright install --with-deps chromium
+      - run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - id: changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha || github.event.before || github.sha }}"
+          HEAD_SHA="${{ github.sha }}"
+          if [[ "$BASE_SHA" == "$HEAD_SHA" ]]; then
+            FILES="$(git diff --name-only --diff-filter=ACMR HEAD~1...HEAD | paste -sd, -)"
+          else
+            FILES="$(git diff --name-only --diff-filter=ACMR "$BASE_SHA...$HEAD_SHA" | paste -sd, -)"
+          fi
+          echo "changed_files=$FILES" >> "$GITHUB_OUTPUT"
+          echo "Changed files: ${FILES:-<none>}"
+
+      - name: compiler-gate check
+        if: steps.changed.outputs.changed_files != ''
+        run: |
+          xvfb-run -a npm run gov:check:ga -- \
+            --spec docs/qc/specs/compiler-gate.task.spec.json \
+            --simulate-files "${{ steps.changed.outputs.changed_files }}" \
+            --no-write
+
+      - name: no-op (no changed files)
+        if: steps.changed.outputs.changed_files == ''
+        run: echo "No changed files in range; compiler-gate skipped."

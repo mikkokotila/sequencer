@@ -1,0 +1,126 @@
+{
+  "task_id": "20260322-ga-full-mode-compiler-gate",
+  "task_type": "governance-change",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260322-ga-full-mode-compiler-gate.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-22T09:43:30.792Z",
+  "finished_at_utc": "2026-03-22T09:43:37.512Z",
+  "head_sha": "eb17db9",
+  "tree_sha": "331803e9555cdc10948cae0dada728f3f54002aa",
+  "subject_sha": "deda566bf84bb32190d368fa26a6a4ac13d4944ee12f96c608cde646a9812b82",
+  "subject_files": [
+    ".github/CODEOWNERS",
+    ".github/workflows/compiler-gate.yml",
+    "CLAUDE.md",
+    "docs/contracts/commit.md",
+    "docs/contracts/e2e.md",
+    "docs/contracts/governance-compiler.md",
+    "docs/contracts/quality-gates.md",
+    "docs/qc/compiler/obligation-rules.json",
+    "docs/qc/scripts/architecture-gates.mjs",
+    "docs/qc/scripts/audio-gates.mjs",
+    "docs/qc/scripts/contract-gates.mjs",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "docs/qc/scripts/governance-self-tests.mjs",
+    "package.json"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    ".github/CODEOWNERS",
+    ".github/workflows/compiler-gate.yml",
+    "CLAUDE.md",
+    "docs/contracts/commit.md",
+    "docs/contracts/e2e.md",
+    "docs/contracts/governance-compiler.md",
+    "docs/contracts/quality-gates.md",
+    "docs/qc/compiler/obligation-rules.json",
+    "docs/qc/proofs/20260322-ga-full-mode-compiler-gate.md",
+    "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-CI.log",
+    "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-COMMIT-RANGE.log",
+    "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-GATE-GOVERNANCE-SELF.log",
+    "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/proof.manifest.json",
+    "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/verdict.json",
+    "docs/qc/runs/20260322-094232Z-eb17db9-1774172546292-a87ab7fa.json",
+    "docs/qc/runs/20260322-094232Z-eb17db9-1774172546292-a87ab7fa.md",
+    "docs/qc/runs/20260322-094255Z-eb17db9-1774172568595-abcfd1a3.json",
+    "docs/qc/runs/20260322-094255Z-eb17db9-1774172568595-abcfd1a3.md",
+    "docs/qc/scripts/architecture-gates.mjs",
+    "docs/qc/scripts/audio-gates.mjs",
+    "docs/qc/scripts/contract-gates.mjs",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "docs/qc/scripts/governance-self-tests.mjs",
+    "docs/qc/specs/20260322-ga-full-mode-compiler-gate.task.spec.json",
+    "docs/qc/specs/compiler-gate.task.spec.json",
+    "logs/compiler.log",
+    "package.json"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=3, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=3, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-GATE-GOVERNANCE-SELF",
+        "label": "Governance self-tests",
+        "command": "npm run gate:governance-self",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 1801,
+        "log_file": "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-GATE-GOVERNANCE-SELF.log"
+      },
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4330,
+        "log_file": "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-CI.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 209,
+        "log_file": "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": null,
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

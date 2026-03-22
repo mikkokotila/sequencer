@@ -1,57 +1,23 @@
 #!/usr/bin/env node
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
 import ts from 'typescript';
 
 const root = process.cwd();
 const passes = [];
 const failures = [];
 
-function parseArgs(argv) {
-  const args = { mode: 'full' };
-  for (let i = 0; i < argv.length; i++) {
-    if (argv[i] === '--mode') {
-      args.mode = argv[i + 1] || 'full';
-      i++;
-    }
+function assertFullOnlyMode() {
+  const modeIndex = process.argv.indexOf('--mode');
+  if (modeIndex !== -1) {
+    const value = process.argv[modeIndex + 1] || '';
+    throw new Error(`architecture-gates is full-only; remove --mode ${value}`.trim());
   }
-  return args;
-}
-
-function parseChangedFilesFromEnv() {
-  const raw = process.env.GOV_CHANGED_FILES || '';
-  return raw
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean);
-}
-
-function matchesPattern(filePath, pattern) {
-  if (pattern === '**' || pattern === '*') return true;
-  if (pattern.endsWith('/**')) {
-    const prefix = pattern.slice(0, -3);
-    return filePath.startsWith(prefix);
-  }
-  if (pattern.includes('*')) {
-    const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
-    return new RegExp(`^${escaped}$`).test(filePath);
-  }
-  return filePath === pattern;
-}
-
-function touchesAny(changedFiles, patterns) {
-  if (changedFiles.length === 0) return true;
-  return changedFiles.some((filePath) => patterns.some((pattern) => matchesPattern(filePath, pattern)));
 }
 
 function record(ok, name, detail) {
   if (ok) passes.push({ name, detail });
   else failures.push({ name, detail });
-}
-
-function recordSkipped(name, detail) {
-  passes.push({ name, detail: `[delta-skip] ${detail}` });
 }
 
 function walk(node, cb) {
@@ -80,56 +46,6 @@ function formatViolation(v) {
   return `${v.file}:${v.line}: ${v.message}`;
 }
 
-function parseAddedLineMap(targets) {
-  const diff = spawnSync('git', ['diff', '--cached', '--unified=0', '--', ...targets], {
-    cwd: root,
-    encoding: 'utf8',
-  });
-
-  if (diff.status !== 0) {
-    return {
-      ok: false,
-      map: new Map(),
-      error: `git diff failed (status ${diff.status}): ${diff.stderr || 'unknown error'}`,
-    };
-  }
-
-  const addedByFile = new Map();
-  const lines = (diff.stdout || '').split('\n');
-  let currentFile = '';
-  let newLine = 0;
-
-  for (const line of lines) {
-    if (line.startsWith('+++ b/')) {
-      currentFile = line.slice('+++ b/'.length).trim();
-      if (!addedByFile.has(currentFile)) addedByFile.set(currentFile, new Set());
-      continue;
-    }
-
-    const hunk = line.match(/^@@\s+-\d+(?:,\d+)?\s+\+(\d+)(?:,(\d+))?\s+@@/);
-    if (hunk) {
-      newLine = Number.parseInt(hunk[1], 10);
-      continue;
-    }
-
-    if (!currentFile) continue;
-    if (line.startsWith('+') && !line.startsWith('+++')) {
-      addedByFile.get(currentFile)?.add(newLine);
-      newLine += 1;
-      continue;
-    }
-    if (line.startsWith('-') && !line.startsWith('---')) continue;
-    if (line.startsWith(' ')) newLine += 1;
-  }
-
-  return { ok: true, map: addedByFile, error: '' };
-}
-
-function isViolationOnAddedLine(addedMap, violation) {
-  const lines = addedMap.get(violation.file);
-  if (!lines) return false;
-  return lines.has(violation.line);
-}
 
 function extractHtmlScriptBlocks(html) {
   const blocks = [];
@@ -238,16 +154,12 @@ function rootIdentifierText(node) {
   return '';
 }
 
-async function checkNoDummyPassThroughNodes(args, changedFiles) {
+async function checkNoDummyPassThroughNodes() {
   const targets = [
     'src/engine/extensions/reverb.ts',
     'src/engine/extensions/delay.ts',
     'src/engine/extensions/mixer.ts',
   ];
-  if (args.mode === 'delta' && !touchesAny(changedFiles, targets)) {
-    recordSkipped('No dummy pass-through extension nodes', 'Extension topology files unchanged.');
-    return;
-  }
 
   const findings = [];
 
@@ -292,14 +204,9 @@ async function checkNoDummyPassThroughNodes(args, changedFiles) {
   );
 }
 
-async function checkNoWindowSeqGlobalInExtensions(args, changedFiles) {
-  if (args.mode === 'delta' && !touchesAny(changedFiles, ['src/engine/extensions/**'])) {
-    recordSkipped('No global window.SEQ extension coupling', 'Extension files unchanged.');
-    return;
-  }
-
+async function checkNoWindowSeqGlobalInExtensions() {
   const extensionFiles = await listFilesRecursive('src/engine/extensions', ['.ts']);
-  const scanFiles = args.mode === 'delta' ? changedFiles.filter((f) => f.startsWith('src/engine/extensions/')) : extensionFiles;
+  const scanFiles = extensionFiles;
 
   const findings = [];
 
@@ -329,21 +236,6 @@ async function checkNoWindowSeqGlobalInExtensions(args, changedFiles) {
     });
   }
 
-  if (args.mode === 'delta') {
-    const added = parseAddedLineMap(['src/engine/extensions']);
-    if (!added.ok) {
-      record(false, 'No global window.SEQ extension coupling', added.error);
-      return;
-    }
-    const newFindings = findings.filter((f) => isViolationOnAddedLine(added.map, f));
-    record(
-      newFindings.length === 0,
-      'No global window.SEQ extension coupling',
-      newFindings.length === 0 ? 'No new window.SEQ additions in staged diff.' : newFindings.map(formatViolation).join('\n'),
-    );
-    return;
-  }
-
   record(
     findings.length === 0,
     'No global window.SEQ extension coupling',
@@ -351,12 +243,7 @@ async function checkNoWindowSeqGlobalInExtensions(args, changedFiles) {
   );
 }
 
-async function checkEngineInterfaceUsed(args, changedFiles) {
-  if (args.mode === 'delta' && !touchesAny(changedFiles, ['src/engine/interface.ts', 'src/engine/scheduler.ts'])) {
-    recordSkipped('Engine interface contract is actually consumed', 'Engine boundary files unchanged.');
-    return;
-  }
-
+async function checkEngineInterfaceUsed() {
   const interfaceRel = 'src/engine/interface.ts';
   let interfaceExists = true;
   try {
@@ -390,12 +277,8 @@ async function checkEngineInterfaceUsed(args, changedFiles) {
   );
 }
 
-async function checkSchedulerBoundary(args, changedFiles) {
+async function checkSchedulerBoundary() {
   const rel = 'src/engine/scheduler.ts';
-  if (args.mode === 'delta' && !touchesAny(changedFiles, [rel])) {
-    recordSkipped('Scheduler does not import transport internals directly', 'Scheduler file unchanged.');
-    return;
-  }
 
   const text = await read(rel);
   const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
@@ -409,12 +292,7 @@ async function checkSchedulerBoundary(args, changedFiles) {
   );
 }
 
-async function checkPersistenceNoUICallbackInjection(args, changedFiles) {
-  if (args.mode === 'delta' && !touchesAny(changedFiles, ['src/transport/persistence.ts', 'src/main.ts'])) {
-    recordSkipped('Persistence lifecycle decoupled from UI callback injection', 'Persistence lifecycle files unchanged.');
-    return;
-  }
-
+async function checkPersistenceNoUICallbackInjection() {
   const rel = 'src/transport/persistence.ts';
   const text = await read(rel);
   const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
@@ -442,12 +320,8 @@ async function checkPersistenceNoUICallbackInjection(args, changedFiles) {
   );
 }
 
-async function checkPreviewNodeCleanup(args, changedFiles) {
+async function checkPreviewNodeCleanup() {
   const rel = 'src/engine/audio.ts';
-  if (args.mode === 'delta' && !touchesAny(changedFiles, [rel])) {
-    recordSkipped('Preview audio nodes are explicitly cleaned up', 'Audio core preview path unchanged.');
-    return;
-  }
 
   const text = await read(rel);
   const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
@@ -481,19 +355,11 @@ async function checkPreviewNodeCleanup(args, changedFiles) {
   );
 }
 
-async function checkInitAudioCallSpread(args, changedFiles) {
-  const scanPatterns = ['src/engine/audio.ts', 'src/main.ts', 'src/ui/**', 'src/transport/persistence.ts'];
-  if (args.mode === 'delta' && !touchesAny(changedFiles, scanPatterns)) {
-    recordSkipped('Audio initialization ownership is centralized', 'initAudio callsite files unchanged.');
-    return;
-  }
-
+async function checkInitAudioCallSpread() {
   const files = await listFilesRecursive('src', ['.ts']);
   const calls = [];
 
   for (const rel of files) {
-    if (args.mode === 'delta' && !changedFiles.includes(rel)) continue;
-
     const text = await read(rel);
     const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
 
@@ -505,24 +371,6 @@ async function checkInitAudioCallSpread(args, changedFiles) {
     });
   }
 
-  if (args.mode === 'delta') {
-    const added = parseAddedLineMap(changedFiles.filter((f) => f.startsWith('src/')));
-    if (!added.ok) {
-      record(false, 'Audio initialization ownership is centralized', added.error);
-      return;
-    }
-
-    const newCalls = calls.filter((loc) => isViolationOnAddedLine(added.map, { file: loc.file, line: loc.line }));
-    record(
-      newCalls.length === 0,
-      'Audio initialization ownership is centralized',
-      newCalls.length === 0
-        ? 'No new initAudio call sites added in staged diff.'
-        : `New initAudio call sites added: ${newCalls.map((loc) => `${loc.file}:${loc.line}`).join(' | ')}`,
-    );
-    return;
-  }
-
   const ok = calls.length <= 3;
   record(
     ok,
@@ -531,12 +379,8 @@ async function checkInitAudioCallSpread(args, changedFiles) {
   );
 }
 
-async function checkNoSilentDecodeCatch(args, changedFiles) {
+async function checkNoSilentDecodeCatch() {
   const rel = 'src/transport/persistence.ts';
-  if (args.mode === 'delta' && !touchesAny(changedFiles, [rel])) {
-    recordSkipped('Decode failures are not silently swallowed', 'Persistence decode path unchanged.');
-    return;
-  }
 
   const text = await read(rel);
   const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
@@ -568,12 +412,7 @@ async function checkNoSilentDecodeCatch(args, changedFiles) {
   );
 }
 
-async function checkNoDuplicateUiBusinessLogic(args, changedFiles) {
-  if (args.mode === 'delta' && !touchesAny(changedFiles, ['src/ui/painting.ts', 'src/ui/cells.ts', 'src/transport/patterns.ts'])) {
-    recordSkipped('UI does not duplicate transport business logic', 'UI/transport rule files unchanged.');
-    return;
-  }
-
+async function checkNoDuplicateUiBusinessLogic() {
   const targets = ['src/ui/painting.ts', 'src/ui/cells.ts'];
   const findings = [];
 
@@ -598,12 +437,8 @@ async function checkNoDuplicateUiBusinessLogic(args, changedFiles) {
   );
 }
 
-async function checkPaintingSetupIdempotent(args, changedFiles) {
+async function checkPaintingSetupIdempotent() {
   const rel = 'src/ui/painting.ts';
-  if (args.mode === 'delta' && !touchesAny(changedFiles, [rel, 'src/ui/build.ts'])) {
-    recordSkipped('Painting event setup is idempotent', 'Painting setup files unchanged.');
-    return;
-  }
 
   const text = await read(rel);
   const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
@@ -646,12 +481,7 @@ async function checkPaintingSetupIdempotent(args, changedFiles) {
   record(hasGuard, 'Painting event setup is idempotent', hasGuard ? 'Found setup guard.' : 'No idempotency guard detected for setupPainting().');
 }
 
-async function checkNoInlinePlayheadStyleThrash(args, changedFiles) {
-  if (args.mode === 'delta' && !touchesAny(changedFiles, ['src/ui/playhead.ts', 'src/ui/cells.ts'])) {
-    recordSkipped('Playhead/cell rendering avoids repeated inline style mutation', 'Playhead/cell render files unchanged.');
-    return;
-  }
-
+async function checkNoInlinePlayheadStyleThrash() {
   const targets = ['src/ui/playhead.ts', 'src/ui/cells.ts'];
   const findings = [];
 
@@ -673,12 +503,8 @@ async function checkNoInlinePlayheadStyleThrash(args, changedFiles) {
   );
 }
 
-async function checkNoEmptyStringPaintTypeSentinel(args, changedFiles) {
+async function checkNoEmptyStringPaintTypeSentinel() {
   const rel = 'src/state.ts';
-  if (args.mode === 'delta' && !touchesAny(changedFiles, [rel, 'src/ui/painting.ts'])) {
-    recordSkipped('PaintType does not use empty-string sentinel', 'Paint state files unchanged.');
-    return;
-  }
 
   const text = await read(rel);
   const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
@@ -697,12 +523,8 @@ async function checkNoEmptyStringPaintTypeSentinel(args, changedFiles) {
   );
 }
 
-async function checkNoTransportInnerHtmlTemplate(args, changedFiles) {
+async function checkNoTransportInnerHtmlTemplate() {
   const rel = 'src/ui/build.ts';
-  if (args.mode === 'delta' && !touchesAny(changedFiles, [rel])) {
-    recordSkipped('Transport UI avoids large innerHTML template injection', 'Transport builder unchanged.');
-    return;
-  }
 
   const text = await read(rel);
   const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
@@ -725,12 +547,8 @@ async function checkNoTransportInnerHtmlTemplate(args, changedFiles) {
   );
 }
 
-async function checkBenchmarkHarnessDeterminism(args, changedFiles) {
+async function checkBenchmarkHarnessDeterminism() {
   const rel = 'tests/benchmark.html';
-  if (args.mode === 'delta' && !touchesAny(changedFiles, [rel, 'src/engine/worklets/**'])) {
-    recordSkipped('Benchmark harness is deterministic (no proxy timing/randomness)', 'Benchmark harness files unchanged.');
-    return;
-  }
 
   const html = await read(rel);
   const scripts = extractHtmlScriptBlocks(html);
@@ -782,11 +600,7 @@ async function checkBenchmarkHarnessDeterminism(args, changedFiles) {
   );
 }
 
-async function checkBenchmarkProcessorRemoved(args, changedFiles) {
-  if (args.mode === 'delta' && !touchesAny(changedFiles, ['src/engine/worklets/**'])) {
-    recordSkipped('Fake benchmark processor removed', 'Worklet files unchanged.');
-    return;
-  }
+async function checkBenchmarkProcessorRemoved() {
   const exists = await fs
     .access(path.join(root, 'src/engine/worklets/benchmark-processor.ts'))
     .then(() => true)
@@ -799,24 +613,22 @@ async function checkBenchmarkProcessorRemoved(args, changedFiles) {
 }
 
 async function main() {
-  const args = parseArgs(process.argv.slice(2));
-  const changedFiles = parseChangedFilesFromEnv();
-
-  await checkNoDummyPassThroughNodes(args, changedFiles);
-  await checkNoWindowSeqGlobalInExtensions(args, changedFiles);
-  await checkEngineInterfaceUsed(args, changedFiles);
-  await checkSchedulerBoundary(args, changedFiles);
-  await checkPersistenceNoUICallbackInjection(args, changedFiles);
-  await checkPreviewNodeCleanup(args, changedFiles);
-  await checkInitAudioCallSpread(args, changedFiles);
-  await checkNoSilentDecodeCatch(args, changedFiles);
-  await checkNoDuplicateUiBusinessLogic(args, changedFiles);
-  await checkPaintingSetupIdempotent(args, changedFiles);
-  await checkNoInlinePlayheadStyleThrash(args, changedFiles);
-  await checkNoEmptyStringPaintTypeSentinel(args, changedFiles);
-  await checkNoTransportInnerHtmlTemplate(args, changedFiles);
-  await checkBenchmarkHarnessDeterminism(args, changedFiles);
-  await checkBenchmarkProcessorRemoved(args, changedFiles);
+  assertFullOnlyMode();
+  await checkNoDummyPassThroughNodes();
+  await checkNoWindowSeqGlobalInExtensions();
+  await checkEngineInterfaceUsed();
+  await checkSchedulerBoundary();
+  await checkPersistenceNoUICallbackInjection();
+  await checkPreviewNodeCleanup();
+  await checkInitAudioCallSpread();
+  await checkNoSilentDecodeCatch();
+  await checkNoDuplicateUiBusinessLogic();
+  await checkPaintingSetupIdempotent();
+  await checkNoInlinePlayheadStyleThrash();
+  await checkNoEmptyStringPaintTypeSentinel();
+  await checkNoTransportInnerHtmlTemplate();
+  await checkBenchmarkHarnessDeterminism();
+  await checkBenchmarkProcessorRemoved();
 
   for (const p of passes) {
     console.log(`PASS | ${p.name} | ${p.detail}`);
@@ -825,7 +637,7 @@ async function main() {
     console.log(`FAIL | ${f.name} | ${f.detail}`);
   }
 
-  const label = args.mode === 'delta' ? 'architecture-gates(delta)' : 'architecture-gates';
+  const label = 'architecture-gates';
   if (failures.length > 0) {
     console.error(`\n${label}: ${failures.length} failure(s), ${passes.length} pass(es).`);
     process.exit(1);

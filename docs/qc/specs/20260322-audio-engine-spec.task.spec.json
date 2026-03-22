@@ -1,0 +1,37 @@
+{
+  "task_id": "20260322-audio-engine-spec",
+  "task_type": "refactor",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Add comprehensive audio engine specification document in docs/Audio-Engine-Spec.md",
+    "in_scope": [
+      "docs/Audio-Engine-Spec.md"
+    ],
+    "out_of_scope": [
+      "src/**"
+    ],
+    "controls": [
+      {
+        "id": "docs.spec",
+        "default": "absent",
+        "range": ["absent", "present"],
+        "unit": "state",
+        "off_semantics": "no spec document exists",
+        "on_semantics": "comprehensive audio engine spec at docs/Audio-Engine-Spec.md"
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": ["builtin:kick_01"],
+    "seed": "fixed-seed-v1",
+    "oracles": [
+      "off_transparent",
+      "on_audible"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "oracle_id": "off_transparent",
+  "task_id": "20260322-audio-engine-spec",
+  "subject_sha": "46190407ae6b0b1a92937d299c9f6e189a609a6cf011491d212dbe941b7c5d21",
+  "harness_version": "oracle-harness-v2",
+  "status": "PASS",
+  "metrics": {
+    "max_abs_error": 0,
+    "delta_lufs": 0
+  },
+  "raw_artifact": "raw/off_transparent.json",
+  "raw_sha256": "74228b4bc3d88aeacb2da7e83c2718e1989704a2bfd771984103017e6ad3c642",
+  "evidence": "max_abs_error=0",
+  "challenge_id": "f8a172a5dd4a902c08878a43b248ee35e99f77cb64a54e7fd490f5d6aee2c99a",
+  "payload_digest": "f1e17a0f158fc6173b984c38691b935dcedac77b8ba023582d6e447b5f9bc32d"
+}

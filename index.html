@@ -148,6 +148,16 @@
         }
         .step-cell.beat-hi { background:rgba(255,255,255,0.06); }
         .step-cell.beat-gap { margin-left:3px; }
+        /* Active cell colors per track (class-driven, no inline styles) */
+        .melody-track[data-type="drum"][data-track="0"] .step-cell.active { background:rgba(245,192,78,0.75); }
+        .melody-track[data-type="drum"][data-track="1"] .step-cell.active { background:rgba(238,168,62,0.70); }
+        .melody-track[data-type="drum"][data-track="2"] .step-cell.active { background:rgba(228,148,50,0.65); }
+        .melody-track[data-type="drum"][data-track="3"] .step-cell.active { background:rgba(218,128,40,0.60); }
+        .melody-track[data-type="drum"][data-track="4"] .step-cell.active { background:rgba(208,112,32,0.55); }
+        .melody-track[data-type="melody"][data-track="0"] .melody-cell.active { background:rgba(160,180,255,0.70); }
+        .melody-track[data-type="melody"][data-track="1"] .melody-cell.active { background:rgba(140,156,240,0.62); }
+        .melody-track[data-type="melody"][data-track="2"] .melody-cell.active { background:rgba(124,138,226,0.55); }
+        .melody-track[data-type="vocal"] .step-cell.active { background:rgba(180,160,220,0.55); }
         .step-cell:hover { background:rgba(255,255,255,0.10)!important; }
         .step-cell.playing:not(.active) { background:rgba(255,255,255,0.12)!important; }
         @keyframes hit { 0%{transform:scale(1)} 40%{transform:scale(1.15)} 100%{transform:scale(1)} }

@@ -1,0 +1,15 @@
+{
+  "oracle_id": "control_binding",
+  "task_id": "20260322-debt-final-cleanup",
+  "subject_sha": "0b5b92ed4e7cc51497d0bfb602aaf1df4d6260d6e3710bb40949735c8a688f04",
+  "harness_version": "oracle-harness-v2",
+  "status": "PASS",
+  "metrics": {
+    "binding_coverage": 1
+  },
+  "raw_artifact": "raw/control_binding.json",
+  "raw_sha256": "08475ac4c59fa72b39438c9b0fd684b4bc6c581ec63c93a5c035a634474e4674",
+  "evidence": "controls_declared=1",
+  "challenge_id": "c772678f8993bfe146f7037bebc1016d8e201ec2909100cc8c273c8fd088fba0",
+  "payload_digest": "253265e10febe7dbc570dbbc33ea638f765655ec90966bb51064e6d84a8a7b93"
+}

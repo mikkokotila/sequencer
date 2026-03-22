@@ -1,9 +1,13 @@
 /**
  * Cell rendering — update visual state of drum / melody / vocal grid cells,
  * melody‐cell mono enforcement, multi‐note detection, and harmony cycling.
+ *
+ * Uses CSS class toggles for cell state — no inline style mutation.
+ * Active-cell colors are defined via CSS custom properties set on the cell
+ * at build time (--cell-idle) and consumed by the .active class in index.html.
  */
 
-import { DRUMS_CFG, MEL_CFG, VOCAL_CFG, STEPS, HARMONY_LABELS } from '../config';
+import { MEL_CFG, STEPS, HARMONY_LABELS } from '../config';
 import {
   drumPat,
   melPat,
@@ -15,55 +19,29 @@ import { drumCells, melCells, vocalCells } from '../state';
 import { displayToSemitone } from './helpers';
 
 // ═══════════════════════════════════════════
-//  Cell visual updates
+//  Cell visual updates (class-only, no inline style)
 // ═══════════════════════════════════════════
 
-/** Set drum cell background/shadow based on current pattern state. */
+/** Set drum cell active/inactive state via CSS class. */
 export function updateDrumCell(t: number, s: number): void {
   const c = drumCells[t]?.[s];
-  const cfg = DRUMS_CFG[t];
-  if (!c || !cfg) return;
-  if (drumPat[t]?.[s]) {
-    c.classList.add('active');
-    c.style.background = cfg.idle;
-    c.style.boxShadow = '';
-  } else {
-    c.classList.remove('active');
-    c.style.background = '';
-    c.style.boxShadow = '';
-  }
+  if (!c) return;
+  c.classList.toggle('active', !!drumPat[t]?.[s]);
 }
 
-/** Set melody cell background/shadow based on current pattern state. */
+/** Set melody cell active/inactive state via CSS class. */
 export function updateMelCell(t: number, s: number, dr: number): void {
   const semi = displayToSemitone(dr);
   const c = melCells[t]?.[s]?.[dr];
-  const cfg = MEL_CFG[t];
-  if (!c || !cfg) return;
-  if (melPat[t]?.[s]?.[semi]) {
-    c.classList.add('active');
-    c.style.background = cfg.idle;
-    c.style.boxShadow = '';
-  } else {
-    c.classList.remove('active');
-    c.style.background = '';
-    c.style.boxShadow = '';
-  }
+  if (!c) return;
+  c.classList.toggle('active', !!melPat[t]?.[s]?.[semi]);
 }
 
-/** Set vocal cell background/shadow based on current pattern state. */
+/** Set vocal cell active/inactive state via CSS class. */
 export function updateVocalCell(s: number): void {
   const c = vocalCells[s];
   if (!c) return;
-  if (vocalPat[s]) {
-    c.classList.add('active');
-    c.style.background = VOCAL_CFG.idle;
-    c.style.boxShadow = '';
-  } else {
-    c.classList.remove('active');
-    c.style.background = '';
-    c.style.boxShadow = '';
-  }
+  c.classList.toggle('active', !!vocalPat[s]);
 }
 
 // ═══════════════════════════════════════════
@@ -75,7 +53,7 @@ export function updateVocalCell(s: number): void {
  * Delegates data mutation to the canonical patterns.ts version,
  * then handles visual updates.
  */
-export function setMelodyCell(t: number, s: number, dr: number, val: boolean): void {
+export function setMelodyCellUI(t: number, s: number, dr: number, val: boolean): void {
   const cfg = MEL_CFG[t];
   if (!cfg) return;
 

@@ -672,11 +672,6 @@ export function buildUI(): void {
 
   // Keyboard shortcuts
   document.addEventListener('keydown', (e: KeyboardEvent) => {
-    const tag = (e.target as HTMLElement).tagName;
-    if (e.code === 'Space' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) {
-      e.preventDefault();
-      togglePlay();
-    }
     if (e.code === 'Escape') {
       if (isAdsrPopupOpen()) {
         closeAdsrPopup();

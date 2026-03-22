@@ -259,14 +259,15 @@ function handleNoteOn(trackIndex: number, note: number, velocity: number): void 
   src.playbackRate.value = rate;
 
   // Connect source: with ADSR envelope if enabled, direct otherwise
+  const startAt = ctx.currentTime;
   let envelope: GainNode | null = null;
   if (isAdsrEnabled(globalTrackIdx)) {
-    envelope = applyEnvelope(ctx, src, velocityGain, globalTrackIdx, 0);
+    envelope = applyEnvelope(ctx, src, velocityGain, globalTrackIdx, startAt);
   } else {
     src.connect(velocityGain);
   }
   velocityGain.connect(dest);
-  src.start(0);
+  src.start(startAt);
 
   // Store source + envelope for note-off release
   binding.activeSources.set(note, { source: src, envelope });

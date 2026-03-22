@@ -115,8 +115,10 @@ export function applyEnvelope(
   );
 
   if (stepDuration !== undefined) {
-    // Scheduler: auto-release at step end
-    const releaseStart = startTime + Math.max(adsr.attack, stepDuration - adsr.release);
+    // Scheduler: auto-release at (or before) step end.
+    const stepEnd = startTime + stepDuration;
+    const rawReleaseStart = startTime + Math.max(adsr.attack, stepDuration - adsr.release);
+    const releaseStart = Math.min(rawReleaseStart, stepEnd);
     env.gain.setTargetAtTime(0.0001, releaseStart, Math.max(0.001, adsr.release / 3));
     // Stop source after release tail (4× time constant ≈ 98% decay)
     source.stop(releaseStart + adsr.release * 4);

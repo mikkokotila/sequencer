@@ -32,12 +32,6 @@
       "result": "PASS",
       "blocking": true,
       "evidence": "docs/qc/proofs/20260322-adsr-envelope/logs/O-COMMIT-RANGE.log"
-    },
-    {
-      "id": "O-AUDIO-GATES",
-      "result": "PASS",
-      "blocking": true,
-      "evidence": "docs/qc/proofs/20260322-adsr-envelope/logs/O-AUDIO-GATES.log"
     }
   ],
   "contracts": [

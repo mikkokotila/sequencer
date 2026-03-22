@@ -1,15 +1,15 @@
 {
   "oracle_id": "default_safety",
   "task_id": "20260322-adsr-envelope",
-  "subject_sha": "1f725643397ea73f9a5978885a14e9dfa5b7ddb83971127e4b4e318cfd83f371",
+  "subject_sha": "1e5d4165bc71f0469c265a7850b7ad1c44f3f9cd28517d1ba804052820f48ee4",
   "harness_version": "oracle-harness-v2",
   "status": "PASS",
   "metrics": {
     "peak_dbfs": -6.9744
   },
   "raw_artifact": "raw/default_safety.json",
-  "raw_sha256": "4e4c6c2fca52f62d2ff74af1223fd9307deecd19edc0b41cb9fcf36cf4092222",
+  "raw_sha256": "48a0f1ac7d9ad02628e077b3f068fda3c341e198deb7e2cb6081c75cd2822c2c",
   "evidence": "peak_dbfs=-6.97444118536795",
-  "challenge_id": "7e932fd75199a3b18332dc3b203b42725408c1a0d53327fd2a7967859bb4c2c6",
-  "payload_digest": "1a93163c71f16ce2bcf613374088a0b9ef22d5b2ae9da548c65e43f99d1722f3"
+  "challenge_id": "31aead461cbb0ca9cfe490f9ecb347ae33afb165ac7dd0cbc1a42b61e1de064e",
+  "payload_digest": "fd2d77b8765bed834f47f1262f47ede0f6bd03f7055bc247d289dade550f9d72"
 }

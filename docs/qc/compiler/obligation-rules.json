@@ -35,6 +35,9 @@
       "docs/qc/standdown/**",
       "logs/compiler.log"
     ],
+    "project_docs": [
+      "docs/*.md"
+    ],
     "debt_tracking": [
       "docs/qc/debt/**"
     ],

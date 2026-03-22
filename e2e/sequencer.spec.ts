@@ -9,6 +9,39 @@ async function waitForApp(page: Page) {
   await page.waitForSelector('#song-pane', { state: 'visible' });
 }
 
+async function measureStepCadence(page: Page, ms = 1800) {
+  return page.evaluate(async (durationMs) => {
+    const row = document.querySelector('.melody-track[data-type="drum"][data-track="0"]');
+    if (!row) return null;
+    const cells = Array.from(row.querySelectorAll<HTMLElement>('.step-cell'));
+    const times: number[] = [];
+    let lastStep = -1;
+
+    const sample = () => {
+      const idx = cells.findIndex((c) => c.classList.contains('playing'));
+      if (idx >= 0 && idx !== lastStep) {
+        lastStep = idx;
+        times.push(performance.now());
+      }
+    };
+
+    const obs = new MutationObserver(() => sample());
+    obs.observe(row, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    sample();
+    await new Promise((resolve) => setTimeout(resolve, durationMs));
+    obs.disconnect();
+
+    const intervals: number[] = [];
+    for (let i = 1; i < times.length; i++) intervals.push(times[i]! - times[i - 1]!);
+
+    const avg =
+      intervals.length > 0
+        ? intervals.reduce((sum, v) => sum + v, 0) / intervals.length
+        : Number.POSITIVE_INFINITY;
+    return { count: times.length, avgMs: avg };
+  }, ms);
+}
+
 // ═══════════════════════════════════════════
 //  1. APP INITIALIZATION
 // ═══════════════════════════════════════════
@@ -541,7 +574,48 @@ test.describe('Keyboard Shortcuts', () => {
 });
 
 // ═══════════════════════════════════════════
-//  14. PERSISTENCE
+//  14. TRANSPORT SYNC (sync-gate coverage)
+// ═══════════════════════════════════════════
+
+test.describe('Transport Sync', () => {
+  test('remains in sync after repeated edit + stop/start cycles', async ({ page }) => {
+    await waitForApp(page);
+    await page.click('#app'); // user gesture for audio
+
+    const playBtn = page.locator('#play-btn');
+    const stopBtn = page.locator('#stop-btn');
+    const snareCells = page.locator('.melody-track[data-type="drum"][data-track="1"] .step-cell');
+    const melodyCells = page.locator(
+      '.melody-track[data-type="melody"][data-track="1"] .melody-cell',
+    );
+
+    // Chaotic editing while repeatedly stopping/starting transport.
+    for (let i = 0; i < 6; i++) {
+      await playBtn.click();
+      await page.waitForTimeout(120);
+      await snareCells.nth((i * 5) % 64).click();
+      await melodyCells.nth((i * 73) % (64 * 12)).click();
+      await stopBtn.click();
+      await page.waitForTimeout(40);
+    }
+
+    await playBtn.click();
+    await page.waitForTimeout(150);
+    const cadence = await measureStepCadence(page, 1800);
+
+    expect(cadence).not.toBeNull();
+    const c = cadence!;
+    // At 120 BPM with 16th-note scheduling, expected step interval ≈ 125ms.
+    // Broad bounds detect duplicate scheduler loops (too fast) and stalls (too slow).
+    expect(c.count).toBeGreaterThanOrEqual(8);
+    expect(c.count).toBeLessThanOrEqual(20);
+    expect(c.avgMs).toBeGreaterThan(70);
+    expect(c.avgMs).toBeLessThan(180);
+  });
+});
+
+// ═══════════════════════════════════════════
+//  15. PERSISTENCE
 // ═══════════════════════════════════════════
 
 test.describe('Persistence', () => {
@@ -569,7 +643,7 @@ test.describe('Persistence', () => {
 });
 
 // ═══════════════════════════════════════════
-//  15. GRID ALIGNMENT
+//  16. GRID ALIGNMENT
 // ═══════════════════════════════════════════
 
 test.describe('Grid Alignment', () => {

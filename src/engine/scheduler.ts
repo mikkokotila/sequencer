@@ -46,6 +46,8 @@ let playing = false;
 let curStep = 0;
 let playingPhrase = 0;
 let scheduledEventId: number | null = null;
+let startPending = false;
+let startNonce = 0;
 
 // ── Callbacks ──
 let onPhraseChange: (() => void) | null = null;
@@ -179,33 +181,48 @@ function scheduleStep(time: number): void {
 
 /** Start playback using Tone.Transport. */
 export function startPlayback(): void {
+  if (playing || startPending) return;
   if (!transport) return;
   playing = true;
   curStep = 0;
   playingPhrase = transport.findFirstNonEmpty();
 
+  const tr = Tone.getTransport();
+
+  // Defensive cleanup: prevent duplicate repeat callbacks from prior races.
+  if (scheduledEventId !== null) {
+    tr.clear(scheduledEventId);
+    scheduledEventId = null;
+  }
+  tr.cancel(0);
+
   // Sync Tone.js BPM
-  Tone.getTransport().bpm.value = transport.getBpm();
+  tr.bpm.value = transport.getBpm();
+  tr.position = 0;
 
   // Schedule repeating callback: 16th notes (4 per beat)
-  scheduledEventId = Tone.getTransport().scheduleRepeat((time) => {
+  scheduledEventId = tr.scheduleRepeat((time) => {
     scheduleStep(time);
   }, '16n');
 
-  Tone.getTransport().start();
+  tr.start();
   onPhraseChange?.();
 }
 
 /** Stop playback. */
 export function stopPlayback(): void {
+  startNonce++;
+  startPending = false;
   playing = false;
+  const tr = Tone.getTransport();
 
   if (scheduledEventId !== null) {
-    Tone.getTransport().clear(scheduledEventId);
+    tr.clear(scheduledEventId);
     scheduledEventId = null;
   }
-  Tone.getTransport().stop();
-  Tone.getTransport().position = 0;
+  tr.cancel(0);
+  tr.stop();
+  tr.position = 0;
 
   curStep = 0;
 
@@ -225,12 +242,20 @@ export function stopPlayback(): void {
 
 /** Toggle play/stop. */
 export function togglePlay(): void {
-  if (playing) {
+  if (playing || startPending) {
     stopPlayback();
   } else {
-    void Tone.start().then(() => {
-      startPlayback();
-    });
+    const req = ++startNonce;
+    startPending = true;
+    void Tone.start()
+      .then(() => {
+        if (req !== startNonce) return;
+        startPending = false;
+        startPlayback();
+      })
+      .catch(() => {
+        if (req === startNonce) startPending = false;
+      });
   }
 }
 

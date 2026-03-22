@@ -6,7 +6,7 @@
 
 ## Summary
 
-This governance slice tightens the remediation loop so CA is repeatedly guided to root-cause fixes, is blocked on repeated unresolved failures pending operator guidance, and cannot pass benchmark gates via page-level PASS text.
+This governance slice tightens the remediation loop so WA is repeatedly guided to root-cause fixes, is blocked on repeated unresolved failures pending operator guidance, and cannot pass benchmark gates via page-level PASS text.
 
 ## Changes
 

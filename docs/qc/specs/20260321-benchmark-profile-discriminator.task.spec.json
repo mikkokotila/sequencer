@@ -1,9 +1,9 @@
 {
   "task_id": "20260321-benchmark-profile-discriminator",
   "task_type": "governance-change",
-  "execution_profile": "headless",
+  "execution_profile": "real",
   "capability": {
-    "summary": "Operationalize dual benchmark execution profiles so headless enforces structural integrity and interactive enforces real process-time p99 budget.",
+    "summary": "Operationalize single real benchmark execution profile with strict process-time p99 budget enforcement.",
     "in_scope": [
       "CLAUDE.md",
       "docs/contracts/**",

@@ -191,21 +191,21 @@
     "GOV-SPEC-008": {
       "severity": "BLOCKED",
       "title": "Invalid or missing execution profile",
-      "why_failed": "Benchmark-governed tasks must declare a valid execution_profile so compiler can apply the correct oracle policy.",
+      "why_failed": "Benchmark-governed tasks must declare execution_profile=real so compiler enforces one real benchmark policy.",
       "acceptable_recipes": [
         {
           "id": "RCP-SPEC-EXEC-PROFILE",
-          "summary": "Set execution_profile to one allowed value (headless|interactive) in task.spec.json."
+          "summary": "Set execution_profile to real in task.spec.json."
         }
       ],
       "disallowed_workarounds": [
         "Leaving benchmark tasks without execution_profile",
         "Using ad-hoc profile names",
-        "Switching profile via hidden runtime tweaks without spec update"
+        "Re-introducing headless/interactive profile splits"
       ],
       "required_evidence": [
         "task.spec.json execution_profile",
-        "profile-matched oracle artifact metrics"
+        "real benchmark oracle metrics (sample_count and p99 budget evidence)"
       ],
       "allowed_change_scope": [
         "docs/qc/specs/**"
@@ -213,7 +213,7 @@
       "forbidden_change_scope": [
         "src/**"
       ],
-      "recheck_protocol": "update execution_profile in spec, regenerate profile-matched proof, rerun gov:check"
+      "recheck_protocol": "set execution_profile=real in spec, regenerate oracle proof, rerun gov:check"
     },
     "GOV-BIND-001": {
       "severity": "FAIL",
@@ -1177,22 +1177,23 @@
     },
     "GOV-PERF-003": {
       "severity": "FAIL",
-      "title": "Headless benchmark structural proof failed",
-      "why_failed": "Headless profile requires structural benchmark integrity checks; required structural metric did not pass.",
+      "title": "Deprecated benchmark profile usage",
+      "why_failed": "Legacy headless/interactive benchmark profile split is no longer allowed.",
       "acceptable_recipes": [
         {
-          "id": "RCP-PERF-HEADLESS-STRUCT",
-          "summary": "Fix benchmark structure (worklet chain, deterministic inputs, no proxy timing shortcuts) and regenerate oracle."
+          "id": "RCP-PERF-REAL-PROFILE",
+          "summary": "Set execution_profile=real and rerun real sample-based benchmark oracle."
         }
       ],
       "disallowed_workarounds": [
-        "Marking structural oracle as PASS without machine evidence",
-        "Faking timing pass with UI text or proxy timers"
+        "Adding fallback structural-only pass paths",
+        "Using profile aliases to bypass real p99 budget checks"
       ],
       "required_evidence": [
-        "benchmark_worklet_budget oracle artifact (headless structural metrics)"
+        "benchmark_worklet_budget oracle artifact with real p99 evidence"
       ],
       "allowed_change_scope": [
+        "docs/qc/specs/**",
         "tests/**",
         "docs/qc/proofs/**"
       ],
@@ -1200,7 +1201,7 @@
         "docs/qc/compiler/**",
         "docs/contracts/**"
       ],
-      "recheck_protocol": "run benchmark oracle in headless profile and verify structural_ok == 1"
+      "recheck_protocol": "set execution_profile=real, run benchmark oracle, verify sample_count >= 50 and p99 <= budget"
     },
     "GOV-PROC-001": {
       "severity": "BLOCKED",
@@ -1445,25 +1446,25 @@
     },
     "GOV-ROLE-001": {
       "severity": "BLOCKED",
-      "title": "Governance task requires observer role",
-      "why_failed": "task_type=governance-change is observer-only and cannot run in default CA mode.",
+      "title": "Governance task requires GA role",
+      "why_failed": "task_type=governance-change is GA-only and cannot run in default WA mode.",
       "acceptable_recipes": [
         {
           "id": "RCP-ROLE-STANDDOWN",
-          "summary": "CA stands down and hands off governance work to observer."
+          "summary": "WA stands down and hands off governance work to GA."
         },
         {
-          "id": "RCP-ROLE-OBSERVER-OVERRIDE",
-          "summary": "Observer reruns compiler with --allow-governance-change (or GOV_ALLOW_GOVERNANCE_CHANGE=1)."
+          "id": "RCP-ROLE-GA-OVERRIDE",
+          "summary": "GA reruns compiler with --allow-governance-change (or GOV_ALLOW_GOVERNANCE_CHANGE=1)."
         }
       ],
       "disallowed_workarounds": [
-        "Running governance-change in CA mode",
+        "Running governance-change in WA mode",
         "Relabeling governance files as product work",
-        "Direct commit without observer override"
+        "Direct commit without GA override"
       ],
       "required_evidence": [
-        "observer override flag or env",
+        "GA override flag or env",
         "governance PASS attestation"
       ],
       "allowed_change_scope": [
@@ -1480,7 +1481,7 @@
         "tests/**",
         "e2e/**"
       ],
-      "recheck_protocol": "observer runs gov:check with --allow-governance-change and same spec"
+      "recheck_protocol": "GA runs gov:check with --allow-governance-change and same spec"
     }
   }
 }

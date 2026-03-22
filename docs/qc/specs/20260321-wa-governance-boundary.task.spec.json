@@ -1,8 +1,8 @@
 {
-  "task_id": "20260321-ca-governance-boundary",
+  "task_id": "20260321-wa-governance-boundary",
   "task_type": "governance-change",
   "capability": {
-    "summary": "Enforce observer-only governance changes so CA cannot execute governance-change tasks without explicit observer override.",
+    "summary": "Enforce GA-only governance changes so WA cannot execute governance-change tasks without explicit GA override.",
     "in_scope": [
       "CLAUDE.md",
       "docs/contracts/**",

@@ -105,7 +105,7 @@ async function main() {
   let stashCreated = false;
   let stashShow = '';
   if (dirty) {
-    const msg = `CA-STANDDOWN ${args.taskId} ${ts}`;
+    const msg = `WA-STANDDOWN ${args.taskId} ${ts}`;
     mustRun(`git stash push -u -m ${JSON.stringify(msg)}`);
     const list = mustRun('git stash list --max-count=1').stdout.trim();
     const m = list.match(/^(stash@\{\d+\})/);

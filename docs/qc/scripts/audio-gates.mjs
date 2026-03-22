@@ -1,10 +1,14 @@
 #!/usr/bin/env node
-import { spawn } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
+import { createServer } from 'vite';
 
 const PORT = Number(process.env.AUDIO_GATE_PORT || '5174');
 const BASE = `http://localhost:${PORT}`;
-const EXECUTION_PROFILE = (process.env.GOV_EXECUTION_PROFILE || 'headless').trim().toLowerCase();
+
+function hasDisplayServer() {
+  if (process.platform === 'win32' || process.platform === 'darwin') return true;
+  return Boolean(process.env.DISPLAY || process.env.WAYLAND_DISPLAY);
+}
 
 async function waitForServer(url, timeoutMs = 30000) {
   const start = Date.now();
@@ -36,29 +40,29 @@ function parseFiniteNumber(text) {
 }
 
 async function run() {
-  if (!['headless', 'interactive'].includes(EXECUTION_PROFILE)) {
-    throw new Error(`Unsupported GOV_EXECUTION_PROFILE=${EXECUTION_PROFILE}. Allowed: headless|interactive`);
+  if (!hasDisplayServer()) {
+    const linuxHint = process.platform === 'linux' ? ' Run with xvfb-run -a npm run audio:gates.' : '';
+    throw new Error(`Real audio benchmark requires a display server.${linuxHint}`);
   }
 
-  const server = spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], {
-    stdio: ['ignore', 'pipe', 'pipe'],
-    env: process.env,
+  const viteServer = await createServer({
+    root: process.cwd(),
+    logLevel: 'error',
+    clearScreen: false,
+    server: {
+      port: PORT,
+      strictPort: true,
+    },
   });
+  await viteServer.listen();
 
-  let serverOut = '';
-  let serverErr = '';
-  server.stdout?.on('data', (d) => {
-    serverOut += String(d);
-  });
-  server.stderr?.on('data', (d) => {
-    serverErr += String(d);
-  });
+  let browser = null;
 
   try {
     await waitForServer(`${BASE}/`);
 
     const { chromium } = await import('playwright');
-    const browser = await chromium.launch({ headless: true });
+    browser = await chromium.launch({ headless: false });
     const page = await browser.newPage();
 
     const results = [];
@@ -94,7 +98,8 @@ async function run() {
       const gateText = (document.querySelector('#gate')?.textContent || '').trim();
       const p99Text = (document.querySelector('#p99')?.textContent || '').trim();
       const budgetText = (document.querySelector('#budget')?.textContent || '').trim();
-      const sampleMatch = gateText.match(/(\d+)\s*samples/i);
+      const sampleMatch =
+        gateText.match(/(\d+)\s+worklet process\(\)\s+samples/i) || gateText.match(/(\d+)\s*samples/i);
       return {
         gateText,
         p99Text,
@@ -110,6 +115,7 @@ async function run() {
     const p99 = parseFiniteNumber(benchmark.p99Text);
     const budget = parseFiniteNumber(benchmark.budgetText);
     const sampleCount = Number.isFinite(benchmark.sampleCount) ? benchmark.sampleCount : null;
+    const gateShowsFail = /\bFAIL\b/i.test(benchmark.gateText);
     const structuralOk =
       benchmark.hasAudioWorkletNode &&
       !benchmark.hasRandomnessToken &&
@@ -117,22 +123,22 @@ async function run() {
       !benchmark.hasCurrentTimeToken;
 
     const benchmarkOk =
-      EXECUTION_PROFILE === 'interactive'
-        ? p99 !== null && budget !== null && sampleCount !== null && sampleCount >= 50 && p99 <= budget
-        : structuralOk;
+      !gateShowsFail &&
+      structuralOk &&
+      p99 !== null &&
+      budget !== null &&
+      sampleCount !== null &&
+      sampleCount >= 50 &&
+      p99 <= budget;
 
     results.push({
       name: 'benchmark',
       ok: benchmarkOk,
       detail:
-        EXECUTION_PROFILE === 'interactive'
-          ? p99 === null || budget === null || sampleCount === null
-            ? `interactive missing benchmark metrics (p99="${benchmark.p99Text}", budget="${benchmark.budgetText}", gate="${benchmark.gateText}")`
-            : `interactive p99=${p99.toFixed(3)}ms budget=${budget.toFixed(3)}ms samples=${sampleCount} gate="${benchmark.gateText}"`
-          : `headless structural_ok=${structuralOk ? 1 : 0} worklet=${benchmark.hasAudioWorkletNode ? 1 : 0} random=${benchmark.hasRandomnessToken ? 1 : 0} setInterval=${benchmark.hasSetIntervalToken ? 1 : 0} currentTime=${benchmark.hasCurrentTimeToken ? 1 : 0} gate="${benchmark.gateText}"`,
+        p99 === null || budget === null || sampleCount === null
+          ? `real benchmark missing metrics (p99="${benchmark.p99Text}", budget="${benchmark.budgetText}", gate="${benchmark.gateText}")`
+          : `real p99=${p99.toFixed(3)}ms budget=${budget.toFixed(3)}ms samples=${sampleCount} structural_ok=${structuralOk ? 1 : 0} gate_fail=${gateShowsFail ? 1 : 0} worklet=${benchmark.hasAudioWorkletNode ? 1 : 0} random=${benchmark.hasRandomnessToken ? 1 : 0} setInterval=${benchmark.hasSetIntervalToken ? 1 : 0} currentTime=${benchmark.hasCurrentTimeToken ? 1 : 0} gate="${benchmark.gateText}"`,
     });
-
-    await browser.close();
 
     let failed = 0;
     for (const r of results) {
@@ -146,17 +152,17 @@ async function run() {
 
     console.log(`audio-gates: all ${results.length} checks passed.`);
   } finally {
-    server.kill('SIGTERM');
-    await delay(250);
-    if (!server.killed) {
-      server.kill('SIGKILL');
+    if (browser) {
+      try {
+        await Promise.race([browser.close(), delay(3000)]);
+      } catch {
+        // ignore browser shutdown issues; gate outcome already captured
+      }
     }
-
-    if (serverOut.trim().length > 0) {
-      console.log(serverOut.trim());
-    }
-    if (serverErr.trim().length > 0) {
-      console.error(serverErr.trim());
+    try {
+      await viteServer.close();
+    } catch {
+      // ignore server shutdown issues; gate outcome already captured
     }
   }
 }

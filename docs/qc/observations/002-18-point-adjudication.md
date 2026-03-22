@@ -3,7 +3,7 @@
 date_utc: 2026-03-21
 branch: main
 head_at_observation: 6d7e995
-scope: observer governance, evidence-only
+scope: GA governance, evidence-only
 
 ## Method
 

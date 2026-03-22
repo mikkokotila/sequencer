@@ -1,7 +1,7 @@
 {
   "task_id": "20260321-oracle-harness-vite-root-fix",
   "task_type": "governance-change",
-  "execution_profile": "headless",
+  "execution_profile": "real",
   "capability": {
     "summary": "Fix harness benchmark server boot and runtime interval instrumentation filtering for benchmark-page-only calls.",
     "in_scope": [

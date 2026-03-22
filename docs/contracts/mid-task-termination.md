@@ -4,7 +4,7 @@
 
 Operator stand-down instructions override all active work immediately.
 
-When operator says `stand down`, CA must stop task execution and run termination protocol before any further action.
+When operator says `stand down`, WA must stop task execution and run termination protocol before any further action.
 
 ## Hard Stop Rules
 
@@ -42,8 +42,8 @@ This command captures:
 If `docs/qc/standdown/active.json` is active:
 
 1. product task types (`feature`, `bugfix`, `refactor`) are blocked with `GOV-PROC-008`
-2. CA must not resume product work until operator clears stand-down lock
+2. WA must not resume product work until operator clears stand-down lock
 
 ## Reactivation
 
-Only operator can reactivate CA by clearing `docs/qc/standdown/active.json` and issuing explicit resume instruction.
+Only operator can reactivate WA by clearing `docs/qc/standdown/active.json` and issuing explicit resume instruction.

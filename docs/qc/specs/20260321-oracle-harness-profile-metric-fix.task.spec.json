@@ -1,9 +1,9 @@
 {
   "task_id": "20260321-oracle-harness-profile-metric-fix",
   "task_type": "governance-change",
-  "execution_profile": "headless",
+  "execution_profile": "real",
   "capability": {
-    "summary": "Fix oracle harness benchmark metric keys so headless emits structural_ok and interactive remains p99-compatible.",
+    "summary": "Fix oracle harness benchmark metric keys for single real profile p99 validation.",
     "in_scope": [
       "docs/qc/scripts/**",
       "docs/qc/specs/**",

@@ -1,7 +1,7 @@
 {
   "task_id": "20260321-benchmark-worklet-timing",
   "task_type": "bugfix",
-  "execution_profile": "headless",
+  "execution_profile": "real",
   "capability": {
     "summary": "Replace main-thread RAF proxy timing in benchmark with real AudioWorklet process() measurement",
     "in_scope": [

@@ -37,6 +37,9 @@ docs(contracts): add commit and quality-gates contracts
 5. Do not bypass with direct `git commit` for product changes.
 6. Commit message describes the *why*, not the *what*.
 7. Never amend previous commits unless explicitly asked.
+8. Keep one active work branch per task lifecycle; do not split the same task into multiple branches.
+9. After every completion commit, push immediately: `git push origin HEAD`.
+10. If no open PR exists for the current branch, create one immediately targeting `main`.
 
 ## Verification Before Commit
 
@@ -48,3 +51,15 @@ Before every commit:
 3. The app has been opened in an actual browser and the changed feature manually confirmed to work
 
 If you cannot verify in a real browser, the commit message must state this explicitly.
+
+## Remote Publication Protocol
+
+A task is not complete at commit time alone. Completion requires remote publication.
+
+Required sequence after `gov:commit`:
+
+1. `git push origin HEAD`
+2. Check branch PR status.
+3. If no PR exists, create PR:
+   - `gh pr create --base main --head <current-branch> --fill`
+4. Continue all further commits on the same branch/PR until merged.

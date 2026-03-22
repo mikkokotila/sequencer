@@ -331,7 +331,7 @@ class CompilerContext {
     this.specPath = args.specPath;
     this.taskId = null;
     this.taskType = null;
-    this.executionProfile = (rules.execution_profiles && rules.execution_profiles.default) || 'headless';
+    this.executionProfile = (rules.execution_profiles && rules.execution_profiles.default) || 'real';
     this.executionProfileExplicit = false;
     this.requireDebtReduction = false;
     this.debtRatchet = null;
@@ -562,9 +562,9 @@ async function phaseParseSpec(ctx) {
   ctx.taskType = typeof spec.task_type === 'string' ? spec.task_type.trim() : '';
   const allowedProfiles = Array.isArray(ctx.rules.execution_profiles?.allowed)
     ? ctx.rules.execution_profiles.allowed
-    : ['headless', 'interactive'];
+    : ['real'];
   const defaultProfile =
-    typeof ctx.rules.execution_profiles?.default === 'string' ? ctx.rules.execution_profiles.default : 'headless';
+    typeof ctx.rules.execution_profiles?.default === 'string' ? ctx.rules.execution_profiles.default : 'real';
   const rawExecutionProfile = typeof spec.execution_profile === 'string' ? spec.execution_profile.trim() : '';
   ctx.executionProfileExplicit = rawExecutionProfile.length > 0;
   ctx.executionProfile = (rawExecutionProfile || defaultProfile).toLowerCase();
@@ -603,7 +603,7 @@ async function phaseParseSpec(ctx) {
   if (ctx.taskType === 'governance-change' && !ctx.args.allowGovernanceChange) {
     ctx.addDiagnostic(
       'GOV-ROLE-001',
-      'governance-change is observer-only. CA must stand down; observer must rerun with --allow-governance-change.',
+      'governance-change is GA-only. WA must stand down; GA must rerun with --allow-governance-change.',
       {
         task_type: ctx.taskType,
         allow_governance_change: ctx.args.allowGovernanceChange,
@@ -1042,7 +1042,7 @@ async function executeOracleHarness(ctx) {
     const result = spawn(command, {
       env: {
         GOV_TASK_TYPE: ctx.taskType || '',
-        GOV_EXECUTION_PROFILE: ctx.executionProfile || 'headless',
+        GOV_EXECUTION_PROFILE: ctx.executionProfile || 'real',
       },
     });
     const elapsedMs = Date.now() - started;
@@ -1394,7 +1394,7 @@ async function phaseBind(ctx) {
     ctx.addDiagnostic(
       'GOV-SPEC-008',
       'Benchmark-governed task must declare execution_profile explicitly in task spec.',
-      { required_profiles: ctx.rules.execution_profiles?.allowed || ['headless', 'interactive'] },
+      { required_profiles: ctx.rules.execution_profiles?.allowed || ['real'] },
     );
   }
 
@@ -1487,7 +1487,7 @@ async function executeCommandObligations(ctx) {
         GOV_CHANGED_FILES: ctx.changedFiles.join('\n'),
         GOV_SUBJECT_FILES: ctx.subjectFiles.join('\n'),
         GOV_TASK_TYPE: ctx.taskType || '',
-        GOV_EXECUTION_PROFILE: ctx.executionProfile || 'headless',
+        GOV_EXECUTION_PROFILE: ctx.executionProfile || 'real',
       },
     });
     const elapsedMs = Date.now() - started;

@@ -11,8 +11,8 @@ import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { spawn } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
+import { createServer } from 'vite';
 
 const toolRoot = process.cwd();
 const HARNESS_VERSION = 'oracle-harness-v2';
@@ -30,7 +30,7 @@ function parseArgs(argv) {
     taskId: '',
     oracles: [],
     subjectSha: '',
-    executionProfile: 'headless',
+    executionProfile: 'real',
     challenge: '',
     repoRoot: toolRoot,
     json: false,
@@ -152,7 +152,15 @@ async function waitForServer(url, timeoutMs = 30000) {
 async function launchBrowser() {
   const requireFromRoot = createRequire(path.join(toolRoot, 'package.json'));
   const { chromium } = requireFromRoot('playwright');
-  return chromium.launch({ headless: true });
+  const hasDisplay =
+    process.platform === 'win32' ||
+    process.platform === 'darwin' ||
+    Boolean(process.env.DISPLAY || process.env.WAYLAND_DISPLAY);
+  if (!hasDisplay) {
+    const linuxHint = process.platform === 'linux' ? ' Run compiler under xvfb-run.' : '';
+    throw new Error(`Real oracle harness requires a display server.${linuxHint}`);
+  }
+  return chromium.launch({ headless: false });
 }
 
 function toRounded(value, decimals = 6) {
@@ -312,20 +320,17 @@ async function runBenchmarkProbe(page, repoRoot) {
   const port = Number(process.env.ORACLE_BENCH_PORT || '5197');
   const base = `http://127.0.0.1:${port}`;
 
-  const server = spawn('npx', ['vite', repoRoot, '--port', String(port), '--strictPort', '--host', '127.0.0.1'], {
-    cwd: toolRoot,
-    stdio: ['ignore', 'pipe', 'pipe'],
-    env: process.env,
+  const server = await createServer({
+    root: repoRoot,
+    logLevel: 'error',
+    clearScreen: false,
+    server: {
+      port,
+      strictPort: true,
+      host: '127.0.0.1',
+    },
   });
-
-  let out = '';
-  let err = '';
-  server.stdout?.on('data', (d) => {
-    out += String(d);
-  });
-  server.stderr?.on('data', (d) => {
-    err += String(d);
-  });
+  await server.listen();
 
   try {
     await waitForServer(`${base}/`);
@@ -382,15 +387,10 @@ async function runBenchmarkProbe(page, repoRoot) {
       };
     });
   } finally {
-    server.kill('SIGTERM');
-    await delay(200);
-    if (!server.killed) {
-      server.kill('SIGKILL');
-    }
-    if (err.trim()) {
-      process.stderr.write(`${err.trim()}\n`);
-    } else if (out.trim()) {
-      process.stderr.write(`${out.trim()}\n`);
+    try {
+      await server.close();
+    } catch {
+      // ignore shutdown issues; oracle result already determined
     }
   }
 }
@@ -472,13 +472,19 @@ function buildChallengeResponse(challenge, taskId, subjectSha, executionProfile,
 async function run() {
   const args = parseArgs(process.argv.slice(2));
 
+  const profileAliases = {
+    headless: 'real',
+    interactive: 'real',
+  };
+  args.executionProfile = profileAliases[args.executionProfile] || args.executionProfile;
+
   if (!args.taskId || args.oracles.length === 0) {
-    throw new Error('Usage: --task-id <id> --oracles o1,o2 --subject-sha <sha> --execution-profile <headless|interactive> --challenge <nonce> --json');
+    throw new Error('Usage: --task-id <id> --oracles o1,o2 --subject-sha <sha> --execution-profile <real> --challenge <nonce> --json');
   }
   if (!args.subjectSha) {
     throw new Error('Missing --subject-sha');
   }
-  if (!['headless', 'interactive'].includes(args.executionProfile)) {
+  if (!['real'].includes(args.executionProfile)) {
     throw new Error(`Invalid --execution-profile: ${args.executionProfile}`);
   }
 
@@ -614,23 +620,28 @@ async function run() {
       if (oracleId === 'benchmark_worklet_budget') {
         const p99 = parseFiniteNumber(benchmarkMetrics.p99_text);
         const budget = parseFiniteNumber(benchmarkMetrics.budget_text);
+        const gateShowsFail = /\bFAIL\b/i.test(benchmarkMetrics.gate_text || '');
         const structuralOk =
           benchmarkMetrics.has_audio_worklet &&
           benchmarkMetrics.interval_calls === 0 &&
           benchmarkMetrics.random_calls === 0 &&
           benchmarkMetrics.terminal_gate_state;
-
-        const interactivePass =
-          p99 !== null && budget !== null && benchmarkMetrics.sample_count >= 50 && p99 <= budget;
-        const headlessPass = structuralOk;
-        const pass = args.executionProfile === 'interactive' ? interactivePass : headlessPass;
+        const pass =
+          !gateShowsFail &&
+          structuralOk &&
+          p99 !== null &&
+          budget !== null &&
+          benchmarkMetrics.sample_count >= 50 &&
+          p99 <= budget;
 
         results.push(
           sanitizeOracleResult(oracleId, {
             status: pass ? 'PASS' : 'FAIL',
             metrics: {
               p99_ms: p99 !== null ? toRounded(p99, 4) : 999,
+              sample_count: benchmarkMetrics.sample_count,
               structural_ok: structuralOk ? 1 : 0,
+              gate_fail: gateShowsFail ? 1 : 0,
             },
             evidence: `profile=${args.executionProfile} gate="${benchmarkMetrics.gate_text}" samples=${benchmarkMetrics.sample_count} p99=${p99} budget=${budget} interval_calls=${benchmarkMetrics.interval_calls} random_calls=${benchmarkMetrics.random_calls}`,
             raw: {
@@ -641,8 +652,8 @@ async function run() {
                 p99,
                 budget,
                 structural_ok: structuralOk ? 1 : 0,
-                interactive_pass: interactivePass,
-                headless_pass: headlessPass,
+                gate_fail: gateShowsFail ? 1 : 0,
+                pass,
               },
               measured_at_utc: nowIso(),
             },

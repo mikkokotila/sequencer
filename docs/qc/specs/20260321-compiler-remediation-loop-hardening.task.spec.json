@@ -2,7 +2,7 @@
   "task_id": "20260321-compiler-remediation-loop-hardening",
   "task_type": "governance-change",
   "capability": {
-    "summary": "Harden compiler diagnostics and execution flow so CA gets explicit remediation instructions, avoids null-path crashes, and cannot pass manual oracle evidence.",
+    "summary": "Harden compiler diagnostics and execution flow so WA gets explicit remediation instructions, avoids null-path crashes, and cannot pass manual oracle evidence.",
     "in_scope": [
       "CLAUDE.md",
       "docs/contracts/**",

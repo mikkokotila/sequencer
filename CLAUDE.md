@@ -4,9 +4,9 @@ Read the relevant contract BEFORE starting work. Not all contracts apply to ever
 
 ## Role Boundary
 
-Coding Agent (CA) is product-implementation only.
+Worker-Agent (WA) is product-implementation only.
 
-CA must never perform governance development:
+WA must never perform governance development:
 
 - `AGENTS.md`
 - `CLAUDE.md`
@@ -16,7 +16,14 @@ CA must never perform governance development:
 - `package.json`
 - `.husky/**`
 
-If a request requires governance changes, CA must stand down and wait for observer reactivation.
+If a request requires governance changes, WA must stand down and wait for GA reactivation.
+
+## Remote Branch Discipline
+
+1. Use one work branch per task lifecycle from first edit until merge.
+2. Do not split the same task across multiple branches.
+3. Do not switch to a second branch mid-task to continue work.
+4. If branch state is blocked, pause and ask operator; do not fork the task into another branch.
 
 ## Always
 
@@ -61,6 +68,12 @@ Before commit, ensure proof artifacts exist:
    - if repeated remediation exposes a real contract/runtime conflict that cannot be resolved in-task, stop and ask operator for guidance before any further edits or commit attempts
 4. If and only if compiler verdict is `PASS`, commit with:
    - `npm run gov:commit -- --spec docs/qc/specs/<task-id>.task.spec.json -m "type(scope): description"`
+5. Immediately push the completion commit:
+   - `git push origin HEAD`
+6. Ensure there is an open PR for the current branch:
+   - if PR exists: continue on the same PR
+   - if PR does not exist: create one immediately targeting `main`
+   - example: `gh pr create --base main --head <current-branch> --fill`
 
 Direct `git commit` for product changes is non-compliant when compiler verdict is not `PASS`.
 
@@ -101,12 +114,12 @@ Applies to: `tests/benchmark.html`, `src/engine/worklets/**`.
 
 Task spec must declare:
 
-1. `execution_profile: "headless"` or `execution_profile: "interactive"`
+1. `execution_profile: "real"`
 
 Profile semantics:
 
-1. `interactive` requires real process-time budget proof (`p99 <= budget`)
-2. `headless` requires structural benchmark integrity proof only
+1. `real` requires real process-time budget proof (`sample_count >= 50` and `p99 <= budget`)
+2. do not introduce headless structural-only fallback; use display-backed runtime (`xvfb-run`) when needed
 
 ## When writing or modifying nonlinear audio processors
 

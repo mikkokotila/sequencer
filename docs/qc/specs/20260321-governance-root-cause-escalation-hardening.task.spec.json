@@ -2,7 +2,7 @@
   "task_id": "20260321-governance-root-cause-escalation-hardening",
   "task_type": "governance-change",
   "capability": {
-    "summary": "Tighten routing and compiler behavior so CA is explicitly guided toward root-cause remediation, cannot rely on gate-text loopholes, and must escalate to operator when repeated failures suggest contract/runtime conflict.",
+    "summary": "Tighten routing and compiler behavior so WA is explicitly guided toward root-cause remediation, cannot rely on gate-text loopholes, and must escalate to operator when repeated failures suggest contract/runtime conflict.",
     "in_scope": [
       "CLAUDE.md",
       "docs/contracts/**",

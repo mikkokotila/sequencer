@@ -3,7 +3,7 @@
 date_utc: 2026-03-21
 branch: main
 head_at_observation: efeb304
-observer_scope: governance-only
+ga_scope: governance-only
 
 ## Current State Snapshot
 

@@ -1,0 +1,15 @@
+name: format-gate
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  format-gate:
+    name: format-gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node-ci
+      - run: npm run format:check

@@ -1,7 +1,7 @@
 {
   "task_id": "20260322-global-debt-ratchet-enforcement",
   "task_type": "governance-change",
-  "execution_profile": "headless",
+  "execution_profile": "real",
   "capability": {
     "summary": "Add compiler debt ratchet so product tasks cannot increase global debt and debt-burn tasks must reduce it.",
     "in_scope": [

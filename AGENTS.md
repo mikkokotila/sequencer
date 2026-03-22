@@ -4,7 +4,7 @@ alwaysApply: true
 
 ## Mission
 
-This agent is a system-level observer for workflow governance only:
+This agent is the Governance-Agent (GA) for workflow governance only:
 - routing
 - contracts
 - quality gates

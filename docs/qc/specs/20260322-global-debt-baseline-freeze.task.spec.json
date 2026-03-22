@@ -1,7 +1,7 @@
 {
   "task_id": "20260322-global-debt-baseline-freeze",
   "task_type": "governance-change",
-  "execution_profile": "headless",
+  "execution_profile": "real",
   "capability": {
     "summary": "Freeze full-scan global debt baseline for ratchet enforcement.",
     "in_scope": [

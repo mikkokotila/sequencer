@@ -1,0 +1,15 @@
+name: type-gate
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  type-gate:
+    name: type-gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node-ci
+      - run: npm run typecheck

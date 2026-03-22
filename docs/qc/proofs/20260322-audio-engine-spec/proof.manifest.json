@@ -1,0 +1,27 @@
+{
+  "task_id": "20260322-audio-engine-spec",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [],
+  "contracts": [
+    {
+      "path": "docs/contracts/commit.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/quality-gates.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/governance-compiler.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "NOT_VERIFIED",
+    "details": "Documentation-only task; no product behavior change."
+  },
+  "artifacts": [
+    "verdict.json"
+  ]
+}

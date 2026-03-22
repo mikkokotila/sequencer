@@ -1,0 +1,39 @@
+{
+  "task_id": "20260322-e2e-delta-enforcement",
+  "task_type": "governance-change",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Enforce runtime product delta requires behavioral E2E/test delta via compiler-bound O-E2E-DELTA gate.",
+    "in_scope": [
+      "docs/qc/scripts/e2e-delta-gates.mjs",
+      "docs/qc/scripts/governance-compiler.mjs",
+      "docs/qc/compiler/obligation-rules.json",
+      "docs/contracts/e2e.md",
+      "docs/contracts/quality-gates.md",
+      "docs/contracts/governance-compiler.md",
+      "package.json"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "tests/**",
+      "e2e/**",
+      "index.html",
+      "sequencer.html",
+      "README.md"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:kick_01"
+    ],
+    "seed": "fixed-seed-v1",
+    "oracles": []
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": true,
+    "require_debt_reduction": false
+  }
+}

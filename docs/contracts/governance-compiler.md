@@ -44,6 +44,11 @@ During `execute`, obligations are split:
 3. `oracle_harness` (compiler-owned, in-memory custody)
 4. `debt_ratchet` (blocking policy over baseline totals)
 
+For product diffs, compiler binds both:
+
+1. `O-E2E` (`npm run e2e`)
+2. `O-E2E-DELTA` (`npm run gate:e2e-delta`)
+
 ## Verdict Policy
 
 Allowed verdicts:

@@ -102,6 +102,11 @@
       "command": "npm run e2e",
       "failure_code": "GOV-PROC-002"
     },
+    "O-E2E-DELTA": {
+      "label": "E2E delta coverage",
+      "command": "npm run gate:e2e-delta",
+      "failure_code": "GOV-PROC-002"
+    },
     "O-GATE-CONTRACTS-FULL": {
       "label": "Contract static gates",
       "command": "node docs/qc/scripts/contract-gates.mjs",

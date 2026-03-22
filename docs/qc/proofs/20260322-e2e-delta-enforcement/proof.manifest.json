@@ -1,0 +1,39 @@
+{
+  "task_id": "20260322-e2e-delta-enforcement",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-GATE-GOVERNANCE-SELF",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-e2e-delta-enforcement/logs/O-GATE-GOVERNANCE-SELF.log"
+    },
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-e2e-delta-enforcement/logs/O-CI.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-e2e-delta-enforcement/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [
+    "docs/contracts/e2e.md",
+    "docs/contracts/quality-gates.md",
+    "docs/contracts/governance-compiler.md"
+  ],
+  "browser_verification": {
+    "performed": false,
+    "reason": "Governance-only change; no product UI behavior modified."
+  },
+  "artifacts": [
+    "docs/qc/scripts/e2e-delta-gates.mjs",
+    "docs/qc/compiler/obligation-rules.json",
+    "docs/qc/scripts/governance-compiler.mjs"
+  ]
+}

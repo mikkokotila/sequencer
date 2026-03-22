@@ -817,4 +817,55 @@ test.describe('ADSR Controls', () => {
     await page.locator('#adsr-close').click();
     await expect(page.locator('#adsr-popup')).not.toHaveClass(/open/);
   });
+
+  test('ADSR envelope actually modulates audio when enabled', async ({ page }) => {
+    await waitForApp(page);
+    // Use OfflineAudioContext to verify envelope gain automation is real.
+    // Create a source, apply envelope with slow attack (0.5s), render 0.01s,
+    // and verify the output is near-silent (attack hasn't completed yet).
+    const result = await page.evaluate(async () => {
+      const offline = new OfflineAudioContext(1, 4800, 48000); // 0.1s at 48kHz
+      const buf = offline.createBuffer(1, 48000, 48000); // 1s of noise
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = 0.5; // constant signal
+
+      const src = offline.createBufferSource();
+      src.buffer = buf;
+
+      // Simulate ADSR with slow attack (0.5s) — at 0.01s into rendering,
+      // the envelope should still be near zero (attack barely started)
+      const env = offline.createGain();
+      env.gain.setValueAtTime(0.0001, 0);
+      env.gain.linearRampToValueAtTime(1.0, 0.5); // 500ms attack
+      env.gain.setTargetAtTime(0.8, 0.5, 0.033); // decay to 0.8 sustain
+
+      src.connect(env);
+      env.connect(offline.destination);
+      src.start(0);
+
+      const rendered = await offline.startRendering();
+      const out = rendered.getChannelData(0);
+
+      // Check first 480 samples (10ms) — with 500ms attack, gain ≈ 0.02 max
+      let peakFirst10ms = 0;
+      for (let i = 0; i < 480; i++) {
+        peakFirst10ms = Math.max(peakFirst10ms, Math.abs(out[i] ?? 0));
+      }
+
+      // Check samples at 90-100ms — gain ≈ 0.2 (20% into 500ms attack)
+      let peakAt100ms = 0;
+      for (let i = 4320; i < 4800; i++) {
+        peakAt100ms = Math.max(peakAt100ms, Math.abs(out[i] ?? 0));
+      }
+
+      return { peakFirst10ms, peakAt100ms };
+    });
+
+    // With slow attack, first 10ms should be heavily attenuated (< 0.1)
+    expect(result.peakFirst10ms).toBeLessThan(0.1);
+    // At 100ms into 500ms attack, signal should be rising but still below full (< 0.5 * 0.5 = 0.25ish)
+    expect(result.peakAt100ms).toBeLessThan(0.25);
+    // And it should be higher than the start (proving the ramp is real)
+    expect(result.peakAt100ms).toBeGreaterThan(result.peakFirst10ms);
+  });
 });

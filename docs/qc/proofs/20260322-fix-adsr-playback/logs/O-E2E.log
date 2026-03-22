@@ -1,0 +1,77 @@
+command: npm run e2e
+status: 0
+elapsed_ms: 31719
+
+--- stdout ---
+
+> sequencer@1.0.0 e2e
+> npx playwright test
+
+
+Running 60 tests using 1 worker
+
+  ✓   1 [chromium] › e2e/sequencer.spec.ts:91:3 › App Initialization › renders all track sections (418ms)
+  ✓   2 [chromium] › e2e/sequencer.spec.ts:98:3 › App Initialization › renders song pane with 12 phrase slots (169ms)
+  ✓   3 [chromium] › e2e/sequencer.spec.ts:104:3 › App Initialization › renders transport bar with all controls (179ms)
+  ✓   4 [chromium] › e2e/sequencer.spec.ts:117:3 › App Initialization › renders extension icons (158ms)
+  ✓   5 [chromium] › e2e/sequencer.spec.ts:123:3 › App Initialization › renders engine icon with divider (169ms)
+  ✓   6 [chromium] › e2e/sequencer.spec.ts:129:3 › App Initialization › song name shows Untitled by default (162ms)
+  ✓   7 [chromium] › e2e/sequencer.spec.ts:135:3 › App Initialization › BPM defaults to 120 (175ms)
+  ✓   8 [chromium] › e2e/sequencer.spec.ts:147:3 › Drum Grid › clicking a drum cell toggles it on (200ms)
+  ✓   9 [chromium] › e2e/sequencer.spec.ts:155:3 › Drum Grid › clicking an active drum cell toggles it off (217ms)
+  ✓  10 [chromium] › e2e/sequencer.spec.ts:164:3 › Drum Grid › default kick pattern has four-on-the-floor (165ms)
+  ✓  11 [chromium] › e2e/sequencer.spec.ts:179:3 › Melody Grid › clicking a melody cell toggles it on (193ms)
+  ✓  12 [chromium] › e2e/sequencer.spec.ts:188:3 › Melody Grid › clicking an active melody cell toggles it off (218ms)
+  ✓  13 [chromium] › e2e/sequencer.spec.ts:205:3 › Vocal Grid › clicking a vocal cell toggles it on (186ms)
+  ✓  14 [chromium] › e2e/sequencer.spec.ts:218:3 › Track Controls › mute button toggles muted state (218ms)
+  ✓  15 [chromium] › e2e/sequencer.spec.ts:228:3 › Track Controls › CLR button clears all cells in track (197ms)
+  ✓  16 [chromium] › e2e/sequencer.spec.ts:240:3 › Track Controls › FILL replicates pattern across all bars (331ms)
+  ✓  17 [chromium] › e2e/sequencer.spec.ts:259:3 › Track Controls › LOAD button opens sample browser (254ms)
+  ✓  18 [chromium] › e2e/sequencer.spec.ts:272:3 › Melody Track Controls › octave buttons change octave value (276ms)
+  ✓  19 [chromium] › e2e/sequencer.spec.ts:288:3 › Melody Track Controls › harmony toggle cycles through modes (242ms)
+  ✓  20 [chromium] › e2e/sequencer.spec.ts:315:3 › BPM Control › BPM number input updates value (219ms)
+  ✓  21 [chromium] › e2e/sequencer.spec.ts:323:3 › BPM Control › BPM clamps to range 40-220 (270ms)
+  ✓  22 [chromium] › e2e/sequencer.spec.ts:337:3 › Song Management › song name is visible (211ms)
+  ✓  23 [chromium] › e2e/sequencer.spec.ts:342:3 › Song Management › double-click song name enables editing (227ms)
+  ✓  24 [chromium] › e2e/sequencer.spec.ts:348:3 › Song Management › new song resets patterns and extensions deterministically (3.5s)
+  ✓  25 [chromium] › e2e/sequencer.spec.ts:390:3 › Sample Browser › opens and closes (258ms)
+  ✓  26 [chromium] › e2e/sequencer.spec.ts:401:3 › Sample Browser › search filters items (457ms)
+  ✓  27 [chromium] › e2e/sequencer.spec.ts:422:3 › Phrase Pane › clicking phrase slot switches active phrase (217ms)
+  ✓  28 [chromium] › e2e/sequencer.spec.ts:432:3 › Phrase Pane › phrase 1 has content indicator if default pattern exists (155ms)
+  ✓  29 [chromium] › e2e/sequencer.spec.ts:439:3 › Phrase Pane › fill-with-prev button copies previous phrase (244ms)
+  ✓  30 [chromium] › e2e/sequencer.spec.ts:458:3 › Extension Panels › clicking extension icon opens side panel (227ms)
+  ✓  31 [chromium] › e2e/sequencer.spec.ts:466:3 › Extension Panels › clicking same icon closes panel (1.1s)
+  ✓  32 [chromium] › e2e/sequencer.spec.ts:475:3 › Extension Panels › extension panel has on/off toggle (247ms)
+  ✓  33 [chromium] › e2e/sequencer.spec.ts:481:3 › Extension Panels › toggling extension on/off changes state (617ms)
+  ✓  34 [chromium] › e2e/sequencer.spec.ts:492:3 › Extension Panels › compressor model selector switches between FET/OPTO/VCA (710ms)
+  ✓  35 [chromium] › e2e/sequencer.spec.ts:527:3 › Extension Panels › transformer extension opens and has controls (1.1s)
+  ✓  36 [chromium] › e2e/sequencer.spec.ts:536:3 › Extension Panels › close button closes panel (1.1s)
+  ✓  37 [chromium] › e2e/sequencer.spec.ts:544:3 › Extension Panels › app shifts when panel opens (233ms)
+  ✓  38 [chromium] › e2e/sequencer.spec.ts:556:3 › Engine Control Panel › clicking engine icon opens full-screen panel (575ms)
+  ✓  39 [chromium] › e2e/sequencer.spec.ts:562:3 › Engine Control Panel › closing engine panel restores app view (1.3s)
+  ✓  40 [chromium] › e2e/sequencer.spec.ts:575:3 › Engine Control Panel › Escape closes engine panel (605ms)
+  ✓  41 [chromium] › e2e/sequencer.spec.ts:583:3 › Engine Control Panel › engine panel has all control sections (233ms)
+  ✓  42 [chromium] › e2e/sequencer.spec.ts:597:3 › Keyboard Shortcuts › Space toggles play/stop (184ms)
+  ✓  43 [chromium] › e2e/sequencer.spec.ts:608:3 › Keyboard Shortcuts › Escape closes browser modal (263ms)
+  ✓  44 [chromium] › e2e/sequencer.spec.ts:622:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles (5.5s)
+  ✓  45 [chromium] › e2e/sequencer.spec.ts:676:3 › Persistence › pattern survives page reload (1.1s)
+  ✓  46 [chromium] › e2e/sequencer.spec.ts:704:3 › Grid Alignment › bar dividers are visible (166ms)
+  ✓  47 [chromium] › e2e/sequencer.spec.ts:710:3 › Grid Alignment › drum and melody grids are vertically aligned (202ms)
+  ✓  48 [chromium] › e2e/sequencer.spec.ts:725:3 › MIDI Controls › MIDI button visible on all 3 melody tracks (178ms)
+  ✓  49 [chromium] › e2e/sequencer.spec.ts:731:3 › MIDI Controls › MIDI button not on drum tracks (164ms)
+  ✓  50 [chromium] › e2e/sequencer.spec.ts:737:3 › MIDI Controls › clicking MIDI button opens midi browser (224ms)
+  ✓  51 [chromium] › e2e/sequencer.spec.ts:744:3 › MIDI Controls › Escape closes midi browser (220ms)
+  ✓  52 [chromium] › e2e/sequencer.spec.ts:753:3 › MIDI Controls › close button closes midi browser (249ms)
+  ✓  53 [chromium] › e2e/sequencer.spec.ts:762:3 › MIDI Controls › midi browser shows status element (220ms)
+  ✓  54 [chromium] › e2e/sequencer.spec.ts:775:3 › ADSR Controls › ADSR button visible on all 9 tracks (169ms)
+  ✓  55 [chromium] › e2e/sequencer.spec.ts:781:3 › ADSR Controls › clicking ADSR button opens popup (228ms)
+  ✓  56 [chromium] › e2e/sequencer.spec.ts:788:3 › ADSR Controls › ADSR popup has canvas visualization (217ms)
+  ✓  57 [chromium] › e2e/sequencer.spec.ts:795:3 › ADSR Controls › ADSR popup has 4 sliders (214ms)
+  ✓  58 [chromium] › e2e/sequencer.spec.ts:803:3 › ADSR Controls › Escape closes ADSR popup (261ms)
+  ✓  59 [chromium] › e2e/sequencer.spec.ts:812:3 › ADSR Controls › close button closes ADSR popup (261ms)
+  ✓  60 [chromium] › e2e/sequencer.spec.ts:821:3 › ADSR Controls › ADSR envelope actually modulates audio when enabled (176ms)
+
+  60 passed (30.7s)
+
+
+--- stderr ---

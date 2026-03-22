@@ -1,0 +1,14 @@
+{
+  "oracle": "clip_guard",
+  "measurement": {
+    "clip_count": 0
+  },
+  "details": {
+    "off_dbfs": -9.030899868207309,
+    "on_dbfs": -7.614004520760934,
+    "low0_dbfs": -9.033018645092794,
+    "low1_dbfs": -9.014755727165989,
+    "safe_peak_linear": 0.4479999244213104
+  },
+  "measured_at_utc": "2026-03-22T13:35:01.958Z"
+}

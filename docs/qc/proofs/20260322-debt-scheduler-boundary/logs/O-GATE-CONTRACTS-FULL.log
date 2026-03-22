@@ -1,0 +1,27 @@
+command: node docs/qc/scripts/contract-gates.mjs --mode full
+status: 1
+elapsed_ms: 328
+
+--- stdout ---
+PASS | No fixme debt | No test.fixme() found.
+PASS | newSong deterministic reset | newSong() delegates deterministic reset via resetAllExtensions().
+PASS | src/engine/extensions/pultec-eq.ts: setState respects disabled state | setState is guarded by enabled-state check.
+PASS | src/engine/extensions/compressor.ts: setState respects disabled state | setState is guarded by enabled-state check.
+PASS | src/engine/extensions/transformer.ts: setState respects disabled state | setState is guarded by enabled-state check.
+PASS | Engine low-end control curve safety | smoothness ratios cutoff=0.0005 resonance=0.0100 comp=0.0100
+PASS | Benchmark deterministic harness | Benchmark harness uses real AudioWorkletNode chain and no forbidden timing proxies.
+FAIL | No informational assertions | tests/audio-quality.html:208: assert(..., true, ...)
+tests/audio-quality.html:251: assert(..., true, ...)
+tests/audio-quality.html:253: assert(..., true, ...)
+tests/audio-quality.html:306: assert(..., true, ...)
+tests/audio-quality.html:359: assert(..., true, ...)
+tests/audio-quality.html:386: assert(..., true, ...)
+tests/audio-quality.html:519: assert(..., true, ...)
+tests/audio-quality.html:567: assert(..., true, ...)
+tests/e2e-signal.html:214: assert(..., true, ...)
+tests/signal-purity.html:293: assert(..., true, ...)
+
+
+--- stderr ---
+
+contract-gates: 1 failure(s), 7 pass(es).

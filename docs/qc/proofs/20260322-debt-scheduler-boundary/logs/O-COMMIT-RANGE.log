@@ -1,0 +1,22 @@
+command: npm run gate:commit-range
+status: 0
+elapsed_ms: 445
+
+--- stdout ---
+
+> sequencer@1.0.0 gate:commit-range
+> node docs/qc/scripts/commit-range-gates.mjs
+
+PASS | f94d33075b4ce7dfe4a04f2dacae9c6a47c8e107 | non-product commit; governance attestation trailers not required
+PASS | 820c40c1873a436c064d2b2bcab0c24d933b56b0 | governance trailers + PASS attestation verified (docs/qc/proofs/20260322-debt-remove-window-seq/verdict.json)
+PASS | 6e1007fcc16f7e27ffa1e3849061b9422dfd4075 | non-product commit; governance attestation trailers not required
+PASS | 3fd9824aa7ea14c3cf1dc3614aff83d7698920d0 | non-product commit; governance attestation trailers not required
+PASS | 04e7b88fb5ee1c11530485dc9cc22ef20b6d1b4b | non-product commit; governance attestation trailers not required
+PASS | 776078bb7e3f0a17b9c26b5393e3574195dc148e | non-product commit; governance attestation trailers not required
+PASS | 44030717535f71e1385cefe011d5fa940051b227 | non-product commit; governance attestation trailers not required
+PASS | 41050901469704ee8dd6511be31af6729d1add8c | non-product commit; governance attestation trailers not required
+
+commit-range-gates: all 8 commit(s) passed in range HEAD~1..HEAD.
+
+
+--- stderr ---

@@ -1,15 +1,45 @@
 /**
  * Scheduler — Tone.js Transport for tempo-accurate scheduling,
  * AudioBufferSourceNode for sample playback.
- * NO DOM access. Emits events for UI playhead.
+ * NO DOM access. NO direct transport imports. Emits events for UI playhead.
+ *
+ * Transport data is injected via bindTransport() from main.ts,
+ * keeping the engine→transport boundary clean.
  */
 
 import * as Tone from 'tone';
 import { STEPS, DRUMS_CFG, MEL_CFG, HARMONY_SEMITONES } from '../config';
 import { getAudioContext, getTrackGains, playSample } from './audio';
-import { phrases, octaves, harmonies } from '../transport/patterns';
-import { drumBuf, melBuf, vocalBuf, mutedArr, bpm as getBpm } from '../transport/song';
+import type { Phrase } from '../types';
 import { emit } from '../events';
+
+// ═══════════════════════════════════════════
+//  Transport data source (injected, not imported)
+// ═══════════════════════════════════════════
+
+export interface TransportSource {
+  readonly phrases: Phrase[];
+  readonly octaves: number[];
+  readonly harmonies: number[];
+  readonly drumBuf: (AudioBuffer | null)[];
+  readonly melBuf: (AudioBuffer | null)[];
+  readonly mutedArr: boolean[];
+  getVocalBuf(): AudioBuffer | null;
+  getBpm(): number;
+  isPhraseEmpty(idx: number): boolean;
+  findNextPhrase(from: number): number;
+  findFirstNonEmpty(): number;
+}
+
+let transport: TransportSource | null = null;
+
+/**
+ * Bind transport data source. Must be called once from main.ts
+ * before playback can start.
+ */
+export function bindTransport(src: TransportSource): void {
+  transport = src;
+}
 
 // ── Internal state ──
 let playing = false;
@@ -40,26 +70,12 @@ export function setPlayingPhrase(p: number): void {
 }
 
 // ═══════════════════════════════════════════
-//  PHRASE QUERIES (re-exported from patterns)
-// ═══════════════════════════════════════════
-export {
-  isPhraseEmpty,
-  findNextPhrase,
-  findFirstNonEmpty,
-  fillWithPrev,
-} from '../transport/patterns';
-import {
-  isPhraseEmpty as _isPhraseEmpty,
-  findNextPhrase as _findNextPhrase,
-  findFirstNonEmpty as _findFirstNonEmpty,
-} from '../transport/patterns';
-
-// ═══════════════════════════════════════════
 //  PHRASE ADVANCE
 // ═══════════════════════════════════════════
 
 function advancePhrase(): void {
-  const next = _findNextPhrase(playingPhrase);
+  if (!transport) return;
+  const next = transport.findNextPhrase(playingPhrase);
   if (next < 0) {
     stopPlayback();
     return;
@@ -74,10 +90,10 @@ function advancePhrase(): void {
 
 function scheduleStep(time: number): void {
   const ctx = getAudioContext();
-  if (!ctx) return;
+  if (!ctx || !transport) return;
 
   const s = curStep;
-  const phrase = phrases[playingPhrase];
+  const phrase = transport.phrases[playingPhrase];
   if (!phrase) return;
 
   const pd = phrase.drumPat;
@@ -88,18 +104,18 @@ function scheduleStep(time: number): void {
   // Drums
   for (let t = 0; t < DRUMS_CFG.length; t++) {
     const row = pd[t];
-    const buf = drumBuf[t];
+    const buf = transport.drumBuf[t];
     const gain = gains[t];
-    if (row?.[s] && buf && !mutedArr[t] && gain) {
+    if (row?.[s] && buf && !transport.mutedArr[t] && gain) {
       playSample(buf, time, undefined, gain);
     }
   }
 
   // Melody
   for (let t = 0; t < MEL_CFG.length; t++) {
-    const buf = melBuf[t];
+    const buf = transport.melBuf[t];
     const trackIdx = DRUMS_CFG.length + t;
-    if (!buf || mutedArr[trackIdx]) continue;
+    if (!buf || transport.mutedArr[trackIdx]) continue;
     const dest = gains[trackIdx];
     if (!dest) continue;
     const cfg = MEL_CFG[t];
@@ -114,14 +130,14 @@ function scheduleStep(time: number): void {
     }
 
     for (const n of activeNotes) {
-      const oct = octaves[t];
+      const oct = transport.octaves[t];
       if (oct === undefined) continue;
       const rate = Math.pow(2, ((oct - 1) * 12 + n) / 12);
       playSample(buf, time, rate, dest);
 
       // Harmony interval for poly tracks with exactly 1 note
       if (activeNotes.length === 1 && cfg && !cfg.mono) {
-        const harmIdx = harmonies[t];
+        const harmIdx = transport.harmonies[t];
         if (harmIdx !== undefined && harmIdx > 0) {
           const semitones = HARMONY_SEMITONES[harmIdx];
           if (semitones !== undefined) {
@@ -135,10 +151,11 @@ function scheduleStep(time: number): void {
 
   // Vocal
   const vocalIdx = DRUMS_CFG.length + MEL_CFG.length;
-  if (pv[s] && vocalBuf && !mutedArr[vocalIdx]) {
+  const vb = transport.getVocalBuf();
+  if (pv[s] && vb && !transport.mutedArr[vocalIdx]) {
     const dest = gains[vocalIdx];
     if (dest) {
-      playSample(vocalBuf, time, undefined, dest);
+      playSample(vb, time, undefined, dest);
     }
   }
 
@@ -159,12 +176,13 @@ function scheduleStep(time: number): void {
 
 /** Start playback using Tone.Transport. */
 export function startPlayback(): void {
+  if (!transport) return;
   playing = true;
   curStep = 0;
-  playingPhrase = _findFirstNonEmpty();
+  playingPhrase = transport.findFirstNonEmpty();
 
   // Sync Tone.js BPM
-  Tone.getTransport().bpm.value = getBpm;
+  Tone.getTransport().bpm.value = transport.getBpm();
 
   // Schedule repeating callback: 16th notes (4 per beat)
   scheduledEventId = Tone.getTransport().scheduleRepeat((time) => {

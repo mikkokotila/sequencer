@@ -1,0 +1,199 @@
+{
+  "task_id": "20260322-debt-scheduler-boundary",
+  "task_type": "refactor",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260322-debt-scheduler-boundary.task.spec.json",
+  "policy_version": "1.4.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-22T08:31:39.209Z",
+  "finished_at_utc": "2026-03-22T08:32:12.167Z",
+  "head_sha": "4105090",
+  "tree_sha": "cdbca5d082f6d4e2d7bed4bd64f83cf829b4e02d",
+  "subject_sha": "63bbabaa8d13ed0c1f81a1a0e116acbf2b901b78f2f18ef1e37929d6ed21748b",
+  "subject_files": [
+    "src/engine/scheduler.ts",
+    "src/main.ts",
+    "src/ui/build.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260322-debt-scheduler-boundary.md",
+    "docs/qc/proofs/20260322-debt-scheduler-boundary/logs/O-CI.log",
+    "docs/qc/proofs/20260322-debt-scheduler-boundary/logs/O-COMMIT-RANGE.log",
+    "docs/qc/proofs/20260322-debt-scheduler-boundary/logs/O-E2E.log",
+    "docs/qc/proofs/20260322-debt-scheduler-boundary/logs/O-GATE-ARCH-DELTA.log",
+    "docs/qc/proofs/20260322-debt-scheduler-boundary/logs/O-GATE-ARCH-FULL.log",
+    "docs/qc/proofs/20260322-debt-scheduler-boundary/logs/O-GATE-CONTRACTS-DELTA.log",
+    "docs/qc/proofs/20260322-debt-scheduler-boundary/logs/O-GATE-CONTRACTS-FULL.log",
+    "docs/qc/proofs/20260322-debt-scheduler-boundary/logs/O-ORACLE-HARNESS.log",
+    "docs/qc/proofs/20260322-debt-scheduler-boundary/oracles/control_binding.json",
+    "docs/qc/proofs/20260322-debt-scheduler-boundary/oracles/off_transparent.json",
+    "docs/qc/proofs/20260322-debt-scheduler-boundary/oracles/on_audible.json",
+    "docs/qc/proofs/20260322-debt-scheduler-boundary/proof.manifest.json",
+    "docs/qc/proofs/20260322-debt-scheduler-boundary/raw/control_binding.json",
+    "docs/qc/proofs/20260322-debt-scheduler-boundary/raw/off_transparent.json",
+    "docs/qc/proofs/20260322-debt-scheduler-boundary/raw/on_audible.json",
+    "docs/qc/proofs/20260322-debt-scheduler-boundary/verdict.json",
+    "docs/qc/specs/20260322-debt-scheduler-boundary.task.spec.json",
+    "src/engine/scheduler.ts",
+    "src/main.ts",
+    "src/ui/build.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=7, oracles=3, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=7, oracles=3, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4380,
+        "log_file": "docs/qc/proofs/20260322-debt-scheduler-boundary/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 24842,
+        "log_file": "docs/qc/proofs/20260322-debt-scheduler-boundary/logs/O-E2E.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-DELTA",
+        "label": "Contract static gates (task regression)",
+        "command": "node docs/qc/scripts/contract-gates.mjs --mode delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 260,
+        "log_file": "docs/qc/proofs/20260322-debt-scheduler-boundary/logs/O-GATE-CONTRACTS-DELTA.log"
+      },
+      {
+        "id": "O-GATE-ARCH-DELTA",
+        "label": "Architecture gates (task regression)",
+        "command": "node docs/qc/scripts/architecture-gates.mjs --mode delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 325,
+        "log_file": "docs/qc/proofs/20260322-debt-scheduler-boundary/logs/O-GATE-ARCH-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates (global debt)",
+        "command": "node docs/qc/scripts/contract-gates.mjs --mode full",
+        "blocking": false,
+        "status": "FAIL",
+        "exit_code": 1,
+        "elapsed_ms": 328,
+        "log_file": "docs/qc/proofs/20260322-debt-scheduler-boundary/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates (global debt)",
+        "command": "node docs/qc/scripts/architecture-gates.mjs --mode full",
+        "blocking": false,
+        "status": "FAIL",
+        "exit_code": 1,
+        "elapsed_ms": 362,
+        "log_file": "docs/qc/proofs/20260322-debt-scheduler-boundary/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 445,
+        "log_file": "docs/qc/proofs/20260322-debt-scheduler-boundary/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates (global debt)",
+        "command": "node docs/qc/scripts/contract-gates.mjs --mode full",
+        "status": "FAIL",
+        "log_file": "docs/qc/proofs/20260322-debt-scheduler-boundary/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates (global debt)",
+        "command": "node docs/qc/scripts/architecture-gates.mjs --mode full",
+        "status": "FAIL",
+        "log_file": "docs/qc/proofs/20260322-debt-scheduler-boundary/logs/O-GATE-ARCH-FULL.log"
+      }
+    ],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 3,
+      "delta_total_failures": -8,
+      "require_debt_reduction": true,
+      "contracts_failures": [
+        "No informational assertions"
+      ],
+      "architecture_failures": [
+        "UI does not duplicate transport business logic",
+        "Playhead/cell rendering avoids repeated inline style mutation"
+      ]
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-debt-scheduler-boundary/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260322-debt-scheduler-boundary/raw/off_transparent.json",
+        "raw_sha256": "0fb60f584495a75417c7ea618aeb67cc84e6d191edb3d9d62a35d82c8c41f289"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-debt-scheduler-boundary/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260322-debt-scheduler-boundary/raw/on_audible.json",
+        "raw_sha256": "f5a3e7d3e629a6ebdbef43a4a60b074172ff63e29816911e4f099832456e7930"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-debt-scheduler-boundary/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260322-debt-scheduler-boundary/raw/control_binding.json",
+        "raw_sha256": "97160ccaca8ab2297391b1e9be35b407f9a2062d6047beeb9c737a5e98c35835"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

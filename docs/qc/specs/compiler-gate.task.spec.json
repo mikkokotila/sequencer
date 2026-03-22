@@ -15,7 +15,16 @@
       "pr-range"
     ],
     "seed": "compiler-gate-ci-seed",
-    "oracles": []
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding",
+      "persistence_roundtrip",
+      "benchmark_worklet_budget"
+    ]
   },
   "guardrails": {
     "allow_fixme": false,

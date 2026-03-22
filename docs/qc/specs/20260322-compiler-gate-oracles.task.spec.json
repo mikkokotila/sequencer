@@ -1,0 +1,39 @@
+{
+  "task_id": "20260322-compiler-gate-oracles",
+  "task_type": "qc",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Declare required oracle categories in compiler-gate CI spec so CI compiler binding is complete.",
+    "in_scope": [
+      "docs/qc/specs/compiler-gate.task.spec.json"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "docs/qc/scripts/**",
+      "docs/contracts/**"
+    ],
+    "controls": [
+      {
+        "id": "spec_oracle_matrix",
+        "description": "CI compiler spec declares all required oracle categories for diff-driven bindings.",
+        "test": "Manual review of compiler-gate.task.spec.json oracle list"
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "none"
+    ],
+    "seed": "compiler-gate-oracles-seed",
+    "oracles": [
+      "off_transparent",
+      "on_audible"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

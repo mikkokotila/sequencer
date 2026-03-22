@@ -17,6 +17,7 @@
     "governance_policy": [
       "AGENTS.md",
       "CLAUDE.md",
+      "AUDITOR.md",
       ".github/CODEOWNERS",
       ".github/workflows/**",
       "docs/contracts/**",

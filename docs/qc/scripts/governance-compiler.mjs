@@ -141,6 +141,7 @@ function isGovernancePolicyFile(filePath) {
   const patterns = [
     'AGENTS.md',
     'CLAUDE.md',
+    'AUDITOR.md',
     '.github/CODEOWNERS',
     '.github/workflows/**',
     'docs/contracts/**',

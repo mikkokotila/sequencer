@@ -1,6 +1,6 @@
 command: npm run gate:governance-self
 status: 0
-elapsed_ms: 1801
+elapsed_ms: 1872
 
 --- stdout ---
 

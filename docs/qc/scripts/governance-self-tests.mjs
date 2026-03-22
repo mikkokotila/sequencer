@@ -87,7 +87,7 @@ function findForbiddenRuntimeSourceScans(sourceFile) {
 }
 
 function runNodeScript(args, env = {}) {
-  const result = spawnSync('node', args, {
+  const result = spawnSync(process.execPath, args, {
     cwd: root,
     encoding: 'utf8',
     env: {

@@ -73,18 +73,30 @@ function createSourceFile(filePath, content, kind = scriptKindFor(filePath)) {
 
 function extractHtmlScriptBlocks(html) {
   const blocks = [];
-  const scriptTag = /<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi;
-  let match;
-  while ((match = scriptTag.exec(html)) !== null) {
-    const full = match[0] || '';
-    const content = match[1] || '';
-    const startIdx = match.index;
-    const openTagEnd = full.indexOf('>');
-    const scriptContentStart = startIdx + (openTagEnd >= 0 ? openTagEnd + 1 : 0);
+  const lower = html.toLowerCase();
+  let cursor = 0;
+
+  while (cursor < lower.length) {
+    const openStart = lower.indexOf('<script', cursor);
+    if (openStart === -1) break;
+
+    const openEnd = lower.indexOf('>', openStart + 7);
+    if (openEnd === -1) break;
+
+    const scriptContentStart = openEnd + 1;
+    const closeStart = lower.indexOf('</script', scriptContentStart);
+    if (closeStart === -1) break;
+
+    const closeEnd = lower.indexOf('>', closeStart + 8);
+    if (closeEnd === -1) break;
+
+    const content = html.slice(scriptContentStart, closeStart);
     const prefix = html.slice(0, scriptContentStart);
     const lineOffset = prefix.split('\n').length - 1;
     blocks.push({ content, lineOffset });
+    cursor = closeEnd + 1;
   }
+
   return blocks;
 }
 

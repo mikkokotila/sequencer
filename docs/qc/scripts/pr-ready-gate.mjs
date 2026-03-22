@@ -65,6 +65,7 @@ function run(command, args) {
     status: out.status ?? 1,
     stdout: out.stdout || '',
     stderr: out.stderr || '',
+    error: out.error instanceof Error ? out.error.message : '',
   };
 }
 
@@ -72,7 +73,7 @@ function mustRun(command, args) {
   const out = run(command, args);
   if (out.status !== 0) {
     const rendered = [command, ...args].join(' ');
-    throw new Error(`${rendered} failed: ${(out.stderr || out.stdout || 'unknown error').trim()}`);
+    throw new Error(`${rendered} failed: ${(out.stderr || out.stdout || out.error || 'unknown error').trim()}`);
   }
   return out.stdout.trim();
 }
@@ -166,20 +167,30 @@ query($owner: String!, $name: String!, $number: Int!) {
 }
 
 function collectLatestCheckRuns(owner, name, headSha) {
-  const raw = ghApi([
-    '-H',
-    'Accept: application/vnd.github+json',
-    `repos/${owner}/${name}/commits/${headSha}/check-runs?per_page=100`,
-  ]);
-  let parsed;
-  try {
-    parsed = JSON.parse(raw);
-  } catch (err) {
-    throw new Error(`Failed to parse check-runs payload: ${err instanceof Error ? err.message : String(err)}`);
+  const allRuns = [];
+  const perPage = 100;
+  for (let page = 1; ; page += 1) {
+    const raw = ghApi([
+      '-H',
+      'Accept: application/vnd.github+json',
+      `repos/${owner}/${name}/commits/${headSha}/check-runs?per_page=${perPage}&page=${page}`,
+    ]);
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (err) {
+      throw new Error(
+        `Failed to parse check-runs payload (page ${page}): ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+    const runs = Array.isArray(parsed?.check_runs) ? parsed.check_runs : [];
+    if (runs.length === 0) break;
+    allRuns.push(...runs);
+    if (runs.length < perPage) break;
   }
-  const runs = Array.isArray(parsed?.check_runs) ? parsed.check_runs : [];
+
   const latest = new Map();
-  for (const runItem of runs) {
+  for (const runItem of allRuns) {
     const key = typeof runItem?.name === 'string' ? runItem.name.trim() : '';
     if (!key) continue;
     const prev = latest.get(key);
@@ -202,14 +213,6 @@ query($owner: String!, $name: String!, $number: Int!, $cursor: String) {
           path
           line
           originalLine
-          comments(first: 100) {
-            nodes {
-              url
-              body
-              createdAt
-              author { login }
-            }
-          }
         }
         pageInfo {
           hasNextPage
@@ -233,6 +236,42 @@ query($owner: String!, $name: String!, $number: Int!, $cursor: String) {
     cursor = hasNext ? threads?.pageInfo?.endCursor || '' : '';
   }
   return nodes;
+}
+
+function collectThreadComments(threadId) {
+  const query = `
+query($threadId: ID!, $cursor: String) {
+  node(id: $threadId) {
+    ... on PullRequestReviewThread {
+      comments(first: 100, after: $cursor) {
+        nodes {
+          url
+          body
+          createdAt
+          author { login }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  }
+}
+`;
+
+  const comments = [];
+  let cursor = '';
+  let hasNext = true;
+  while (hasNext) {
+    const payload = ghGraphql(query, { threadId, cursor });
+    const connection = payload?.data?.node?.comments;
+    const batch = Array.isArray(connection?.nodes) ? connection.nodes : [];
+    comments.push(...batch);
+    hasNext = Boolean(connection?.pageInfo?.hasNextPage);
+    cursor = hasNext ? connection?.pageInfo?.endCursor || '' : '';
+  }
+  return comments;
 }
 
 function toMs(value) {
@@ -286,7 +325,7 @@ function evaluateThreads(threads, waLogin) {
   const missingResponse = [];
 
   for (const thread of threads) {
-    const comments = Array.isArray(thread?.comments?.nodes) ? thread.comments.nodes : [];
+    const comments = collectThreadComments(thread.id);
     const waComments = comments.filter((c) => c?.author?.login === waLogin && String(c?.body || '').trim().length > 0);
     const nonWaComments = comments.filter((c) => c?.author?.login && c?.author?.login !== waLogin);
 

@@ -101,12 +101,12 @@ Applies to: `tests/benchmark.html`, `src/engine/worklets/**`.
 
 Task spec must declare:
 
-1. `execution_profile: "headless"` or `execution_profile: "interactive"`
+1. `execution_profile: "real"`
 
 Profile semantics:
 
-1. `interactive` requires real process-time budget proof (`p99 <= budget`)
-2. `headless` requires structural benchmark integrity proof only
+1. `real` requires real process-time budget proof (`sample_count >= 50` and `p99 <= budget`)
+2. do not introduce headless structural-only fallback; use display-backed runtime (`xvfb-run`) when needed
 
 ## When writing or modifying nonlinear audio processors
 

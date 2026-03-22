@@ -4,7 +4,11 @@ import { setTimeout as delay } from 'node:timers/promises';
 
 const PORT = Number(process.env.AUDIO_GATE_PORT || '5174');
 const BASE = `http://localhost:${PORT}`;
-const EXECUTION_PROFILE = (process.env.GOV_EXECUTION_PROFILE || 'headless').trim().toLowerCase();
+
+function hasDisplayServer() {
+  if (process.platform === 'win32') return true;
+  return Boolean(process.env.DISPLAY || process.env.WAYLAND_DISPLAY);
+}
 
 async function waitForServer(url, timeoutMs = 30000) {
   const start = Date.now();
@@ -36,8 +40,8 @@ function parseFiniteNumber(text) {
 }
 
 async function run() {
-  if (!['headless', 'interactive'].includes(EXECUTION_PROFILE)) {
-    throw new Error(`Unsupported GOV_EXECUTION_PROFILE=${EXECUTION_PROFILE}. Allowed: headless|interactive`);
+  if (!hasDisplayServer()) {
+    throw new Error('Real audio benchmark requires a display server. Run with xvfb-run -a npm run audio:gates.');
   }
 
   const server = spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], {
@@ -58,7 +62,7 @@ async function run() {
     await waitForServer(`${BASE}/`);
 
     const { chromium } = await import('playwright');
-    const browser = await chromium.launch({ headless: true });
+    const browser = await chromium.launch({ headless: false });
     const page = await browser.newPage();
 
     const results = [];
@@ -118,19 +122,21 @@ async function run() {
       !benchmark.hasCurrentTimeToken;
 
     const benchmarkOk =
-      EXECUTION_PROFILE === 'interactive'
-        ? !gateShowsFail && p99 !== null && budget !== null && sampleCount !== null && sampleCount >= 50 && p99 <= budget
-        : !gateShowsFail && structuralOk;
+      !gateShowsFail &&
+      structuralOk &&
+      p99 !== null &&
+      budget !== null &&
+      sampleCount !== null &&
+      sampleCount >= 50 &&
+      p99 <= budget;
 
     results.push({
       name: 'benchmark',
       ok: benchmarkOk,
       detail:
-        EXECUTION_PROFILE === 'interactive'
-          ? p99 === null || budget === null || sampleCount === null
-            ? `interactive missing benchmark metrics (p99="${benchmark.p99Text}", budget="${benchmark.budgetText}", gate="${benchmark.gateText}")`
-            : `interactive p99=${p99.toFixed(3)}ms budget=${budget.toFixed(3)}ms samples=${sampleCount} gate="${benchmark.gateText}"`
-          : `headless structural_ok=${structuralOk ? 1 : 0} gate_fail=${gateShowsFail ? 1 : 0} worklet=${benchmark.hasAudioWorkletNode ? 1 : 0} random=${benchmark.hasRandomnessToken ? 1 : 0} setInterval=${benchmark.hasSetIntervalToken ? 1 : 0} currentTime=${benchmark.hasCurrentTimeToken ? 1 : 0} gate="${benchmark.gateText}"`,
+        p99 === null || budget === null || sampleCount === null
+          ? `real benchmark missing metrics (p99="${benchmark.p99Text}", budget="${benchmark.budgetText}", gate="${benchmark.gateText}")`
+          : `real p99=${p99.toFixed(3)}ms budget=${budget.toFixed(3)}ms samples=${sampleCount} structural_ok=${structuralOk ? 1 : 0} gate_fail=${gateShowsFail ? 1 : 0} worklet=${benchmark.hasAudioWorkletNode ? 1 : 0} random=${benchmark.hasRandomnessToken ? 1 : 0} setInterval=${benchmark.hasSetIntervalToken ? 1 : 0} currentTime=${benchmark.hasCurrentTimeToken ? 1 : 0} gate="${benchmark.gateText}"`,
     });
 
     await browser.close();

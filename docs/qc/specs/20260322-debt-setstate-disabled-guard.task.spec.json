@@ -1,7 +1,7 @@
 {
   "task_id": "20260322-debt-setstate-disabled-guard",
   "task_type": "bugfix",
-  "execution_profile": "headless",
+  "execution_profile": "real",
   "capability": {
     "summary": "Guard setState in compressor, pultec-eq, transformer so applyState only runs when enabled — off means off",
     "in_scope": [

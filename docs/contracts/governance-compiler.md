@@ -113,14 +113,13 @@ Without override, compiler emits `GOV-ROLE-001` and blocks task.
 
 Compiler resolves benchmark oracle policy by `execution_profile`.
 
-1. Allowed values: `headless`, `interactive`
+1. Allowed value: `real`
 2. `execution_profile` is read from `task.spec.json`
 3. Benchmark-governed tasks must declare `execution_profile` explicitly
 
 Profile behavior:
 
-1. `interactive`: requires real `process()` timing oracle threshold (`p99 <= budget`)
-2. `headless`: requires structural benchmark oracle threshold (worklet/determinism/proxy-timing safeguards)
+1. `real`: requires real `process()` timing oracle threshold (`sample_count >= 50` and `p99 <= budget`) and structural integrity safeguards.
 
 ## Anti-Deception Rules
 

@@ -158,24 +158,21 @@ Completion flow:
 
 `tests/benchmark.html` is valid only when benchmark measurement is deterministic and tied to worklet processing (not random oscillator/main-thread interval proxies).
 
-Benchmark obligations are profile-driven via `execution_profile` in task spec.
+Benchmark obligations use one profile only: `execution_profile: "real"` in task spec.
 
-### `interactive` profile
+### `real` profile
 
 1. Must use real worklet `process()` timing evidence.
-2. Pass condition: p99 process() duration < block budget (`bufferSize / sampleRate * 1000 ms`).
-3. At 128 samples / 48kHz, budget is 2.67ms. p99 must be under that.
-
-### `headless` profile
-
-1. Timing budget pass is not evaluated as a hard condition.
-2. Structural benchmark integrity is required:
+2. Must collect at least 50 process samples.
+3. Pass condition: p99 process() duration < block budget (`bufferSize / sampleRate * 1000 ms`).
+4. At 128 samples / 48kHz, budget is 2.67ms. p99 must be under that.
+5. Structural integrity is mandatory:
    - worklet chain present
    - deterministic inputs (no randomness)
    - no main-thread timing proxy shortcuts (`setInterval`, `currentTime` proxy timing)
-3. Structural proof must be machine-generated in benchmark oracle metrics.
 
 **Config:** Run with 16 voices, all effects active, 10-second duration minimum.
+CI must provide a display server (`xvfb-run`) and run Chromium headed for this benchmark.
 
 ## Adding Tests
 

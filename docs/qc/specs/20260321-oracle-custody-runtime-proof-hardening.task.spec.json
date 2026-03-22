@@ -1,7 +1,7 @@
 {
   "task_id": "20260321-oracle-custody-runtime-proof-hardening",
   "task_type": "governance-change",
-  "execution_profile": "headless",
+  "execution_profile": "real",
   "capability": {
     "summary": "Harden compiler custody so oracle proof is compiler-executed, challenge-bound, and measured from runtime harnesses.",
     "in_scope": [

@@ -1,5 +1,5 @@
 {
-  "version": "1.3.0",
+  "version": "1.4.0",
   "task_types": [
     "feature",
     "bugfix",
@@ -8,10 +8,9 @@
     "qc"
   ],
   "execution_profiles": {
-    "default": "headless",
+    "default": "real",
     "allowed": [
-      "headless",
-      "interactive"
+      "real"
     ]
   },
   "path_groups": {
@@ -193,20 +192,10 @@
       "failure_code": "GOV-CTRL-006"
     },
     "benchmark_worklet_budget": {
-      "profiles": {
-        "interactive": {
-          "metric": "p99_ms",
-          "operator": "<=",
-          "value": 2.67,
-          "failure_code": "GOV-PERF-002"
-        },
-        "headless": {
-          "metric": "structural_ok",
-          "operator": "==",
-          "value": 1,
-          "failure_code": "GOV-PERF-003"
-        }
-      }
+      "metric": "p99_ms",
+      "operator": "<=",
+      "value": 2.67,
+      "failure_code": "GOV-PERF-002"
     },
     "mutation_guard": {
       "metric": "mutant_failures",

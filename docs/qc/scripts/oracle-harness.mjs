@@ -30,7 +30,7 @@ function parseArgs(argv) {
     taskId: '',
     oracles: [],
     subjectSha: '',
-    executionProfile: 'headless',
+    executionProfile: 'real',
     challenge: '',
     repoRoot: toolRoot,
     json: false,
@@ -152,7 +152,11 @@ async function waitForServer(url, timeoutMs = 30000) {
 async function launchBrowser() {
   const requireFromRoot = createRequire(path.join(toolRoot, 'package.json'));
   const { chromium } = requireFromRoot('playwright');
-  return chromium.launch({ headless: true });
+  const hasDisplay = process.platform === 'win32' || Boolean(process.env.DISPLAY || process.env.WAYLAND_DISPLAY);
+  if (!hasDisplay) {
+    throw new Error('Real oracle harness requires a display server. Run compiler under xvfb-run.');
+  }
+  return chromium.launch({ headless: false });
 }
 
 function toRounded(value, decimals = 6) {
@@ -472,13 +476,19 @@ function buildChallengeResponse(challenge, taskId, subjectSha, executionProfile,
 async function run() {
   const args = parseArgs(process.argv.slice(2));
 
+  const profileAliases = {
+    headless: 'real',
+    interactive: 'real',
+  };
+  args.executionProfile = profileAliases[args.executionProfile] || args.executionProfile;
+
   if (!args.taskId || args.oracles.length === 0) {
-    throw new Error('Usage: --task-id <id> --oracles o1,o2 --subject-sha <sha> --execution-profile <headless|interactive> --challenge <nonce> --json');
+    throw new Error('Usage: --task-id <id> --oracles o1,o2 --subject-sha <sha> --execution-profile <real> --challenge <nonce> --json');
   }
   if (!args.subjectSha) {
     throw new Error('Missing --subject-sha');
   }
-  if (!['headless', 'interactive'].includes(args.executionProfile)) {
+  if (!['real'].includes(args.executionProfile)) {
     throw new Error(`Invalid --execution-profile: ${args.executionProfile}`);
   }
 
@@ -614,23 +624,28 @@ async function run() {
       if (oracleId === 'benchmark_worklet_budget') {
         const p99 = parseFiniteNumber(benchmarkMetrics.p99_text);
         const budget = parseFiniteNumber(benchmarkMetrics.budget_text);
+        const gateShowsFail = /\bFAIL\b/i.test(benchmarkMetrics.gate_text || '');
         const structuralOk =
           benchmarkMetrics.has_audio_worklet &&
           benchmarkMetrics.interval_calls === 0 &&
           benchmarkMetrics.random_calls === 0 &&
           benchmarkMetrics.terminal_gate_state;
-
-        const interactivePass =
-          p99 !== null && budget !== null && benchmarkMetrics.sample_count >= 50 && p99 <= budget;
-        const headlessPass = structuralOk;
-        const pass = args.executionProfile === 'interactive' ? interactivePass : headlessPass;
+        const pass =
+          !gateShowsFail &&
+          structuralOk &&
+          p99 !== null &&
+          budget !== null &&
+          benchmarkMetrics.sample_count >= 50 &&
+          p99 <= budget;
 
         results.push(
           sanitizeOracleResult(oracleId, {
             status: pass ? 'PASS' : 'FAIL',
             metrics: {
               p99_ms: p99 !== null ? toRounded(p99, 4) : 999,
+              sample_count: benchmarkMetrics.sample_count,
               structural_ok: structuralOk ? 1 : 0,
+              gate_fail: gateShowsFail ? 1 : 0,
             },
             evidence: `profile=${args.executionProfile} gate="${benchmarkMetrics.gate_text}" samples=${benchmarkMetrics.sample_count} p99=${p99} budget=${budget} interval_calls=${benchmarkMetrics.interval_calls} random_calls=${benchmarkMetrics.random_calls}`,
             raw: {
@@ -641,8 +656,8 @@ async function run() {
                 p99,
                 budget,
                 structural_ok: structuralOk ? 1 : 0,
-                interactive_pass: interactivePass,
-                headless_pass: headlessPass,
+                gate_fail: gateShowsFail ? 1 : 0,
+                pass,
               },
               measured_at_utc: nowIso(),
             },

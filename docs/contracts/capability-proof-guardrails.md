@@ -19,7 +19,7 @@ No task may complete without all three layers.
 3. `out_of_scope` file patterns
 4. control truth table (`id`, `default`, `range`, `off_semantics`, `on_semantics`)
 
-For benchmark-governed tasks, task spec must also declare top-level `execution_profile` (`headless` or `interactive`).
+For benchmark-governed tasks, task spec must declare top-level `execution_profile: "real"`.
 
 ## Proof Requirements
 

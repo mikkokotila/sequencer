@@ -1,6 +1,6 @@
 command: node docs/qc/scripts/contract-gates.mjs --mode delta
 status: 0
-elapsed_ms: 326
+elapsed_ms: 325
 
 --- stdout ---
 PASS | No fixme debt | No new test.fixme() additions in staged diff.

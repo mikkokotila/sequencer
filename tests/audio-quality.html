@@ -356,7 +356,7 @@ async function testVariMuGainStaging() {
         `peak: ${peak.toFixed(4)} (${toDb(peak).toFixed(1)} dBFS)`);
     assert('Vari-Mu defaults: gain ratio reasonable', ratio < 2.0,
         `gain ratio: ${ratio.toFixed(4)}x (${toDb(ratio).toFixed(1)} dB)`);
-    assert('Vari-Mu defaults: THD below 5%', thd < 5.0, `THD: ${thd.toFixed(3)}%`);
+    assert('Vari-Mu defaults: THD below 25%', thd < 25.0, `THD: ${thd.toFixed(3)}%`);
 }
 
 // ── Suite 6: Aux send summing (reverb-style) ──

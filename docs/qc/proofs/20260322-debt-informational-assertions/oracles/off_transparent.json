@@ -1,7 +1,7 @@
 {
   "oracle_id": "off_transparent",
   "task_id": "20260322-debt-informational-assertions",
-  "subject_sha": "3cc4b109435aefef3fb5a1dd5d46dfc2da4ee37a3eb235192fe94ce4fc96988b",
+  "subject_sha": "7e934f0f10c37f0ceeb7106f2f14e10608ddaf21f2ac9c2f33e24ba72fed0c21",
   "harness_version": "oracle-harness-v2",
   "status": "PASS",
   "metrics": {
@@ -9,8 +9,8 @@
     "delta_lufs": 0
   },
   "raw_artifact": "raw/off_transparent.json",
-  "raw_sha256": "4f526aad14df6579df6a7efb73b8b25c7e87974f7a703c783a0b617b536f58e9",
+  "raw_sha256": "90ada56991df177f5732a447fe3602165fee401ac3b29e540f1063104cea091a",
   "evidence": "max_abs_error=0",
-  "challenge_id": "d57c279b169749949ec8ce4ed7d88aa291f06f182f845cfded5f93898bf1242c",
-  "payload_digest": "bc8b617315ea9fb11cb4320db298f01882535338823441da1400477d2d42ebaa"
+  "challenge_id": "ec872f54faa8522c310bd0568c9f152dde30d333f5ad85a7c205714d8fb2ad5b",
+  "payload_digest": "e58aeb25d87aeab63f0ed35af1424e181680b812b7dcce27118dc20aef59e0ee"
 }

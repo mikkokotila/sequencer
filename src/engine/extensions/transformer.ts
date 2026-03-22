@@ -94,7 +94,7 @@ export function createTransformer(): Extension {
 
     setState(s: ExtensionState): void {
       state = { ...state, ...(s as Partial<TransformerState>) };
-      applyState();
+      if (enabled) applyState();
     },
 
     setEnabled(on: boolean): void {

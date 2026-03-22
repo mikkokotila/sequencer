@@ -1,0 +1,21 @@
+command: npm run audio:gates
+status: 0
+elapsed_ms: 12557
+
+--- stdout ---
+
+> sequencer@1.0.0 audio:gates
+> node docs/qc/scripts/audio-gates.mjs
+
+PASS | audio-quality | 25/25 passed, 0 failed
+PASS | e2e-signal | 14/14 passed, 0 failed
+PASS | signal-purity | 8/8 passed, 0 failed
+PASS | benchmark | headless structural_ok=1 worklet=1 random=0 setInterval=0 currentTime=0 gate="FAIL — insufficient data collected (0 samples)"
+audio-gates: all 4 checks passed.
+VITE v6.4.1  ready in 115 ms
+
+  ➜  Local:   http://localhost:5174/
+  ➜  Network: use --host to expose
+
+
+--- stderr ---

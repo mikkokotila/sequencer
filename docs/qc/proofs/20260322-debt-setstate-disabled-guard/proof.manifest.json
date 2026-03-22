@@ -1,0 +1,76 @@
+{
+  "task_id": "20260322-debt-setstate-disabled-guard",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-CI.log"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-E2E.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-GATE-CONTRACTS-DELTA.log"
+    },
+    {
+      "id": "O-GATE-ARCH-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-GATE-ARCH-DELTA.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-FULL",
+      "result": "FAIL",
+      "blocking": false,
+      "evidence": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-GATE-CONTRACTS-FULL.log"
+    },
+    {
+      "id": "O-GATE-ARCH-FULL",
+      "result": "FAIL",
+      "blocking": false,
+      "evidence": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-GATE-ARCH-FULL.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-COMMIT-RANGE.log"
+    },
+    {
+      "id": "O-AUDIO-GATES",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-AUDIO-GATES.log"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/commit.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/quality-gates.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/governance-compiler.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "NOT_VERIFIED",
+    "details": "Debt-burn task; setState guard is verified by contract gate regex check."
+  },
+  "artifacts": [
+    "verdict.json"
+  ]
+}

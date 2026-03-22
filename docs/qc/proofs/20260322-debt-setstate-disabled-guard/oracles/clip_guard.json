@@ -1,0 +1,15 @@
+{
+  "oracle_id": "clip_guard",
+  "task_id": "20260322-debt-setstate-disabled-guard",
+  "subject_sha": "5793643de6c4480544a99270a276a4ba24c7a8ea2fd2b9ee56ee2c14d624d6d7",
+  "harness_version": "oracle-harness-v2",
+  "status": "PASS",
+  "metrics": {
+    "clip_count": 0
+  },
+  "raw_artifact": "raw/clip_guard.json",
+  "raw_sha256": "331afa4b05f465e3eb6601d1d5bab4fa870c23e7da58c3601ebc815029e60d38",
+  "evidence": "clip_count=0",
+  "challenge_id": "573a38280be8d46f2abb08c6ae462220439993bfeb44d1521824f172a3253b8f",
+  "payload_digest": "e5b1306e6799f1d56ebb2bad7db849643f529aece1672d6083cfd771d223a8a6"
+}

@@ -350,7 +350,7 @@ export function createCompressor(): Extension {
 
     setState(s: ExtensionState): void {
       state = { ...state, ...(s as Partial<CompressorState>) };
-      applyState();
+      if (enabled) applyState();
     },
 
     setEnabled(on: boolean): void {

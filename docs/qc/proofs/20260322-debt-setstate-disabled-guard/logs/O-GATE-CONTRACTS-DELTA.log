@@ -1,0 +1,18 @@
+command: node docs/qc/scripts/contract-gates.mjs --mode delta
+status: 0
+elapsed_ms: 36
+
+--- stdout ---
+PASS | No fixme debt | [delta-skip] No test files changed.
+PASS | No informational assertions | [delta-skip] No audio test files changed.
+PASS | newSong deterministic reset | [delta-skip] Persistence layer unchanged.
+PASS | src/engine/extensions/pultec-eq.ts: setState respects disabled state | setState is guarded by enabled-state check.
+PASS | src/engine/extensions/compressor.ts: setState respects disabled state | setState is guarded by enabled-state check.
+PASS | src/engine/extensions/transformer.ts: setState respects disabled state | setState is guarded by enabled-state check.
+PASS | Engine low-end control curve safety | [delta-skip] Engine panel control mappings unchanged.
+PASS | Benchmark deterministic harness | [delta-skip] Benchmark/worklet paths unchanged.
+
+contract-gates(delta): all 8 checks passed.
+
+
+--- stderr ---

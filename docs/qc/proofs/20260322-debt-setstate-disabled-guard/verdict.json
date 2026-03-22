@@ -1,0 +1,232 @@
+{
+  "task_id": "20260322-debt-setstate-disabled-guard",
+  "task_type": "bugfix",
+  "execution_profile": "headless",
+  "spec_path": "docs/qc/specs/20260322-debt-setstate-disabled-guard.task.spec.json",
+  "policy_version": "1.3.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-22T06:04:46.612Z",
+  "finished_at_utc": "2026-03-22T06:05:28.895Z",
+  "head_sha": "ef7eec2",
+  "tree_sha": "2c0b901dff2d622db774ff72594f2e212b5461b5",
+  "subject_sha": "5793643de6c4480544a99270a276a4ba24c7a8ea2fd2b9ee56ee2c14d624d6d7",
+  "subject_files": [
+    "src/engine/extensions/compressor.ts",
+    "src/engine/extensions/pultec-eq.ts",
+    "src/engine/extensions/transformer.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard.md",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-AUDIO-GATES.log",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-CI.log",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-COMMIT-RANGE.log",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-E2E.log",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-GATE-ARCH-DELTA.log",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-GATE-ARCH-FULL.log",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-GATE-CONTRACTS-DELTA.log",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-GATE-CONTRACTS-FULL.log",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-ORACLE-HARNESS.log",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/oracles/clip_guard.json",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/oracles/default_safety.json",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/oracles/low_end_continuity.json",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/oracles/off_transparent.json",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/oracles/on_audible.json",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/proof.manifest.json",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/raw/clip_guard.json",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/raw/default_safety.json",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/raw/low_end_continuity.json",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/raw/off_transparent.json",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/raw/on_audible.json",
+    "docs/qc/proofs/20260322-debt-setstate-disabled-guard/verdict.json",
+    "docs/qc/specs/20260322-debt-setstate-disabled-guard.task.spec.json",
+    "src/engine/extensions/compressor.ts",
+    "src/engine/extensions/pultec-eq.ts",
+    "src/engine/extensions/transformer.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=8, oracles=5, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=8, oracles=5, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4193,
+        "log_file": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 23913,
+        "log_file": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-E2E.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-DELTA",
+        "label": "Contract static gates (task regression)",
+        "command": "node docs/qc/scripts/contract-gates.mjs --mode delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 36,
+        "log_file": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-GATE-CONTRACTS-DELTA.log"
+      },
+      {
+        "id": "O-GATE-ARCH-DELTA",
+        "label": "Architecture gates (task regression)",
+        "command": "node docs/qc/scripts/architecture-gates.mjs --mode delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 79,
+        "log_file": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-GATE-ARCH-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates (global debt)",
+        "command": "node docs/qc/scripts/contract-gates.mjs --mode full",
+        "blocking": false,
+        "status": "FAIL",
+        "exit_code": 1,
+        "elapsed_ms": 56,
+        "log_file": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates (global debt)",
+        "command": "node docs/qc/scripts/architecture-gates.mjs --mode full",
+        "blocking": false,
+        "status": "FAIL",
+        "exit_code": 1,
+        "elapsed_ms": 65,
+        "log_file": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 224,
+        "log_file": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-COMMIT-RANGE.log"
+      },
+      {
+        "id": "O-AUDIO-GATES",
+        "label": "Audio browser gates",
+        "command": "npm run audio:gates",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 12557,
+        "log_file": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-AUDIO-GATES.log"
+      }
+    ],
+    "global_debt": [
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates (global debt)",
+        "command": "node docs/qc/scripts/contract-gates.mjs --mode full",
+        "status": "FAIL",
+        "log_file": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates (global debt)",
+        "command": "node docs/qc/scripts/architecture-gates.mjs --mode full",
+        "status": "FAIL",
+        "log_file": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/logs/O-GATE-ARCH-FULL.log"
+      }
+    ],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 7,
+      "delta_total_failures": -4,
+      "require_debt_reduction": true,
+      "contracts_failures": [
+        "Engine low-end control curve safety"
+      ],
+      "architecture_failures": [
+        "No global window.SEQ extension coupling",
+        "Engine interface contract is actually consumed",
+        "Scheduler does not import transport internals directly",
+        "Audio initialization ownership is centralized",
+        "UI does not duplicate transport business logic",
+        "Playhead/cell rendering avoids repeated inline style mutation"
+      ]
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/raw/off_transparent.json",
+        "raw_sha256": "3e21f30823814914775d2d029b9dd8badb8da49c288be52769ff19895b181092"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/raw/on_audible.json",
+        "raw_sha256": "d396c9dbeaacc6a66f22799142d5c4d4ff22b04e7f1d8e41a97f8ea5503847fe"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/oracles/low_end_continuity.json",
+        "raw_artifact": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/raw/low_end_continuity.json",
+        "raw_sha256": "923b12fc38af884aac9d052d89ac2388b0a39e443e7cbdbfa33bc127b5c9819e"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/oracles/clip_guard.json",
+        "raw_artifact": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/raw/clip_guard.json",
+        "raw_sha256": "331afa4b05f465e3eb6601d1d5bab4fa870c23e7da58c3601ebc815029e60d38"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/oracles/default_safety.json",
+        "raw_artifact": "docs/qc/proofs/20260322-debt-setstate-disabled-guard/raw/default_safety.json",
+        "raw_sha256": "25d457d2e62a2cef062a716a35579047924892ecc92e30415579511e55c56447"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

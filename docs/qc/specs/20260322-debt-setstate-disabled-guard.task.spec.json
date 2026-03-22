@@ -1,0 +1,45 @@
+{
+  "task_id": "20260322-debt-setstate-disabled-guard",
+  "task_type": "bugfix",
+  "execution_profile": "headless",
+  "capability": {
+    "summary": "Guard setState in compressor, pultec-eq, transformer so applyState only runs when enabled — off means off",
+    "in_scope": [
+      "src/engine/extensions/compressor.ts",
+      "src/engine/extensions/pultec-eq.ts",
+      "src/engine/extensions/transformer.ts"
+    ],
+    "out_of_scope": [
+      "src/engine/worklets/**"
+    ],
+    "controls": [
+      {
+        "id": "ext.setState",
+        "default": "disabled",
+        "range": ["disabled", "enabled"],
+        "unit": "state",
+        "off_semantics": "setState stores params but does not apply audio processing",
+        "on_semantics": "setState stores params and applies audio processing"
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:kick_01"
+    ],
+    "seed": "fixed-seed-v1",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": true
+  }
+}

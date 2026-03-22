@@ -1,0 +1,18 @@
+command: node docs/qc/scripts/contract-gates.mjs --mode full
+status: 1
+elapsed_ms: 56
+
+--- stdout ---
+PASS | No fixme debt | No test.fixme() found.
+PASS | No informational assertions | No assert(..., true, ...) patterns found.
+PASS | newSong deterministic reset | newSong() delegates deterministic reset via resetAllExtensions().
+PASS | src/engine/extensions/pultec-eq.ts: setState respects disabled state | setState is guarded by enabled-state check.
+PASS | src/engine/extensions/compressor.ts: setState respects disabled state | setState is guarded by enabled-state check.
+PASS | src/engine/extensions/transformer.ts: setState respects disabled state | setState is guarded by enabled-state check.
+PASS | Benchmark deterministic harness | Benchmark harness uses real DSP chain for measurement.
+FAIL | Engine low-end control curve safety | Missing tokens: t * t * 19000, t * t * 10, setExtParam('vari-mu', 'drive', t * t), setExtParam('vari-mu', 'compress', -6 - t * t * 34)
+
+
+--- stderr ---
+
+contract-gates: 1 failure(s), 7 pass(es).

@@ -353,7 +353,7 @@ export function createPultecEq(): Extension {
 
     setState(s: ExtensionState): void {
       state = { ...state, ...(s as Partial<PultecState>) };
-      applyState();
+      if (enabled) applyState();
     },
 
     setEnabled(on: boolean): void {

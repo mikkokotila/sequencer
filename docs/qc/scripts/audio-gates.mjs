@@ -110,6 +110,7 @@ async function run() {
     const p99 = parseFiniteNumber(benchmark.p99Text);
     const budget = parseFiniteNumber(benchmark.budgetText);
     const sampleCount = Number.isFinite(benchmark.sampleCount) ? benchmark.sampleCount : null;
+    const gateShowsFail = /\bFAIL\b/i.test(benchmark.gateText);
     const structuralOk =
       benchmark.hasAudioWorkletNode &&
       !benchmark.hasRandomnessToken &&
@@ -118,8 +119,8 @@ async function run() {
 
     const benchmarkOk =
       EXECUTION_PROFILE === 'interactive'
-        ? p99 !== null && budget !== null && sampleCount !== null && sampleCount >= 50 && p99 <= budget
-        : structuralOk;
+        ? !gateShowsFail && p99 !== null && budget !== null && sampleCount !== null && sampleCount >= 50 && p99 <= budget
+        : !gateShowsFail && structuralOk;
 
     results.push({
       name: 'benchmark',
@@ -129,7 +130,7 @@ async function run() {
           ? p99 === null || budget === null || sampleCount === null
             ? `interactive missing benchmark metrics (p99="${benchmark.p99Text}", budget="${benchmark.budgetText}", gate="${benchmark.gateText}")`
             : `interactive p99=${p99.toFixed(3)}ms budget=${budget.toFixed(3)}ms samples=${sampleCount} gate="${benchmark.gateText}"`
-          : `headless structural_ok=${structuralOk ? 1 : 0} worklet=${benchmark.hasAudioWorkletNode ? 1 : 0} random=${benchmark.hasRandomnessToken ? 1 : 0} setInterval=${benchmark.hasSetIntervalToken ? 1 : 0} currentTime=${benchmark.hasCurrentTimeToken ? 1 : 0} gate="${benchmark.gateText}"`,
+          : `headless structural_ok=${structuralOk ? 1 : 0} gate_fail=${gateShowsFail ? 1 : 0} worklet=${benchmark.hasAudioWorkletNode ? 1 : 0} random=${benchmark.hasRandomnessToken ? 1 : 0} setInterval=${benchmark.hasSetIntervalToken ? 1 : 0} currentTime=${benchmark.hasCurrentTimeToken ? 1 : 0} gate="${benchmark.gateText}"`,
     });
 
     await browser.close();

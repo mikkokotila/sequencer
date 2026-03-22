@@ -41,6 +41,13 @@ Runs four gates in sequence. All must pass:
 
 Playwright suite must pass with zero failures.
 
+### 2b) E2E Delta Gate (`npm run gate:e2e-delta`)
+
+Compiler-bound for product runtime changes. Blocks when:
+
+1. Runtime implementation files change (`src/**`, `index.html`, `sequencer.html`) without any staged `e2e/**` or `tests/**` delta.
+2. Test delta has no added behavioral lines (`test()/it()/expect()/assert()`).
+
 ### 3) Contract Static Gates (task regression)
 
 Compiler uses full static checks as blocking obligations:

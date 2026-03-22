@@ -14,6 +14,7 @@ Starts a Vite dev server and runs Playwright tests against it. All tests must pa
 Global debt scan: `npm run gate:contracts` reports unresolved `test.fixme`.
 Blocking scan runs via governance compiler full static gates and fails on any `test.fixme`.
 E2E is compiler-bound: product diffs trigger this gate automatically through `gov:check`.
+E2E delta is compiler-bound: product runtime diffs also trigger `npm run gate:e2e-delta`, which blocks if implementation changes do not include behavioral test deltas.
 
 ## Coverage Requirements
 
@@ -45,3 +46,4 @@ Every feature category must be tested:
 4. **Tests must be independent.** Each test starts from a fresh page load. No test depends on another.
 5. **`test.fixme()` is release-blocking.** Zero fixme is mandatory.
 6. **Audio tests use OfflineAudioContext** in separate test files (signal-purity, audio-quality, benchmark). E2E tests verify DOM state, not audio output.
+7. **Runtime code delta must include behavioral test delta.** For `feature|bugfix|refactor` tasks that change `src/**`, `index.html`, or `sequencer.html`, staged diff must also include `e2e/**` or `tests/**` changes with added behavioral lines (`test()/it()/expect()/assert()`).

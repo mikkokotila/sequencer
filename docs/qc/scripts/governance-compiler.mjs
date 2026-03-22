@@ -1494,6 +1494,7 @@ function synthesizeCommandObligations(ctx) {
   if (ctx.groupMatches.product) {
     commandIds.add('O-CI');
     commandIds.add('O-E2E');
+    commandIds.add('O-E2E-DELTA');
     commandIds.add('O-GATE-CONTRACTS-FULL');
     commandIds.add('O-GATE-ARCH-FULL');
     commandIds.add('O-COMMIT-RANGE');

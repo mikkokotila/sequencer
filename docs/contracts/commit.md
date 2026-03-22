@@ -40,6 +40,7 @@ docs(contracts): add commit and quality-gates contracts
 8. Keep one active work branch per task lifecycle; do not split the same task into multiple branches.
 9. After every completion commit, push immediately: `git push origin HEAD`.
 10. If no open PR exists for the current branch, create one immediately targeting `main`.
+11. Do not report task completion until PR readiness gate is `PASS`: `npm run gate:pr-ready`.
 
 ## Verification Before Commit
 
@@ -63,3 +64,8 @@ Required sequence after `gov:commit`:
 3. If no PR exists, create PR:
    - `gh pr create --base main --head <current-branch> --fill`
 4. Continue all further commits on the same branch/PR until merged.
+5. Wait for required CI checks and incoming review feedback on that PR.
+6. For every review conversation, respond in-thread:
+   - if fixed: push fix commit and leave confirmation reply
+   - if not fixed: leave explicit no-fix rationale
+7. Before reporting back, run `npm run gate:pr-ready` and require `PASS` (all required checks green, all conversations resolved, all conversations answered).

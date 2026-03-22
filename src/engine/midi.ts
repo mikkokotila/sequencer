@@ -9,7 +9,7 @@
 import { MEL_CFG, DRUMS_CFG } from '../config';
 import { melBuf } from '../transport/song';
 import { getAudioContext, getTrackGains } from './audio';
-import { applyEnvelope, triggerRelease, getTrackAdsr } from './adsr';
+import { applyEnvelope, triggerRelease, getTrackAdsr, isAdsrEnabled } from './adsr';
 import { emit } from '../events';
 
 // ═══════════════════════════════════════════
@@ -27,7 +27,7 @@ interface MidiTrackBinding {
   inputId: string;
   inputName: string;
   listener: (e: Event) => void;
-  activeSources: Map<number, { source: AudioBufferSourceNode; envelope: GainNode }>;
+  activeSources: Map<number, { source: AudioBufferSourceNode; envelope: GainNode | null }>;
 }
 
 // ═══════════════════════════════════════════
@@ -210,7 +210,15 @@ function handleNoteOn(trackIndex: number, note: number, velocity: number): void 
   // Mono tracks: release existing note first
   if (cfg?.mono) {
     for (const [existingNote, existing] of binding.activeSources) {
-      triggerRelease(ctx, existing.envelope, existing.source, getTrackAdsr(globalTrackIdx));
+      if (existing.envelope) {
+        triggerRelease(ctx, existing.envelope, existing.source, getTrackAdsr(globalTrackIdx));
+      } else {
+        try {
+          existing.source.stop();
+        } catch {
+          /* already stopped */
+        }
+      }
       binding.activeSources.delete(existingNote);
     }
   }
@@ -220,7 +228,15 @@ function handleNoteOn(trackIndex: number, note: number, velocity: number): void 
     const oldest = binding.activeSources.entries().next();
     if (!oldest.done) {
       const [oldestNote, oldestEntry] = oldest.value;
-      triggerRelease(ctx, oldestEntry.envelope, oldestEntry.source, getTrackAdsr(globalTrackIdx));
+      if (oldestEntry.envelope) {
+        triggerRelease(ctx, oldestEntry.envelope, oldestEntry.source, getTrackAdsr(globalTrackIdx));
+      } else {
+        try {
+          oldestEntry.source.stop();
+        } catch {
+          /* already stopped */
+        }
+      }
       binding.activeSources.delete(oldestNote);
     }
   }
@@ -242,9 +258,13 @@ function handleNoteOn(trackIndex: number, note: number, velocity: number): void 
   src.buffer = buffer;
   src.playbackRate.value = rate;
 
-  // Apply ADSR envelope: source → envelopeGain → velocityGain → trackGain
-  // No stepDuration — release triggered on note-off
-  const envelope = applyEnvelope(ctx, src, velocityGain, globalTrackIdx, 0);
+  // Connect source: with ADSR envelope if enabled, direct otherwise
+  let envelope: GainNode | null = null;
+  if (isAdsrEnabled(globalTrackIdx)) {
+    envelope = applyEnvelope(ctx, src, velocityGain, globalTrackIdx, 0);
+  } else {
+    src.connect(velocityGain);
+  }
   velocityGain.connect(dest);
   src.start(0);
 
@@ -270,8 +290,16 @@ function handleNoteOff(trackIndex: number, note: number): void {
 
   const entry = binding.activeSources.get(note);
   if (entry) {
-    const globalTrackIdx = DRUMS_CFG.length + trackIndex;
-    triggerRelease(ctx, entry.envelope, entry.source, getTrackAdsr(globalTrackIdx));
+    if (entry.envelope) {
+      const globalTrackIdx = DRUMS_CFG.length + trackIndex;
+      triggerRelease(ctx, entry.envelope, entry.source, getTrackAdsr(globalTrackIdx));
+    } else {
+      try {
+        entry.source.stop();
+      } catch {
+        /* already stopped */
+      }
+    }
     binding.activeSources.delete(note);
   }
 }

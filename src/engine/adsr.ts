@@ -30,9 +30,24 @@ function makeDefault(): AdsrParams {
 
 const trackAdsr: AdsrParams[] = Array.from({ length: TOTAL_TRACKS }, () => makeDefault());
 
+/** Per-track ADSR enabled state — OFF by default (samples play naturally). */
+const trackAdsrEnabled: boolean[] = Array.from({ length: TOTAL_TRACKS }, () => false);
+
 // ═══════════════════════════════════════════
 //  Public API — state
 // ═══════════════════════════════════════════
+
+/** Whether ADSR is enabled for a track. */
+export function isAdsrEnabled(trackIndex: number): boolean {
+  return trackAdsrEnabled[trackIndex] ?? false;
+}
+
+/** Enable or disable ADSR for a track. */
+export function setAdsrEnabled(trackIndex: number, on: boolean): void {
+  if (trackIndex >= 0 && trackIndex < TOTAL_TRACKS) {
+    trackAdsrEnabled[trackIndex] = on;
+  }
+}
 
 /** Get ADSR parameters for a track. */
 export function getTrackAdsr(trackIndex: number): AdsrParams {
@@ -60,6 +75,7 @@ export function resetAllAdsr(): void {
     p.sustain = d.sustain;
     p.release = d.release;
   }
+  trackAdsrEnabled.fill(false);
 }
 
 // ═══════════════════════════════════════════

@@ -17,7 +17,7 @@
 import { TOTAL_TRACKS } from '../config';
 import type { LoadedSample } from '../types';
 import { loadAllWorklets } from './worklet-loader';
-import { applyEnvelope } from './adsr';
+import { applyEnvelope, isAdsrEnabled } from './adsr';
 
 // ── Module state ──
 let audioCtx: AudioContext | null = null;
@@ -165,7 +165,7 @@ export function playSample(
 
   const target = dest ?? mixBus ?? audioCtx.destination;
 
-  if (trackIndex !== undefined) {
+  if (trackIndex !== undefined && isAdsrEnabled(trackIndex)) {
     // Apply ADSR envelope between source and destination
     applyEnvelope(audioCtx, src, target, trackIndex, time, stepDuration);
   } else {

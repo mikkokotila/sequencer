@@ -8,7 +8,7 @@
 
 import { DRUMS_CFG, MEL_CFG, TOTAL_TRACKS } from '../config';
 import { drumNames, melNames, vocalName } from '../transport/song';
-import { getTrackAdsr, setTrackAdsr } from '../engine/adsr';
+import { getTrackAdsr, setTrackAdsr, isAdsrEnabled, setAdsrEnabled } from '../engine/adsr';
 import { el } from './helpers';
 
 // ═══════════════════════════════════════════
@@ -17,6 +17,7 @@ import { el } from './helpers';
 
 let popup: HTMLElement | null = null;
 let canvas: HTMLCanvasElement | null = null;
+let toggleBtn: HTMLButtonElement | null = null;
 let activeTrackIndex = -1;
 let sliderEls: HTMLInputElement[] = [];
 let valueEls: HTMLElement[] = [];
@@ -59,6 +60,20 @@ export function buildAdsrPopupDOM(): void {
   title.id = 'adsr-title';
   title.textContent = 'ENVELOPE';
   header.appendChild(title);
+
+  // On/Off toggle
+  toggleBtn = document.createElement('button');
+  toggleBtn.className = 'adsr-toggle';
+  toggleBtn.id = 'adsr-toggle';
+  toggleBtn.textContent = 'OFF';
+  toggleBtn.onclick = () => {
+    const on = !isAdsrEnabled(activeTrackIndex);
+    setAdsrEnabled(activeTrackIndex, on);
+    updateToggle();
+    updateAdsrBtnState(activeTrackIndex);
+  };
+  header.appendChild(toggleBtn);
+
   const closeBtn = el('button', 'adsr-close');
   closeBtn.id = 'adsr-close';
   closeBtn.textContent = '\u00D7';
@@ -134,6 +149,26 @@ export function buildAdsrPopupDOM(): void {
 }
 
 // ═══════════════════════════════════════════
+//  Toggle state
+// ═══════════════════════════════════════════
+
+function updateToggle(): void {
+  if (!toggleBtn) return;
+  const on = isAdsrEnabled(activeTrackIndex);
+  toggleBtn.textContent = on ? 'ON' : 'OFF';
+  toggleBtn.classList.toggle('active', on);
+}
+
+/** Update the ADSR button appearance on the track header to reflect enabled state. */
+export function updateAdsrBtnState(trackIndex: number): void {
+  const btns = document.querySelectorAll<HTMLElement>('.adsr-btn');
+  const btn = btns[trackIndex];
+  if (btn) {
+    btn.classList.toggle('active', isAdsrEnabled(trackIndex));
+  }
+}
+
+// ═══════════════════════════════════════════
 //  Open / Close
 // ═══════════════════════════════════════════
 
@@ -147,6 +182,9 @@ export function openAdsrPopup(trackIndex: number, anchorEl: HTMLElement): void {
   // Update title
   const titleEl = document.getElementById('adsr-title');
   if (titleEl) titleEl.textContent = `ENVELOPE \u2014 ${getTrackName(trackIndex)}`;
+
+  // Sync toggle
+  updateToggle();
 
   // Sync sliders to current track ADSR
   const adsr = getTrackAdsr(trackIndex);

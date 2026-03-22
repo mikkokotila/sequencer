@@ -187,6 +187,7 @@
             cursor:pointer; transition:all 0.15s; font-family:inherit; margin-left:2px;
         }
         .adsr-btn:hover { border-color:#3a3d58; color:var(--text-dim); }
+        .adsr-btn.active { background:rgba(56,139,255,0.12); border-color:rgba(56,139,255,0.4); color:#388bff; }
         .midi-btn {
             font-size:7px; font-weight:800; letter-spacing:0.5px; padding:2px 6px; border-radius:3px;
             border:1px solid var(--border-hi); background:var(--surface-hi); color:var(--text-muted);
@@ -398,6 +399,13 @@
             padding: 10px 14px; border-bottom: 1px solid var(--border);
         }
         .adsr-title { font-size: 9px; font-weight: 800; letter-spacing: 1.5px; color: #666; flex: 1; }
+        .adsr-toggle {
+            font-size: 8px; font-weight: 800; letter-spacing: 1px; padding: 2px 8px;
+            border-radius: 3px; border: 1px solid var(--border-hi);
+            background: var(--surface-hi); color: var(--text-muted);
+            cursor: pointer; transition: all 0.15s; font-family: inherit;
+        }
+        .adsr-toggle.active { background: rgba(56,139,255,0.15); border-color: rgba(56,139,255,0.4); color: #388bff; }
         .adsr-close {
             width: 22px; height: 22px; border-radius: 50%;
             border: 1px solid var(--border-hi); background: transparent;

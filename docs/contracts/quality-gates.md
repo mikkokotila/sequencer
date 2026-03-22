@@ -54,6 +54,13 @@ Blocking regression checks include:
 5. Engine master controls must preserve non-explosive low-end response curves (squared control checks).
 6. Benchmark harness must be deterministic and worklet-driven (no random main-thread proxy timing).
 
+Implementation invariants for static gates:
+
+1. Source-structure checks must run in-process and be toolchain-independent.
+2. Do not rely on shell `rg/grep` output for pass/fail logic.
+3. Evaluate code invariants via TypeScript AST traversal (and HTML script-block AST where applicable).
+4. Do not hardcode source line numbers for definitions/callsite filtering.
+
 Oracle proof custody rules:
 
 1. WA must not hand-author oracle JSON files as proof input.
@@ -91,6 +98,12 @@ Blocking regression checks include:
 12. No empty-string paint type sentinel.
 13. No transport `innerHTML` mega-template injection.
 14. No benchmark randomness/proxy timing or near-no-op processor timing windows.
+
+Implementation invariants for architecture gates:
+
+1. Gate outcomes must be deterministic across environments regardless of PATH/tool availability.
+2. Structural checks are AST-based (imports, callsites, inline style mutation, type sentinels, callback APIs).
+3. Line-number-specific heuristics are disallowed.
 
 ### 5) Audio Browser Gates (`npm run audio:gates`) — conditional
 

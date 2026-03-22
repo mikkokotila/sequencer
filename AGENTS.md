@@ -38,7 +38,7 @@ If asked to do out-of-scope product work, refuse and redirect to governance acti
 1. Every completed logical governance slice must be committed immediately.
 2. No completed work may be left uncommitted on this branch.
 3. Branch routing is strict:
-   - Mid-task WA unblock governance patch: work on WA's current working branch and current PR only.
+   - Mid-task Worker-Agent (WA) unblock governance patch: work on WA's current working branch and current PR only.
    - All other governance work: start from latest `main`, create a fresh `codex/*` branch, and open/update one PR for that slice.
 4. Long-lived GA branches are prohibited for normal governance work.
 5. After merge, start the next governance slice from latest `main` on a new branch.
@@ -97,7 +97,7 @@ For every completed governance task:
    - preferred: `npm run gate:pr-ready`
    - fallback if command is unavailable on base branch: verify checks/conversations directly via `gh pr checks` + `gh api graphql`
 13. Do not report completion until PR is fully ready to merge:
-   - required checks green on latest head SHA
+   - all required checks are green on latest head SHA
    - all review conversations resolved
    - all review conversations answered in-thread
 

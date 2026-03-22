@@ -1,0 +1,46 @@
+{
+  "task_id": "20260322-fix-adsr-playback",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Fix ADSR: source.stop() called before source.start() broke playback; add deterministic audio modulation test",
+    "in_scope": [
+      "src/engine/adsr.ts",
+      "src/engine/audio.ts",
+      "src/engine/midi.ts",
+      "e2e/sequencer.spec.ts"
+    ],
+    "out_of_scope": [
+      "src/engine/worklets/**"
+    ],
+    "controls": [
+      {
+        "id": "adsr.enabled",
+        "default": false,
+        "range": [false, true],
+        "unit": "boolean",
+        "off_semantics": "samples play naturally with no envelope shaping",
+        "on_semantics": "GainNode envelope automates A/D/S/R phases on each note"
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:kick_01"
+    ],
+    "seed": "fixed-seed-v1",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false
+  }
+}

@@ -1,0 +1,177 @@
+{
+  "task_id": "20260322-fix-adsr-playback",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260322-fix-adsr-playback.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-22T13:34:08.595Z",
+  "finished_at_utc": "2026-03-22T13:35:02.110Z",
+  "head_sha": "323dc82",
+  "tree_sha": "f48b225043ea596f2e9766f05a35dbcceb2acf4a",
+  "subject_sha": "82a38158e3406a063a7218ea0b3f401d946498778f06cc73b385e215ffac8441",
+  "subject_files": [
+    "e2e/sequencer.spec.ts",
+    "src/engine/adsr.ts",
+    "src/engine/audio.ts",
+    "src/engine/midi.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260322-fix-adsr-playback.md",
+    "docs/qc/proofs/20260322-fix-adsr-playback/proof.manifest.json",
+    "docs/qc/specs/20260322-fix-adsr-playback.task.spec.json",
+    "e2e/sequencer.spec.ts",
+    "src/engine/adsr.ts",
+    "src/engine/audio.ts",
+    "src/engine/midi.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=6, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=6, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4624,
+        "log_file": "docs/qc/proofs/20260322-fix-adsr-playback/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 31719,
+        "log_file": "docs/qc/proofs/20260322-fix-adsr-playback/logs/O-E2E.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 351,
+        "log_file": "docs/qc/proofs/20260322-fix-adsr-playback/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 375,
+        "log_file": "docs/qc/proofs/20260322-fix-adsr-playback/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 383,
+        "log_file": "docs/qc/proofs/20260322-fix-adsr-playback/logs/O-COMMIT-RANGE.log"
+      },
+      {
+        "id": "O-AUDIO-GATES",
+        "label": "Audio browser gates",
+        "command": "npm run audio:gates",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 14168,
+        "log_file": "docs/qc/proofs/20260322-fix-adsr-playback/logs/O-AUDIO-GATES.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-fix-adsr-playback/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260322-fix-adsr-playback/raw/off_transparent.json",
+        "raw_sha256": "c42a413222d84a725b128f9c108f829afb6d2a3f72247ee7e8e56126eff33c2d"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-fix-adsr-playback/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260322-fix-adsr-playback/raw/on_audible.json",
+        "raw_sha256": "07600c066b0be5abffa048f7680ef45b23de4ed498cc9deef827c8aa8ba39cb0"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-fix-adsr-playback/oracles/low_end_continuity.json",
+        "raw_artifact": "docs/qc/proofs/20260322-fix-adsr-playback/raw/low_end_continuity.json",
+        "raw_sha256": "c37240e79275c0f287c4f8f45d52960ecabcdfc182c439fca2adead16e49808c"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-fix-adsr-playback/oracles/clip_guard.json",
+        "raw_artifact": "docs/qc/proofs/20260322-fix-adsr-playback/raw/clip_guard.json",
+        "raw_sha256": "8c9e3f559008c6c6abf8734a25737f3948a404faa9104114f896affaedf94720"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-fix-adsr-playback/oracles/default_safety.json",
+        "raw_artifact": "docs/qc/proofs/20260322-fix-adsr-playback/raw/default_safety.json",
+        "raw_sha256": "aeeaece89be16d3aa84efeb40f4b65f871483c249d2667b2e4deeefed05a3774"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-fix-adsr-playback/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260322-fix-adsr-playback/raw/control_binding.json",
+        "raw_sha256": "ea09354b258e675a40df2ab9079e52207e9982cc188443f099a4ea169aa463e1"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

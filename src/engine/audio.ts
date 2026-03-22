@@ -175,13 +175,17 @@ export function playSample(
   const target = dest ?? mixBus ?? audioCtx.destination;
 
   if (trackIndex !== undefined && isAdsrEnabled(trackIndex)) {
-    // Apply ADSR envelope between source and destination
-    applyEnvelope(audioCtx, src, target, trackIndex, time, stepDuration);
+    // applyEnvelope connects source → envelopeGain → dest and schedules
+    // gain automation. We call start() first, then stop() — Web Audio
+    // requires start() before stop().
+    const { stopAt } = applyEnvelope(audioCtx, src, target, trackIndex, time, stepDuration);
+    src.start(time);
+    if (stopAt > 0) src.stop(stopAt);
   } else {
     src.connect(target);
+    src.start(time);
   }
 
-  src.start(time);
   trackSequencerVoice(src);
   return src;
 }

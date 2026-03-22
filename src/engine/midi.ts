@@ -258,11 +258,14 @@ function handleNoteOn(trackIndex: number, note: number, velocity: number): void 
   src.buffer = buffer;
   src.playbackRate.value = rate;
 
-  // Connect source: with ADSR envelope if enabled, direct otherwise
+  // Connect source: with ADSR envelope if enabled, direct otherwise.
+  // applyEnvelope returns { envelope, stopAt }. For MIDI, stopAt is 0
+  // (no auto-stop — release is triggered by note-off).
   const startAt = ctx.currentTime;
   let envelope: GainNode | null = null;
   if (isAdsrEnabled(globalTrackIdx)) {
-    envelope = applyEnvelope(ctx, src, velocityGain, globalTrackIdx, startAt);
+    const result = applyEnvelope(ctx, src, velocityGain, globalTrackIdx, startAt);
+    envelope = result.envelope;
   } else {
     src.connect(velocityGain);
   }

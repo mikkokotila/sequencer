@@ -89,7 +89,9 @@ export function resetAllAdsr(): void {
  * For MIDI notes: omit stepDuration, call triggerRelease() on note-off.
  *
  * Connects: source → envelopeGain → dest
- * Returns the envelopeGain node (needed for MIDI release tracking).
+ * Returns the scheduled stop time (>0 if a stop should be scheduled, 0 if no auto-stop).
+ * The caller MUST call source.start() then source.stop(stopAt) after this function —
+ * Web Audio requires start() before stop().
  */
 export function applyEnvelope(
   ctx: AudioContext,
@@ -98,7 +100,7 @@ export function applyEnvelope(
   trackIndex: number,
   startTime: number,
   stepDuration?: number,
-): GainNode {
+): { envelope: GainNode; stopAt: number } {
   const adsr = getTrackAdsr(trackIndex);
   const env = ctx.createGain();
 
@@ -114,19 +116,20 @@ export function applyEnvelope(
     Math.max(0.001, adsr.decay / 3),
   );
 
+  let stopAt = 0;
   if (stepDuration !== undefined) {
     // Scheduler: auto-release at (or before) step end.
     const stepEnd = startTime + stepDuration;
     const rawReleaseStart = startTime + Math.max(adsr.attack, stepDuration - adsr.release);
     const releaseStart = Math.min(rawReleaseStart, stepEnd);
     env.gain.setTargetAtTime(0.0001, releaseStart, Math.max(0.001, adsr.release / 3));
-    // Stop source after release tail (4× time constant ≈ 98% decay)
-    source.stop(releaseStart + adsr.release * 4);
+    // Caller will schedule source.stop() at this time (after calling start())
+    stopAt = releaseStart + adsr.release * 4;
   }
 
   source.connect(env);
   env.connect(dest);
-  return env;
+  return { envelope: env, stopAt };
 }
 
 /**

@@ -1,0 +1,15 @@
+{
+  "oracle_id": "clip_guard",
+  "task_id": "20260322-fix-adsr-playback",
+  "subject_sha": "82a38158e3406a063a7218ea0b3f401d946498778f06cc73b385e215ffac8441",
+  "harness_version": "oracle-harness-v2",
+  "status": "PASS",
+  "metrics": {
+    "clip_count": 0
+  },
+  "raw_artifact": "raw/clip_guard.json",
+  "raw_sha256": "8c9e3f559008c6c6abf8734a25737f3948a404faa9104114f896affaedf94720",
+  "evidence": "clip_count=0",
+  "challenge_id": "60baca3222301138076ce1e3de44eaf2c77e28a3bdeeb8c0a53026bc0db1b686",
+  "payload_digest": "5cd7b7a6c07e8dbe264e30cbcbfcb53e037e6ad855d2d81cfeeb2f7c466a600b"
+}

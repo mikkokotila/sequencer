@@ -1,0 +1,16 @@
+{
+  "oracle_id": "off_transparent",
+  "task_id": "20260322-fix-adsr-playback",
+  "subject_sha": "82a38158e3406a063a7218ea0b3f401d946498778f06cc73b385e215ffac8441",
+  "harness_version": "oracle-harness-v2",
+  "status": "PASS",
+  "metrics": {
+    "max_abs_error": 0,
+    "delta_lufs": 0
+  },
+  "raw_artifact": "raw/off_transparent.json",
+  "raw_sha256": "c42a413222d84a725b128f9c108f829afb6d2a3f72247ee7e8e56126eff33c2d",
+  "evidence": "max_abs_error=0",
+  "challenge_id": "60baca3222301138076ce1e3de44eaf2c77e28a3bdeeb8c0a53026bc0db1b686",
+  "payload_digest": "5cd7b7a6c07e8dbe264e30cbcbfcb53e037e6ad855d2d81cfeeb2f7c466a600b"
+}

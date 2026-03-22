@@ -1,57 +1,29 @@
 #!/usr/bin/env node
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
 import ts from 'typescript';
 
 const root = process.cwd();
 const passes = [];
 const failures = [];
 
-function parseArgs(argv) {
-  const args = { mode: 'full' };
-  for (let i = 0; i < argv.length; i++) {
-    if (argv[i] === '--mode') {
-      args.mode = argv[i + 1] || 'full';
-      i++;
-    }
-  }
-  return args;
-}
+function assertFullOnlyMode() {
+  const modeArg = process.argv.find((arg) => arg === '--mode' || arg.startsWith('--mode='));
+  if (!modeArg) return;
 
-function parseChangedFilesFromEnv() {
-  const raw = process.env.GOV_CHANGED_FILES || '';
-  return raw
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean);
-}
-
-function matchesPattern(filePath, pattern) {
-  if (pattern === '**' || pattern === '*') return true;
-  if (pattern.endsWith('/**')) {
-    const prefix = pattern.slice(0, -3);
-    return filePath.startsWith(prefix);
+  if (modeArg === '--mode') {
+    const modeIndex = process.argv.indexOf('--mode');
+    const value = process.argv[modeIndex + 1] || '';
+    const suffix = value ? ` ${value}` : '';
+    throw new Error(`contract-gates is full-only; remove --mode${suffix}`.trim());
   }
-  if (pattern.includes('*')) {
-    const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
-    return new RegExp(`^${escaped}$`).test(filePath);
-  }
-  return filePath === pattern;
-}
 
-function touchesAny(changedFiles, patterns) {
-  if (changedFiles.length === 0) return true;
-  return changedFiles.some((filePath) => patterns.some((pattern) => matchesPattern(filePath, pattern)));
+  throw new Error(`contract-gates is full-only; remove ${modeArg}`);
 }
 
 function record(ok, name, detail) {
   if (ok) passes.push({ name, detail });
   else failures.push({ name, detail });
-}
-
-function recordSkipped(name, detail) {
-  passes.push({ name, detail: `[delta-skip] ${detail}` });
 }
 
 function walk(node, cb) {
@@ -114,60 +86,6 @@ function formatViolation(v) {
   return `${where}: ${v.message}`;
 }
 
-function parseAddedLineMap(targets) {
-  const diff = spawnSync('git', ['diff', '--cached', '--unified=0', '--', ...targets], {
-    cwd: root,
-    encoding: 'utf8',
-  });
-
-  if (diff.status !== 0) {
-    return {
-      ok: false,
-      map: new Map(),
-      error: `git diff failed (status ${diff.status}): ${diff.stderr || 'unknown error'}`,
-    };
-  }
-
-  const addedByFile = new Map();
-  const lines = (diff.stdout || '').split('\n');
-  let currentFile = '';
-  let newLine = 0;
-
-  for (const line of lines) {
-    if (line.startsWith('+++ b/')) {
-      currentFile = line.slice('+++ b/'.length).trim();
-      if (!addedByFile.has(currentFile)) addedByFile.set(currentFile, new Set());
-      continue;
-    }
-
-    const hunk = line.match(/^@@\s+-\d+(?:,\d+)?\s+\+(\d+)(?:,(\d+))?\s+@@/);
-    if (hunk) {
-      newLine = Number.parseInt(hunk[1], 10);
-      continue;
-    }
-
-    if (!currentFile) continue;
-    if (line.startsWith('+') && !line.startsWith('+++')) {
-      addedByFile.get(currentFile)?.add(newLine);
-      newLine += 1;
-      continue;
-    }
-    if (line.startsWith('-') && !line.startsWith('---')) {
-      continue;
-    }
-    if (line.startsWith(' ')) {
-      newLine += 1;
-    }
-  }
-
-  return { ok: true, map: addedByFile, error: '' };
-}
-
-function isViolationOnAddedLine(addedMap, violation) {
-  const lines = addedMap.get(violation.file);
-  if (!lines) return false;
-  return lines.has(violation.line);
-}
 
 async function listFilesRecursive(relDir, allowedExts) {
   const out = [];
@@ -287,37 +205,10 @@ function containsCallNamed(node, name) {
   return found;
 }
 
-async function checkNoFixme(args, changedFiles) {
+async function checkNoFixme() {
   const allTestFiles = await listFilesRecursive('e2e', ['.ts', '.js', '.html']);
   const extraTestFiles = await listFilesRecursive('tests', ['.ts', '.js', '.html']);
   const relFiles = [...allTestFiles, ...extraTestFiles].sort();
-
-  if (args.mode === 'delta') {
-    if (!touchesAny(changedFiles, ['e2e/**', 'tests/**'])) {
-      recordSkipped('No fixme debt', 'No test files changed.');
-      return;
-    }
-
-    const targets = changedFiles.filter((f) => f.startsWith('e2e/') || f.startsWith('tests/'));
-    const sources = await collectSources(targets);
-    const violations = findTestFixmeViolations(sources);
-
-    const added = parseAddedLineMap(['e2e', 'tests']);
-    if (!added.ok) {
-      record(false, 'No fixme debt', added.error);
-      return;
-    }
-
-    const newViolations = violations.filter((v) => isViolationOnAddedLine(added.map, v));
-    record(
-      newViolations.length === 0,
-      'No fixme debt',
-      newViolations.length === 0
-        ? 'No new test.fixme() additions in staged diff.'
-        : newViolations.map(formatViolation).join('\n'),
-    );
-    return;
-  }
 
   const sources = await collectSources(relFiles);
   const violations = findTestFixmeViolations(sources);
@@ -328,35 +219,8 @@ async function checkNoFixme(args, changedFiles) {
   );
 }
 
-async function checkNoInformationalAsserts(args, changedFiles) {
+async function checkNoInformationalAsserts() {
   const relFiles = await listFilesRecursive('tests', ['.ts', '.js', '.html']);
-
-  if (args.mode === 'delta') {
-    if (!touchesAny(changedFiles, ['tests/**'])) {
-      recordSkipped('No informational assertions', 'No audio test files changed.');
-      return;
-    }
-
-    const targets = changedFiles.filter((f) => f.startsWith('tests/'));
-    const sources = await collectSources(targets);
-    const violations = findInformationalAssertViolations(sources);
-
-    const added = parseAddedLineMap(['tests']);
-    if (!added.ok) {
-      record(false, 'No informational assertions', added.error);
-      return;
-    }
-
-    const newViolations = violations.filter((v) => isViolationOnAddedLine(added.map, v));
-    record(
-      newViolations.length === 0,
-      'No informational assertions',
-      newViolations.length === 0
-        ? 'No new assert(..., true, ...) additions in staged diff.'
-        : newViolations.map(formatViolation).join('\n'),
-    );
-    return;
-  }
 
   const sources = await collectSources(relFiles);
   const violations = findInformationalAssertViolations(sources);
@@ -367,12 +231,8 @@ async function checkNoInformationalAsserts(args, changedFiles) {
   );
 }
 
-async function checkNewSongExtensionReset(args, changedFiles) {
+async function checkNewSongExtensionReset() {
   const rel = 'src/transport/persistence.ts';
-  if (args.mode === 'delta' && !touchesAny(changedFiles, [rel])) {
-    recordSkipped('newSong deterministic reset', 'Persistence layer unchanged.');
-    return;
-  }
 
   const text = await fs.readFile(path.join(root, rel), 'utf8');
   const sourceFile = createSourceFile(rel, text, ts.ScriptKind.TS);
@@ -461,28 +321,22 @@ async function fileExists(rel) {
   }
 }
 
-async function checkSetStateRespectsDisabled(args, changedFiles) {
+async function checkSetStateRespectsDisabled() {
   const preferredTargets = [
     'src/engine/extensions/pultec-eq.ts',
     'src/engine/extensions/compressor.ts',
     'src/engine/extensions/transformer.ts',
   ];
-  const allTargets = [...preferredTargets];
-
-  if (args.mode === 'delta' && !touchesAny(changedFiles, allTargets)) {
-    recordSkipped('setState respects disabled state', 'Extension processors unchanged.');
-    return;
-  }
 
   const targets = [];
   for (const rel of preferredTargets) {
     if (await fileExists(rel)) {
-      if (args.mode === 'full' || changedFiles.length === 0 || changedFiles.includes(rel)) targets.push(rel);
+      targets.push(rel);
     }
   }
 
   if (targets.length === 0) {
-    recordSkipped('setState respects disabled state', 'No extension state files selected in delta scope.');
+    record(false, 'setState respects disabled state', 'No extension state files found to validate.');
     return;
   }
 
@@ -585,12 +439,8 @@ function isFiniteNumber(value) {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
-async function checkEngineControlCurves(args, changedFiles) {
+async function checkEngineControlCurves() {
   const rel = 'src/ui/engine-panel.ts';
-  if (args.mode === 'delta' && !touchesAny(changedFiles, [rel])) {
-    recordSkipped('Engine low-end control curve safety', 'Engine panel control mappings unchanged.');
-    return;
-  }
 
   const sourceText = await fs.readFile(path.join(root, rel), 'utf8');
   const sourceFile = createSourceFile(rel, sourceText, ts.ScriptKind.TS);
@@ -658,12 +508,8 @@ async function checkEngineControlCurves(args, changedFiles) {
   );
 }
 
-async function checkBenchmarkDeterminism(args, changedFiles) {
+async function checkBenchmarkDeterminism() {
   const rel = 'tests/benchmark.html';
-  if (args.mode === 'delta' && !touchesAny(changedFiles, [rel, 'src/engine/worklets/**'])) {
-    recordSkipped('Benchmark deterministic harness', 'Benchmark/worklet paths unchanged.');
-    return;
-  }
 
   const html = await fs.readFile(path.join(root, rel), 'utf8');
   const scripts = extractHtmlScriptBlocks(html);
@@ -714,15 +560,13 @@ async function checkBenchmarkDeterminism(args, changedFiles) {
 }
 
 async function main() {
-  const args = parseArgs(process.argv.slice(2));
-  const changedFiles = parseChangedFilesFromEnv();
-
-  await checkNoFixme(args, changedFiles);
-  await checkNoInformationalAsserts(args, changedFiles);
-  await checkNewSongExtensionReset(args, changedFiles);
-  await checkSetStateRespectsDisabled(args, changedFiles);
-  await checkEngineControlCurves(args, changedFiles);
-  await checkBenchmarkDeterminism(args, changedFiles);
+  assertFullOnlyMode();
+  await checkNoFixme();
+  await checkNoInformationalAsserts();
+  await checkNewSongExtensionReset();
+  await checkSetStateRespectsDisabled();
+  await checkEngineControlCurves();
+  await checkBenchmarkDeterminism();
 
   for (const p of passes) {
     console.log(`PASS | ${p.name} | ${p.detail}`);
@@ -731,7 +575,7 @@ async function main() {
     console.log(`FAIL | ${f.name} | ${f.detail}`);
   }
 
-  const label = args.mode === 'delta' ? 'contract-gates(delta)' : 'contract-gates';
+  const label = 'contract-gates';
   if (failures.length > 0) {
     console.error(`\n${label}: ${failures.length} failure(s), ${passes.length} pass(es).`);
     process.exit(1);

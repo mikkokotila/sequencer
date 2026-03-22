@@ -1,0 +1,43 @@
+{
+  "run_id": "1774172610793-10802ca5",
+  "task_id": "20260322-ga-full-mode-compiler-gate",
+  "task_type": "governance-change",
+  "spec_path": "docs/qc/specs/20260322-ga-full-mode-compiler-gate.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-03-22T09:43:30.792Z",
+  "finished_at_utc": "2026-03-22T09:43:37.513Z",
+  "head_sha": "eb17db9",
+  "tree_sha": "331803e9555cdc10948cae0dada728f3f54002aa",
+  "subject_sha": "deda566bf84bb32190d368fa26a6a4ac13d4944ee12f96c608cde646a9812b82",
+  "verdict": "PASS",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-GATE-GOVERNANCE-SELF",
+      "label": "Governance self-tests",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-GATE-GOVERNANCE-SELF.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": []
+}

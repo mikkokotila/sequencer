@@ -1,5 +1,5 @@
 {
-  "version": "1.4.0",
+  "version": "2.0.0",
   "task_types": [
     "feature",
     "bugfix",
@@ -17,6 +17,9 @@
     "governance_policy": [
       "AGENTS.md",
       "CLAUDE.md",
+      "AUDITOR.md",
+      ".github/CODEOWNERS",
+      ".github/workflows/**",
       "docs/contracts/**",
       "docs/qc/README.md",
       "docs/qc/compiler/**",
@@ -96,27 +99,20 @@
       "command": "npm run e2e",
       "failure_code": "GOV-PROC-002"
     },
-    "O-GATE-CONTRACTS-DELTA": {
-      "label": "Contract static gates (task regression)",
-      "command": "node docs/qc/scripts/contract-gates.mjs --mode delta",
-      "failure_code": "GOV-PROC-002"
-    },
-    "O-GATE-ARCH-DELTA": {
-      "label": "Architecture gates (task regression)",
-      "command": "node docs/qc/scripts/architecture-gates.mjs --mode delta",
-      "failure_code": "GOV-PROC-002"
-    },
     "O-GATE-CONTRACTS-FULL": {
-      "label": "Contract static gates (global debt)",
-      "command": "node docs/qc/scripts/contract-gates.mjs --mode full",
-      "failure_code": "GOV-PROC-002",
-      "non_blocking": true
+      "label": "Contract static gates",
+      "command": "node docs/qc/scripts/contract-gates.mjs",
+      "failure_code": "GOV-PROC-002"
     },
     "O-GATE-ARCH-FULL": {
-      "label": "Architecture gates (global debt)",
-      "command": "node docs/qc/scripts/architecture-gates.mjs --mode full",
-      "failure_code": "GOV-PROC-002",
-      "non_blocking": true
+      "label": "Architecture gates",
+      "command": "node docs/qc/scripts/architecture-gates.mjs",
+      "failure_code": "GOV-PROC-002"
+    },
+    "O-GATE-GOVERNANCE-SELF": {
+      "label": "Governance self-tests",
+      "command": "npm run gate:governance-self",
+      "failure_code": "GOV-PROC-002"
     },
     "O-AUDIO-GATES": {
       "label": "Audio browser gates",

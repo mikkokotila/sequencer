@@ -1,0 +1,9 @@
+# Governance paths require owner review
+/.github/workflows/** @mikkokotila
+/docs/qc/scripts/** @mikkokotila
+/docs/qc/compiler/** @mikkokotila
+/docs/contracts/** @mikkokotila
+/CLAUDE.md @mikkokotila
+/AGENTS.md @mikkokotila
+/AUDITOR.md @mikkokotila
+/package.json @mikkokotila

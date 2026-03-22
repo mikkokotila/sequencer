@@ -1,0 +1,39 @@
+{
+  "task_id": "20260322-ga-full-mode-compiler-gate",
+  "task_type": "governance-change",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Enforce full-only governance gates, add authoritative compiler-gate CI workflow, and emit deterministic QC audit artifacts from compiler.",
+    "in_scope": [
+      ".github/CODEOWNERS",
+      ".github/workflows/compiler-gate.yml",
+      "CLAUDE.md",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**",
+      "docs/qc/specs/compiler-gate.task.spec.json",
+      "package.json"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "tests/**",
+      "e2e/**",
+      "index.html"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "governance-script-self-tests",
+      "compiler-check"
+    ],
+    "seed": "ga-full-mode-compiler-gate-seed",
+    "oracles": []
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": true,
+    "require_debt_reduction": false
+  }
+}

@@ -77,7 +77,7 @@ Before commit, ensure proof artifacts exist:
 
 Direct `git commit` for product changes is non-compliant when compiler verdict is not `PASS`.
 
-Compiler determines blocking task-regression gates from staged diff (`ci`, `e2e`, delta contract/architecture gates, `audio:gates` when bound, and `gate:commit-range`).
+Compiler determines blocking gates from staged diff (`ci`, `e2e`, full contract/architecture gates, `audio:gates` when bound, and `gate:commit-range`).
 Global-debt full scans remain non-blocking commands, but compiler debt ratchet is blocking:
 
 1. product tasks must not increase global debt vs `docs/qc/debt/baseline.json`

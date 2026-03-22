@@ -72,10 +72,25 @@ async function run() {
       await page.waitForSelector('.summary', { timeout: 20000 });
       const text = (await page.textContent('.summary'))?.trim() || '';
       const parsed = parsePassedSummary(text);
+      const failures = await page.evaluate(() => {
+        const rows = [...document.querySelectorAll('.test')];
+        return rows
+          .filter((row) => {
+            const klass = row.className || '';
+            const badge = row.querySelector('.badge')?.textContent || '';
+            return /\bfail\b/i.test(klass) || /\bFAIL\b/i.test(badge);
+          })
+          .map((row) => {
+            const name = (row.querySelector('.test-name')?.textContent || '').trim() || 'unnamed-test';
+            const detail = (row.querySelector('.test-detail')?.textContent || '').trim() || 'no detail';
+            return { suite: 'browser-audio-suite', test_name: name, file_line: null, first_message: detail };
+          });
+      });
       const ok = !!parsed && parsed.failed === 0 && parsed.passed === parsed.total;
       results.push({
         name,
         ok,
+        failures,
         detail: parsed
           ? `${parsed.passed}/${parsed.total} passed, ${parsed.failed} failed`
           : `Could not parse summary: "${text}"`,
@@ -173,9 +188,55 @@ async function run() {
       sampleCount >= 50 &&
       p99 <= budget;
 
+    const benchmarkFailures = [];
+    if (gateShowsFail) {
+      benchmarkFailures.push({
+        suite: 'benchmark',
+        test_name: 'gate-state',
+        file_line: null,
+        first_message: benchmark.gateText || 'benchmark reported FAIL',
+      });
+    }
+    if (!benchmark.hasAudioWorkletRuntime) {
+      benchmarkFailures.push({
+        suite: 'benchmark',
+        test_name: 'audio-worklet-runtime',
+        file_line: null,
+        first_message: 'AudioWorkletNode did not execute at runtime',
+      });
+    }
+    if (benchmark.randomCalls !== 0 || benchmark.intervalCalls !== 0) {
+      benchmarkFailures.push({
+        suite: 'benchmark',
+        test_name: 'determinism',
+        file_line: null,
+        first_message: `random_calls=${benchmark.randomCalls} interval_calls=${benchmark.intervalCalls}`,
+      });
+    }
+    if (sampleCount === null || sampleCount < 50) {
+      benchmarkFailures.push({
+        suite: 'benchmark',
+        test_name: 'sample-count',
+        file_line: null,
+        first_message: `sample_count=${sampleCount ?? 'null'} (expected >= 50)`,
+      });
+    }
+    if (p99 === null || budget === null || (p99 !== null && budget !== null && p99 > budget)) {
+      benchmarkFailures.push({
+        suite: 'benchmark',
+        test_name: 'worklet-budget',
+        file_line: null,
+        first_message:
+          p99 === null || budget === null
+            ? `missing metric(s): p99="${benchmark.p99Text}" budget="${benchmark.budgetText}"`
+            : `p99=${p99.toFixed(3)}ms budget=${budget.toFixed(3)}ms`,
+      });
+    }
+
     results.push({
       name: 'benchmark',
       ok: benchmarkOk,
+      failures: benchmarkFailures,
       detail:
         p99 === null || budget === null || sampleCount === null
           ? `real benchmark missing metrics (p99="${benchmark.p99Text}", budget="${benchmark.budgetText}", gate="${benchmark.gateText}")`
@@ -185,6 +246,14 @@ async function run() {
     let failed = 0;
     for (const r of results) {
       console.log(`${r.ok ? 'PASS' : 'FAIL'} | ${r.name} | ${r.detail}`);
+      if (!r.ok && Array.isArray(r.failures) && r.failures.length > 0) {
+        for (const item of r.failures) {
+          const location = item.file_line ? ` @ ${item.file_line}` : '';
+          console.log(
+            `FAIL-ITEM | ${r.name} | ${item.test_name}${location} | ${item.first_message}`,
+          );
+        }
+      }
       if (!r.ok) failed++;
     }
 
@@ -196,7 +265,8 @@ async function run() {
   } finally {
     if (browser) {
       try {
-        await Promise.race([browser.close(), delay(3000)]);
+        // Keep shutdown bounded so CI cannot hang on browser teardown.
+        await Promise.race([browser.close(), delay(1000)]);
       } catch {
         // ignore browser shutdown issues; gate outcome already captured
       }

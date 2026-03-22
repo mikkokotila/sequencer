@@ -1,0 +1,26 @@
+{
+  "task_id": "compiler-gate-ci",
+  "task_type": "qc",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Run authoritative CI governance compilation for PR range.",
+    "in_scope": [
+      "**"
+    ],
+    "out_of_scope": [],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "pr-range"
+    ],
+    "seed": "compiler-gate-ci-seed",
+    "oracles": []
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": true,
+    "require_debt_reduction": false
+  }
+}

@@ -35,13 +35,14 @@ npm run gov:commit:ga -- --spec docs/qc/specs/<task-id>.task.spec.json -m "type(
 4. `execute` - run required command gates and collect artifacts.
 5. `verify` - evaluate diagnostics and final verdict.
 6. `attest` - write `docs/qc/proofs/<task-id>/verdict.json`.
+7. `qc-audit` - write deterministic machine + human audit trail in `docs/qc/runs/`.
 
 During `execute`, obligations are split:
 
 1. `task_regression` (blocking)
-2. `global_debt` (non-blocking, tracked)
+2. `global_debt` (blocking, zero-tolerance in full mode)
 3. `oracle_harness` (compiler-owned, in-memory custody)
-4. `debt_ratchet` (blocking policy over global debt totals)
+4. `debt_ratchet` (blocking policy over baseline totals)
 
 ## Verdict Policy
 
@@ -221,6 +222,11 @@ Compiler runs oracle harness from a git-index snapshot for the staged tree when 
 `gov:check` is required before completion.
 `gov:commit` is the standard commit path because it attaches attestation trailers.
 `npm run gate:commit-range` enforces that product commits contain valid governance trailers and a PASS attestation.
+
+Authoritative remote check:
+
+1. GitHub workflow `compiler-gate` (`.github/workflows/compiler-gate.yml`) executes compiler policy in CI.
+2. `main` must require `compiler-gate` to pass on the latest PR head SHA before merge.
 
 ## Remote Completion Enforcement
 

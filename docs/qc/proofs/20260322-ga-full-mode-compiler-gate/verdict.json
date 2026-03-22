@@ -1,0 +1,97 @@
+{
+  "task_id": "20260322-ga-full-mode-compiler-gate",
+  "task_type": "governance-change",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260322-ga-full-mode-compiler-gate.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-22T09:51:22.031Z",
+  "finished_at_utc": "2026-03-22T09:51:28.678Z",
+  "head_sha": "ca79395",
+  "tree_sha": "386534f93ec3931071f7ce5b5b6c878e944246f6",
+  "subject_sha": "e33e0e62257866a1560c9c6cfae6e21574eb1c0f29297d5204c902a934d183c9",
+  "subject_files": [
+    "docs/qc/compiler/obligation-rules.json",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "docs/qc/scripts/governance-self-tests.mjs"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/compiler/obligation-rules.json",
+    "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-CI.log",
+    "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-COMMIT-RANGE.log",
+    "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-GATE-GOVERNANCE-SELF.log",
+    "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/verdict.json",
+    "docs/qc/runs/20260322-095115Z-ca79395-1774173068678-f89c1c78.json",
+    "docs/qc/runs/20260322-095115Z-ca79395-1774173068678-f89c1c78.md",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "docs/qc/scripts/governance-self-tests.mjs"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=3, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=3, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-GATE-GOVERNANCE-SELF",
+        "label": "Governance self-tests",
+        "command": "npm run gate:governance-self",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 1872,
+        "log_file": "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-GATE-GOVERNANCE-SELF.log"
+      },
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4392,
+        "log_file": "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-CI.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 228,
+        "log_file": "docs/qc/proofs/20260322-ga-full-mode-compiler-gate/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": null,
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

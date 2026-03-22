@@ -9,6 +9,11 @@ After ANY completed task, run governance compiler first:
 The compiler derives required gates from staged diff and contracts.
 All required obligations must pass.
 
+Remote authority:
+
+1. CI workflow `compiler-gate` is the authoritative merge blocker.
+2. Local hooks/checks are advisory; merge eligibility is determined by remote `compiler-gate` verdict.
+
 ## Required Programmatic Gates
 
 ### 0) Governance Compiler (`npm run gov:check -- --spec ...`)
@@ -18,10 +23,10 @@ Mandatory compiler phases:
 1. Parse task spec.
 2. Bind staged diff to contracts.
 3. Synthesize required obligations.
-4. Execute required gates and proof checks.
+4. Execute required gates and proof checks (including compiler-custody oracle harness).
 5. Verify final verdict.
 6. Attest `verdict.json`.
-7. Execute oracle harness in compiler custody (in-memory payload + challenge-response verification).
+7. Emit deterministic QC audit artifacts (`docs/qc/runs/*.json` and `docs/qc/runs/*.md`).
 
 ### 1) CI Pipeline (`npm run ci`)
 
@@ -38,12 +43,11 @@ Playwright suite must pass with zero failures.
 
 ### 3) Contract Static Gates (task regression)
 
-Compiler uses delta mode for blocking task-regression checks:
+Compiler uses full static checks as blocking obligations:
 
-- `node docs/qc/scripts/contract-gates.mjs --mode delta`
+- `node docs/qc/scripts/contract-gates.mjs`
 
-Only checks relevant to staged files are blocking.
-Full-debt scan remains available via `npm run gate:contracts` and is tracked as non-blocking debt in compiler output.
+All checks are enforced in full mode for every product task.
 
 Blocking regression checks include:
 
@@ -69,12 +73,11 @@ Oracle proof custody rules:
 
 ### 4) Architecture Invariant Gates (task regression)
 
-Compiler uses delta mode for blocking task-regression checks:
+Compiler uses full architecture checks as blocking obligations:
 
-- `node docs/qc/scripts/architecture-gates.mjs --mode delta`
+- `node docs/qc/scripts/architecture-gates.mjs`
 
-Only checks relevant to staged files are blocking.
-Full-debt scan remains available via `npm run gate:architecture` and is tracked as non-blocking debt in compiler output.
+All checks are enforced in full mode for every product task.
 
 Debt ratchet enforcement (blocking):
 

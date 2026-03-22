@@ -12,7 +12,7 @@ npm run e2e
 
 Starts a Vite dev server and runs Playwright tests against it. All tests must pass.
 Global debt scan: `npm run gate:contracts` reports unresolved `test.fixme`.
-Blocking task-regression scan runs via governance compiler delta mode and fails on newly introduced `test.fixme`.
+Blocking scan runs via governance compiler full static gates and fails on any `test.fixme`.
 E2E is compiler-bound: product diffs trigger this gate automatically through `gov:check`.
 
 ## Coverage Requirements

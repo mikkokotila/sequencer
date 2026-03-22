@@ -3,121 +3,20 @@
  * side panel UI, and icon rendering.
  */
 
-import type { Extension, ExtensionHost, TrackInfo, TrackType } from '../../types';
+import type { ExtensionHost, TrackInfo } from '../../types';
 import { SEQ_EXTENSIONS, activeExtensionId, setActiveExtensionId, seqStopCallbacks } from './store';
-import { isPlaying } from '../scheduler';
 import { drumNames, melNames, vocalName } from '../../transport/song';
 import {
   getAudioContext,
   getMasterGain,
-  getTrackGains,
   getChannelFaders,
   getChannelPans,
   getMixBus,
-  getMasterTrim,
   getFinalOutput,
 } from '../audio';
 import { DRUMS_CFG, MEL_CFG, VOCAL_CFG, TOTAL_TRACKS } from '../../config';
 import { el } from '../../ui/helpers';
 import { scheduleSave } from '../../transport/persistence';
-
-// ═══════════════════════════════════════════
-//  SEQ API (exposed on window for extensions)
-// ═══════════════════════════════════════════
-
-export interface SeqAPI {
-  register(ext: Extension): void;
-  readonly audioContext: AudioContext | null;
-  readonly masterGain: GainNode | null;
-  readonly trackGains: GainNode[];
-  readonly channelFaders: GainNode[];
-  readonly channelPans: StereoPannerNode[];
-  readonly mixBus: GainNode | null;
-  readonly masterTrim: GainNode | null;
-  readonly trackCount: number;
-  readonly playing: boolean;
-  onStop(fn: () => void): void;
-  getTrackInfo(i: number): TrackInfo;
-  rebuildChain(): void;
-  notifyStateChange(): void;
-}
-
-declare global {
-  interface Window {
-    SEQ: SeqAPI;
-  }
-}
-
-export function installSeqAPI(): void {
-  window.SEQ = {
-    register(ext: Extension): void {
-      SEQ_EXTENSIONS.push(ext);
-    },
-    get audioContext(): AudioContext | null {
-      return getAudioContext();
-    },
-    get masterGain(): GainNode | null {
-      return getMasterGain();
-    },
-    get trackGains(): GainNode[] {
-      return getTrackGains();
-    },
-    get channelFaders(): GainNode[] {
-      return getChannelFaders();
-    },
-    get channelPans(): StereoPannerNode[] {
-      return getChannelPans();
-    },
-    get mixBus(): GainNode | null {
-      return getMixBus();
-    },
-    get masterTrim(): GainNode | null {
-      return getMasterTrim();
-    },
-    get trackCount(): number {
-      return TOTAL_TRACKS;
-    },
-    get playing(): boolean {
-      return isPlaying();
-    },
-    onStop(fn: () => void): void {
-      seqStopCallbacks.push(fn);
-    },
-    getTrackInfo(i: number): TrackInfo {
-      if (i < DRUMS_CFG.length) {
-        const c = DRUMS_CFG[i]!;
-        return {
-          name: drumNames[i] ?? '',
-          color: c.color,
-          bright: c.bright,
-          type: 'drum' as TrackType,
-        };
-      }
-      const mi = i - DRUMS_CFG.length;
-      if (mi < MEL_CFG.length) {
-        const c = MEL_CFG[mi]!;
-        return {
-          name: melNames[mi] ?? '',
-          color: c.color,
-          bright: c.bright,
-          type: 'melody' as TrackType,
-        };
-      }
-      return {
-        name: vocalName,
-        color: VOCAL_CFG.color,
-        bright: VOCAL_CFG.bright,
-        type: 'vocal' as TrackType,
-      };
-    },
-    rebuildChain(): void {
-      rebuildAudioChain();
-    },
-    notifyStateChange(): void {
-      scheduleSave();
-    },
-  };
-}
 
 // ═══════════════════════════════════════════
 //  Audio chain rebuild
@@ -135,7 +34,7 @@ export function rebuildAudioChain(): void {
     return;
   }
 
-  // Build the host API that extensions receive via init() — replaces window.SEQ
+  // Build the host API that extensions receive via init()
   const mix = getMixBus();
   const host: ExtensionHost = {
     channelFaders: getChannelFaders(),

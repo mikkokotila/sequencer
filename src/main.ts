@@ -7,7 +7,7 @@ import { openDB, dbGet, saveSong, loadSong, scheduleSave } from './transport/per
 import { loadManifest, wireBrowserEvents } from './ui/browser';
 import { buildUI, refreshUI, refreshSongName, updateSongPane } from './ui/build';
 import { setupPainting, setOnSave, setOnSongPaneUpdate } from './ui/painting';
-import { installSeqAPI, initExtensions } from './engine/extensions/registry';
+import { initExtensions } from './engine/extensions/registry';
 import { togglePlay, syncBpm, stopPlayback } from './engine/scheduler';
 import { on } from './events';
 import { initPlayhead } from './ui/playhead';
@@ -27,10 +27,7 @@ import { createPultecEq } from './engine/extensions/pultec-eq';
 import { createTransformer } from './engine/extensions/transformer';
 
 async function init(): Promise<void> {
-  // 1. Install SEQ API (makes window.SEQ available for extensions)
-  installSeqAPI();
-
-  // 2. Register extensions
+  // 1. Register extensions
   // Order: master bus inserts first, then aux effects, then metering
   // Master bus chain: Pultec EQ → Vari-Mu → Transformer (serial inserts)
   // Aux effects: Reverb, Delay (parallel buses, returns to mixBus)

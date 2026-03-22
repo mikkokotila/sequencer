@@ -14,6 +14,7 @@
     "circular": "madge --circular --extensions ts src/",
     "e2e": "npx playwright test",
     "audio:gates": "node docs/qc/scripts/audio-gates.mjs",
+    "gate:pr-ready": "node docs/qc/scripts/pr-ready-gate.mjs",
     "gate:commit-range": "node docs/qc/scripts/commit-range-gates.mjs",
     "gov:check": "node docs/qc/scripts/governance-compiler.mjs check",
     "gov:check:ga": "GOV_ALLOW_GOVERNANCE_CHANGE=1 node docs/qc/scripts/governance-compiler.mjs check",

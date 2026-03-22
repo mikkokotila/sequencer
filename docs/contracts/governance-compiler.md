@@ -239,6 +239,9 @@ After `gov:commit`:
 3. If no PR exists, create one immediately:
    - `gh pr create --base main --head <current-branch> --fill`
 4. Keep all subsequent task commits on the same branch/PR until merge.
+5. Wait for required CI checks and review feedback to land on that PR.
+6. Address every review conversation in-thread (fix + reply, or explicit no-fix rationale).
+7. Run `npm run gate:pr-ready` and require `PASS` before reporting task completion.
 
 Branch-splitting policy:
 

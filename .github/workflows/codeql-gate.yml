@@ -1,4 +1,4 @@
-name: codeql-ci
+name: codeql-gate
 
 on:
   pull_request:
@@ -13,8 +13,8 @@ permissions:
   security-events: write
 
 jobs:
-  codeql-ci:
-    name: codeql-ci
+  codeql-gate:
+    name: codeql-gate
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

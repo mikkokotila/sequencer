@@ -1,15 +1,15 @@
 {
   "oracle_id": "on_audible",
   "task_id": "20260322-audio-engine-spec",
-  "subject_sha": "46190407ae6b0b1a92937d299c9f6e189a609a6cf011491d212dbe941b7c5d21",
+  "subject_sha": "5f3302375225201e7db8804052c3c11a70399834ae272414beae77e7aed0e600",
   "harness_version": "oracle-harness-v2",
   "status": "PASS",
   "metrics": {
     "delta_lufs": 1.416895
   },
   "raw_artifact": "raw/on_audible.json",
-  "raw_sha256": "44a29d6725a51dd53b14266c6e42aa9a1c5d49ae01d12af1e43d643d4b909bda",
+  "raw_sha256": "d3117e64d426414dfc0a3191159f2cf333d2503b42d603c371cf9bf9587047a6",
   "evidence": "delta_lufs=1.4168953474463741",
-  "challenge_id": "f8a172a5dd4a902c08878a43b248ee35e99f77cb64a54e7fd490f5d6aee2c99a",
-  "payload_digest": "f1e17a0f158fc6173b984c38691b935dcedac77b8ba023582d6e447b5f9bc32d"
+  "challenge_id": "340ec6ff388c0b4802ae75ea191c6dd4296b407fec5093228f1839a8ba5cebbd",
+  "payload_digest": "6e854922928fd468cbcba507a9e63186cb83300424845454c7b5ed80fd2a1f0b"
 }

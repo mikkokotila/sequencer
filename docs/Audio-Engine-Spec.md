@@ -185,7 +185,7 @@ Permanent nodes between extension chain output and destination.
 
 ### Sequencer Playback
 
-Rate formula: `rate = 2^((octave - 1) * 12 + semitone) / 12`.
+Rate formula: `rate = 2^(((octave - 1) * 12 + semitone) / 12)`.
 
 Octave range: 1–7 (default 3). Semitone: 0–11 (C through B). At octave=1, semitone=0: rate = 1.0 (original pitch).
 

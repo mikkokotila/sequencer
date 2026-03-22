@@ -1,0 +1,15 @@
+{
+  "oracle_id": "default_safety",
+  "task_id": "20260322-adsr-envelope",
+  "subject_sha": "f12447689a91f614bf5e66d449f8d60479bc8d8b765527aa60845592def02507",
+  "harness_version": "oracle-harness-v2",
+  "status": "PASS",
+  "metrics": {
+    "peak_dbfs": -6.9744
+  },
+  "raw_artifact": "raw/default_safety.json",
+  "raw_sha256": "470430b88730f243ad915d6e9a14af0c64f6d28215a6989b12163005e84f81b7",
+  "evidence": "peak_dbfs=-6.97444118536795",
+  "challenge_id": "974d12ec0711a7594550205deeddb55f18e444c9af2afc970bf14b778f561fd3",
+  "payload_digest": "28906d1e3fb9f38e3852aeb4ee1187a44a7deed1c7e23a5fe0d70187159252b7"
+}

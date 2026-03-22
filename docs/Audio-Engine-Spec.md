@@ -181,6 +181,23 @@ Permanent nodes between extension chain output and destination.
 | Aux per-track send | 0.15 / 0.12 | Reverb / delay defaults |
 | Delay feedback | 0.95 | Hard cap |
 
+## ADSR Envelope
+
+Per-track envelope shaping applied to every note via a dedicated GainNode per voice.
+
+| Param | Default | Min | Max | Unit |
+|-------|---------|-----|-----|------|
+| Attack | 0.005 | 0.001 | 2.0 | seconds |
+| Decay | 0.1 | 0.001 | 2.0 | seconds |
+| Sustain | 1.0 | 0 | 1.0 | level |
+| Release | 0.1 | 0.001 | 3.0 | seconds |
+
+Audio chain per note: `source → envelopeGain → [velocityGain if MIDI] → trackGain`.
+
+Automation uses Web Audio API scheduling: `setValueAtTime`, `linearRampToValueAtTime` (attack), `setTargetAtTime` (decay to sustain, release). Time constant = param/3 for ~95% convergence.
+
+Scheduler notes: release auto-scheduled at step end (`stepDuration - release`). MIDI notes: release triggered on note-off via `triggerRelease()`. Default parameters produce transparent behavior (instant attack, full sustain).
+
 ## Pitch System
 
 ### Sequencer Playback

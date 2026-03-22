@@ -34,6 +34,9 @@ import {
 import { initEngineProcessing } from './ui/engine-panel';
 import { initMidi, disconnectAllMidi } from './engine/midi';
 import { buildMidiBrowserDOM, wireMidiBrowserEvents } from './ui/midi-browser';
+import { buildAdsrPopupDOM, updateAdsrBtnState } from './ui/adsr-popup';
+import { resetAllAdsr } from './engine/adsr';
+import { TOTAL_TRACKS } from './config';
 
 // Register all extensions
 import { createCompressor } from './engine/extensions/compressor';
@@ -61,9 +64,10 @@ async function init(): Promise<void> {
   // 3. Build the UI
   buildUI();
 
-  // 3b. Build MIDI browser overlay
+  // 3b. Build MIDI browser overlay + ADSR popup
   buildMidiBrowserDOM();
   wireMidiBrowserEvents();
+  buildAdsrPopupDOM();
 
   // 4. Wire painting callbacks + BPM sync
   setOnSave(scheduleSave);
@@ -74,7 +78,9 @@ async function init(): Promise<void> {
   on('persistence:songCreated', () => {
     stopPlayback();
     disconnectAllMidi();
+    resetAllAdsr();
     refreshUI();
+    for (let i = 0; i < TOTAL_TRACKS; i++) updateAdsrBtnState(i);
     refreshSongName();
     updateSongPane();
   });
@@ -86,12 +92,16 @@ async function init(): Promise<void> {
   on('persistence:songSwitched', () => {
     stopPlayback();
     disconnectAllMidi();
+    resetAllAdsr();
     refreshUI();
+    for (let i = 0; i < TOTAL_TRACKS; i++) updateAdsrBtnState(i);
     refreshSongName();
     updateSongPane();
   });
   on('persistence:fileLoaded', () => {
+    resetAllAdsr();
     refreshUI();
+    for (let i = 0; i < TOTAL_TRACKS; i++) updateAdsrBtnState(i);
     refreshSongName();
     updateSongPane();
   });

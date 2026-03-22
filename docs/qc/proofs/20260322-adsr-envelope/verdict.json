@@ -1,0 +1,172 @@
+{
+  "task_id": "20260322-adsr-envelope",
+  "task_type": "feature",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260322-adsr-envelope.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-22T11:53:49.096Z",
+  "finished_at_utc": "2026-03-22T11:54:37.490Z",
+  "head_sha": "8fddf0e",
+  "tree_sha": "6e3b41864249267cb78b2e64101a472023e7474e",
+  "subject_sha": "f12447689a91f614bf5e66d449f8d60479bc8d8b765527aa60845592def02507",
+  "subject_files": [
+    "src/engine/audio.ts",
+    "src/main.ts",
+    "src/ui/adsr-popup.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "src/engine/audio.ts",
+    "src/main.ts",
+    "src/ui/adsr-popup.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=6, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=6, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 5197,
+        "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 26555,
+        "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-E2E.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 381,
+        "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 405,
+        "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 299,
+        "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-COMMIT-RANGE.log"
+      },
+      {
+        "id": "O-AUDIO-GATES",
+        "label": "Audio browser gates",
+        "command": "npm run audio:gates",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 13720,
+        "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-AUDIO-GATES.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-adsr-envelope/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260322-adsr-envelope/raw/off_transparent.json",
+        "raw_sha256": "2d5715a0fc34456e7a3d480105af4159b52dcf98de5d6494678ba97d9ed50e46"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-adsr-envelope/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260322-adsr-envelope/raw/on_audible.json",
+        "raw_sha256": "511214ae8b8d708aeeb132a6a66934cd9e6dc9cb6d671a528bc12dbbb234b6f9"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-adsr-envelope/oracles/low_end_continuity.json",
+        "raw_artifact": "docs/qc/proofs/20260322-adsr-envelope/raw/low_end_continuity.json",
+        "raw_sha256": "bbd3e9da3ad3c09c085e2c4ad9c6c78cb552b3196fd03fde8c3765e7342b69a8"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-adsr-envelope/oracles/clip_guard.json",
+        "raw_artifact": "docs/qc/proofs/20260322-adsr-envelope/raw/clip_guard.json",
+        "raw_sha256": "37d9356d9f1f47d778970d9450aafa63bb36339b936f2ab955694f4d3c22c805"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-adsr-envelope/oracles/default_safety.json",
+        "raw_artifact": "docs/qc/proofs/20260322-adsr-envelope/raw/default_safety.json",
+        "raw_sha256": "470430b88730f243ad915d6e9a14af0c64f6d28215a6989b12163005e84f81b7"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-adsr-envelope/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260322-adsr-envelope/raw/control_binding.json",
+        "raw_sha256": "55d006124fa8d2c61d0910d7d5a1eb23a723fb9b2933a1bf4b25e0ca523bf66d"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

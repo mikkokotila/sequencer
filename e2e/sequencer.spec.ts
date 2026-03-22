@@ -638,3 +638,55 @@ test.describe('MIDI Controls', () => {
     await expect(page.locator('#midi-status')).toBeVisible();
   });
 });
+
+// ═══════════════════════════════════════════
+//  ADSR Controls
+// ═══════════════════════════════════════════
+
+test.describe('ADSR Controls', () => {
+  test('ADSR button visible on all 9 tracks', async ({ page }) => {
+    await waitForApp(page);
+    const adsrBtns = page.locator('.adsr-btn');
+    await expect(adsrBtns).toHaveCount(9);
+  });
+
+  test('clicking ADSR button opens popup', async ({ page }) => {
+    await waitForApp(page);
+    const adsrBtn = page.locator('.adsr-btn').first();
+    await adsrBtn.click();
+    await expect(page.locator('#adsr-popup')).toHaveClass(/open/);
+  });
+
+  test('ADSR popup has canvas visualization', async ({ page }) => {
+    await waitForApp(page);
+    const adsrBtn = page.locator('.adsr-btn').first();
+    await adsrBtn.click();
+    await expect(page.locator('#adsr-canvas')).toBeVisible();
+  });
+
+  test('ADSR popup has 4 sliders', async ({ page }) => {
+    await waitForApp(page);
+    const adsrBtn = page.locator('.adsr-btn').first();
+    await adsrBtn.click();
+    const sliders = page.locator('.adsr-slider-vertical');
+    await expect(sliders).toHaveCount(4);
+  });
+
+  test('Escape closes ADSR popup', async ({ page }) => {
+    await waitForApp(page);
+    const adsrBtn = page.locator('.adsr-btn').first();
+    await adsrBtn.click();
+    await expect(page.locator('#adsr-popup')).toHaveClass(/open/);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#adsr-popup')).not.toHaveClass(/open/);
+  });
+
+  test('close button closes ADSR popup', async ({ page }) => {
+    await waitForApp(page);
+    const adsrBtn = page.locator('.adsr-btn').first();
+    await adsrBtn.click();
+    await expect(page.locator('#adsr-popup')).toHaveClass(/open/);
+    await page.locator('#adsr-close').click();
+    await expect(page.locator('#adsr-popup')).not.toHaveClass(/open/);
+  });
+});

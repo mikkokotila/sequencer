@@ -39,9 +39,9 @@ jobs:
           BASE_SHA="${{ github.event.pull_request.base.sha || github.event.before || github.sha }}"
           HEAD_SHA="${{ github.sha }}"
           if [[ "$BASE_SHA" == "$HEAD_SHA" ]]; then
-            FILES="$(git diff --name-only --diff-filter=ACMR HEAD~1...HEAD | paste -sd, -)"
+            FILES="$(git diff --name-only --diff-filter=ACMRD HEAD~1...HEAD | paste -sd, -)"
           else
-            FILES="$(git diff --name-only --diff-filter=ACMR "$BASE_SHA...$HEAD_SHA" | paste -sd, -)"
+            FILES="$(git diff --name-only --diff-filter=ACMRD "$BASE_SHA...$HEAD_SHA" | paste -sd, -)"
           fi
           echo "changed_files=$FILES" >> "$GITHUB_OUTPUT"
           echo "Changed files: ${FILES:-<none>}"

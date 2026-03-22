@@ -8,11 +8,17 @@ const passes = [];
 const failures = [];
 
 function assertFullOnlyMode() {
-  const modeIndex = process.argv.indexOf('--mode');
-  if (modeIndex !== -1) {
+  const modeArg = process.argv.find((arg) => arg === '--mode' || arg.startsWith('--mode='));
+  if (!modeArg) return;
+
+  if (modeArg === '--mode') {
+    const modeIndex = process.argv.indexOf('--mode');
     const value = process.argv[modeIndex + 1] || '';
-    throw new Error(`architecture-gates is full-only; remove --mode ${value}`.trim());
+    const suffix = value ? ` ${value}` : '';
+    throw new Error(`architecture-gates is full-only; remove --mode${suffix}`.trim());
   }
+
+  throw new Error(`architecture-gates is full-only; remove ${modeArg}`);
 }
 
 function record(ok, name, detail) {

@@ -265,7 +265,8 @@ async function run() {
   } finally {
     if (browser) {
       try {
-        await browser.close();
+        // Keep shutdown bounded so CI cannot hang on browser teardown.
+        await Promise.race([browser.close(), delay(1000)]);
       } catch {
         // ignore browser shutdown issues; gate outcome already captured
       }

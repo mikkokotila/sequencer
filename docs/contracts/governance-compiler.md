@@ -218,3 +218,20 @@ Compiler runs oracle harness from a git-index snapshot for the staged tree when 
 `gov:check` is required before completion.
 `gov:commit` is the standard commit path because it attaches attestation trailers.
 `npm run gate:commit-range` enforces that product commits contain valid governance trailers and a PASS attestation.
+
+## Remote Completion Enforcement
+
+Local pass is necessary but not sufficient for task completion.
+
+After `gov:commit`:
+
+1. Push the commit immediately: `git push origin HEAD`.
+2. Ensure the current branch has an open PR to `main`.
+3. If no PR exists, create one immediately:
+   - `gh pr create --base main --head <current-branch> --fill`
+4. Keep all subsequent task commits on the same branch/PR until merge.
+
+Branch-splitting policy:
+
+1. One task lifecycle = one active branch.
+2. Switching to a second branch to continue the same task is non-compliant.

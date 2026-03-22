@@ -18,6 +18,13 @@ CA must never perform governance development:
 
 If a request requires governance changes, CA must stand down and wait for observer reactivation.
 
+## Remote Branch Discipline
+
+1. Use one work branch per task lifecycle from first edit until merge.
+2. Do not split the same task across multiple branches.
+3. Do not switch to a second branch mid-task to continue work.
+4. If branch state is blocked, pause and ask operator; do not fork the task into another branch.
+
 ## Always
 
 **Read:** `docs/contracts/commit.md`
@@ -61,6 +68,12 @@ Before commit, ensure proof artifacts exist:
    - if repeated remediation exposes a real contract/runtime conflict that cannot be resolved in-task, stop and ask operator for guidance before any further edits or commit attempts
 4. If and only if compiler verdict is `PASS`, commit with:
    - `npm run gov:commit -- --spec docs/qc/specs/<task-id>.task.spec.json -m "type(scope): description"`
+5. Immediately push the completion commit:
+   - `git push origin HEAD`
+6. Ensure there is an open PR for the current branch:
+   - if PR exists: continue on the same PR
+   - if PR does not exist: create one immediately targeting `main`
+   - example: `gh pr create --base main --head <current-branch> --fill`
 
 Direct `git commit` for product changes is non-compliant when compiler verdict is not `PASS`.
 

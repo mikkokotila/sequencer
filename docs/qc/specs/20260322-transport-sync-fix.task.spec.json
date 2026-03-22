@@ -1,0 +1,46 @@
+{
+  "task_id": "20260322-transport-sync-fix",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Fix transport schedule re-entrancy/desync under repeated edit + stop/start cycles and add deterministic sync stress coverage.",
+    "in_scope": [
+      "src/engine/audio.ts",
+      "src/engine/scheduler.ts",
+      "src/events.ts",
+      "e2e/sequencer.spec.ts"
+    ],
+    "out_of_scope": [
+      "docs/qc/scripts/**",
+      "docs/contracts/**",
+      ".github/workflows/**"
+    ],
+    "controls": [
+      {
+        "id": "transport_schedule_single_owner",
+        "description": "Transport stop/start cannot leave queued voice overlap, and aligned tracks remain synchronized under stress.",
+        "test": "e2e Transport Sync validates baseline+stressed inter-track trigger alignment; engine stop flushes pending sequencer voices"
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "none"
+    ],
+    "seed": "transport-sync-seed-v1",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

@@ -8,6 +8,13 @@
 export interface EventMap {
   // Engine → UI: playback position
   'engine:step': { step: number; phrase: number };
+  'engine:trigger': {
+    track: number;
+    step: number;
+    phrase: number;
+    time: number;
+    source: 'drum' | 'melody' | 'vocal';
+  };
   'engine:stop': Record<string, never>;
 
   // Transport → UI: state changed, re-render
@@ -59,4 +66,13 @@ export function emit<K extends keyof EventMap>(event: K, data: EventMap[K]): voi
   if (set) {
     for (const fn of set) fn(data);
   }
+}
+
+// Test hook: expose the same live bus instance to browser E2E code.
+if (typeof window !== 'undefined') {
+  (
+    window as typeof window & {
+      __SEQ_EVENT_BUS__?: { on: typeof on; off: typeof off };
+    }
+  ).__SEQ_EVENT_BUS__ = { on, off };
 }

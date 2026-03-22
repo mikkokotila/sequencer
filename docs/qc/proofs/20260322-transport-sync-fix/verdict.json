@@ -1,0 +1,175 @@
+{
+  "task_id": "20260322-transport-sync-fix",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260322-transport-sync-fix.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-22T13:08:44.293Z",
+  "finished_at_utc": "2026-03-22T13:09:38.455Z",
+  "head_sha": "e451ef6",
+  "tree_sha": "c885b4ebd012561b2f1ebb33920bf91bd52dc245",
+  "subject_sha": "c955b276dbae661383ab9e9722736c7f3a012fa8398977072a81c882993bd8ed",
+  "subject_files": [
+    "e2e/sequencer.spec.ts",
+    "src/engine/audio.ts",
+    "src/engine/scheduler.ts",
+    "src/events.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/specs/20260322-transport-sync-fix.task.spec.json",
+    "e2e/sequencer.spec.ts",
+    "src/engine/audio.ts",
+    "src/engine/scheduler.ts",
+    "src/events.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=6, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=6, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4741,
+        "log_file": "docs/qc/proofs/20260322-transport-sync-fix/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 31692,
+        "log_file": "docs/qc/proofs/20260322-transport-sync-fix/logs/O-E2E.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 427,
+        "log_file": "docs/qc/proofs/20260322-transport-sync-fix/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 354,
+        "log_file": "docs/qc/proofs/20260322-transport-sync-fix/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 332,
+        "log_file": "docs/qc/proofs/20260322-transport-sync-fix/logs/O-COMMIT-RANGE.log"
+      },
+      {
+        "id": "O-AUDIO-GATES",
+        "label": "Audio browser gates",
+        "command": "npm run audio:gates",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 14582,
+        "log_file": "docs/qc/proofs/20260322-transport-sync-fix/logs/O-AUDIO-GATES.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-transport-sync-fix/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260322-transport-sync-fix/raw/off_transparent.json",
+        "raw_sha256": "51d2a9b94ece28fe15dcf05b5375589c9b045b54bb764d2102be17976bd2f0e5"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-transport-sync-fix/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260322-transport-sync-fix/raw/on_audible.json",
+        "raw_sha256": "ddbc8753a443fd107ffda88a011509256d3575469dfc772d8778c9dee220ee26"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-transport-sync-fix/oracles/low_end_continuity.json",
+        "raw_artifact": "docs/qc/proofs/20260322-transport-sync-fix/raw/low_end_continuity.json",
+        "raw_sha256": "75af11dba1ace3dcfbd5cc1d82e0e7212aae6e93082d9fb84d5415b52a3733b1"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-transport-sync-fix/oracles/clip_guard.json",
+        "raw_artifact": "docs/qc/proofs/20260322-transport-sync-fix/raw/clip_guard.json",
+        "raw_sha256": "b5f1ff80f99917cbde8d0f2dbefe4fe05fe59577d98eb3bd3ddf226a15bddced"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-transport-sync-fix/oracles/default_safety.json",
+        "raw_artifact": "docs/qc/proofs/20260322-transport-sync-fix/raw/default_safety.json",
+        "raw_sha256": "55e84776c9a5b11903378b50599f23265d0c846c230a85173a37867050b52eff"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-transport-sync-fix/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260322-transport-sync-fix/raw/control_binding.json",
+        "raw_sha256": "d24e3c6739d33c95aec62f5c28e063a62b1befc5f87f2947b30640e764300808"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

@@ -9,7 +9,7 @@
 
 import * as Tone from 'tone';
 import { STEPS, DRUMS_CFG, MEL_CFG, HARMONY_SEMITONES } from '../config';
-import { getAudioContext, getTrackGains, playSample } from './audio';
+import { getAudioContext, getTrackGains, playSample, stopSequencerVoicesNow } from './audio';
 import type { Phrase } from '../types';
 import { emit } from '../events';
 
@@ -46,6 +46,8 @@ let playing = false;
 let curStep = 0;
 let playingPhrase = 0;
 let scheduledEventId: number | null = null;
+let startPending = false;
+let startNonce = 0;
 
 // ── Callbacks ──
 let onPhraseChange: (() => void) | null = null;
@@ -109,8 +111,17 @@ function scheduleStep(time: number): void {
     const row = pd[t];
     const buf = transport.drumBuf[t];
     const gain = gains[t];
-    if (row?.[s] && buf && !transport.mutedArr[t] && gain) {
-      playSample(buf, time, undefined, gain, t, stepDur);
+    if (row?.[s] && !transport.mutedArr[t]) {
+      emit('engine:trigger', {
+        track: t,
+        step: s,
+        phrase: playingPhrase,
+        time,
+        source: 'drum',
+      });
+      if (buf && gain) {
+        playSample(buf, time, undefined, gain, t, stepDur);
+      }
     }
   }
 
@@ -136,6 +147,13 @@ function scheduleStep(time: number): void {
       const oct = transport.octaves[t];
       if (oct === undefined) continue;
       const rate = Math.pow(2, ((oct - 1) * 12 + n) / 12);
+      emit('engine:trigger', {
+        track: trackIdx,
+        step: s,
+        phrase: playingPhrase,
+        time,
+        source: 'melody',
+      });
       playSample(buf, time, rate, dest, trackIdx, stepDur);
 
       // Harmony interval for poly tracks with exactly 1 note
@@ -155,9 +173,16 @@ function scheduleStep(time: number): void {
   // Vocal
   const vocalIdx = DRUMS_CFG.length + MEL_CFG.length;
   const vb = transport.getVocalBuf();
-  if (pv[s] && vb && !transport.mutedArr[vocalIdx]) {
+  if (pv[s] && !transport.mutedArr[vocalIdx]) {
+    emit('engine:trigger', {
+      track: vocalIdx,
+      step: s,
+      phrase: playingPhrase,
+      time,
+      source: 'vocal',
+    });
     const dest = gains[vocalIdx];
-    if (dest) {
+    if (dest && vb) {
       playSample(vb, time, undefined, dest, vocalIdx, stepDur);
     }
   }
@@ -179,33 +204,49 @@ function scheduleStep(time: number): void {
 
 /** Start playback using Tone.Transport. */
 export function startPlayback(): void {
+  if (playing || startPending) return;
   if (!transport) return;
   playing = true;
   curStep = 0;
   playingPhrase = transport.findFirstNonEmpty();
 
+  const tr = Tone.getTransport();
+
+  // Defensive cleanup: prevent duplicate repeat callbacks from prior races.
+  if (scheduledEventId !== null) {
+    tr.clear(scheduledEventId);
+    scheduledEventId = null;
+  }
+  tr.cancel(0);
+
   // Sync Tone.js BPM
-  Tone.getTransport().bpm.value = transport.getBpm();
+  tr.bpm.value = transport.getBpm();
+  tr.position = 0;
 
   // Schedule repeating callback: 16th notes (4 per beat)
-  scheduledEventId = Tone.getTransport().scheduleRepeat((time) => {
+  scheduledEventId = tr.scheduleRepeat((time) => {
     scheduleStep(time);
   }, '16n');
 
-  Tone.getTransport().start();
+  tr.start();
   onPhraseChange?.();
 }
 
 /** Stop playback. */
 export function stopPlayback(): void {
+  startNonce++;
+  startPending = false;
   playing = false;
+  const tr = Tone.getTransport();
 
   if (scheduledEventId !== null) {
-    Tone.getTransport().clear(scheduledEventId);
+    tr.clear(scheduledEventId);
     scheduledEventId = null;
   }
-  Tone.getTransport().stop();
-  Tone.getTransport().position = 0;
+  tr.cancel(0);
+  tr.stop();
+  tr.position = 0;
+  stopSequencerVoicesNow();
 
   curStep = 0;
 
@@ -225,12 +266,20 @@ export function stopPlayback(): void {
 
 /** Toggle play/stop. */
 export function togglePlay(): void {
-  if (playing) {
+  if (playing || startPending) {
     stopPlayback();
   } else {
-    void Tone.start().then(() => {
-      startPlayback();
-    });
+    const req = ++startNonce;
+    startPending = true;
+    void Tone.start()
+      .then(() => {
+        if (req !== startNonce) return;
+        startPending = false;
+        startPlayback();
+      })
+      .catch(() => {
+        if (req === startNonce) startPending = false;
+      });
   }
 }
 

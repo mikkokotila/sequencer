@@ -37,6 +37,14 @@ let finalOutput: AudioNode | null = null;
 
 // Persistent preview gain — reused for all sample previews (avoids node accumulation)
 let previewGain: GainNode | null = null;
+const sequencerVoices = new Set<AudioBufferSourceNode>();
+
+function trackSequencerVoice(src: AudioBufferSourceNode): void {
+  sequencerVoices.add(src);
+  src.onended = () => {
+    sequencerVoices.delete(src);
+  };
+}
 
 // ── Accessors ──
 export function getAudioContext(): AudioContext | null {
@@ -174,7 +182,25 @@ export function playSample(
   }
 
   src.start(time);
+  trackSequencerVoice(src);
   return src;
+}
+
+/**
+ * Stop any queued or currently playing sequencer voices immediately.
+ * This is used by transport stop to prevent overlap from lookahead-scheduled notes.
+ */
+export function stopSequencerVoicesNow(): void {
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  for (const src of sequencerVoices) {
+    try {
+      src.stop(now);
+    } catch {
+      // already ended/stopped
+    }
+  }
+  sequencerVoices.clear();
 }
 
 /**

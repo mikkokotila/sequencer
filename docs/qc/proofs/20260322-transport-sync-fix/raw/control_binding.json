@@ -1,0 +1,7 @@
+{
+  "spec_path": "docs/qc/specs/20260322-transport-sync-fix.task.spec.json",
+  "controls_declared": 1,
+  "control_ids": [
+    "transport_schedule_single_owner"
+  ]
+}

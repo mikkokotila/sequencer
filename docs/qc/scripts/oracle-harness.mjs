@@ -12,7 +12,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { setTimeout as delay } from 'node:timers/promises';
-import { createServer } from 'vite';
+import { pathToFileURL } from 'node:url';
 
 const toolRoot = process.cwd();
 const HARNESS_VERSION = 'oracle-harness-v2';
@@ -161,6 +161,31 @@ async function launchBrowser() {
     throw new Error(`Real oracle harness requires a display server.${linuxHint}`);
   }
   return chromium.launch({ headless: false });
+}
+
+async function loadViteCreateServer() {
+  try {
+    const vite = await import('vite');
+    const createServer = vite?.createServer ?? vite?.default?.createServer;
+    if (typeof createServer === 'function') return createServer;
+  } catch {
+    // Fall back to root-resolved vite when running from git-index snapshots.
+  }
+
+  const requireFromRoot = createRequire(path.join(toolRoot, 'package.json'));
+  let viteEntry = '';
+  try {
+    viteEntry = requireFromRoot.resolve('vite');
+  } catch {
+    throw new Error('Unable to resolve "vite" from project root. Install dependencies before running oracle harness.');
+  }
+
+  const vite = await import(pathToFileURL(viteEntry).href);
+  const createServer = vite?.createServer ?? vite?.default?.createServer;
+  if (typeof createServer !== 'function') {
+    throw new Error(`Resolved vite module has no createServer export (${viteEntry}).`);
+  }
+  return createServer;
 }
 
 function toRounded(value, decimals = 6) {
@@ -317,6 +342,7 @@ async function collectOfflineAudioMetrics(page) {
 }
 
 async function runBenchmarkProbe(page, repoRoot) {
+  const createServer = await loadViteCreateServer();
   const port = Number(process.env.ORACLE_BENCH_PORT || '5197');
   const base = `http://127.0.0.1:${port}`;
 

@@ -32,6 +32,12 @@
       "result": "PASS",
       "blocking": true,
       "evidence": "docs/qc/proofs/20260322-transport-sync-fix/logs/O-COMMIT-RANGE.log"
+    },
+    {
+      "id": "O-AUDIO-GATES",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-transport-sync-fix/logs/O-AUDIO-GATES.log"
     }
   ],
   "contracts": [

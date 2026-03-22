@@ -9,37 +9,78 @@ async function waitForApp(page: Page) {
   await page.waitForSelector('#song-pane', { state: 'visible' });
 }
 
-async function measureStepCadence(page: Page, ms = 1800) {
-  return page.evaluate(async (durationMs) => {
-    const row = document.querySelector('.melody-track[data-type="drum"][data-track="0"]');
-    if (!row) return null;
-    const cells = Array.from(row.querySelectorAll<HTMLElement>('.step-cell'));
-    const times: number[] = [];
-    let lastStep = -1;
+type TriggerEvent = {
+  track: number;
+  step: number;
+  phrase: number;
+  time: number;
+  source: 'drum' | 'melody' | 'vocal';
+};
 
-    const sample = () => {
-      const idx = cells.findIndex((c) => c.classList.contains('playing'));
-      if (idx >= 0 && idx !== lastStep) {
-        lastStep = idx;
-        times.push(performance.now());
-      }
+async function startTriggerCapture(page: Page, tracks: number[]) {
+  await page.evaluate((tracked) => {
+    type TriggerCaptureState = {
+      off: () => void;
+      log: TriggerEvent[];
     };
+    const win = window as typeof window & {
+      __syncCapture?: TriggerCaptureState;
+      __SEQ_EVENT_BUS__?: {
+        on: (event: 'engine:trigger', fn: (e: TriggerEvent) => void) => void;
+        off: (event: 'engine:trigger', fn: (e: TriggerEvent) => void) => void;
+      };
+    };
+    if (win.__syncCapture) {
+      win.__syncCapture.off();
+      delete win.__syncCapture;
+    }
+    const bus = win.__SEQ_EVENT_BUS__;
+    if (!bus) throw new Error('E2E sync capture missing live event bus');
+    const set = new Set<number>(tracked);
+    const log: TriggerEvent[] = [];
+    const handler = (e: TriggerEvent) => {
+      if (set.has(e.track)) log.push(e);
+    };
+    bus.on('engine:trigger', handler);
+    win.__syncCapture = {
+      off: () => bus.off('engine:trigger', handler),
+      log,
+    };
+  }, tracks);
+}
 
-    const obs = new MutationObserver(() => sample());
-    obs.observe(row, { subtree: true, attributes: true, attributeFilter: ['class'] });
-    sample();
-    await new Promise((resolve) => setTimeout(resolve, durationMs));
-    obs.disconnect();
+async function stopTriggerCapture(page: Page): Promise<TriggerEvent[]> {
+  return page.evaluate(() => {
+    type TriggerCaptureState = {
+      off: () => void;
+      log: TriggerEvent[];
+    };
+    const win = window as typeof window & {
+      __syncCapture?: TriggerCaptureState;
+    };
+    const capture = win.__syncCapture;
+    if (!capture) return [];
+    capture.off();
+    const out = [...capture.log];
+    delete win.__syncCapture;
+    return out;
+  });
+}
 
-    const intervals: number[] = [];
-    for (let i = 1; i < times.length; i++) intervals.push(times[i]! - times[i - 1]!);
-
-    const avg =
-      intervals.length > 0
-        ? intervals.reduce((sum, v) => sum + v, 0) / intervals.length
-        : Number.POSITIVE_INFINITY;
-    return { count: times.length, avgMs: avg };
-  }, ms);
+function assertInterTrackSync(log: TriggerEvent[], trackA: number, trackB: number) {
+  const a = log.filter((e) => e.track === trackA);
+  const b = log.filter((e) => e.track === trackB);
+  expect(a.length).toBeGreaterThanOrEqual(4);
+  expect(a.length).toBe(b.length);
+  for (let i = 0; i < a.length; i++) {
+    const ea = a[i];
+    const eb = b[i];
+    expect(ea).toBeTruthy();
+    expect(eb).toBeTruthy();
+    expect(ea?.phrase).toBe(eb?.phrase);
+    expect(ea?.step).toBe(eb?.step);
+    expect(Math.abs((ea?.time ?? 0) - (eb?.time ?? 0))).toBeLessThan(1e-9);
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -584,33 +625,46 @@ test.describe('Transport Sync', () => {
 
     const playBtn = page.locator('#play-btn');
     const stopBtn = page.locator('#stop-btn');
-    const snareCells = page.locator('.melody-track[data-type="drum"][data-track="1"] .step-cell');
-    const melodyCells = page.locator(
-      '.melody-track[data-type="melody"][data-track="1"] .melody-cell',
-    );
+    const kickTrack = page.locator('.melody-track[data-type="drum"][data-track="0"]');
+    const snareTrack = page.locator('.melody-track[data-type="drum"][data-track="1"]');
+    const hatTrack = page.locator('.melody-track[data-type="drum"][data-track="2"]');
+    const melodyTrack = page.locator('.melody-track[data-type="melody"][data-track="1"]');
 
-    // Chaotic editing while repeatedly stopping/starting transport.
-    for (let i = 0; i < 6; i++) {
-      await playBtn.click();
-      await page.waitForTimeout(120);
-      await snareCells.nth((i * 5) % 64).click();
-      await melodyCells.nth((i * 73) % (64 * 12)).click();
-      await stopBtn.click();
-      await page.waitForTimeout(40);
+    // Baseline: two tracks with identical pattern must be synchronized.
+    await kickTrack.locator('.clear-btn').click();
+    await snareTrack.locator('.clear-btn').click();
+    for (const step of [0, 4, 8, 12]) {
+      await kickTrack.locator('.step-cell').nth(step).click();
+      await snareTrack.locator('.step-cell').nth(step).click();
     }
 
+    await startTriggerCapture(page, [0, 1]);
     await playBtn.click();
-    await page.waitForTimeout(150);
-    const cadence = await measureStepCadence(page, 1800);
+    await page.waitForTimeout(1600);
+    await stopBtn.click();
+    const baseline = await stopTriggerCapture(page);
+    assertInterTrackSync(baseline, 0, 1);
 
-    expect(cadence).not.toBeNull();
-    const c = cadence!;
-    // At 120 BPM with 16th-note scheduling, expected step interval ≈ 125ms.
-    // Broad bounds detect duplicate scheduler loops (too fast) and stalls (too slow).
-    expect(c.count).toBeGreaterThanOrEqual(8);
-    expect(c.count).toBeLessThanOrEqual(20);
-    expect(c.avgMs).toBeGreaterThan(70);
-    expect(c.avgMs).toBeLessThan(180);
+    // Stress: chaotic edits and controls while cycling stop/start.
+    await startTriggerCapture(page, [0, 1]);
+    for (let i = 0; i < 6; i++) {
+      await playBtn.click();
+      await page.waitForTimeout(140);
+      await hatTrack.locator('.step-cell').nth((i * 5) % 64).click();
+      await melodyTrack.locator('.melody-cell').nth((i * 71) % (64 * 12)).click();
+      await page.locator('#bpm-range').evaluate((el, bpm) => {
+        const input = el as HTMLInputElement;
+        input.value = String(bpm);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }, 108 + (i % 4) * 6);
+      await stopBtn.click();
+      await page.waitForTimeout(50);
+    }
+    await playBtn.click();
+    await page.waitForTimeout(1600);
+    await stopBtn.click();
+    const stressed = await stopTriggerCapture(page);
+    assertInterTrackSync(stressed, 0, 1);
   });
 });
 

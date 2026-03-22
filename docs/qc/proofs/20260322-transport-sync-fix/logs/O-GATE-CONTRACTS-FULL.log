@@ -1,6 +1,6 @@
 command: node docs/qc/scripts/contract-gates.mjs
 status: 0
-elapsed_ms: 382
+elapsed_ms: 427
 
 --- stdout ---
 PASS | No fixme debt | No test.fixme() found.

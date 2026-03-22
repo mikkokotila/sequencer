@@ -1,7 +1,7 @@
 {
   "oracle_id": "off_transparent",
   "task_id": "20260322-transport-sync-fix",
-  "subject_sha": "0000000000000000000000000000000000000000000000000000000000000000",
+  "subject_sha": "c955b276dbae661383ab9e9722736c7f3a012fa8398977072a81c882993bd8ed",
   "harness_version": "oracle-harness-v2",
   "status": "PASS",
   "metrics": {
@@ -9,8 +9,8 @@
     "delta_lufs": 0
   },
   "raw_artifact": "raw/off_transparent.json",
-  "raw_sha256": "50cd3d9c368f4af985a85f2d5e3234ac1fe64e99805efa6b2336ba0fb4e0aafa",
+  "raw_sha256": "51d2a9b94ece28fe15dcf05b5375589c9b045b54bb764d2102be17976bd2f0e5",
   "evidence": "max_abs_error=0",
-  "challenge_id": "917f2dd5a0e7eaf3cdd3829073ccd43228f700f78ccfad18d19ef5534ebb6864",
-  "payload_digest": "784a986eadd6e42697553ffc415348842779217ed0086aa3a6c2bf65d4cd3d90"
+  "challenge_id": "179cac6f6d09feb5920bb38c86fa83877638bebf241508221ddcfaa1e1a31211",
+  "payload_digest": "a605fcd740b47de0c3c32942f1924bdc28161486972164100cc66a214e366004"
 }

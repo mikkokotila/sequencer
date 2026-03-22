@@ -5,6 +5,7 @@
   "capability": {
     "summary": "Fix transport schedule re-entrancy/desync under repeated edit + stop/start cycles and add deterministic sync stress coverage.",
     "in_scope": [
+      "src/engine/audio.ts",
       "src/engine/scheduler.ts",
       "src/events.ts",
       "e2e/sequencer.spec.ts"
@@ -17,8 +18,8 @@
     "controls": [
       {
         "id": "transport_schedule_single_owner",
-        "description": "Aligned tracks remain inter-synced after stop/start races and chaotic edits.",
-        "test": "e2e Transport Sync asserts identical step/phrase/scheduled-time trigger streams across baseline and stressed runs"
+        "description": "Transport stop/start cannot leave queued voice overlap, and aligned tracks remain synchronized under stress.",
+        "test": "e2e Transport Sync validates baseline+stressed inter-track trigger alignment; engine stop flushes pending sequencer voices"
       }
     ]
   },
@@ -29,7 +30,11 @@
     "seed": "transport-sync-seed-v1",
     "oracles": [
       "off_transparent",
-      "on_audible"
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding"
     ]
   },
   "guardrails": {

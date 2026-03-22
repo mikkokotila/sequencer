@@ -9,7 +9,7 @@
 
 import * as Tone from 'tone';
 import { STEPS, DRUMS_CFG, MEL_CFG, HARMONY_SEMITONES } from '../config';
-import { getAudioContext, getTrackGains, playSample } from './audio';
+import { getAudioContext, getTrackGains, playSample, stopSequencerVoicesNow } from './audio';
 import type { Phrase } from '../types';
 import { emit } from '../events';
 
@@ -111,8 +111,17 @@ function scheduleStep(time: number): void {
     const row = pd[t];
     const buf = transport.drumBuf[t];
     const gain = gains[t];
-    if (row?.[s] && buf && !transport.mutedArr[t] && gain) {
-      playSample(buf, time, undefined, gain, t, stepDur);
+    if (row?.[s] && !transport.mutedArr[t]) {
+      emit('engine:trigger', {
+        track: t,
+        step: s,
+        phrase: playingPhrase,
+        time,
+        source: 'drum',
+      });
+      if (buf && gain) {
+        playSample(buf, time, undefined, gain, t, stepDur);
+      }
     }
   }
 
@@ -138,6 +147,13 @@ function scheduleStep(time: number): void {
       const oct = transport.octaves[t];
       if (oct === undefined) continue;
       const rate = Math.pow(2, ((oct - 1) * 12 + n) / 12);
+      emit('engine:trigger', {
+        track: trackIdx,
+        step: s,
+        phrase: playingPhrase,
+        time,
+        source: 'melody',
+      });
       playSample(buf, time, rate, dest, trackIdx, stepDur);
 
       // Harmony interval for poly tracks with exactly 1 note
@@ -157,9 +173,16 @@ function scheduleStep(time: number): void {
   // Vocal
   const vocalIdx = DRUMS_CFG.length + MEL_CFG.length;
   const vb = transport.getVocalBuf();
-  if (pv[s] && vb && !transport.mutedArr[vocalIdx]) {
+  if (pv[s] && !transport.mutedArr[vocalIdx]) {
+    emit('engine:trigger', {
+      track: vocalIdx,
+      step: s,
+      phrase: playingPhrase,
+      time,
+      source: 'vocal',
+    });
     const dest = gains[vocalIdx];
-    if (dest) {
+    if (dest && vb) {
       playSample(vb, time, undefined, dest, vocalIdx, stepDur);
     }
   }
@@ -223,6 +246,7 @@ export function stopPlayback(): void {
   tr.cancel(0);
   tr.stop();
   tr.position = 0;
+  stopSequencerVoicesNow();
 
   curStep = 0;
 

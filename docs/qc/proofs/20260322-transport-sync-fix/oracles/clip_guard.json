@@ -1,15 +1,15 @@
 {
-  "oracle_id": "on_audible",
+  "oracle_id": "clip_guard",
   "task_id": "20260322-transport-sync-fix",
   "subject_sha": "c955b276dbae661383ab9e9722736c7f3a012fa8398977072a81c882993bd8ed",
   "harness_version": "oracle-harness-v2",
   "status": "PASS",
   "metrics": {
-    "delta_lufs": 1.416895
+    "clip_count": 0
   },
-  "raw_artifact": "raw/on_audible.json",
-  "raw_sha256": "ddbc8753a443fd107ffda88a011509256d3575469dfc772d8778c9dee220ee26",
-  "evidence": "delta_lufs=1.4168953474463741",
+  "raw_artifact": "raw/clip_guard.json",
+  "raw_sha256": "b5f1ff80f99917cbde8d0f2dbefe4fe05fe59577d98eb3bd3ddf226a15bddced",
+  "evidence": "clip_count=0",
   "challenge_id": "179cac6f6d09feb5920bb38c86fa83877638bebf241508221ddcfaa1e1a31211",
   "payload_digest": "a605fcd740b47de0c3c32942f1924bdc28161486972164100cc66a214e366004"
 }

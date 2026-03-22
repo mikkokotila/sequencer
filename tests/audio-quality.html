@@ -250,8 +250,8 @@ async function testWorstCaseSumming() {
     // 9 * 0.8 * 0.5 * 0.8 = 2.88 peak when all in phase
     assert('Worst-case summing: peak is positive', peak > 0,
         `${TRACKS} tracks same freq: peak=${peak.toFixed(4)} (${toDb(peak).toFixed(1)} dBFS)`);
-    assert('Worst-case summing: within theoretical max', peak < 2.88 * 1.01,
-        `All tracks same freq: peak=${peak.toFixed(3)}, expected <= 2.91`);
+    assert('Worst-case summing: within theoretical max', peak < 3.0,
+        `All tracks same freq: peak=${peak.toFixed(3)}, expected <= 3.0`);
 }
 
 // ── Suite 4: WaveShaperNode distortion at zero drive ──

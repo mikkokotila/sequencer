@@ -5,24 +5,17 @@
   "spec_path": "docs/qc/specs/20260322-debt-informational-assertions.task.spec.json",
   "policy_version": "1.4.0",
   "diagnostics_version": "1.0.0",
-  "started_at_utc": "2026-03-22T08:43:56.450Z",
-  "finished_at_utc": "2026-03-22T08:44:28.636Z",
-  "head_sha": "8315318",
-  "tree_sha": "9cf6c56e7ced84d40a3a8396ec72d9b4ea5203d3",
-  "subject_sha": "bc3c285a2e951f549eabd5400866657839f46a5152a1df396f4d56b789c42480",
+  "started_at_utc": "2026-03-22T08:48:57.623Z",
+  "finished_at_utc": "2026-03-22T08:49:30.419Z",
+  "head_sha": "e05ce69",
+  "tree_sha": "13b198e6043b390a9792d0c57bd5c18f94abf0b1",
+  "subject_sha": "3cc4b109435aefef3fb5a1dd5d46dfc2da4ee37a3eb235192fe94ce4fc96988b",
   "subject_files": [
-    "tests/audio-quality.html",
-    "tests/e2e-signal.html",
-    "tests/signal-purity.html"
+    "tests/audio-quality.html"
   ],
   "simulated_files": [],
   "changed_files": [
-    "docs/qc/proofs/20260322-debt-informational-assertions.md",
-    "docs/qc/proofs/20260322-debt-informational-assertions/proof.manifest.json",
-    "docs/qc/specs/20260322-debt-informational-assertions.task.spec.json",
-    "tests/audio-quality.html",
-    "tests/e2e-signal.html",
-    "tests/signal-purity.html"
+    "tests/audio-quality.html"
   ],
   "phases": [
     {
@@ -60,7 +53,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 4460,
+        "elapsed_ms": 4635,
         "log_file": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-CI.log"
       },
       {
@@ -70,7 +63,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 24374,
+        "elapsed_ms": 24351,
         "log_file": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-E2E.log"
       },
       {
@@ -80,7 +73,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 340,
+        "elapsed_ms": 326,
         "log_file": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-GATE-CONTRACTS-DELTA.log"
       },
       {
@@ -90,7 +83,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 248,
+        "elapsed_ms": 251,
         "log_file": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-GATE-ARCH-DELTA.log"
       },
       {
@@ -100,7 +93,7 @@
         "blocking": false,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 330,
+        "elapsed_ms": 349,
         "log_file": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-GATE-CONTRACTS-FULL.log"
       },
       {
@@ -110,7 +103,7 @@
         "blocking": false,
         "status": "FAIL",
         "exit_code": 1,
-        "elapsed_ms": 341,
+        "elapsed_ms": 396,
         "log_file": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-GATE-ARCH-FULL.log"
       },
       {
@@ -120,7 +113,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 294,
+        "elapsed_ms": 293,
         "log_file": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-COMMIT-RANGE.log"
       }
     ],
@@ -151,14 +144,14 @@
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260322-debt-informational-assertions/oracles/off_transparent.json",
         "raw_artifact": "docs/qc/proofs/20260322-debt-informational-assertions/raw/off_transparent.json",
-        "raw_sha256": "a30d741f7bf98b52686b6f67b2601a7baf65de1dd5dc851d9bc8ae0c2a49fc9d"
+        "raw_sha256": "4f526aad14df6579df6a7efb73b8b25c7e87974f7a703c783a0b617b536f58e9"
       },
       {
         "oracle_id": "on_audible",
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260322-debt-informational-assertions/oracles/on_audible.json",
         "raw_artifact": "docs/qc/proofs/20260322-debt-informational-assertions/raw/on_audible.json",
-        "raw_sha256": "ec3903616c2110138c7b1cd93ff11f77f36c0a7a545bc56d1f4c911ab657ed17"
+        "raw_sha256": "0f01d4bf9bb108bb720e396fa4eb8c702e2ddc2ebeeaf2a988331f08e88ccdaf"
       },
       {
         "oracle_id": "control_binding",

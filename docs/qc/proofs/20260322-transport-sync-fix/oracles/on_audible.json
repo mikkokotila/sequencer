@@ -1,15 +1,15 @@
 {
   "oracle_id": "on_audible",
   "task_id": "20260322-transport-sync-fix",
-  "subject_sha": "df67f08a7dfda75053f6df41821dbc648e8c3cdd49416131a6719de21abd5e48",
+  "subject_sha": "0000000000000000000000000000000000000000000000000000000000000000",
   "harness_version": "oracle-harness-v2",
   "status": "PASS",
   "metrics": {
     "delta_lufs": 1.416895
   },
   "raw_artifact": "raw/on_audible.json",
-  "raw_sha256": "8908c2c468e6568ac34ee18dd29e63a1ef4f1d8f426fa379786c2531f6e5f1f7",
+  "raw_sha256": "944746689926ff8a6c93df29120076dd26848d9e3f91987ea64f0d81af28b18d",
   "evidence": "delta_lufs=1.4168953474463741",
-  "challenge_id": "134caa4c63ac76d32005db56bf9105569f5549a685fb8bef744461be82e0c3f9",
-  "payload_digest": "fcb2d7ee79100757c3057962be678dfc8e345ab126d368fbf394d30f3d5b8940"
+  "challenge_id": "917f2dd5a0e7eaf3cdd3829073ccd43228f700f78ccfad18d19ef5534ebb6864",
+  "payload_digest": "784a986eadd6e42697553ffc415348842779217ed0086aa3a6c2bf65d4cd3d90"
 }

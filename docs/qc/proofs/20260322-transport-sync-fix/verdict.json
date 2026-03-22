@@ -5,21 +5,15 @@
   "spec_path": "docs/qc/specs/20260322-transport-sync-fix.task.spec.json",
   "policy_version": "2.0.0",
   "diagnostics_version": "1.0.0",
-  "started_at_utc": "2026-03-22T12:12:58.054Z",
-  "finished_at_utc": "2026-03-22T12:13:35.761Z",
-  "head_sha": "311873d",
-  "tree_sha": "f2a187902a8950dfa9ba93f373e3030c6cbf2141",
-  "subject_sha": "df67f08a7dfda75053f6df41821dbc648e8c3cdd49416131a6719de21abd5e48",
-  "subject_files": [
-    "e2e/sequencer.spec.ts",
-    "src/engine/scheduler.ts"
-  ],
+  "started_at_utc": "2026-03-22T12:35:25.290Z",
+  "finished_at_utc": "2026-03-22T12:35:27.209Z",
+  "head_sha": "ec6dd59",
+  "tree_sha": "b836f711cd5b31d52893fc8ca4862a31927debd3",
+  "subject_sha": "0000000000000000000000000000000000000000000000000000000000000000",
+  "subject_files": [],
   "simulated_files": [],
   "changed_files": [
-    "docs/qc/proofs/20260322-transport-sync-fix/proof.manifest.json",
-    "docs/qc/specs/20260322-transport-sync-fix.task.spec.json",
-    "e2e/sequencer.spec.ts",
-    "src/engine/scheduler.ts"
+    "docs/qc/specs/20260322-transport-sync-fix.task.spec.json"
   ],
   "phases": [
     {
@@ -35,12 +29,12 @@
     {
       "name": "synthesize",
       "status": "PASS",
-      "detail": "commands=5, oracles=2, manifest=required"
+      "detail": "commands=0, oracles=2, manifest=required"
     },
     {
       "name": "execute",
       "status": "PASS",
-      "detail": "commands=5, oracles=2, diagnostics=0"
+      "detail": "commands=0, oracles=2, diagnostics=0"
     },
     {
       "name": "verify",
@@ -49,82 +43,23 @@
     }
   ],
   "obligations": {
-    "commands": [
-      {
-        "id": "O-CI",
-        "label": "CI",
-        "command": "npm run ci",
-        "blocking": true,
-        "status": "PASS",
-        "exit_code": 0,
-        "elapsed_ms": 4926,
-        "log_file": "docs/qc/proofs/20260322-transport-sync-fix/logs/O-CI.log"
-      },
-      {
-        "id": "O-E2E",
-        "label": "E2E",
-        "command": "npm run e2e",
-        "blocking": true,
-        "status": "PASS",
-        "exit_code": 0,
-        "elapsed_ms": 29469,
-        "log_file": "docs/qc/proofs/20260322-transport-sync-fix/logs/O-E2E.log"
-      },
-      {
-        "id": "O-GATE-CONTRACTS-FULL",
-        "label": "Contract static gates",
-        "command": "node docs/qc/scripts/contract-gates.mjs",
-        "blocking": true,
-        "status": "PASS",
-        "exit_code": 0,
-        "elapsed_ms": 382,
-        "log_file": "docs/qc/proofs/20260322-transport-sync-fix/logs/O-GATE-CONTRACTS-FULL.log"
-      },
-      {
-        "id": "O-GATE-ARCH-FULL",
-        "label": "Architecture gates",
-        "command": "node docs/qc/scripts/architecture-gates.mjs",
-        "blocking": true,
-        "status": "PASS",
-        "exit_code": 0,
-        "elapsed_ms": 427,
-        "log_file": "docs/qc/proofs/20260322-transport-sync-fix/logs/O-GATE-ARCH-FULL.log"
-      },
-      {
-        "id": "O-COMMIT-RANGE",
-        "label": "Commit range governance attestation",
-        "command": "npm run gate:commit-range",
-        "blocking": true,
-        "status": "PASS",
-        "exit_code": 0,
-        "elapsed_ms": 525,
-        "log_file": "docs/qc/proofs/20260322-transport-sync-fix/logs/O-COMMIT-RANGE.log"
-      }
-    ],
+    "commands": [],
     "global_debt": [],
-    "debt_ratchet": {
-      "baseline_id": "20260322-global-debt-baseline",
-      "baseline_total_failures": 11,
-      "current_total_failures": 0,
-      "delta_total_failures": -11,
-      "require_debt_reduction": false,
-      "contracts_failures": [],
-      "architecture_failures": []
-    },
+    "debt_ratchet": null,
     "oracles": [
       {
         "oracle_id": "off_transparent",
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260322-transport-sync-fix/oracles/off_transparent.json",
         "raw_artifact": "docs/qc/proofs/20260322-transport-sync-fix/raw/off_transparent.json",
-        "raw_sha256": "60827651cd3d63e9179700dd5e251d17aaa3f43258430d99ddeed49a331435fc"
+        "raw_sha256": "50cd3d9c368f4af985a85f2d5e3234ac1fe64e99805efa6b2336ba0fb4e0aafa"
       },
       {
         "oracle_id": "on_audible",
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260322-transport-sync-fix/oracles/on_audible.json",
         "raw_artifact": "docs/qc/proofs/20260322-transport-sync-fix/raw/on_audible.json",
-        "raw_sha256": "8908c2c468e6568ac34ee18dd29e63a1ef4f1d8f426fa379786c2531f6e5f1f7"
+        "raw_sha256": "944746689926ff8a6c93df29120076dd26848d9e3f91987ea64f0d81af28b18d"
       }
     ],
     "manifest_required": true

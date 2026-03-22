@@ -1,6 +1,6 @@
 command: npm run ci
 status: 0
-elapsed_ms: 5022
+elapsed_ms: 4457
 
 --- stdout ---
 
@@ -25,7 +25,7 @@ All matched files use Prettier code style!
 > sequencer@1.0.0 circular
 > madge --circular --extensions ts src/
 
-Processed 37 files (545ms) (5 warnings)
+Processed 37 files (520ms) (5 warnings)
 
 
 

@@ -1,15 +1,15 @@
 {
   "oracle_id": "on_audible",
   "task_id": "20260322-kit-exporter",
-  "subject_sha": "871e808dc9fc3a485dc8dcb6ce58b33d500cfed61cb72ee04c8e42931d30184a",
+  "subject_sha": "83430f9786060d7176344a4b8517110326a600dcc623f7e42703660c94d0af28",
   "harness_version": "oracle-harness-v2",
   "status": "PASS",
   "metrics": {
     "delta_lufs": 1.416895
   },
   "raw_artifact": "raw/on_audible.json",
-  "raw_sha256": "18da7c99cb0f0facecee7273ffa89aeab706ad62dc54e59e9667a6eedb6ea2a0",
+  "raw_sha256": "916028250b4b5db1631a4e4faf4bf2a83ae52d7f6029122d4d31c80828aa335c",
   "evidence": "delta_lufs=1.4168953474463741",
-  "challenge_id": "35fa53437521286dd00264749ed02866fda9a1dda082f1c992f1b4b01f2da2d7",
-  "payload_digest": "2549de40395da30275e6da72801cbfd11052395fb302b1b9839400c32ab361f8"
+  "challenge_id": "09fd290635e7bb2257937511f132ac602f87a6234b844dc53bd7a5ed102acdbd",
+  "payload_digest": "ac6bec22970accc5d1568202ff5655bb9a072c74c0c749566f81124bbef51c52"
 }

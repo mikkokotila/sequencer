@@ -150,17 +150,26 @@ function safeName(raw: string): string {
 
 /** De-duplicate entry names by appending numeric suffix. */
 function dedup(entries: ZipEntry[]): void {
-  const seen = new Map<string, number>();
+  const seen = new Set<string>();
   for (const entry of entries) {
-    const count = seen.get(entry.name);
-    if (count !== undefined) {
-      const dot = entry.name.lastIndexOf('.');
-      const stem = dot > 0 ? entry.name.slice(0, dot) : entry.name;
-      const ext = dot > 0 ? entry.name.slice(dot) : '';
-      entry.name = `${stem}_${count + 1}${ext}`;
-      seen.set(entry.name, 0); // track the new name too
+    if (!seen.has(entry.name)) {
+      seen.add(entry.name);
+      continue;
     }
-    seen.set(entry.name, (count ?? 0) + 1);
+
+    const dot = entry.name.lastIndexOf('.');
+    const stem = dot > 0 ? entry.name.slice(0, dot) : entry.name;
+    const ext = dot > 0 ? entry.name.slice(dot) : '';
+
+    let suffix = 2;
+    let candidate = `${stem}_${suffix}${ext}`;
+    while (seen.has(candidate)) {
+      suffix++;
+      candidate = `${stem}_${suffix}${ext}`;
+    }
+
+    entry.name = candidate;
+    seen.add(candidate);
   }
 }
 

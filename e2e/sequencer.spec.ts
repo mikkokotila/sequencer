@@ -899,4 +899,18 @@ test.describe('Kit Export', () => {
     });
     expect(threw).toBe(false);
   });
+
+  test('export with no samples produces no download', async ({ page }) => {
+    await waitForApp(page);
+    // With no samples loaded, exportKit returns early (entries.length === 0)
+    // so no download should be triggered
+    let downloadTriggered = false;
+    page.on('download', () => {
+      downloadTriggered = true;
+    });
+    await page.locator('#kit-export-btn').click();
+    // Give a moment for any download to start
+    await page.waitForTimeout(200);
+    expect(downloadTriggered).toBe(false);
+  });
 });

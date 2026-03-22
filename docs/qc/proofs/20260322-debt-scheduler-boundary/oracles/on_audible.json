@@ -1,0 +1,15 @@
+{
+  "oracle_id": "on_audible",
+  "task_id": "20260322-debt-scheduler-boundary",
+  "subject_sha": "63bbabaa8d13ed0c1f81a1a0e116acbf2b901b78f2f18ef1e37929d6ed21748b",
+  "harness_version": "oracle-harness-v2",
+  "status": "PASS",
+  "metrics": {
+    "delta_lufs": 1.416895
+  },
+  "raw_artifact": "raw/on_audible.json",
+  "raw_sha256": "f5a3e7d3e629a6ebdbef43a4a60b074172ff63e29816911e4f099832456e7930",
+  "evidence": "delta_lufs=1.4168953474463741",
+  "challenge_id": "8af5dab5715bf9e6bbffb963955b72122cffa354d9603099ced49fc3256ab7cc",
+  "payload_digest": "4157be704968cc81fa9e837732d61e1d9c215314792aa12b970b4e70db757979"
+}

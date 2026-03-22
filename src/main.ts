@@ -8,12 +8,29 @@ import { loadManifest, wireBrowserEvents } from './ui/browser';
 import { buildUI, refreshUI, refreshSongName, updateSongPane } from './ui/build';
 import { setupPainting, setOnSave, setOnSongPaneUpdate } from './ui/painting';
 import { initExtensions } from './engine/extensions/registry';
-import { togglePlay, syncBpm, stopPlayback } from './engine/scheduler';
+import { togglePlay, syncBpm, stopPlayback, bindTransport } from './engine/scheduler';
 import { on } from './events';
 import { initPlayhead } from './ui/playhead';
 import { genId } from './ui/helpers';
 import { SEQ_EXTENSIONS } from './engine/extensions/store';
-import { currentSongId, setCurrentSongId, setOnBpmChange } from './transport/song';
+import {
+  currentSongId,
+  setCurrentSongId,
+  setOnBpmChange,
+  bpm,
+  drumBuf,
+  melBuf,
+  vocalBuf,
+  mutedArr,
+} from './transport/song';
+import {
+  phrases,
+  octaves,
+  harmonies,
+  isPhraseEmpty,
+  findNextPhrase,
+  findFirstNonEmpty,
+} from './transport/patterns';
 import { initEngineProcessing } from './ui/engine-panel';
 import { initMidi, disconnectAllMidi } from './engine/midi';
 import { buildMidiBrowserDOM, wireMidiBrowserEvents } from './ui/midi-browser';
@@ -88,7 +105,22 @@ async function init(): Promise<void> {
   // 7. Init audio + extensions + load manifest (parallel)
   await Promise.all([openDB(), loadManifest()]);
 
-  // 8. Init audio, load worklets, engine processing, extensions, and playhead
+  // 8. Bind transport data to scheduler (engine↔transport bridge via DI)
+  bindTransport({
+    phrases,
+    octaves,
+    harmonies,
+    drumBuf,
+    melBuf,
+    mutedArr,
+    getVocalBuf: () => vocalBuf,
+    getBpm: () => bpm,
+    isPhraseEmpty,
+    findNextPhrase,
+    findFirstNonEmpty,
+  });
+
+  // 8b. Init audio, load worklets, engine processing, extensions, and playhead
   // Engine processing MUST init before extensions so that setFinalOutput()
   // points to the engine chain BEFORE the extension chain is built.
   initAudio();

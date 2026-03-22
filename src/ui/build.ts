@@ -52,7 +52,8 @@ import {
 import { replicateTrack, clearSelection } from './painting';
 import { openBrowser, wireBrowserEvents, setupDragDrop, closeBrowser } from './browser';
 import { toggle as toggleEnginePanel, isEngineOpen } from './engine-panel';
-import { togglePlay, stopPlayback, isPhraseEmpty, fillWithPrev } from '../engine/scheduler';
+import { togglePlay, stopPlayback } from '../engine/scheduler';
+import { isPhraseEmpty, fillWithPrev } from '../transport/patterns';
 import { getMidiTrackBinding } from '../engine/midi';
 import { openMidiBrowser, closeMidiBrowser, isMidiBrowserOpen } from './midi-browser';
 import { on } from '../events';

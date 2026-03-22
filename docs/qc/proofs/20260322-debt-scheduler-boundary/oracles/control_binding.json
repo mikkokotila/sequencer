@@ -1,0 +1,15 @@
+{
+  "oracle_id": "control_binding",
+  "task_id": "20260322-debt-scheduler-boundary",
+  "subject_sha": "63bbabaa8d13ed0c1f81a1a0e116acbf2b901b78f2f18ef1e37929d6ed21748b",
+  "harness_version": "oracle-harness-v2",
+  "status": "PASS",
+  "metrics": {
+    "binding_coverage": 1
+  },
+  "raw_artifact": "raw/control_binding.json",
+  "raw_sha256": "97160ccaca8ab2297391b1e9be35b407f9a2062d6047beeb9c737a5e98c35835",
+  "evidence": "controls_declared=1",
+  "challenge_id": "8af5dab5715bf9e6bbffb963955b72122cffa354d9603099ced49fc3256ab7cc",
+  "payload_digest": "4157be704968cc81fa9e837732d61e1d9c215314792aa12b970b4e70db757979"
+}

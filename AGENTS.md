@@ -93,9 +93,9 @@ For every completed governance task:
 11. Address every review conversation in-thread:
    - if fixing: push the fix commit and leave a confirmation reply on the thread
    - if not fixing: leave an explicit no-fix rationale on the thread
-12. Re-run PR readiness validation until it passes:
-   - preferred: `npm run gate:pr-ready`
-   - fallback if command is unavailable on base branch: verify checks/conversations directly via `gh pr checks` + `gh api graphql`
+12. Re-run PR readiness validation until it passes by verifying checks and conversations directly:
+   - use `gh pr checks` to confirm all required checks are green on the latest head SHA
+   - use `gh api graphql` (or the GitHub UI) to confirm all review conversations are resolved and answered
 13. Do not report completion until PR is fully ready to merge:
    - all required checks are green on latest head SHA
    - all review conversations resolved

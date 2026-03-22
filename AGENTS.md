@@ -89,7 +89,17 @@ For every completed governance task:
 7. If real-browser verification was not performed, state it in the proof artifact and commit body.
 8. Push immediately after commit: `git push origin HEAD`.
 9. Ensure there is an open PR for the branch.
-10. Do not report completion until PR is ready to merge (required checks green and review conversations addressed).
+10. Wait for required CI checks and review feedback on that PR.
+11. Address every review conversation in-thread:
+   - if fixing: push the fix commit and leave a confirmation reply on the thread
+   - if not fixing: leave an explicit no-fix rationale on the thread
+12. Re-run PR readiness validation until it passes:
+   - preferred: `npm run gate:pr-ready`
+   - fallback if command is unavailable on base branch: verify checks/conversations directly via `gh pr checks` + `gh api graphql`
+13. Do not report completion until PR is fully ready to merge:
+   - required checks green on latest head SHA
+   - all review conversations resolved
+   - all review conversations answered in-thread
 
 No task is complete without both:
 - committed changes

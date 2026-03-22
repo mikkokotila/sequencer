@@ -1,0 +1,175 @@
+{
+  "task_id": "20260322-debt-informational-assertions",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260322-debt-informational-assertions.task.spec.json",
+  "policy_version": "1.4.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-22T08:43:56.450Z",
+  "finished_at_utc": "2026-03-22T08:44:28.636Z",
+  "head_sha": "8315318",
+  "tree_sha": "9cf6c56e7ced84d40a3a8396ec72d9b4ea5203d3",
+  "subject_sha": "bc3c285a2e951f549eabd5400866657839f46a5152a1df396f4d56b789c42480",
+  "subject_files": [
+    "tests/audio-quality.html",
+    "tests/e2e-signal.html",
+    "tests/signal-purity.html"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260322-debt-informational-assertions.md",
+    "docs/qc/proofs/20260322-debt-informational-assertions/proof.manifest.json",
+    "docs/qc/specs/20260322-debt-informational-assertions.task.spec.json",
+    "tests/audio-quality.html",
+    "tests/e2e-signal.html",
+    "tests/signal-purity.html"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=7, oracles=3, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=7, oracles=3, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4460,
+        "log_file": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 24374,
+        "log_file": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-E2E.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-DELTA",
+        "label": "Contract static gates (task regression)",
+        "command": "node docs/qc/scripts/contract-gates.mjs --mode delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 340,
+        "log_file": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-GATE-CONTRACTS-DELTA.log"
+      },
+      {
+        "id": "O-GATE-ARCH-DELTA",
+        "label": "Architecture gates (task regression)",
+        "command": "node docs/qc/scripts/architecture-gates.mjs --mode delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 248,
+        "log_file": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-GATE-ARCH-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates (global debt)",
+        "command": "node docs/qc/scripts/contract-gates.mjs --mode full",
+        "blocking": false,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 330,
+        "log_file": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates (global debt)",
+        "command": "node docs/qc/scripts/architecture-gates.mjs --mode full",
+        "blocking": false,
+        "status": "FAIL",
+        "exit_code": 1,
+        "elapsed_ms": 341,
+        "log_file": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 294,
+        "log_file": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates (global debt)",
+        "command": "node docs/qc/scripts/architecture-gates.mjs --mode full",
+        "status": "FAIL",
+        "log_file": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-GATE-ARCH-FULL.log"
+      }
+    ],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 2,
+      "delta_total_failures": -9,
+      "require_debt_reduction": true,
+      "contracts_failures": [],
+      "architecture_failures": [
+        "UI does not duplicate transport business logic",
+        "Playhead/cell rendering avoids repeated inline style mutation"
+      ]
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-debt-informational-assertions/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260322-debt-informational-assertions/raw/off_transparent.json",
+        "raw_sha256": "a30d741f7bf98b52686b6f67b2601a7baf65de1dd5dc851d9bc8ae0c2a49fc9d"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-debt-informational-assertions/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260322-debt-informational-assertions/raw/on_audible.json",
+        "raw_sha256": "ec3903616c2110138c7b1cd93ff11f77f36c0a7a545bc56d1f4c911ab657ed17"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-debt-informational-assertions/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260322-debt-informational-assertions/raw/control_binding.json",
+        "raw_sha256": "abfd896bd1f9435286b42f9815e363f52a8dd062c559062091579c8efbcfe085"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

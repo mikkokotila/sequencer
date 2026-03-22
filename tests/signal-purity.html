@@ -290,9 +290,9 @@ async function testFullDisabledChain() {
     const ratio = peakOut / peakIn;
     const expectedRatio = 0.8 * 1.0; // master(0.8) * variMu bypass(1.0) = 0.8
 
-    assert('Full disabled chain: overall gain',
-        true,
-        `Input peak: ${peakIn.toFixed(4)}, Output peak: ${peakOut.toFixed(4)}, Ratio: ${ratio.toFixed(4)}, Expected: ${expectedRatio.toFixed(4)} (0.8 × 0.825 = signal reduced to 66%!)`);
+    assert('Full disabled chain: output is present',
+        peakOut > 0,
+        `Input peak: ${peakIn.toFixed(4)}, Output peak: ${peakOut.toFixed(4)}, Ratio: ${ratio.toFixed(4)}, Expected: ${expectedRatio.toFixed(4)}`);
 
     assert('Full disabled chain: signal should be at 80% (master only)',
         Math.abs(ratio - 0.8) < 0.01,

@@ -1,0 +1,15 @@
+{
+  "oracle_id": "control_binding",
+  "task_id": "20260322-debt-informational-assertions",
+  "subject_sha": "bc3c285a2e951f549eabd5400866657839f46a5152a1df396f4d56b789c42480",
+  "harness_version": "oracle-harness-v2",
+  "status": "PASS",
+  "metrics": {
+    "binding_coverage": 1
+  },
+  "raw_artifact": "raw/control_binding.json",
+  "raw_sha256": "abfd896bd1f9435286b42f9815e363f52a8dd062c559062091579c8efbcfe085",
+  "evidence": "controls_declared=1",
+  "challenge_id": "11bcd144f2f5d2360021c9b7200f120c5369bd9519d749bb51bcf75bb46db27f",
+  "payload_digest": "fdf44cd6dde1c554372fee70812a10aed1f4dce497ceff2082ce70d3ca37101b"
+}

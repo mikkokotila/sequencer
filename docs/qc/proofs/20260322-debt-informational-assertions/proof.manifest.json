@@ -1,0 +1,70 @@
+{
+  "task_id": "20260322-debt-informational-assertions",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-CI.log"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-E2E.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-GATE-CONTRACTS-DELTA.log"
+    },
+    {
+      "id": "O-GATE-ARCH-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-GATE-ARCH-DELTA.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-FULL",
+      "result": "PASS",
+      "blocking": false,
+      "evidence": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-GATE-CONTRACTS-FULL.log"
+    },
+    {
+      "id": "O-GATE-ARCH-FULL",
+      "result": "FAIL",
+      "blocking": false,
+      "evidence": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-GATE-ARCH-FULL.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-debt-informational-assertions/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/commit.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/quality-gates.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/governance-compiler.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "NOT_VERIFIED",
+    "details": "Test-only changes — no product UI behavior change."
+  },
+  "artifacts": [
+    "verdict.json"
+  ]
+}

@@ -211,7 +211,7 @@ async function testEngineChain() {
 
   assert('Engine chain: peak not clipping', peakOut < 1.0,
     `peak: ${peakOut.toFixed(4)} (${toDb(peakOut).toFixed(1)} dBFS)`);
-  assert('Engine chain: THD documented', true,
+  assert('Engine chain: THD is measurable with saturation', thd > 0,
     `THD: ${thd.toFixed(2)}% — saturation at 30% adds harmonics (expected)`);
   assert('Engine chain: signal not silent', peakOut > 0.1,
     `peak: ${peakOut.toFixed(4)}`);

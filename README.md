@@ -64,7 +64,7 @@ src/
 │       ├── delay.ts                  Tape delay aux send/return
 │       └── pultec-eq.ts              Passive EQ + tube saturation
 │
-├── transport/                 State & persistence (no DOM)
+├── transport/                 State, persistence & file I/O
 │   ├── patterns.ts               Phrase/pattern state + mutations
 │   ├── song.ts                   Song metadata, BPM, track config
 │   ├── persistence.ts            IndexedDB save/load

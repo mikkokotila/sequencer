@@ -884,4 +884,23 @@ test.describe('Kit Export', () => {
     await waitForApp(page);
     await expect(page.locator('#kit-export-btn')).toHaveAttribute('title', 'Export Sample Kit');
   });
+
+  test('clicking export triggers download with bundle filename', async ({ page }) => {
+    await waitForApp(page);
+    // Load a sample first so there's something to export
+    await page.locator('.sample-btn').first().click();
+    await page.waitForSelector('.browser-overlay.open');
+    const firstItem = page.locator('.browser-item').first();
+    await firstItem.click();
+    const loadBtn = page.locator('.browser-load-btn');
+    await loadBtn.click();
+    await page.waitForSelector('.browser-overlay:not(.open)');
+
+    // Click export and catch the download
+    const downloadPromise = page.waitForEvent('download');
+    await page.locator('#kit-export-btn').click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(/-bundle\.zip$/);
+    expect((await download.path()) !== null).toBe(true);
+  });
 });

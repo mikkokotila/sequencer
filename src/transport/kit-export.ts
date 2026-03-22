@@ -69,7 +69,7 @@ function buildZip(entries: ZipEntry[]): Blob {
     const lv = new DataView(lh);
     writeU32(lv, 0, 0x04034b50); // signature
     writeU16(lv, 4, 20); // version needed
-    writeU16(lv, 6, 0); // flags
+    writeU16(lv, 6, 0x0800); // flags (bit 11: UTF-8 file names)
     writeU16(lv, 8, 0); // compression = stored
     writeU16(lv, 10, 0); // mod time
     writeU16(lv, 12, 0); // mod date
@@ -96,7 +96,7 @@ function buildZip(entries: ZipEntry[]): Blob {
     writeU32(cv, 0, 0x02014b50); // central dir signature
     writeU16(cv, 4, 20); // version made by
     writeU16(cv, 6, 20); // version needed
-    writeU16(cv, 8, 0); // flags
+    writeU16(cv, 8, 0x0800); // flags (bit 11: UTF-8 file names)
     writeU16(cv, 10, 0); // compression = stored
     writeU16(cv, 12, 0); // mod time
     writeU16(cv, 14, 0); // mod date
@@ -132,6 +132,39 @@ function buildZip(entries: ZipEntry[]): Blob {
 }
 
 // ═══════════════════════════════════════════
+//  Helpers
+// ═══════════════════════════════════════════
+
+/** Strip path separators, traversal segments, and control chars → safe basename. */
+function safeName(raw: string): string {
+  // Extract basename (strip any path separators)
+  const base = raw.split(/[/\\]/).pop() ?? raw;
+  // Remove traversal segments and control characters
+  return (
+    base
+      .replace(/\.\./g, '')
+      .replace(/[^\x20-\x7E\u00A0-\uFFFF]/g, '')
+      .trim() || 'sample'
+  );
+}
+
+/** De-duplicate entry names by appending numeric suffix. */
+function dedup(entries: ZipEntry[]): void {
+  const seen = new Map<string, number>();
+  for (const entry of entries) {
+    const count = seen.get(entry.name);
+    if (count !== undefined) {
+      const dot = entry.name.lastIndexOf('.');
+      const stem = dot > 0 ? entry.name.slice(0, dot) : entry.name;
+      const ext = dot > 0 ? entry.name.slice(dot) : '';
+      entry.name = `${stem}_${count + 1}${ext}`;
+      seen.set(entry.name, 0); // track the new name too
+    }
+    seen.set(entry.name, (count ?? 0) + 1);
+  }
+}
+
+// ═══════════════════════════════════════════
 //  Public API
 // ═══════════════════════════════════════════
 
@@ -146,7 +179,7 @@ export function exportKit(): void {
     const sd = drumSampleData[i];
     if (sd?.data) {
       entries.push({
-        name: `${folderName}/${sd.name}`,
+        name: `${folderName}/${safeName(sd.name)}`,
         data: new Uint8Array(sd.data),
       });
     }
@@ -157,7 +190,7 @@ export function exportKit(): void {
     const sd = melSampleData[i];
     if (sd?.data) {
       entries.push({
-        name: `${folderName}/${sd.name}`,
+        name: `${folderName}/${safeName(sd.name)}`,
         data: new Uint8Array(sd.data),
       });
     }
@@ -166,15 +199,17 @@ export function exportKit(): void {
   // Vocal sample
   if (vocalSampleData?.data) {
     entries.push({
-      name: `${folderName}/${vocalSampleData.name}`,
+      name: `${folderName}/${safeName(vocalSampleData.name)}`,
       data: new Uint8Array(vocalSampleData.data),
     });
   }
 
   if (entries.length === 0) {
-    // Nothing to export
     return;
   }
+
+  // De-duplicate names (same sample loaded on multiple tracks)
+  dedup(entries);
 
   const blob = buildZip(entries);
   const url = URL.createObjectURL(blob);

@@ -5,40 +5,21 @@
   "spec_path": "docs/qc/specs/20260322-kit-exporter.task.spec.json",
   "policy_version": "2.0.0",
   "diagnostics_version": "1.0.0",
-  "started_at_utc": "2026-03-22T13:59:02.304Z",
-  "finished_at_utc": "2026-03-22T13:59:44.145Z",
-  "head_sha": "7066cf7",
-  "tree_sha": "826b4474528cb0f36162677c9d7162fe0ff284c7",
-  "subject_sha": "d4177cb45ecf674f4ce83836f1a8ee2da741fa2581ca0319544b2581bb5d50a7",
+  "started_at_utc": "2026-03-22T14:10:14.479Z",
+  "finished_at_utc": "2026-03-22T14:10:55.599Z",
+  "head_sha": "5231e02",
+  "tree_sha": "d8e67992b2938a6bb4bbc6d534f38e6aaeca221d",
+  "subject_sha": "1c61e866921830d18203026df5795f6253e90b46b564e9a4b10c4223bafc6d2f",
   "subject_files": [
     "README.md",
     "e2e/sequencer.spec.ts",
-    "src/transport/kit-export.ts",
-    "src/ui/build.ts"
+    "src/transport/kit-export.ts"
   ],
   "simulated_files": [],
   "changed_files": [
     "README.md",
-    "docs/qc/proofs/20260322-kit-exporter.md",
-    "docs/qc/proofs/20260322-kit-exporter/logs/O-CI.log",
-    "docs/qc/proofs/20260322-kit-exporter/logs/O-COMMIT-RANGE.log",
-    "docs/qc/proofs/20260322-kit-exporter/logs/O-E2E-DELTA.log",
-    "docs/qc/proofs/20260322-kit-exporter/logs/O-E2E.log",
-    "docs/qc/proofs/20260322-kit-exporter/logs/O-GATE-ARCH-FULL.log",
-    "docs/qc/proofs/20260322-kit-exporter/logs/O-GATE-CONTRACTS-FULL.log",
-    "docs/qc/proofs/20260322-kit-exporter/logs/O-ORACLE-HARNESS.log",
-    "docs/qc/proofs/20260322-kit-exporter/oracles/control_binding.json",
-    "docs/qc/proofs/20260322-kit-exporter/oracles/off_transparent.json",
-    "docs/qc/proofs/20260322-kit-exporter/oracles/on_audible.json",
-    "docs/qc/proofs/20260322-kit-exporter/proof.manifest.json",
-    "docs/qc/proofs/20260322-kit-exporter/raw/control_binding.json",
-    "docs/qc/proofs/20260322-kit-exporter/raw/off_transparent.json",
-    "docs/qc/proofs/20260322-kit-exporter/raw/on_audible.json",
-    "docs/qc/proofs/20260322-kit-exporter/verdict.json",
-    "docs/qc/specs/20260322-kit-exporter.task.spec.json",
     "e2e/sequencer.spec.ts",
-    "src/transport/kit-export.ts",
-    "src/ui/build.ts"
+    "src/transport/kit-export.ts"
   ],
   "phases": [
     {
@@ -76,7 +57,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 5266,
+        "elapsed_ms": 4889,
         "log_file": "docs/qc/proofs/20260322-kit-exporter/logs/O-CI.log"
       },
       {
@@ -86,7 +67,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 33305,
+        "elapsed_ms": 33110,
         "log_file": "docs/qc/proofs/20260322-kit-exporter/logs/O-E2E.log"
       },
       {
@@ -96,7 +77,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 186,
+        "elapsed_ms": 185,
         "log_file": "docs/qc/proofs/20260322-kit-exporter/logs/O-E2E-DELTA.log"
       },
       {
@@ -106,7 +87,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 330,
+        "elapsed_ms": 356,
         "log_file": "docs/qc/proofs/20260322-kit-exporter/logs/O-GATE-CONTRACTS-FULL.log"
       },
       {
@@ -116,7 +97,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 424,
+        "elapsed_ms": 382,
         "log_file": "docs/qc/proofs/20260322-kit-exporter/logs/O-GATE-ARCH-FULL.log"
       },
       {
@@ -146,14 +127,14 @@
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260322-kit-exporter/oracles/off_transparent.json",
         "raw_artifact": "docs/qc/proofs/20260322-kit-exporter/raw/off_transparent.json",
-        "raw_sha256": "3dd2c1a4457e6c5c9c8e416766ec403c12822b0bb32103d0ffcc787a0219623b"
+        "raw_sha256": "8785c67b1d645fa864ed32b3cb25ea389b63dd7db4374b783c2b348345085eaa"
       },
       {
         "oracle_id": "on_audible",
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260322-kit-exporter/oracles/on_audible.json",
         "raw_artifact": "docs/qc/proofs/20260322-kit-exporter/raw/on_audible.json",
-        "raw_sha256": "e3c784ee0c238cc44e81099cc13d0beeb8004d534b727c3091f73488f34bb81b"
+        "raw_sha256": "a2e9f4bebb6fcfe5f1e40a0ac673ea6e174fa12fcf9b432ff4b1bf6cfecd2a37"
       },
       {
         "oracle_id": "control_binding",

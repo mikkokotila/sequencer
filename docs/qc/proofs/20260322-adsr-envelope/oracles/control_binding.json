@@ -1,0 +1,15 @@
+{
+  "oracle_id": "control_binding",
+  "task_id": "20260322-adsr-envelope",
+  "subject_sha": "cd364d62edd58e2a37f2af77428d94574dd642ac4db300214efe6faf74cb8c6d",
+  "harness_version": "oracle-harness-v2",
+  "status": "PASS",
+  "metrics": {
+    "binding_coverage": 1
+  },
+  "raw_artifact": "raw/control_binding.json",
+  "raw_sha256": "55d006124fa8d2c61d0910d7d5a1eb23a723fb9b2933a1bf4b25e0ca523bf66d",
+  "evidence": "controls_declared=4",
+  "challenge_id": "3adec4df5ec11f099d5703cc5d2c6d47bfd8c016cf4dbc7573dc642edcb9f490",
+  "payload_digest": "d6444b6df786d8227d2605f402f300c4d0a9f72f304d2ea0f5f4ee9d526b66b7"
+}

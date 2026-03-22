@@ -56,6 +56,7 @@ import { togglePlay, stopPlayback } from '../engine/scheduler';
 import { isPhraseEmpty, fillWithPrev } from '../transport/patterns';
 import { getMidiTrackBinding } from '../engine/midi';
 import { openMidiBrowser, closeMidiBrowser, isMidiBrowserOpen } from './midi-browser';
+import { openAdsrPopup, closeAdsrPopup, isAdsrPopupOpen } from './adsr-popup';
 import { on } from '../events';
 import {
   scheduleSave,
@@ -476,6 +477,11 @@ export function buildUI(): void {
     mb.textContent = 'M';
     mb.onclick = () => toggleMute(ti, mb);
     header.appendChild(mb);
+    const adsrBtn = el('button', 'adsr-btn');
+    adsrBtn.textContent = 'ADSR';
+    adsrBtn.title = 'Envelope';
+    adsrBtn.onclick = () => openAdsrPopup(ti, adsrBtn);
+    header.appendChild(adsrBtn);
     panel.appendChild(header);
     const gw = el('div', 'single-grid-wrapper');
     drumCells[ti] = [];
@@ -535,6 +541,11 @@ export function buildUI(): void {
     mb.textContent = 'M';
     mb.onclick = () => toggleMute(DRUMS_CFG.length + ti, mb);
     header.appendChild(mb);
+    const melAdsrBtn = el('button', 'adsr-btn');
+    melAdsrBtn.textContent = 'ADSR';
+    melAdsrBtn.title = 'Envelope';
+    melAdsrBtn.onclick = () => openAdsrPopup(DRUMS_CFG.length + ti, melAdsrBtn);
+    header.appendChild(melAdsrBtn);
     const oc = el('div', 'octave-ctrl');
     const ol = el('label', '');
     ol.textContent = 'OCT';
@@ -641,6 +652,11 @@ export function buildUI(): void {
   vmb.textContent = 'M';
   vmb.onclick = () => toggleMute(DRUMS_CFG.length + MEL_CFG.length, vmb);
   vheader.appendChild(vmb);
+  const vAdsrBtn = el('button', 'adsr-btn');
+  vAdsrBtn.textContent = 'ADSR';
+  vAdsrBtn.title = 'Envelope';
+  vAdsrBtn.onclick = () => openAdsrPopup(DRUMS_CFG.length + MEL_CFG.length, vAdsrBtn);
+  vheader.appendChild(vAdsrBtn);
   vpanel.appendChild(vheader);
   const vgw = el('div', 'single-grid-wrapper');
   const newVocalCells: HTMLElement[] = [];
@@ -662,7 +678,9 @@ export function buildUI(): void {
       togglePlay();
     }
     if (e.code === 'Escape') {
-      if (isMidiBrowserOpen()) {
+      if (isAdsrPopupOpen()) {
+        closeAdsrPopup();
+      } else if (isMidiBrowserOpen()) {
         closeMidiBrowser();
       } else {
         const browserOverlay = document.getElementById('browser-overlay');

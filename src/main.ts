@@ -34,6 +34,8 @@ import {
 import { initEngineProcessing } from './ui/engine-panel';
 import { initMidi, disconnectAllMidi } from './engine/midi';
 import { buildMidiBrowserDOM, wireMidiBrowserEvents } from './ui/midi-browser';
+import { buildAdsrPopupDOM } from './ui/adsr-popup';
+import { resetAllAdsr } from './engine/adsr';
 
 // Register all extensions
 import { createCompressor } from './engine/extensions/compressor';
@@ -61,9 +63,10 @@ async function init(): Promise<void> {
   // 3. Build the UI
   buildUI();
 
-  // 3b. Build MIDI browser overlay
+  // 3b. Build MIDI browser overlay + ADSR popup
   buildMidiBrowserDOM();
   wireMidiBrowserEvents();
+  buildAdsrPopupDOM();
 
   // 4. Wire painting callbacks + BPM sync
   setOnSave(scheduleSave);
@@ -74,6 +77,7 @@ async function init(): Promise<void> {
   on('persistence:songCreated', () => {
     stopPlayback();
     disconnectAllMidi();
+    resetAllAdsr();
     refreshUI();
     refreshSongName();
     updateSongPane();

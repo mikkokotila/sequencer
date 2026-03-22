@@ -1,0 +1,15 @@
+{
+  "oracle_id": "low_end_continuity",
+  "task_id": "20260322-adsr-envelope",
+  "subject_sha": "cd364d62edd58e2a37f2af77428d94574dd642ac4db300214efe6faf74cb8c6d",
+  "harness_version": "oracle-harness-v2",
+  "status": "PASS",
+  "metrics": {
+    "max_neighbor_delta_lufs": 0.018263
+  },
+  "raw_artifact": "raw/low_end_continuity.json",
+  "raw_sha256": "4d3520d4c13f7a09aa05118cc212e26d114100b0205335a27d242cdb65482231",
+  "evidence": "max_neighbor_delta_lufs=0.01826291792680479",
+  "challenge_id": "3adec4df5ec11f099d5703cc5d2c6d47bfd8c016cf4dbc7573dc642edcb9f490",
+  "payload_digest": "d6444b6df786d8227d2605f402f300c4d0a9f72f304d2ea0f5f4ee9d526b66b7"
+}

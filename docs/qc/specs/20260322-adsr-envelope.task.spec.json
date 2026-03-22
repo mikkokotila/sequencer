@@ -1,0 +1,75 @@
+{
+  "task_id": "20260322-adsr-envelope",
+  "task_type": "feature",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Add per-track ADSR envelope controls with live visualization popup on all 9 tracks",
+    "in_scope": [
+      "src/engine/adsr.ts",
+      "src/engine/audio.ts",
+      "src/engine/scheduler.ts",
+      "src/engine/midi.ts",
+      "src/ui/adsr-popup.ts",
+      "src/ui/build.ts",
+      "src/main.ts",
+      "index.html",
+      "e2e/sequencer.spec.ts",
+      "README.md",
+      "docs/Audio-Engine-Spec.md"
+    ],
+    "out_of_scope": [
+      "src/engine/worklets/**"
+    ],
+    "controls": [
+      {
+        "id": "adsr.attack",
+        "default": 0.005,
+        "range": [0.001, 2.0],
+        "unit": "seconds",
+        "off_semantics": "instant attack (0.005s = transparent)",
+        "on_semantics": "gain ramps from 0 to 1 over attack duration"
+      },
+      {
+        "id": "adsr.decay",
+        "default": 0.1,
+        "range": [0.001, 2.0],
+        "unit": "seconds",
+        "off_semantics": "minimal decay to sustain",
+        "on_semantics": "exponential fall from peak to sustain level"
+      },
+      {
+        "id": "adsr.sustain",
+        "default": 1.0,
+        "range": [0, 1.0],
+        "unit": "level",
+        "off_semantics": "full level (1.0 = no attenuation)",
+        "on_semantics": "held gain level after decay"
+      },
+      {
+        "id": "adsr.release",
+        "default": 0.1,
+        "range": [0.001, 3.0],
+        "unit": "seconds",
+        "off_semantics": "short release (0.1s = near-instant)",
+        "on_semantics": "exponential fade to silence after note-off"
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": ["builtin:kick_01"],
+    "seed": "fixed-seed-v1",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false
+  }
+}

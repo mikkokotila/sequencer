@@ -101,13 +101,16 @@ function scheduleStep(time: number): void {
   const pv = phrase.vocalPat;
   const gains = getTrackGains();
 
+  // Step duration for ADSR release scheduling (16th note at current BPM)
+  const stepDur = 60 / transport.getBpm() / 4;
+
   // Drums
   for (let t = 0; t < DRUMS_CFG.length; t++) {
     const row = pd[t];
     const buf = transport.drumBuf[t];
     const gain = gains[t];
     if (row?.[s] && buf && !transport.mutedArr[t] && gain) {
-      playSample(buf, time, undefined, gain);
+      playSample(buf, time, undefined, gain, t, stepDur);
     }
   }
 
@@ -133,7 +136,7 @@ function scheduleStep(time: number): void {
       const oct = transport.octaves[t];
       if (oct === undefined) continue;
       const rate = Math.pow(2, ((oct - 1) * 12 + n) / 12);
-      playSample(buf, time, rate, dest);
+      playSample(buf, time, rate, dest, trackIdx, stepDur);
 
       // Harmony interval for poly tracks with exactly 1 note
       if (activeNotes.length === 1 && cfg && !cfg.mono) {
@@ -142,7 +145,7 @@ function scheduleStep(time: number): void {
           const semitones = HARMONY_SEMITONES[harmIdx];
           if (semitones !== undefined) {
             const harmRate = Math.pow(2, ((oct - 1) * 12 + n + semitones) / 12);
-            playSample(buf, time, harmRate, dest);
+            playSample(buf, time, harmRate, dest, trackIdx, stepDur);
           }
         }
       }
@@ -155,7 +158,7 @@ function scheduleStep(time: number): void {
   if (pv[s] && vb && !transport.mutedArr[vocalIdx]) {
     const dest = gains[vocalIdx];
     if (dest) {
-      playSample(vb, time, undefined, dest);
+      playSample(vb, time, undefined, dest, vocalIdx, stepDur);
     }
   }
 

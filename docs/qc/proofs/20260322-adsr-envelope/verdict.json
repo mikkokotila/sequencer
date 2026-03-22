@@ -1,0 +1,211 @@
+{
+  "task_id": "20260322-adsr-envelope",
+  "task_type": "feature",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260322-adsr-envelope.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-22T11:21:08.611Z",
+  "finished_at_utc": "2026-03-22T11:21:57.131Z",
+  "head_sha": "61aef5b",
+  "tree_sha": "768bedcee346935d7af0dfce83edc5ad2143addc",
+  "subject_sha": "cd364d62edd58e2a37f2af77428d94574dd642ac4db300214efe6faf74cb8c6d",
+  "subject_files": [
+    "README.md",
+    "docs/Audio-Engine-Spec.md",
+    "e2e/sequencer.spec.ts",
+    "index.html",
+    "src/engine/adsr.ts",
+    "src/engine/audio.ts",
+    "src/engine/midi.ts",
+    "src/engine/scheduler.ts",
+    "src/main.ts",
+    "src/ui/adsr-popup.ts",
+    "src/ui/build.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "README.md",
+    "docs/Audio-Engine-Spec.md",
+    "docs/qc/proofs/20260322-adsr-envelope.md",
+    "docs/qc/proofs/20260322-adsr-envelope/logs/O-AUDIO-GATES.log",
+    "docs/qc/proofs/20260322-adsr-envelope/logs/O-CI.log",
+    "docs/qc/proofs/20260322-adsr-envelope/logs/O-COMMIT-RANGE.log",
+    "docs/qc/proofs/20260322-adsr-envelope/logs/O-E2E.log",
+    "docs/qc/proofs/20260322-adsr-envelope/logs/O-GATE-ARCH-FULL.log",
+    "docs/qc/proofs/20260322-adsr-envelope/logs/O-GATE-CONTRACTS-FULL.log",
+    "docs/qc/proofs/20260322-adsr-envelope/logs/O-ORACLE-HARNESS.log",
+    "docs/qc/proofs/20260322-adsr-envelope/oracles/clip_guard.json",
+    "docs/qc/proofs/20260322-adsr-envelope/oracles/control_binding.json",
+    "docs/qc/proofs/20260322-adsr-envelope/oracles/default_safety.json",
+    "docs/qc/proofs/20260322-adsr-envelope/oracles/low_end_continuity.json",
+    "docs/qc/proofs/20260322-adsr-envelope/oracles/off_transparent.json",
+    "docs/qc/proofs/20260322-adsr-envelope/oracles/on_audible.json",
+    "docs/qc/proofs/20260322-adsr-envelope/proof.manifest.json",
+    "docs/qc/proofs/20260322-adsr-envelope/raw/clip_guard.json",
+    "docs/qc/proofs/20260322-adsr-envelope/raw/control_binding.json",
+    "docs/qc/proofs/20260322-adsr-envelope/raw/default_safety.json",
+    "docs/qc/proofs/20260322-adsr-envelope/raw/low_end_continuity.json",
+    "docs/qc/proofs/20260322-adsr-envelope/raw/off_transparent.json",
+    "docs/qc/proofs/20260322-adsr-envelope/raw/on_audible.json",
+    "docs/qc/proofs/20260322-adsr-envelope/verdict.json",
+    "docs/qc/specs/20260322-adsr-envelope.task.spec.json",
+    "e2e/sequencer.spec.ts",
+    "index.html",
+    "src/engine/adsr.ts",
+    "src/engine/audio.ts",
+    "src/engine/midi.ts",
+    "src/engine/scheduler.ts",
+    "src/main.ts",
+    "src/ui/adsr-popup.ts",
+    "src/ui/build.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=6, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=6, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4910,
+        "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 26226,
+        "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-E2E.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 459,
+        "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 396,
+        "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 343,
+        "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-COMMIT-RANGE.log"
+      },
+      {
+        "id": "O-AUDIO-GATES",
+        "label": "Audio browser gates",
+        "command": "npm run audio:gates",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 14014,
+        "log_file": "docs/qc/proofs/20260322-adsr-envelope/logs/O-AUDIO-GATES.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-adsr-envelope/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260322-adsr-envelope/raw/off_transparent.json",
+        "raw_sha256": "b2a84da416ccc73a40d22225f408234b075e39406baf2246aad923f505c55eff"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-adsr-envelope/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260322-adsr-envelope/raw/on_audible.json",
+        "raw_sha256": "cd64f70253680db0dc02138a2847cb160991c29a24a7492e46281f4032fc82d4"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-adsr-envelope/oracles/low_end_continuity.json",
+        "raw_artifact": "docs/qc/proofs/20260322-adsr-envelope/raw/low_end_continuity.json",
+        "raw_sha256": "4d3520d4c13f7a09aa05118cc212e26d114100b0205335a27d242cdb65482231"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-adsr-envelope/oracles/clip_guard.json",
+        "raw_artifact": "docs/qc/proofs/20260322-adsr-envelope/raw/clip_guard.json",
+        "raw_sha256": "e480a17713d9699e962153390e414532181ae6766c5b8febf74ec927798809a8"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-adsr-envelope/oracles/default_safety.json",
+        "raw_artifact": "docs/qc/proofs/20260322-adsr-envelope/raw/default_safety.json",
+        "raw_sha256": "bb0882b3b857433d44885151905f920917de67f3da2036000ed513e95f844054"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-adsr-envelope/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260322-adsr-envelope/raw/control_binding.json",
+        "raw_sha256": "55d006124fa8d2c61d0910d7d5a1eb23a723fb9b2933a1bf4b25e0ca523bf66d"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

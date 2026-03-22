@@ -9,6 +9,7 @@
 import { MEL_CFG, DRUMS_CFG } from '../config';
 import { melBuf } from '../transport/song';
 import { getAudioContext, getTrackGains } from './audio';
+import { applyEnvelope, triggerRelease, getTrackAdsr } from './adsr';
 import { emit } from '../events';
 
 // ═══════════════════════════════════════════
@@ -26,7 +27,7 @@ interface MidiTrackBinding {
   inputId: string;
   inputName: string;
   listener: (e: Event) => void;
-  activeSources: Map<number, AudioBufferSourceNode>;
+  activeSources: Map<number, { source: AudioBufferSourceNode; envelope: GainNode }>;
 }
 
 // ═══════════════════════════════════════════
@@ -148,9 +149,9 @@ export function disconnectMidiFromTrack(trackIndex: number): void {
   if (!binding) return;
 
   // Stop all active voices
-  for (const [, src] of binding.activeSources) {
+  for (const [, entry] of binding.activeSources) {
     try {
-      src.stop();
+      entry.source.stop();
     } catch {
       /* already stopped */
     }
@@ -204,14 +205,12 @@ function handleNoteOn(trackIndex: number, note: number, velocity: number): void 
 
   const cfg = MEL_CFG[trackIndex];
 
-  // Mono tracks: stop existing note first
+  const globalTrackIdx = DRUMS_CFG.length + trackIndex;
+
+  // Mono tracks: release existing note first
   if (cfg?.mono) {
-    for (const [existingNote, existingSrc] of binding.activeSources) {
-      try {
-        existingSrc.stop();
-      } catch {
-        /* already stopped */
-      }
+    for (const [existingNote, existing] of binding.activeSources) {
+      triggerRelease(ctx, existing.envelope, existing.source, getTrackAdsr(globalTrackIdx));
       binding.activeSources.delete(existingNote);
     }
   }
@@ -220,12 +219,8 @@ function handleNoteOn(trackIndex: number, note: number, velocity: number): void 
   if (binding.activeSources.size >= MAX_POLYPHONY) {
     const oldest = binding.activeSources.entries().next();
     if (!oldest.done) {
-      const [oldestNote, oldestSrc] = oldest.value;
-      try {
-        oldestSrc.stop();
-      } catch {
-        /* already stopped */
-      }
+      const [oldestNote, oldestEntry] = oldest.value;
+      triggerRelease(ctx, oldestEntry.envelope, oldestEntry.source, getTrackAdsr(globalTrackIdx));
       binding.activeSources.delete(oldestNote);
     }
   }
@@ -239,19 +234,22 @@ function handleNoteOn(trackIndex: number, note: number, velocity: number): void 
 
   // Get destination: trackGains[DRUMS_CFG.length + trackIndex]
   const trackGains = getTrackGains();
-  const dest = trackGains[DRUMS_CFG.length + trackIndex];
+  const dest = trackGains[globalTrackIdx];
   if (!dest) return;
 
-  // Create source and connect
+  // Create source
   const src = ctx.createBufferSource();
   src.buffer = buffer;
   src.playbackRate.value = rate;
-  src.connect(velocityGain);
+
+  // Apply ADSR envelope: source → envelopeGain → velocityGain → trackGain
+  // No stepDuration — release triggered on note-off
+  const envelope = applyEnvelope(ctx, src, velocityGain, globalTrackIdx, 0);
   velocityGain.connect(dest);
   src.start(0);
 
-  // Store for note-off and cleanup
-  binding.activeSources.set(note, src);
+  // Store source + envelope for note-off release
+  binding.activeSources.set(note, { source: src, envelope });
 
   // Auto-cleanup when sample ends naturally
   src.onended = () => {
@@ -265,16 +263,15 @@ function handleNoteOn(trackIndex: number, note: number, velocity: number): void 
 }
 
 function handleNoteOff(trackIndex: number, note: number): void {
+  const ctx = getAudioContext();
+  if (!ctx) return;
   const binding = trackBindings[trackIndex];
   if (!binding) return;
 
-  const src = binding.activeSources.get(note);
-  if (src) {
-    try {
-      src.stop();
-    } catch {
-      /* already stopped */
-    }
+  const entry = binding.activeSources.get(note);
+  if (entry) {
+    const globalTrackIdx = DRUMS_CFG.length + trackIndex;
+    triggerRelease(ctx, entry.envelope, entry.source, getTrackAdsr(globalTrackIdx));
     binding.activeSources.delete(note);
   }
 }

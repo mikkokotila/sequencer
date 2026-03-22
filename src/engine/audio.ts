@@ -17,6 +17,7 @@
 import { TOTAL_TRACKS } from '../config';
 import type { LoadedSample } from '../types';
 import { loadAllWorklets } from './worklet-loader';
+import { applyEnvelope } from './adsr';
 
 // ── Module state ──
 let audioCtx: AudioContext | null = null;
@@ -144,19 +145,33 @@ export async function loadWorklets(): Promise<void> {
 }
 
 /**
- * Play a sample at a given time with optional playback rate and destination.
+ * Play a sample at a given time with optional playback rate, destination, and ADSR envelope.
+ *
+ * When trackIndex and stepDuration are provided, an ADSR envelope GainNode
+ * is inserted between the source and destination.
  */
 export function playSample(
   buffer: AudioBuffer,
   time: number,
   rate?: number,
   dest?: AudioNode,
+  trackIndex?: number,
+  stepDuration?: number,
 ): AudioBufferSourceNode | null {
   if (!audioCtx) return null;
   const src = audioCtx.createBufferSource();
   src.buffer = buffer;
   if (rate !== undefined) src.playbackRate.value = rate;
-  src.connect(dest ?? mixBus ?? audioCtx.destination);
+
+  const target = dest ?? mixBus ?? audioCtx.destination;
+
+  if (trackIndex !== undefined) {
+    // Apply ADSR envelope between source and destination
+    applyEnvelope(audioCtx, src, target, trackIndex, time, stepDuration);
+  } else {
+    src.connect(target);
+  }
+
   src.start(time);
   return src;
 }

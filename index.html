@@ -181,6 +181,12 @@
         .harmony-toggle:hover { border-color:#3a3d58; color:var(--text-dim); }
         .harmony-toggle.active { background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.3); color:#ddd; }
         .harmony-toggle.dimmed { opacity:0.35; }
+        .adsr-btn {
+            font-size:7px; font-weight:800; letter-spacing:0.5px; padding:2px 6px; border-radius:3px;
+            border:1px solid var(--border-hi); background:var(--surface-hi); color:var(--text-muted);
+            cursor:pointer; transition:all 0.15s; font-family:inherit; margin-left:2px;
+        }
+        .adsr-btn:hover { border-color:#3a3d58; color:var(--text-dim); }
         .midi-btn {
             font-size:7px; font-weight:800; letter-spacing:0.5px; padding:2px 6px; border-radius:3px;
             border:1px solid var(--border-hi); background:var(--surface-hi); color:var(--text-muted);
@@ -375,6 +381,62 @@
         .midi-status {
             padding: 8px 18px; border-top: 1px solid var(--border);
             font-size: 9px; color: var(--text-muted); letter-spacing: 0.5px;
+        }
+
+        /* ── ADSR Popup ── */
+        .adsr-popup {
+            position: fixed; z-index: 1002;
+            width: 260px; background: #0d0f1a;
+            border: 1px solid var(--border-hi); border-radius: 12px;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
+            opacity: 0; pointer-events: none; transition: opacity 0.15s;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .adsr-popup.open { opacity: 1; pointer-events: all; }
+        .adsr-header {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 14px; border-bottom: 1px solid var(--border);
+        }
+        .adsr-title { font-size: 9px; font-weight: 800; letter-spacing: 1.5px; color: #666; flex: 1; }
+        .adsr-close {
+            width: 22px; height: 22px; border-radius: 50%;
+            border: 1px solid var(--border-hi); background: transparent;
+            color: var(--text-dim); cursor: pointer; font-size: 12px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.15s;
+        }
+        .adsr-close:hover { background: rgba(255,60,90,0.15); border-color: rgba(255,60,90,0.4); color: #ff5070; }
+        .adsr-canvas {
+            display: block; margin: 10px 10px 4px; border-radius: 6px;
+            background: rgba(255,255,255,0.02);
+        }
+        .adsr-sliders {
+            display: flex; justify-content: space-around; padding: 8px 10px 12px;
+        }
+        .adsr-slider-col {
+            display: flex; flex-direction: column; align-items: center; gap: 4px; width: 50px;
+        }
+        .adsr-slider-vertical {
+            writing-mode: vertical-lr; direction: rtl;
+            height: 90px; width: 20px;
+            accent-color: #888; cursor: pointer;
+            -webkit-appearance: none; appearance: none;
+            background: transparent;
+        }
+        .adsr-slider-vertical::-webkit-slider-runnable-track {
+            width: 4px; background: rgba(255,255,255,0.10); border-radius: 2px;
+        }
+        .adsr-slider-vertical::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 12px; height: 12px; border-radius: 50%;
+            background: #555; border: 1px solid rgba(255,255,255,0.25);
+            cursor: pointer;
+        }
+        .adsr-slider-label {
+            font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #888;
+        }
+        .adsr-slider-value {
+            font-size: 8px; font-weight: 600; color: #666; min-height: 12px;
         }
 
         /* ── Scrollbar ── */

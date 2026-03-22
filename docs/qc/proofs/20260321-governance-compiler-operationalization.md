@@ -20,7 +20,7 @@ attestation_path: docs/qc/proofs/20260321-governance-compiler-operationalization
 | `npm run gate:architecture` | not bound (governance-only diff) | N/A | Simulated product run demonstrates binding (`O-GATE-ARCH`) and failure capture |
 | `npm run audio:gates` | not bound (governance-only diff) | N/A | Simulated product run demonstrates binding (`O-AUDIO-GATES`) and failure capture |
 
-## Compiler Behavior Tests (CA Perspective)
+## Compiler Behavior Tests (WA Perspective)
 
 1. Missing spec test:
    - command: `npm run gov:check`

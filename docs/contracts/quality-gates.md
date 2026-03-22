@@ -56,7 +56,7 @@ Blocking regression checks include:
 
 Oracle proof custody rules:
 
-1. CA must not hand-author oracle JSON files as proof input.
+1. WA must not hand-author oracle JSON files as proof input.
 2. Compiler runs harness directly and writes oracle artifacts only after payload verification.
 3. Challenge-response mismatch or payload digest mismatch is a blocking failure.
 

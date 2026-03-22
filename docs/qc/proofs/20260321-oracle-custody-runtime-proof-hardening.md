@@ -12,5 +12,5 @@ spec_path: docs/qc/specs/20260321-oracle-custody-runtime-proof-hardening.task.sp
 
 ## Verification
 
-- `npm run gov:check:observer -- --spec docs/qc/specs/20260321-oracle-custody-runtime-proof-hardening.task.spec.json`
-- `npm run gov:commit:observer -- --spec docs/qc/specs/20260321-oracle-custody-runtime-proof-hardening.task.spec.json -m "chore(governance): harden oracle custody and runtime proof harness"`
+- `npm run gov:check:ga -- --spec docs/qc/specs/20260321-oracle-custody-runtime-proof-hardening.task.spec.json`
+- `npm run gov:commit:ga -- --spec docs/qc/specs/20260321-oracle-custody-runtime-proof-hardening.task.spec.json -m "chore(governance): harden oracle custody and runtime proof harness"`

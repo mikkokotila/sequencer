@@ -6,7 +6,7 @@
 
 ## Summary
 
-This governance slice introduces deterministic benchmark execution profiles so CA can proceed without fake timing claims in headless environments while preserving strict interactive timing requirements.
+This governance slice introduces deterministic benchmark execution profiles so WA can proceed without fake timing claims in headless environments while preserving strict interactive timing requirements.
 
 ## Changes
 
@@ -21,4 +21,4 @@ This governance slice introduces deterministic benchmark execution profiles so C
 1. `node --check docs/qc/scripts/governance-compiler.mjs`
 2. `node --check docs/qc/scripts/audio-gates.mjs`
 3. `npm run gov:check -- --spec docs/qc/specs/20260321-new-song-baseline-reset.task.spec.json --simulate-files tests/benchmark.html --no-write` returns `GOV-SPEC-008` when execution_profile is missing.
-4. `npm run gov:check:observer -- --spec docs/qc/specs/20260321-benchmark-profile-discriminator.task.spec.json`
+4. `npm run gov:check:ga -- --spec docs/qc/specs/20260321-benchmark-profile-discriminator.task.spec.json`

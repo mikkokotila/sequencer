@@ -6,7 +6,7 @@
 
 ## Summary
 
-This governance slice hardens compiler behavior and guidance so CA must remediate diagnostics iteratively until `PASS` instead of bypassing with direct commits or manual oracle evidence.
+This governance slice hardens compiler behavior and guidance so WA must remediate diagnostics iteratively until `PASS` instead of bypassing with direct commits or manual oracle evidence.
 
 ## Changes
 

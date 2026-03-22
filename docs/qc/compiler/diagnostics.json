@@ -1446,25 +1446,25 @@
     },
     "GOV-ROLE-001": {
       "severity": "BLOCKED",
-      "title": "Governance task requires observer role",
-      "why_failed": "task_type=governance-change is observer-only and cannot run in default CA mode.",
+      "title": "Governance task requires GA role",
+      "why_failed": "task_type=governance-change is GA-only and cannot run in default WA mode.",
       "acceptable_recipes": [
         {
           "id": "RCP-ROLE-STANDDOWN",
-          "summary": "CA stands down and hands off governance work to observer."
+          "summary": "WA stands down and hands off governance work to GA."
         },
         {
-          "id": "RCP-ROLE-OBSERVER-OVERRIDE",
-          "summary": "Observer reruns compiler with --allow-governance-change (or GOV_ALLOW_GOVERNANCE_CHANGE=1)."
+          "id": "RCP-ROLE-GA-OVERRIDE",
+          "summary": "GA reruns compiler with --allow-governance-change (or GOV_ALLOW_GOVERNANCE_CHANGE=1)."
         }
       ],
       "disallowed_workarounds": [
-        "Running governance-change in CA mode",
+        "Running governance-change in WA mode",
         "Relabeling governance files as product work",
-        "Direct commit without observer override"
+        "Direct commit without GA override"
       ],
       "required_evidence": [
-        "observer override flag or env",
+        "GA override flag or env",
         "governance PASS attestation"
       ],
       "allowed_change_scope": [
@@ -1481,7 +1481,7 @@
         "tests/**",
         "e2e/**"
       ],
-      "recheck_protocol": "observer runs gov:check with --allow-governance-change and same spec"
+      "recheck_protocol": "GA runs gov:check with --allow-governance-change and same spec"
     }
   }
 }

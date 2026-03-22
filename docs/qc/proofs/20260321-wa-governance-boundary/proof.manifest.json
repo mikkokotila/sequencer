@@ -1,5 +1,5 @@
 {
-  "task_id": "20260321-ca-governance-boundary",
+  "task_id": "20260321-wa-governance-boundary",
   "tree_sha": "__AUTO__",
   "commit_shas": [],
   "required_gates": [
@@ -7,7 +7,7 @@
       "id": "O-CI",
       "result": "PASS",
       "blocking": true,
-      "evidence": "docs/qc/proofs/20260321-ca-governance-boundary/logs/O-CI.log"
+      "evidence": "docs/qc/proofs/20260321-wa-governance-boundary/logs/O-CI.log"
     }
   ],
   "contracts": [

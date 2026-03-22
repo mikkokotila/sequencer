@@ -22,7 +22,7 @@ The governance compiler (`docs/qc/compiler/obligation-rules.json` or `diagnostic
 This is a **metric name mismatch** between the harness output and the compiler threshold. The harness correctly verifies structural integrity (AudioWorkletNode present, MeasureProcessor defined, no setInterval, no Math.random) but reports the result under `p99_ms` instead of `structural_ok`.
 
 ## Why Root-Cause Remediation Is Blocked
-The harness file (`docs/qc/scripts/oracle-harness.mjs`) is in the governance-protected path `docs/qc/scripts/**`. Per CLAUDE.md role boundary, CA cannot modify governance files. The fix requires changing line 156 from:
+The harness file (`docs/qc/scripts/oracle-harness.mjs`) is in the governance-protected path `docs/qc/scripts/**`. Per CLAUDE.md role boundary, WA cannot modify governance files. The fix requires changing line 156 from:
 ```javascript
 metrics: { p99_ms: pass ? 2.0 : 10.0 }
 ```
@@ -41,4 +41,4 @@ The product file (`tests/benchmark.html`) is correctly fixed:
 - All structural checks pass
 
 ## Requested Operator Decision
-Fix the metric name mismatch in `docs/qc/scripts/oracle-harness.mjs` line 156 so the harness outputs `structural_ok: 1` instead of `p99_ms: 2.0` for the `benchmark_worklet_budget` oracle in headless profile. Then CA can regenerate the oracle and achieve PASS.
+Fix the metric name mismatch in `docs/qc/scripts/oracle-harness.mjs` line 156 so the harness outputs `structural_ok: 1` instead of `p99_ms: 2.0` for the `benchmark_worklet_budget` oracle in headless profile. Then WA can regenerate the oracle and achieve PASS.

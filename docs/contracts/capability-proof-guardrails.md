@@ -30,7 +30,7 @@ For benchmark-governed tasks, task spec must declare top-level `execution_profil
 3. oracle list
 4. oracle artifacts bound to compiler `subject_sha`
 5. machine-generated oracle outputs (`harness_version` must not be manual)
-6. compiler-owned harness custody (oracle payload produced during `gov:check`, not CA-authored disk submission)
+6. compiler-owned harness custody (oracle payload produced during `gov:check`, not WA-authored disk submission)
 
 Mandatory minimum oracles for product tasks:
 

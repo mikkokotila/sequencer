@@ -1,7 +1,7 @@
 # Observation Task 0 — Initial Routing/Contracts/Gates Baseline
 
 - Date (UTC): 2026-03-21
-- Observer: Codex
+- GA: Codex
 - Baseline commit reviewed: `32f3b6e`
 
 ## Scope

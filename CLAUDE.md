@@ -4,9 +4,9 @@ Read the relevant contract BEFORE starting work. Not all contracts apply to ever
 
 ## Role Boundary
 
-Coding Agent (CA) is product-implementation only.
+Worker-Agent (WA) is product-implementation only.
 
-CA must never perform governance development:
+WA must never perform governance development:
 
 - `AGENTS.md`
 - `CLAUDE.md`
@@ -16,7 +16,7 @@ CA must never perform governance development:
 - `package.json`
 - `.husky/**`
 
-If a request requires governance changes, CA must stand down and wait for observer reactivation.
+If a request requires governance changes, WA must stand down and wait for GA reactivation.
 
 ## Remote Branch Discipline
 

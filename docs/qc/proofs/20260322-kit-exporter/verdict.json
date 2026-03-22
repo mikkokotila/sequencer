@@ -5,21 +5,17 @@
   "spec_path": "docs/qc/specs/20260322-kit-exporter.task.spec.json",
   "policy_version": "2.0.0",
   "diagnostics_version": "1.0.0",
-  "started_at_utc": "2026-03-22T14:10:14.479Z",
-  "finished_at_utc": "2026-03-22T14:10:55.599Z",
-  "head_sha": "5231e02",
-  "tree_sha": "d8e67992b2938a6bb4bbc6d534f38e6aaeca221d",
-  "subject_sha": "1c61e866921830d18203026df5795f6253e90b46b564e9a4b10c4223bafc6d2f",
+  "started_at_utc": "2026-03-22T14:16:19.887Z",
+  "finished_at_utc": "2026-03-22T14:17:00.817Z",
+  "head_sha": "60b94ba",
+  "tree_sha": "e922ef07f37a96ffdede64eb786021f413811a44",
+  "subject_sha": "871e808dc9fc3a485dc8dcb6ce58b33d500cfed61cb72ee04c8e42931d30184a",
   "subject_files": [
-    "README.md",
-    "e2e/sequencer.spec.ts",
-    "src/transport/kit-export.ts"
+    "e2e/sequencer.spec.ts"
   ],
   "simulated_files": [],
   "changed_files": [
-    "README.md",
-    "e2e/sequencer.spec.ts",
-    "src/transport/kit-export.ts"
+    "e2e/sequencer.spec.ts"
   ],
   "phases": [
     {
@@ -57,7 +53,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 4889,
+        "elapsed_ms": 5022,
         "log_file": "docs/qc/proofs/20260322-kit-exporter/logs/O-CI.log"
       },
       {
@@ -67,7 +63,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 33110,
+        "elapsed_ms": 32697,
         "log_file": "docs/qc/proofs/20260322-kit-exporter/logs/O-E2E.log"
       },
       {
@@ -77,7 +73,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 185,
+        "elapsed_ms": 166,
         "log_file": "docs/qc/proofs/20260322-kit-exporter/logs/O-E2E-DELTA.log"
       },
       {
@@ -87,7 +83,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 356,
+        "elapsed_ms": 333,
         "log_file": "docs/qc/proofs/20260322-kit-exporter/logs/O-GATE-CONTRACTS-FULL.log"
       },
       {
@@ -97,7 +93,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 382,
+        "elapsed_ms": 360,
         "log_file": "docs/qc/proofs/20260322-kit-exporter/logs/O-GATE-ARCH-FULL.log"
       },
       {
@@ -107,7 +103,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 274,
+        "elapsed_ms": 284,
         "log_file": "docs/qc/proofs/20260322-kit-exporter/logs/O-COMMIT-RANGE.log"
       }
     ],
@@ -127,14 +123,14 @@
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260322-kit-exporter/oracles/off_transparent.json",
         "raw_artifact": "docs/qc/proofs/20260322-kit-exporter/raw/off_transparent.json",
-        "raw_sha256": "8785c67b1d645fa864ed32b3cb25ea389b63dd7db4374b783c2b348345085eaa"
+        "raw_sha256": "a7d10cf6b9a3898f974a99ebfc9366c9436ed30d7cd7d99feb4b7bbf4a60bebb"
       },
       {
         "oracle_id": "on_audible",
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260322-kit-exporter/oracles/on_audible.json",
         "raw_artifact": "docs/qc/proofs/20260322-kit-exporter/raw/on_audible.json",
-        "raw_sha256": "a2e9f4bebb6fcfe5f1e40a0ac673ea6e174fa12fcf9b432ff4b1bf6cfecd2a37"
+        "raw_sha256": "18da7c99cb0f0facecee7273ffa89aeab706ad62dc54e59e9667a6eedb6ea2a0"
       },
       {
         "oracle_id": "control_binding",

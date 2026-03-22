@@ -65,7 +65,10 @@ Before commit, ensure proof artifacts exist:
 Direct `git commit` for product changes is non-compliant when compiler verdict is not `PASS`.
 
 Compiler determines blocking task-regression gates from staged diff (`ci`, `e2e`, delta contract/architecture gates, `audio:gates` when bound, and `gate:commit-range`).
-Global-debt full scans are tracked non-blocking during compiler execution.
+Global-debt full scans remain non-blocking commands, but compiler debt ratchet is blocking:
+
+1. product tasks must not increase global debt vs `docs/qc/debt/baseline.json`
+2. debt-burn tasks must set `guardrails.require_debt_reduction=true` and reduce debt count by at least 1
 
 ### Operator Stand-Down Override
 
@@ -141,3 +144,11 @@ Include:
 
 **Update:** `docs/qc/baseline.md`
 Advance `baseline_sha` only when final verdict is `PASS`.
+
+## Debt Burn-Down Mode
+
+When asked to eliminate global debt:
+
+1. pick one baseline finding from `docs/qc/debt/baseline.json`
+2. set `guardrails.require_debt_reduction=true` in task spec
+3. complete only when compiler debt ratchet shows strict negative delta

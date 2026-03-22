@@ -10,6 +10,7 @@ const RULES_PATH = path.join(root, 'docs/qc/compiler/obligation-rules.json');
 const DIAGNOSTICS_PATH = path.join(root, 'docs/qc/compiler/diagnostics.json');
 const COMPILER_LOG_PATH = path.join(root, 'logs/compiler.log');
 const STANDDOWN_ACTIVE_PATH = path.join(root, 'docs/qc/standdown/active.json');
+const DEBT_BASELINE_PATH = path.join(root, 'docs/qc/debt/baseline.json');
 const CHAIN_GENESIS_HASH = '0'.repeat(64);
 const REPEATED_FAILURE_LOOKBACK_MS = 6 * 60 * 60 * 1000;
 const REPEATED_FAILURE_PRIOR_THRESHOLD = 2;
@@ -332,6 +333,8 @@ class CompilerContext {
     this.taskType = null;
     this.executionProfile = (rules.execution_profiles && rules.execution_profiles.default) || 'headless';
     this.executionProfileExplicit = false;
+    this.requireDebtReduction = false;
+    this.debtRatchet = null;
     this.treeSha = 'UNSET';
     this.subjectSha = 'UNSET';
     this.subjectFiles = [];
@@ -688,6 +691,10 @@ async function phaseParseSpec(ctx) {
         errors.push(`guardrails.${key} must be boolean`);
       }
     }
+    if ('require_debt_reduction' in guardrails && typeof guardrails.require_debt_reduction !== 'boolean') {
+      errors.push('guardrails.require_debt_reduction must be boolean when present');
+    }
+    ctx.requireDebtReduction = guardrails.require_debt_reduction === true;
   }
 
   const controls = spec?.capability?.controls;
@@ -822,6 +829,133 @@ function parseHarnessPayload(stdout) {
       ok: false,
       error: `Oracle harness did not output valid JSON: ${err instanceof Error ? err.message : String(err)}`,
     };
+  }
+}
+
+async function loadDebtBaseline() {
+  let raw = '';
+  try {
+    raw = await fs.readFile(DEBT_BASELINE_PATH, 'utf8');
+  } catch (err) {
+    if (err && typeof err === 'object' && 'code' in err && err.code === 'ENOENT') {
+      return { ok: false, error: `Missing debt baseline: ${path.relative(root, DEBT_BASELINE_PATH)}` };
+    }
+    return {
+      ok: false,
+      error: `Could not read debt baseline: ${err instanceof Error ? err.message : String(err)}`,
+    };
+  }
+
+  const parsed = readJsonFileSafe(raw, path.relative(root, DEBT_BASELINE_PATH));
+  if (!parsed.ok) {
+    return { ok: false, error: parsed.error };
+  }
+
+  const baseline = parsed.data;
+  const baselineTotal = baseline?.counts?.total_failures;
+  if (!Number.isInteger(baselineTotal) || baselineTotal < 0) {
+    return {
+      ok: false,
+      error: 'Debt baseline is missing valid counts.total_failures integer.',
+    };
+  }
+
+  return { ok: true, baseline };
+}
+
+function extractFailLinesFromCommandLog(raw) {
+  if (typeof raw !== 'string' || raw.trim() === '') return [];
+  const stdoutMarker = '--- stdout ---';
+  const stderrMarker = '--- stderr ---';
+  const start = raw.indexOf(stdoutMarker);
+  const end = raw.indexOf(stderrMarker);
+  const body =
+    start >= 0 && end > start
+      ? raw.slice(start + stdoutMarker.length, end)
+      : start >= 0
+        ? raw.slice(start + stdoutMarker.length)
+        : raw;
+
+  const lines = body
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith('FAIL |'));
+
+  return lines.map((line) => {
+    const parts = line.split('|').map((part) => part.trim());
+    return {
+      line,
+      name: parts[1] || 'unknown',
+      detail: parts.slice(2).join(' | ') || '',
+    };
+  });
+}
+
+async function parseGlobalDebtFailures(logFileRel) {
+  if (!logFileRel) return [];
+  const abs = path.resolve(root, logFileRel);
+  let raw = '';
+  try {
+    raw = await fs.readFile(abs, 'utf8');
+  } catch {
+    return [];
+  }
+  return extractFailLinesFromCommandLog(raw);
+}
+
+async function enforceGlobalDebtRatchet(ctx) {
+  if (!ctx.groupMatches.product) return;
+
+  const contracts = ctx.commandResults.find((r) => r.id === 'O-GATE-CONTRACTS-FULL');
+  const architecture = ctx.commandResults.find((r) => r.id === 'O-GATE-ARCH-FULL');
+  if (!contracts || !architecture) return;
+
+  const baselineResult = await loadDebtBaseline();
+  if (!baselineResult.ok) {
+    ctx.addDiagnostic('GOV-DEBT-001', baselineResult.error, {
+      baseline_path: path.relative(root, DEBT_BASELINE_PATH),
+    });
+    return;
+  }
+
+  const contractsFailures = await parseGlobalDebtFailures(contracts.log_file);
+  const architectureFailures = await parseGlobalDebtFailures(architecture.log_file);
+  const currentTotal = contractsFailures.length + architectureFailures.length;
+  const baselineTotal = baselineResult.baseline.counts.total_failures;
+  const delta = currentTotal - baselineTotal;
+
+  ctx.debtRatchet = {
+    baseline_id: baselineResult.baseline.baseline_id || null,
+    baseline_total_failures: baselineTotal,
+    current_total_failures: currentTotal,
+    delta_total_failures: delta,
+    require_debt_reduction: ctx.requireDebtReduction,
+    contracts_failures: contractsFailures.map((f) => f.name),
+    architecture_failures: architectureFailures.map((f) => f.name),
+  };
+
+  if (currentTotal > baselineTotal) {
+    ctx.addDiagnostic(
+      'GOV-DEBT-002',
+      `Global debt increased versus baseline (baseline=${baselineTotal}, current=${currentTotal}, delta=+${delta}).`,
+      {
+        baseline_total_failures: baselineTotal,
+        current_total_failures: currentTotal,
+        delta_total_failures: delta,
+      },
+    );
+  }
+
+  if (ctx.requireDebtReduction && currentTotal >= baselineTotal) {
+    ctx.addDiagnostic(
+      'GOV-DEBT-003',
+      `Debt-burn task requires strict reduction (baseline=${baselineTotal}, current=${currentTotal}).`,
+      {
+        baseline_total_failures: baselineTotal,
+        current_total_failures: currentTotal,
+        reduction_required: 1,
+      },
+    );
   }
 }
 
@@ -1511,6 +1645,7 @@ async function phaseExecute(ctx) {
   }
 
   await executeCommandObligations(ctx);
+  await enforceGlobalDebtRatchet(ctx);
   await validateManifest(ctx);
   await executeOracleHarness(ctx);
 
@@ -1558,6 +1693,7 @@ async function phaseAttest(ctx) {
     obligations: {
       commands: ctx.commandResults,
       global_debt: ctx.globalDebtResults,
+      debt_ratchet: ctx.debtRatchet,
       oracles: ctx.oracleResults,
       manifest_required: true,
     },
@@ -1606,6 +1742,15 @@ function printSummary(ctx, attestationResult) {
     for (const debt of ctx.globalDebtResults) {
       console.log(`- FAIL | ${debt.id} | ${debt.command} | log=${debt.log_file}`);
     }
+  }
+
+  if (ctx.debtRatchet) {
+    console.log('\ndebt ratchet');
+    console.log(`- baseline_id=${ctx.debtRatchet.baseline_id || 'unknown'}`);
+    console.log(
+      `- baseline_total=${ctx.debtRatchet.baseline_total_failures} | current_total=${ctx.debtRatchet.current_total_failures} | delta=${ctx.debtRatchet.delta_total_failures >= 0 ? '+' : ''}${ctx.debtRatchet.delta_total_failures}`,
+    );
+    console.log(`- require_debt_reduction=${ctx.debtRatchet.require_debt_reduction ? 'true' : 'false'}`);
   }
 
   if (ctx.oracleResults.length > 0) {

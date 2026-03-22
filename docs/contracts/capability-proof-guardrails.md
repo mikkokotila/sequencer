@@ -48,12 +48,18 @@ Manual disk-authored oracle JSON as proof input is non-compliant.
 1. `allow_fixme`
 2. `allow_skip`
 3. `allow_contract_edits`
+4. `require_debt_reduction` (optional, default `false`)
 
 Default policy for normal product tasks:
 
 - `allow_fixme: false`
 - `allow_skip: false`
 - `allow_contract_edits: false`
+- `require_debt_reduction: false`
+
+Debt-burn tasks set:
+
+- `require_debt_reduction: true`
 
 ## Truthfulness Standards
 

@@ -69,6 +69,12 @@ Compiler uses delta mode for blocking task-regression checks:
 Only checks relevant to staged files are blocking.
 Full-debt scan remains available via `npm run gate:architecture` and is tracked as non-blocking debt in compiler output.
 
+Debt ratchet enforcement (blocking):
+
+1. Compiler compares current full-scan debt against `docs/qc/debt/baseline.json`.
+2. Product tasks fail if debt increases (`GOV-DEBT-002`).
+3. Tasks with `guardrails.require_debt_reduction=true` fail unless debt strictly decreases (`GOV-DEBT-003`).
+
 Blocking regression checks include:
 
 1. No dummy extension pass-through node hacks.

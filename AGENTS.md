@@ -78,6 +78,7 @@ For every completed governance task:
 2. Ensure required checks are represented in `docs/qc/proofs/<task-id>/proof.manifest.json`.
 3. Run `npm run gov:check -- --spec docs/qc/specs/<task-id>.task.spec.json`.
    - Oracle payload must come from compiler-owned harness execution; never trust pre-written disk oracle input.
+   - For debt-burn tasks, set `guardrails.require_debt_reduction=true` and ensure debt ratchet delta is negative.
 4. Create/update `docs/qc/proofs/<task-id>.md`.
 5. Ensure compiler warnings/errors were appended to `logs/compiler.log` hash-chain.
 6. Commit immediately through `npm run gov:commit -- --spec ... -m \"type(scope): description\"`.

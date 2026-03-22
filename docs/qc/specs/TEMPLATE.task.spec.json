@@ -39,6 +39,7 @@
   "guardrails": {
     "allow_fixme": false,
     "allow_skip": false,
-    "allow_contract_edits": false
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
   }
 }

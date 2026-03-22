@@ -1,0 +1,39 @@
+{
+  "task_id": "20260322-global-debt-ratchet-enforcement",
+  "task_type": "governance-change",
+  "execution_profile": "headless",
+  "capability": {
+    "summary": "Add compiler debt ratchet so product tasks cannot increase global debt and debt-burn tasks must reduce it.",
+    "in_scope": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "docs/contracts/governance-compiler.md",
+      "docs/contracts/quality-gates.md",
+      "docs/contracts/capability-proof-guardrails.md",
+      "docs/qc/compiler/diagnostics.json",
+      "docs/qc/compiler/obligation-rules.json",
+      "docs/qc/scripts/governance-compiler.mjs",
+      "docs/qc/specs/TEMPLATE.task.spec.json"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "tests/**",
+      "e2e/**",
+      "docs/qc/debt/**"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "governance:debt-baseline-ratchet"
+    ],
+    "seed": "global-debt-ratchet-v1",
+    "oracles": []
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": true,
+    "require_debt_reduction": false
+  }
+}

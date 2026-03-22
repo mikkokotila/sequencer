@@ -670,6 +670,100 @@
       ],
       "recheck_protocol": "fix challenge-binding mismatch and rerun npm run gov:check -- --spec <same-spec>"
     },
+    "GOV-DEBT-001": {
+      "severity": "BLOCKED",
+      "title": "Debt baseline missing or invalid",
+      "why_failed": "Compiler cannot enforce debt ratchet without a valid docs/qc/debt/baseline.json source of truth.",
+      "root_cause_reminder": "Create or repair the debt baseline artifact before running product tasks.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-DEBT-BASELINE-FREEZE",
+          "summary": "Run full debt scans, freeze counts/findings in docs/qc/debt/baseline.json, and commit baseline artifacts."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Deleting debt checks to unblock tasks",
+        "Running product work without baseline",
+        "Using ad-hoc local numbers not committed as baseline"
+      ],
+      "required_evidence": [
+        "docs/qc/debt/baseline.json",
+        "full scan logs referenced by baseline"
+      ],
+      "allowed_change_scope": [
+        "docs/qc/debt/**",
+        "docs/qc/compiler/**",
+        "docs/contracts/**",
+        "docs/qc/specs/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "src/**"
+      ],
+      "recheck_protocol": "freeze/repair baseline then rerun npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-DEBT-002": {
+      "severity": "FAIL",
+      "title": "Global debt increased vs baseline",
+      "why_failed": "Task introduced net-new global debt findings relative to frozen baseline.",
+      "root_cause_reminder": "Do not carry debt forward; remove newly introduced debt regressions.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-DEBT-NONINCREASE",
+          "summary": "Fix regressions so full debt count is <= baseline before completion."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Treating debt increase as acceptable drift",
+        "Editing baseline upward in same product task",
+        "Ignoring non-blocking full-scan output"
+      ],
+      "required_evidence": [
+        "full scan logs with debt count <= baseline",
+        "compiler debt ratchet summary"
+      ],
+      "allowed_change_scope": [
+        "src/**",
+        "tests/**",
+        "e2e/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/debt/baseline.json"
+      ],
+      "recheck_protocol": "fix debt regressions and rerun npm run gov:check -- --spec <same-spec>"
+    },
+    "GOV-DEBT-003": {
+      "severity": "FAIL",
+      "title": "Debt-burn task did not reduce debt",
+      "why_failed": "Task declared guardrails.require_debt_reduction=true but did not reduce full debt count by at least one finding.",
+      "root_cause_reminder": "Debt-burn tasks must deliver measurable debt reduction, not lateral changes.",
+      "acceptable_recipes": [
+        {
+          "id": "RCP-DEBT-REDUCE-AT-LEAST-ONE",
+          "summary": "Resolve at least one baseline debt finding so current total is strictly lower than baseline."
+        }
+      ],
+      "disallowed_workarounds": [
+        "Flipping require_debt_reduction to false mid-task",
+        "Reclassifying task to avoid debt reduction",
+        "Editing baseline downward without corresponding code fix"
+      ],
+      "required_evidence": [
+        "compiler debt ratchet summary with negative delta",
+        "full scan logs showing strict reduction"
+      ],
+      "allowed_change_scope": [
+        "src/**",
+        "tests/**",
+        "e2e/**",
+        "docs/qc/proofs/**"
+      ],
+      "forbidden_change_scope": [
+        "docs/qc/debt/baseline.json"
+      ],
+      "recheck_protocol": "resolve at least one debt item and rerun npm run gov:check -- --spec <same-spec>"
+    },
     "GOV-AUDIO-001": {
       "severity": "FAIL",
       "title": "Off state is not transparent",

@@ -1,0 +1,35 @@
+{
+  "task_id": "20260322-global-debt-ratchet-enforcement",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-global-debt-ratchet-enforcement/logs/O-CI.log"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/governance-compiler.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/quality-gates.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/capability-proof-guardrails.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "NOT_VERIFIED",
+    "details": "Governance-only compiler and policy change."
+  },
+  "artifacts": [
+    "verdict.json",
+    "logs/O-CI.log"
+  ]
+}

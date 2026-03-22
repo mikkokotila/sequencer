@@ -41,6 +41,7 @@ During `execute`, obligations are split:
 1. `task_regression` (blocking)
 2. `global_debt` (non-blocking, tracked)
 3. `oracle_harness` (compiler-owned, in-memory custody)
+4. `debt_ratchet` (blocking policy over global debt totals)
 
 ## Verdict Policy
 
@@ -132,6 +133,20 @@ Profile behavior:
 7. Missing proof artifact is always `BLOCKED`.
 8. Compiler-managed artifacts (`docs/qc/specs/**`, `docs/qc/proofs/**`, `logs/compiler.log`) do not count as governance-policy edits in feature tasks.
 9. Governance scripts must have clean staged state (no unstaged drift) before compiler executes.
+10. Product tasks cannot increase full-scan global debt relative to frozen baseline.
+11. Debt-burn tasks with `guardrails.require_debt_reduction=true` must reduce total debt by at least one finding.
+
+## Global Debt Ratchet
+
+Frozen baseline path:
+
+- `docs/qc/debt/baseline.json`
+
+Ratchet rules:
+
+1. For all product tasks (`feature|bugfix|refactor`), current full-scan debt must be `<= baseline`.
+2. If `guardrails.require_debt_reduction=true`, current full-scan debt must be `< baseline`.
+3. Baseline file is governance-owned and not editable in product debt-burn tasks.
 
 ## Required Artifacts
 

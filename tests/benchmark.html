@@ -118,15 +118,12 @@ const SAMPLE_RATE = 48000;
  * MeasureProcessor — real AudioWorklet that times its own process() calls.
  * Defined as inline Blob URL so the benchmark is self-contained.
  * Sits at the end of the DSP chain, passes audio through, and measures
- * the time between start and end of each process() invocation.
- * Posts batched timing data to main thread via MessagePort.
+ * elapsed compute time inside each process() callback.
  */
 const MEASURE_PROCESSOR_CODE = `
 class MeasureProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
-    this._timings = [];
-    this._batchSize = 64;
     this._active = true;
     this.port.onmessage = (e) => {
       if (e.data === 'stop') this._active = false;
@@ -136,7 +133,8 @@ class MeasureProcessor extends AudioWorkletProcessor {
   process(inputs, outputs) {
     if (!this._active) return false;
 
-    const t0 = performance.now();
+    const hasPerf = typeof performance !== 'undefined' && performance && typeof performance.now === 'function';
+    const t0 = hasPerf ? performance.now() : 0;
 
     // Pass audio through (input to output) so the chain stays connected
     const input = inputs[0];
@@ -151,14 +149,8 @@ class MeasureProcessor extends AudioWorkletProcessor {
       }
     }
 
-    const elapsed = performance.now() - t0;
-    this._timings.push(elapsed);
-
-    // Post timing batch to main thread every _batchSize calls
-    if (this._timings.length >= this._batchSize) {
-      this.port.postMessage({ type: 'timings', data: this._timings.slice() });
-      this._timings.length = 0;
-    }
+    const t1 = hasPerf ? performance.now() : t0;
+    this.port.postMessage(t1 - t0);
 
     return true;
   }
@@ -236,11 +228,16 @@ async function runBenchmark() {
     oscs.push(osc);
   }
 
-  // Collect timing data from worklet via MessagePort
+  // Collect direct per-process elapsed timings emitted from the worklet.
   const timings = [];
+  let processorError = null;
+  measureNode.onprocessorerror = () => {
+    processorError = 'AudioWorklet processor error';
+  };
   measureNode.port.onmessage = (e) => {
-    if (e.data && e.data.type === 'timings') {
-      timings.push(...e.data.data);
+    const v = Number(e.data);
+    if (Number.isFinite(v) && v >= 0) {
+      timings.push(v);
     }
   };
 
@@ -256,6 +253,14 @@ async function runBenchmark() {
   ctx.close();
 
   // Analyze results from real worklet process() timing
+  if (processorError) {
+    document.getElementById('gate').className = 'gate fail';
+    document.getElementById('gate').textContent = 'FAIL — ' + processorError;
+    btn.textContent = 'RUN STRESS TEST';
+    btn.classList.remove('running');
+    return;
+  }
+
   const data = timings;
   if (data.length < 10) {
     document.getElementById('gate').className = 'gate fail';

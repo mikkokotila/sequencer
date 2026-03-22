@@ -98,7 +98,8 @@ async function run() {
       const gateText = (document.querySelector('#gate')?.textContent || '').trim();
       const p99Text = (document.querySelector('#p99')?.textContent || '').trim();
       const budgetText = (document.querySelector('#budget')?.textContent || '').trim();
-      const sampleMatch = gateText.match(/(\d+)\s*samples/i);
+      const sampleMatch =
+        gateText.match(/(\d+)\s+worklet process\(\)\s+samples/i) || gateText.match(/(\d+)\s*samples/i);
       return {
         gateText,
         p99Text,

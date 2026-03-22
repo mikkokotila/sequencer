@@ -3,7 +3,7 @@
   "task_type": "refactor",
   "execution_profile": "real",
   "capability": {
-    "summary": "Remove window.SEQ global installation — internal extensions use ExtensionHost DI, no external consumers exist",
+    "summary": "Remove window.SEQ global installation in the Vite/TypeScript app — internal extensions use ExtensionHost DI; legacy sequencer.html and extensions/*.js consumers are deprecated and out of scope",
     "in_scope": [
       "src/engine/extensions/registry.ts",
       "src/main.ts",

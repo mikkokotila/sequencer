@@ -133,7 +133,7 @@ function isViolationOnAddedLine(addedMap, violation) {
 
 function extractHtmlScriptBlocks(html) {
   const blocks = [];
-  const scriptTag = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
+  const scriptTag = /<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi;
   let match;
   while ((match = scriptTag.exec(html)) !== null) {
     const full = match[0] || '';

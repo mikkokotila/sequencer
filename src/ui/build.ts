@@ -57,6 +57,7 @@ import { isPhraseEmpty, fillWithPrev } from '../transport/patterns';
 import { getMidiTrackBinding } from '../engine/midi';
 import { openMidiBrowser, closeMidiBrowser, isMidiBrowserOpen } from './midi-browser';
 import { openAdsrPopup, closeAdsrPopup, isAdsrPopupOpen } from './adsr-popup';
+import { exportKit } from '../transport/kit-export';
 import { on } from '../events';
 import {
   scheduleSave,
@@ -386,6 +387,13 @@ export function buildUI(): void {
     '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 10V2M5 5l3-3 3 3M3 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   loadBtn.onclick = loadPatternFile;
   fileBtns.appendChild(loadBtn);
+  const kitBtn = el('button', 'tb');
+  kitBtn.id = 'kit-export-btn';
+  kitBtn.title = 'Export Sample Kit';
+  kitBtn.innerHTML =
+    '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 7h6M8 7v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
+  kitBtn.onclick = exportKit;
+  fileBtns.appendChild(kitBtn);
   transport.appendChild(fileBtns);
 
   // BPM control

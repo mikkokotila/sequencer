@@ -869,3 +869,19 @@ test.describe('ADSR Controls', () => {
     expect(result.peakAt100ms).toBeGreaterThan(result.peakFirst10ms);
   });
 });
+
+// ═══════════════════════════════════════════
+//  Kit Export
+// ═══════════════════════════════════════════
+
+test.describe('Kit Export', () => {
+  test('kit export button is visible in transport', async ({ page }) => {
+    await waitForApp(page);
+    await expect(page.locator('#kit-export-btn')).toBeVisible();
+  });
+
+  test('kit export button has correct title', async ({ page }) => {
+    await waitForApp(page);
+    await expect(page.locator('#kit-export-btn')).toHaveAttribute('title', 'Export Sample Kit');
+  });
+});

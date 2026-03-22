@@ -1,0 +1,170 @@
+{
+  "task_id": "20260322-kit-exporter",
+  "task_type": "feature",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260322-kit-exporter.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-22T13:59:02.304Z",
+  "finished_at_utc": "2026-03-22T13:59:44.145Z",
+  "head_sha": "7066cf7",
+  "tree_sha": "826b4474528cb0f36162677c9d7162fe0ff284c7",
+  "subject_sha": "d4177cb45ecf674f4ce83836f1a8ee2da741fa2581ca0319544b2581bb5d50a7",
+  "subject_files": [
+    "README.md",
+    "e2e/sequencer.spec.ts",
+    "src/transport/kit-export.ts",
+    "src/ui/build.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "README.md",
+    "docs/qc/proofs/20260322-kit-exporter.md",
+    "docs/qc/proofs/20260322-kit-exporter/logs/O-CI.log",
+    "docs/qc/proofs/20260322-kit-exporter/logs/O-COMMIT-RANGE.log",
+    "docs/qc/proofs/20260322-kit-exporter/logs/O-E2E-DELTA.log",
+    "docs/qc/proofs/20260322-kit-exporter/logs/O-E2E.log",
+    "docs/qc/proofs/20260322-kit-exporter/logs/O-GATE-ARCH-FULL.log",
+    "docs/qc/proofs/20260322-kit-exporter/logs/O-GATE-CONTRACTS-FULL.log",
+    "docs/qc/proofs/20260322-kit-exporter/logs/O-ORACLE-HARNESS.log",
+    "docs/qc/proofs/20260322-kit-exporter/oracles/control_binding.json",
+    "docs/qc/proofs/20260322-kit-exporter/oracles/off_transparent.json",
+    "docs/qc/proofs/20260322-kit-exporter/oracles/on_audible.json",
+    "docs/qc/proofs/20260322-kit-exporter/proof.manifest.json",
+    "docs/qc/proofs/20260322-kit-exporter/raw/control_binding.json",
+    "docs/qc/proofs/20260322-kit-exporter/raw/off_transparent.json",
+    "docs/qc/proofs/20260322-kit-exporter/raw/on_audible.json",
+    "docs/qc/proofs/20260322-kit-exporter/verdict.json",
+    "docs/qc/specs/20260322-kit-exporter.task.spec.json",
+    "e2e/sequencer.spec.ts",
+    "src/transport/kit-export.ts",
+    "src/ui/build.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=3, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=3, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 5266,
+        "log_file": "docs/qc/proofs/20260322-kit-exporter/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 33305,
+        "log_file": "docs/qc/proofs/20260322-kit-exporter/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 186,
+        "log_file": "docs/qc/proofs/20260322-kit-exporter/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 330,
+        "log_file": "docs/qc/proofs/20260322-kit-exporter/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 424,
+        "log_file": "docs/qc/proofs/20260322-kit-exporter/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 274,
+        "log_file": "docs/qc/proofs/20260322-kit-exporter/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-kit-exporter/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260322-kit-exporter/raw/off_transparent.json",
+        "raw_sha256": "3dd2c1a4457e6c5c9c8e416766ec403c12822b0bb32103d0ffcc787a0219623b"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-kit-exporter/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260322-kit-exporter/raw/on_audible.json",
+        "raw_sha256": "e3c784ee0c238cc44e81099cc13d0beeb8004d534b727c3091f73488f34bb81b"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260322-kit-exporter/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260322-kit-exporter/raw/control_binding.json",
+        "raw_sha256": "7d2be031601420315c5b2d62fc8d1c9c3a6d1ee01e3cc68d587157dadbcb91b6"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

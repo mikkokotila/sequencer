@@ -1,0 +1,43 @@
+{
+  "task_id": "20260322-debt-informational-assertions",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Replace informational assert(..., true, ...) with real testable conditions in audio test pages",
+    "in_scope": [
+      "tests/audio-quality.html",
+      "tests/e2e-signal.html",
+      "tests/signal-purity.html"
+    ],
+    "out_of_scope": [
+      "src/**"
+    ],
+    "controls": [
+      {
+        "id": "test.assertions",
+        "default": "testable",
+        "range": ["testable"],
+        "unit": "state",
+        "off_semantics": "informational assertions that always pass regardless of signal state",
+        "on_semantics": "assertions that verify actual signal properties (peak > 0, THD > 0, etc.)"
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:kick_01"
+    ],
+    "seed": "fixed-seed-v1",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "control_binding"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": true
+  }
+}

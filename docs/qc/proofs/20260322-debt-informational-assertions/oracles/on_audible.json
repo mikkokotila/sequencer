@@ -1,0 +1,15 @@
+{
+  "oracle_id": "on_audible",
+  "task_id": "20260322-debt-informational-assertions",
+  "subject_sha": "7e934f0f10c37f0ceeb7106f2f14e10608ddaf21f2ac9c2f33e24ba72fed0c21",
+  "harness_version": "oracle-harness-v2",
+  "status": "PASS",
+  "metrics": {
+    "delta_lufs": 1.416895
+  },
+  "raw_artifact": "raw/on_audible.json",
+  "raw_sha256": "2c90a8b8a4c338cf41fdb7a086ede9868f0fb051344143292197214080c0a5eb",
+  "evidence": "delta_lufs=1.4168953474463741",
+  "challenge_id": "ec872f54faa8522c310bd0568c9f152dde30d333f5ad85a7c205714d8fb2ad5b",
+  "payload_digest": "e58aeb25d87aeab63f0ed35af1424e181680b812b7dcce27118dc20aef59e0ee"
+}

@@ -205,7 +205,7 @@ async function testTrackSumming() {
     // Note: 9 simultaneous sine waves at 0.5 amp WILL exceed 1.0 — this is expected.
     // Real-world content (drums, synths) has lower peak correlation.
     // The test documents the actual summing behavior for reference.
-    assert('Track summing: peak documented', true,
+    assert('Track summing: peak is positive', peak > 0,
         `9 tracks peak: ${peak.toFixed(4)} (${toDb(peak).toFixed(1)} dBFS), clipped: ${clipped}`);
     assert('Track summing: within theoretical max', peak < 2.88,
         `expected max 2.88, got ${peak.toFixed(4)}`);
@@ -248,10 +248,10 @@ async function testWorstCaseSumming() {
     const peak = peakLevel(data);
 
     // 9 * 0.8 * 0.5 * 0.8 = 2.88 peak when all in phase
-    assert('Worst-case summing: documents peak level', true,
+    assert('Worst-case summing: peak is positive', peak > 0,
         `${TRACKS} tracks same freq: peak=${peak.toFixed(4)} (${toDb(peak).toFixed(1)} dBFS)`);
-    assert('Worst-case summing: peak documented (same-freq pathological)', true,
-        `All tracks same freq: peak=${peak.toFixed(3)} — real-world content decorrelates`);
+    assert('Worst-case summing: within theoretical max', peak < 3.0,
+        `All tracks same freq: peak=${peak.toFixed(3)}, expected <= 3.0`);
 }
 
 // ── Suite 4: WaveShaperNode distortion at zero drive ──
@@ -303,7 +303,7 @@ async function testWaveShaperBypass() {
         src.connect(ws).connect(c.destination);
     });
     const thd2 = measureTHD(output2, TEST_FREQ);
-    assert('WaveShaper drive=0.3: documents THD', true,
+    assert('WaveShaper drive=0.3: THD is measurable', thd2 > 0,
         `THD at default drive: ${thd2.toFixed(4)}%`);
 }
 
@@ -356,7 +356,7 @@ async function testVariMuGainStaging() {
         `peak: ${peak.toFixed(4)} (${toDb(peak).toFixed(1)} dBFS)`);
     assert('Vari-Mu defaults: gain ratio reasonable', ratio < 2.0,
         `gain ratio: ${ratio.toFixed(4)}x (${toDb(ratio).toFixed(1)} dB)`);
-    assert('Vari-Mu defaults: THD documented', true, `THD: ${thd.toFixed(3)}%`);
+    assert('Vari-Mu defaults: THD below 25%', thd < 25.0, `THD: ${thd.toFixed(3)}%`);
 }
 
 // ── Suite 6: Aux send summing (reverb-style) ──
@@ -383,7 +383,7 @@ async function testAuxSendSumming() {
 
     assert('Aux sends: peak level at default sends', peak < 1.0,
         `${TRACKS} tracks * ${DEFAULT_SEND} send = peak ${peak.toFixed(4)} (${toDb(peak).toFixed(1)} dBFS)`);
-    assert('Aux sends: normalized summing documented', true,
+    assert('Aux sends: signal is present', peak > 0,
         `Send bus normalized: peak ${peak.toFixed(4)} (${toDb(peak).toFixed(1)} dBFS)`);
 }
 
@@ -516,7 +516,7 @@ async function testFullChainGain() {
     const peak = peakLevel(output);
     const ratio = gainRatio(sine.getChannelData(0), output);
 
-    assert('Full chain: peak level documented', true,
+    assert('Full chain: signal is present', peak > 0,
         `peak: ${peak.toFixed(4)} (${toDb(peak).toFixed(1)} dBFS), gain: ${ratio.toFixed(3)}x`);
     assert('Full chain: no clipping', peak < 1.0,
         `peak: ${peak.toFixed(4)} — ${peak >= 1.0 ? 'CLIPPING!' : 'OK'}`);
@@ -564,7 +564,7 @@ async function testRecommendedHeadroom() {
 
     // With master at 0.8, typical 3-4 track usage stays well under 1.0.
     // Full 9-track worst case is documented, not a failure condition.
-    assert('Headroom fix: master=0.8 documented for 9 tracks', true,
+    assert('Headroom fix: master=0.8 produces signal for 9 tracks', peak > 0,
         `peak: ${peak.toFixed(4)} (${toDb(peak).toFixed(1)} dBFS) — real content decorrelates`);
 }
 

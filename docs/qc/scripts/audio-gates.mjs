@@ -39,6 +39,33 @@ function parseFiniteNumber(text) {
   return Number.isFinite(value) ? value : null;
 }
 
+async function terminateChild(proc, graceMs = 1000) {
+  if (!proc || proc.exitCode !== null) return;
+  let settled = false;
+  const exited = new Promise((resolve) => {
+    proc.once('exit', () => {
+      settled = true;
+      resolve();
+    });
+  });
+
+  try {
+    proc.kill('SIGTERM');
+  } catch {
+    // process may already be gone
+  }
+
+  await Promise.race([exited, delay(graceMs)]);
+  if (!settled && proc.exitCode === null) {
+    try {
+      proc.kill('SIGKILL');
+    } catch {
+      // process may already be gone
+    }
+    await Promise.race([exited, delay(500)]);
+  }
+}
+
 async function run() {
   if (!hasDisplayServer()) {
     throw new Error('Real audio benchmark requires a display server. Run with xvfb-run -a npm run audio:gates.');
@@ -58,11 +85,13 @@ async function run() {
     serverErr += String(d);
   });
 
+  let browser = null;
+
   try {
     await waitForServer(`${BASE}/`);
 
     const { chromium } = await import('playwright');
-    const browser = await chromium.launch({ headless: false });
+    browser = await chromium.launch({ headless: false });
     const page = await browser.newPage();
 
     const results = [];
@@ -140,8 +169,6 @@ async function run() {
           : `real p99=${p99.toFixed(3)}ms budget=${budget.toFixed(3)}ms samples=${sampleCount} structural_ok=${structuralOk ? 1 : 0} gate_fail=${gateShowsFail ? 1 : 0} worklet=${benchmark.hasAudioWorkletNode ? 1 : 0} random=${benchmark.hasRandomnessToken ? 1 : 0} setInterval=${benchmark.hasSetIntervalToken ? 1 : 0} currentTime=${benchmark.hasCurrentTimeToken ? 1 : 0} gate="${benchmark.gateText}"`,
     });
 
-    await browser.close();
-
     let failed = 0;
     for (const r of results) {
       console.log(`${r.ok ? 'PASS' : 'FAIL'} | ${r.name} | ${r.detail}`);
@@ -154,11 +181,14 @@ async function run() {
 
     console.log(`audio-gates: all ${results.length} checks passed.`);
   } finally {
-    server.kill('SIGTERM');
-    await delay(250);
-    if (!server.killed) {
-      server.kill('SIGKILL');
+    if (browser) {
+      try {
+        await Promise.race([browser.close(), delay(3000)]);
+      } catch {
+        // ignore browser shutdown issues; gate outcome already captured
+      }
     }
+    await terminateChild(server);
 
     if (serverOut.trim().length > 0) {
       console.log(serverOut.trim());

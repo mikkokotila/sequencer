@@ -159,6 +159,33 @@ async function launchBrowser() {
   return chromium.launch({ headless: false });
 }
 
+async function terminateChild(proc, graceMs = 1000) {
+  if (!proc || proc.exitCode !== null) return;
+  let settled = false;
+  const exited = new Promise((resolve) => {
+    proc.once('exit', () => {
+      settled = true;
+      resolve();
+    });
+  });
+
+  try {
+    proc.kill('SIGTERM');
+  } catch {
+    // process may already be gone
+  }
+
+  await Promise.race([exited, delay(graceMs)]);
+  if (!settled && proc.exitCode === null) {
+    try {
+      proc.kill('SIGKILL');
+    } catch {
+      // process may already be gone
+    }
+    await Promise.race([exited, delay(500)]);
+  }
+}
+
 function toRounded(value, decimals = 6) {
   const scale = 10 ** decimals;
   return Math.round(value * scale) / scale;
@@ -386,11 +413,7 @@ async function runBenchmarkProbe(page, repoRoot) {
       };
     });
   } finally {
-    server.kill('SIGTERM');
-    await delay(200);
-    if (!server.killed) {
-      server.kill('SIGKILL');
-    }
+    await terminateChild(server);
     if (err.trim()) {
       process.stderr.write(`${err.trim()}\n`);
     } else if (out.trim()) {

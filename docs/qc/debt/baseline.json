@@ -1,0 +1,39 @@
+{
+  "version": "1.0.0",
+  "baseline_id": "20260322-global-debt-baseline",
+  "frozen_at_utc": "2026-03-22T05:54:20Z",
+  "counts": {
+    "contracts_full_failures": 5,
+    "architecture_full_failures": 6,
+    "total_failures": 11
+  },
+  "sources": {
+    "contracts_full_out": "docs/qc/debt/baselines/20260322-global-debt-baseline/contracts-full.out.log",
+    "contracts_full_err": "docs/qc/debt/baselines/20260322-global-debt-baseline/contracts-full.err.log",
+    "architecture_full_out": "docs/qc/debt/baselines/20260322-global-debt-baseline/architecture-full.out.log",
+    "architecture_full_err": "docs/qc/debt/baselines/20260322-global-debt-baseline/architecture-full.err.log"
+  },
+  "ratchet_policy": {
+    "non_increase_required_for_product_tasks": true,
+    "reduction_flag": "guardrails.require_debt_reduction",
+    "minimum_reduction_when_flagged": 1,
+    "target_total_failures": 0
+  },
+  "findings": {
+    "contracts_full": [
+      "No informational assertions",
+      "src/engine/extensions/pultec-eq.ts: setState respects disabled state",
+      "src/engine/extensions/compressor.ts: setState respects disabled state",
+      "src/engine/extensions/transformer.ts: setState respects disabled state",
+      "Engine low-end control curve safety"
+    ],
+    "architecture_full": [
+      "No global window.SEQ extension coupling",
+      "Engine interface contract is actually consumed",
+      "Scheduler does not import transport internals directly",
+      "Audio initialization ownership is centralized",
+      "UI does not duplicate transport business logic",
+      "Playhead/cell rendering avoids repeated inline style mutation"
+    ]
+  }
+}

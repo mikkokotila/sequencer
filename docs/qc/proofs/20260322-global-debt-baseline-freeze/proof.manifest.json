@@ -1,0 +1,28 @@
+{
+  "task_id": "20260322-global-debt-baseline-freeze",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260322-global-debt-baseline-freeze/logs/O-CI.log"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/governance-compiler.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "NOT_VERIFIED",
+    "details": "Governance-only baseline freeze."
+  },
+  "artifacts": [
+    "verdict.json",
+    "logs/O-CI.log",
+    "docs/qc/debt/baseline.json"
+  ]
+}

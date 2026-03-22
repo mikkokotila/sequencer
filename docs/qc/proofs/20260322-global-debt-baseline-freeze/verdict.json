@@ -1,0 +1,81 @@
+{
+  "task_id": "20260322-global-debt-baseline-freeze",
+  "task_type": "governance-change",
+  "execution_profile": "headless",
+  "spec_path": "docs/qc/specs/20260322-global-debt-baseline-freeze.task.spec.json",
+  "policy_version": "1.2.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-03-22T05:56:03.246Z",
+  "finished_at_utc": "2026-03-22T05:56:08.022Z",
+  "head_sha": "d7b1982",
+  "tree_sha": "255ada0d10607068c5d9ecc27b4d2a2ed1ce1e71",
+  "subject_sha": "5f826687e20e4889d32ec26950e7837400c7922160e9c748d0106550595ce75e",
+  "subject_files": [
+    "docs/qc/compiler/obligation-rules.json",
+    "docs/qc/debt/baseline.json",
+    "docs/qc/debt/baselines/20260322-global-debt-baseline.md",
+    "docs/qc/debt/baselines/20260322-global-debt-baseline/architecture-full.err.log",
+    "docs/qc/debt/baselines/20260322-global-debt-baseline/architecture-full.out.log",
+    "docs/qc/debt/baselines/20260322-global-debt-baseline/contracts-full.err.log",
+    "docs/qc/debt/baselines/20260322-global-debt-baseline/contracts-full.out.log"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/compiler/obligation-rules.json",
+    "docs/qc/debt/baseline.json",
+    "docs/qc/debt/baselines/20260322-global-debt-baseline.md",
+    "docs/qc/debt/baselines/20260322-global-debt-baseline/architecture-full.err.log",
+    "docs/qc/debt/baselines/20260322-global-debt-baseline/architecture-full.out.log",
+    "docs/qc/debt/baselines/20260322-global-debt-baseline/contracts-full.err.log",
+    "docs/qc/debt/baselines/20260322-global-debt-baseline/contracts-full.out.log",
+    "docs/qc/proofs/20260322-global-debt-baseline-freeze.md",
+    "docs/qc/proofs/20260322-global-debt-baseline-freeze/proof.manifest.json",
+    "docs/qc/specs/20260322-global-debt-baseline-freeze.task.spec.json"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=1, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4526,
+        "log_file": "docs/qc/proofs/20260322-global-debt-baseline-freeze/logs/O-CI.log"
+      }
+    ],
+    "global_debt": [],
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

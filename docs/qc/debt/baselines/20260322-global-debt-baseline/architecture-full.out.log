@@ -1,0 +1,20 @@
+
+> sequencer@1.0.0 gate:architecture
+> node docs/qc/scripts/architecture-gates.mjs --mode full
+
+PASS | No dummy pass-through extension nodes | No pass-through dummy insert nodes detected.
+PASS | Persistence lifecycle decoupled from UI callback injection | No persistence callback injection API detected.
+PASS | Preview audio nodes are explicitly cleaned up | Preview node cleanup logic detected.
+PASS | Decode failures are not silently swallowed | No silent decode catch blocks detected.
+PASS | Painting event setup is idempotent | Found setup guard.
+PASS | PaintType does not use empty-string sentinel | No empty-string PaintType sentinel detected.
+PASS | Transport UI avoids large innerHTML template injection | No transport.innerHTML injection detected.
+PASS | Benchmark harness is deterministic (no proxy timing/randomness) | No forbidden benchmark timing proxies detected.
+PASS | Fake benchmark processor removed | benchmark-processor.ts correctly removed.
+FAIL | No global window.SEQ extension coupling | src/engine/extensions/registry.ts:52:  window.SEQ = {
+src/engine/extensions/registry.ts:138:  // Build the host API that extensions receive via init() — replaces window.SEQ
+FAIL | Engine interface contract is actually consumed | AudioEngine appears unused outside interface declaration.
+FAIL | Scheduler does not import transport internals directly | scheduler.ts imports transport internals directly.
+FAIL | Audio initialization ownership is centralized | Too many initAudio call sites (4).
+FAIL | UI does not duplicate transport business logic | Duplicate track replication and/or melody mutation logic exists in UI layer.
+FAIL | Playhead/cell rendering avoids repeated inline style mutation | Inline style mutation detected in playhead/cell render paths.

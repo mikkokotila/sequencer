@@ -1,0 +1,30 @@
+{
+  "task_id": "20260322-global-debt-baseline-freeze",
+  "task_type": "governance-change",
+  "execution_profile": "headless",
+  "capability": {
+    "summary": "Freeze full-scan global debt baseline for ratchet enforcement.",
+    "in_scope": [
+      "docs/qc/debt/**",
+      "docs/qc/compiler/obligation-rules.json"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "tests/**",
+      "e2e/**"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "governance:global-debt-full-scan"
+    ],
+    "seed": "global-debt-baseline-v1",
+    "oracles": []
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false
+  }
+}

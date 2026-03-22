@@ -33,6 +33,9 @@
       "docs/qc/standdown/**",
       "logs/compiler.log"
     ],
+    "debt_tracking": [
+      "docs/qc/debt/**"
+    ],
     "product": [
       "src/**",
       "tests/**",

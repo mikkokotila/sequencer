@@ -1,0 +1,54 @@
+{
+  "run_id": "1778673638332-7f06a177",
+  "task_id": "20260513-gitignore-governance-proofs",
+  "task_type": "governance-change",
+  "spec_path": "docs/qc/specs/20260513-gitignore-governance-proofs.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-05-13T12:00:38.331Z",
+  "finished_at_utc": "2026-05-13T12:00:45.162Z",
+  "head_sha": "443d1d8",
+  "tree_sha": "6dfd369f817eb106be29acc2e74096deddf42e35",
+  "subject_sha": "da18c42de1a04234e2e3edd62736e52cee94464f7369cc7d461161d1dba580dd",
+  "verdict": "FAIL",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-GATE-GOVERNANCE-SELF",
+      "label": "Governance self-tests",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-gitignore-governance-proofs/logs/O-GATE-GOVERNANCE-SELF.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-gitignore-governance-proofs/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-gitignore-governance-proofs/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "FAIL",
+      "code": "GOV-BIND-001",
+      "message": "Unbound changed files: .gitignore"
+    },
+    {
+      "severity": "BLOCKED",
+      "code": "GOV-PROOF-001",
+      "message": "Missing proof manifest: docs/qc/proofs/20260513-gitignore-governance-proofs/proof.manifest.json"
+    }
+  ]
+}

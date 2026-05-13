@@ -338,6 +338,25 @@ test.describe('Track Controls', () => {
       expect(entry.bps).toBe(24);
       expect(entry.sr).toBeGreaterThan(0);
     }
+    const exportBtn = page.locator('#export-loops-btn');
+    await expect(exportBtn).not.toHaveClass(/export-error/);
+    await expect(exportBtn).not.toHaveClass(/busy/);
+  });
+
+  test('Export Loops surfaces an error state when render throws', async ({ page }) => {
+    await waitForApp(page);
+    // Sabotage OfflineAudioContext so renderPhraseToBuffer rejects; the click
+    // handler's catch should set the export-error class and a Failed title.
+    await page.evaluate(() => {
+      (window as unknown as { OfflineAudioContext: unknown }).OfflineAudioContext = function () {
+        throw new Error('synthetic render failure');
+      };
+    });
+    const exportBtn = page.locator('#export-loops-btn');
+    await exportBtn.click();
+    await expect(exportBtn).toHaveClass(/export-error/);
+    await expect(exportBtn).toHaveAttribute('title', /Export failed/);
+    await expect(exportBtn).not.toHaveClass(/busy/);
   });
 
   test('preview failure surfaces error state on the preview button', async ({ page }) => {

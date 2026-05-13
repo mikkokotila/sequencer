@@ -450,8 +450,9 @@ export async function exportLoopsZip(): Promise<void> {
   const { audioBufferToWav24 } = await import('./wav');
   const { buildStoreZip } = await import('./zip');
   const { isPhraseEmpty } = await import('./patterns');
+  type Entry = import('./zip').ZipEntry;
 
-  const entries: { name: string; data: Uint8Array }[] = [];
+  const entries: Entry[] = [];
   for (let p = 0; p < NUM_PHRASES; p++) {
     if (isPhraseEmpty(p)) continue;
     const buf = await renderPhraseToBuffer(p);
@@ -466,7 +467,7 @@ export async function exportLoopsZip(): Promise<void> {
   }
 
   const zip = buildStoreZip(entries);
-  const blob = new Blob([zip.slice().buffer], { type: 'application/zip' });
+  const blob = new Blob([zip.buffer as ArrayBuffer], { type: 'application/zip' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = currentSongName.replace(/[^a-zA-Z0-9\-_ ]/g, '') + '-loops.zip';

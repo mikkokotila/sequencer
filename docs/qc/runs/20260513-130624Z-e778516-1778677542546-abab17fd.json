@@ -1,0 +1,129 @@
+{
+  "run_id": "1778677542546-abab17fd",
+  "task_id": "20260513-export-loops-zip",
+  "task_type": "feature",
+  "spec_path": "docs/qc/specs/20260513-export-loops-zip.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-05-13T13:05:42.545Z",
+  "finished_at_utc": "2026-05-13T13:06:24.608Z",
+  "head_sha": "e778516",
+  "tree_sha": "439821d467d79b82ecb1fd4f9098a6a1e19fecb6",
+  "subject_sha": "a0089997d52d9a2a0e9a4bab2ddf72e8214a18405dd0b1344526498126fe8c00",
+  "verdict": "FAIL",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E",
+      "label": "E2E",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/logs/O-E2E.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E-DELTA",
+      "label": "E2E delta coverage",
+      "status": "FAIL",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/logs/O-E2E-DELTA.log",
+      "failure_items": [
+        {
+          "suite": "Runtime product delta requires test delta",
+          "test_name": "Runtime product delta requires test delta",
+          "file_line": null,
+          "first_message": "Changed runtime files without test changes: src/transport/persistence.ts, src/ui/build.ts",
+          "detail": "Changed runtime files without test changes: src/transport/persistence.ts, src/ui/build.ts",
+          "line": "FAIL | Runtime product delta requires test delta | Changed runtime files without test changes: src/transport/persistence.ts, src/ui/build.ts"
+        },
+        {
+          "suite": "Test delta contains behavioral assertions",
+          "test_name": "Test delta contains behavioral assertions",
+          "file_line": null,
+          "first_message": "No added test/assert lines found in staged test diff (expected test()/it()/expect()/assert() delta).",
+          "detail": "No added test/assert lines found in staged test diff (expected test()/it()/expect()/assert() delta).",
+          "line": "FAIL | Test delta contains behavioral assertions | No added test/assert lines found in staged test diff (expected test()/it()/expect()/assert() delta)."
+        }
+      ]
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-CONTRACTS-FULL",
+      "label": "Contract static gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/logs/O-GATE-CONTRACTS-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-ARCH-FULL",
+      "label": "Architecture gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/logs/O-GATE-ARCH-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "off_transparent",
+      "label": "off_transparent",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/oracles/off_transparent.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "on_audible",
+      "label": "on_audible",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/oracles/on_audible.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "control_binding",
+      "label": "control_binding",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/oracles/control_binding.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "persistence_roundtrip",
+      "label": "persistence_roundtrip",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/oracles/persistence_roundtrip.json",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "FAIL",
+      "code": "GOV-PROC-002",
+      "message": "O-E2E-DELTA failed: npm run gate:e2e-delta | first_failure=Changed runtime files without test changes: src/transport/persistence.ts, src/ui/build.ts"
+    }
+  ]
+}

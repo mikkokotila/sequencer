@@ -394,7 +394,13 @@ export function buildUI(): void {
     '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M6 7v2M8 6v4M10 7v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
   loopsBtn.onclick = () => {
     loopsBtn.classList.add('busy');
-    void exportLoopsZip().finally(() => loopsBtn.classList.remove('busy'));
+    exportLoopsZip()
+      .catch((err: unknown) => {
+        console.error('Export Loops failed:', err);
+        loopsBtn.classList.add('export-error');
+        loopsBtn.title = `Export failed: ${err instanceof Error ? err.message : String(err)}`;
+      })
+      .finally(() => loopsBtn.classList.remove('busy'));
   };
   fileBtns.appendChild(loopsBtn);
   transport.appendChild(fileBtns);

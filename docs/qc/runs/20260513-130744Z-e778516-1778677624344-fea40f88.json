@@ -1,0 +1,106 @@
+{
+  "run_id": "1778677624344-fea40f88",
+  "task_id": "20260513-export-loops-zip",
+  "task_type": "feature",
+  "spec_path": "docs/qc/specs/20260513-export-loops-zip.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-05-13T13:07:04.343Z",
+  "finished_at_utc": "2026-05-13T13:07:44.011Z",
+  "head_sha": "e778516",
+  "tree_sha": "b807daad0530e68888b12e99f8dc9b934ec00caa",
+  "subject_sha": "8b5926c84a62b3565c569cec91f59649087bb658e47db5645ac2903051a0cbb9",
+  "verdict": "PASS",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E",
+      "label": "E2E",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/logs/O-E2E.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E-DELTA",
+      "label": "E2E delta coverage",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/logs/O-E2E-DELTA.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-CONTRACTS-FULL",
+      "label": "Contract static gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/logs/O-GATE-CONTRACTS-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-ARCH-FULL",
+      "label": "Architecture gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/logs/O-GATE-ARCH-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "off_transparent",
+      "label": "off_transparent",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/oracles/off_transparent.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "on_audible",
+      "label": "on_audible",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/oracles/on_audible.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "control_binding",
+      "label": "control_binding",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/oracles/control_binding.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "persistence_roundtrip",
+      "label": "persistence_roundtrip",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-export-loops-zip/oracles/persistence_roundtrip.json",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": []
+}

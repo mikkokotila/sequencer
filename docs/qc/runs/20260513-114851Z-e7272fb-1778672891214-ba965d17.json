@@ -1,0 +1,97 @@
+{
+  "run_id": "1778672891214-ba965d17",
+  "task_id": "20260513-browser-preview-error-feedback",
+  "task_type": "bugfix",
+  "spec_path": "docs/qc/specs/20260513-browser-preview-error-feedback.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-05-13T11:48:11.214Z",
+  "finished_at_utc": "2026-05-13T11:48:51.563Z",
+  "head_sha": "e7272fb",
+  "tree_sha": "6f53656b858e296d0ffbd53f05fc6aafe9c4ce6c",
+  "subject_sha": "f61a6597800fba1245b91af54fe984cf999dab8e3d16bb1eedd6877af411a072",
+  "verdict": "PASS",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E",
+      "label": "E2E",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-E2E.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E-DELTA",
+      "label": "E2E delta coverage",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-E2E-DELTA.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-CONTRACTS-FULL",
+      "label": "Contract static gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-GATE-CONTRACTS-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-ARCH-FULL",
+      "label": "Architecture gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-GATE-ARCH-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "off_transparent",
+      "label": "off_transparent",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/oracles/off_transparent.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "on_audible",
+      "label": "on_audible",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/oracles/on_audible.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "control_binding",
+      "label": "control_binding",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/oracles/control_binding.json",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": []
+}

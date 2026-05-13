@@ -1,0 +1,120 @@
+{
+  "run_id": "1778672816754-643568e4",
+  "task_id": "20260513-browser-preview-error-feedback",
+  "task_type": "bugfix",
+  "spec_path": "docs/qc/specs/20260513-browser-preview-error-feedback.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-05-13T11:46:56.753Z",
+  "finished_at_utc": "2026-05-13T11:47:35.319Z",
+  "head_sha": "e7272fb",
+  "tree_sha": "48ad423dc21dff20ae30ac0c547c5b5746570550",
+  "subject_sha": "94be876cf6ebbec8e76add3e6054e58f7f739f02534ec2a94581b2f580cfae08",
+  "verdict": "FAIL",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E",
+      "label": "E2E",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-E2E.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E-DELTA",
+      "label": "E2E delta coverage",
+      "status": "FAIL",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-E2E-DELTA.log",
+      "failure_items": [
+        {
+          "suite": "Runtime product delta requires test delta",
+          "test_name": "Runtime product delta requires test delta",
+          "file_line": null,
+          "first_message": "Changed runtime files without test changes: src/ui/browser.ts",
+          "detail": "Changed runtime files without test changes: src/ui/browser.ts",
+          "line": "FAIL | Runtime product delta requires test delta | Changed runtime files without test changes: src/ui/browser.ts"
+        },
+        {
+          "suite": "Test delta contains behavioral assertions",
+          "test_name": "Test delta contains behavioral assertions",
+          "file_line": null,
+          "first_message": "No added test/assert lines found in staged test diff (expected test()/it()/expect()/assert() delta).",
+          "detail": "No added test/assert lines found in staged test diff (expected test()/it()/expect()/assert() delta).",
+          "line": "FAIL | Test delta contains behavioral assertions | No added test/assert lines found in staged test diff (expected test()/it()/expect()/assert() delta)."
+        }
+      ]
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-CONTRACTS-FULL",
+      "label": "Contract static gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-GATE-CONTRACTS-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-ARCH-FULL",
+      "label": "Architecture gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-GATE-ARCH-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "off_transparent",
+      "label": "off_transparent",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/oracles/off_transparent.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "on_audible",
+      "label": "on_audible",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/oracles/on_audible.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "control_binding",
+      "label": "control_binding",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-browser-preview-error-feedback/oracles/control_binding.json",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "FAIL",
+      "code": "GOV-PROC-002",
+      "message": "O-E2E-DELTA failed: npm run gate:e2e-delta | first_failure=Changed runtime files without test changes: src/ui/browser.ts"
+    }
+  ]
+}

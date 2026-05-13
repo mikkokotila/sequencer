@@ -359,6 +359,33 @@ test.describe('Track Controls', () => {
     await expect(firstPreview).not.toHaveClass(/previewing/);
     await expect(firstPreview).toHaveAttribute('title', /Preview failed/);
   });
+
+  test('a slow failing preview does not clobber a newer in-flight preview', async ({ page }) => {
+    await waitForApp(page);
+    // First request: slow fail (250ms). Subsequent requests: fast bytes that
+    // also fail to decode but resolve quickly.
+    let served = 0;
+    await page.route('**/*.wav', async (route) => {
+      served++;
+      if (served === 1) await new Promise((r) => setTimeout(r, 250));
+      await route.fulfill({ status: 200, contentType: 'text/plain', body: 'not audio' });
+    });
+    await page
+      .locator('.melody-track[data-type="drum"][data-track="0"] .sample-btn')
+      .click();
+    await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
+    const first = page.locator('.browser-item-preview').nth(0);
+    const second = page.locator('.browser-item-preview').nth(1);
+    await first.click();
+    await second.click();
+    // Wait for both fetches to settle.
+    await page.waitForTimeout(700);
+    // Both rows show error (their own fetches failed), but the race fix means
+    // the second click's identity was preserved through the first's failure.
+    await expect(first).toHaveClass(/preview-error/);
+    await expect(second).toHaveClass(/preview-error/);
+    await expect(second).toHaveAttribute('title', /Preview failed/);
+  });
 });
 
 // ═══════════════════════════════════════════

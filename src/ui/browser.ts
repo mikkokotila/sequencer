@@ -455,7 +455,7 @@ export async function previewSample(i: number): Promise<void> {
     }
   } catch (e) {
     console.error('Preview failed:', e);
-    previewingIdx = -1;
+    if (previewingIdx === i) previewingIdx = -1;
     const btn = document.querySelector<HTMLElement>(
       `.browser-item[data-index="${i}"] .browser-item-preview`,
     );

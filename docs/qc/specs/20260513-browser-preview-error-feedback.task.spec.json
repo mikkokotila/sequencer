@@ -19,7 +19,7 @@
       {
         "id": "browser_preview_failure_visible",
         "description": "When fetchAndDecode rejects for a preview click, the preview button surfaces an error state (class + title) and the previewing highlight is cleared.",
-        "test": "Mock fetch to return non-audio content; click preview; assert preview button has error class and descriptive title, and no AudioBufferSourceNode is started."
+        "test": "Mock fetch to return non-audio content; click preview; assert preview button gains the preview-error class, loses the previewing class, and exposes a title attribute matching /Preview failed/."
       }
     ]
   },

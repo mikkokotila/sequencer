@@ -262,6 +262,26 @@ test.describe('Track Controls', () => {
     await loadBtn.click();
     await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
   });
+
+  test('preview failure surfaces error state on the preview button', async ({ page }) => {
+    await waitForApp(page);
+    // Force every sample URL to fail decoding by returning non-audio bytes
+    await page.route('**/*.wav', (route) => {
+      void route.fulfill({
+        status: 200,
+        contentType: 'text/plain',
+        body: 'not audio',
+      });
+    });
+    const loadBtn = page.locator('.melody-track[data-type="drum"][data-track="0"] .sample-btn');
+    await loadBtn.click();
+    await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
+    const firstPreview = page.locator('.browser-item-preview').first();
+    await firstPreview.click();
+    await expect(firstPreview).toHaveClass(/preview-error/);
+    await expect(firstPreview).not.toHaveClass(/previewing/);
+    await expect(firstPreview).toHaveAttribute('title', /Preview failed/);
+  });
 });
 
 // ═══════════════════════════════════════════

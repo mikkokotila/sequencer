@@ -1,0 +1,15 @@
+{
+  "oracle_id": "on_audible",
+  "task_id": "20260513-browser-preview-error-feedback",
+  "subject_sha": "d2824e58c84e7a687f0c2a2b3c874431f6f809c774b49117cd3b74906edd8732",
+  "harness_version": "oracle-harness-v2",
+  "status": "PASS",
+  "metrics": {
+    "delta_lufs": 1.416895
+  },
+  "raw_artifact": "raw/on_audible.json",
+  "raw_sha256": "b8c8b6522746fad1c036997c56393d044ae3b86212ed8b685d9009474fdb21ef",
+  "evidence": "delta_lufs=1.4168953474463741",
+  "challenge_id": "3c2bde5fc697e1784d03e14222538ee4b80408f01eeb1c338eae0226a7f42d7f",
+  "payload_digest": "0358445441d00675da61d656e931e69df367c24a20e47b710ceb8a9e70aae7ae"
+}

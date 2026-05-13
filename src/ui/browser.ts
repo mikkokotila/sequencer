@@ -415,11 +415,18 @@ export async function previewSample(i: number): Promise<void> {
   }
 
   previewingIdx = i;
-  document
-    .querySelectorAll('.browser-item-preview')
-    .forEach((b) => b.classList.remove('previewing'));
-  const btn = document.querySelector(`.browser-item[data-index="${i}"] .browser-item-preview`);
-  if (btn) btn.classList.add('previewing');
+  document.querySelectorAll('.browser-item-preview').forEach((b) => {
+    b.classList.remove('previewing');
+  });
+  const btn = document.querySelector<HTMLElement>(
+    `.browser-item[data-index="${i}"] .browser-item-preview`,
+  );
+  if (btn) {
+    btn.classList.remove('preview-error');
+    btn.removeAttribute('title');
+    btn.title = 'Preview';
+    btn.classList.add('previewing');
+  }
 
   try {
     let buffer: AudioBuffer;
@@ -448,6 +455,15 @@ export async function previewSample(i: number): Promise<void> {
     }
   } catch (e) {
     console.error('Preview failed:', e);
+    previewingIdx = -1;
+    const btn = document.querySelector<HTMLElement>(
+      `.browser-item[data-index="${i}"] .browser-item-preview`,
+    );
+    if (btn) {
+      btn.classList.remove('previewing');
+      btn.classList.add('preview-error');
+      btn.title = `Preview failed: ${e instanceof Error ? e.message : String(e)}`;
+    }
   }
 
   selectBrowserItem(i);

@@ -1,0 +1,7 @@
+{
+  "spec_path": "docs/qc/specs/20260513-browser-preview-error-feedback.task.spec.json",
+  "controls_declared": 1,
+  "control_ids": [
+    "browser_preview_failure_visible"
+  ]
+}

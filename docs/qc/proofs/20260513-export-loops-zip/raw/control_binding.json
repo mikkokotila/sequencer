@@ -1,0 +1,7 @@
+{
+  "spec_path": "docs/qc/specs/20260513-export-loops-zip.task.spec.json",
+  "controls_declared": 1,
+  "control_ids": [
+    "export_loops_zip_produces_wavs"
+  ]
+}

@@ -94,7 +94,7 @@ export function resetAllAdsr(): void {
  * Web Audio requires start() before stop().
  */
 export function applyEnvelope(
-  ctx: AudioContext,
+  ctx: BaseAudioContext,
   source: AudioBufferSourceNode,
   dest: AudioNode,
   trackIndex: number,

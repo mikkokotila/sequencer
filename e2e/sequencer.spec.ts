@@ -263,6 +263,83 @@ test.describe('Track Controls', () => {
     await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
   });
 
+  test('Export Loops produces a ZIP of 24-bit WAVs, one per non-empty phrase', async ({
+    page,
+  }) => {
+    await waitForApp(page);
+    // Default song has four-on-the-floor on the kick in phrase 1 only.
+    const result = await page.evaluate(async () => {
+      let captured: Blob | null = null;
+      const origCreate = URL.createObjectURL.bind(URL);
+      URL.createObjectURL = (blob: Blob): string => {
+        captured = blob;
+        return origCreate(blob);
+      };
+      const origCreateElement = document.createElement.bind(document);
+      document.createElement = ((tag: string) => {
+        const el = origCreateElement(tag) as HTMLElement;
+        if (tag.toLowerCase() === 'a') {
+          (el as HTMLAnchorElement).click = () => {};
+        }
+        return el;
+      }) as typeof document.createElement;
+
+      document.getElementById('export-loops-btn')?.click();
+      const deadline = Date.now() + 15000;
+      while (Date.now() < deadline && !captured) {
+        await new Promise((r) => setTimeout(r, 200));
+      }
+      URL.createObjectURL = origCreate;
+      document.createElement = origCreateElement;
+      if (!captured) return { ok: false, reason: 'no blob captured' };
+
+      const blob = captured as Blob;
+      const buf = new Uint8Array(await blob.arrayBuffer());
+      const entries: { name: string; bps: number; sr: number; fmt: string }[] = [];
+      for (let i = 0; i < buf.length - 4; i++) {
+        if (buf[i] === 0x50 && buf[i + 1] === 0x4b && buf[i + 2] === 0x03 && buf[i + 3] === 0x04) {
+          const nameLen = (buf[i + 26] ?? 0) | ((buf[i + 27] ?? 0) << 8);
+          const extraLen = (buf[i + 28] ?? 0) | ((buf[i + 29] ?? 0) << 8);
+          const size =
+            (buf[i + 22] ?? 0) |
+            ((buf[i + 23] ?? 0) << 8) |
+            ((buf[i + 24] ?? 0) << 16) |
+            ((buf[i + 25] ?? 0) << 24);
+          const name = new TextDecoder().decode(buf.slice(i + 30, i + 30 + nameLen));
+          const dataStart = i + 30 + nameLen + extraLen;
+          const fmt = String.fromCharCode(...buf.slice(dataStart, dataStart + 4));
+          const bps = (buf[dataStart + 34] ?? 0) | ((buf[dataStart + 35] ?? 0) << 8);
+          const sr =
+            (buf[dataStart + 24] ?? 0) |
+            ((buf[dataStart + 25] ?? 0) << 8) |
+            ((buf[dataStart + 26] ?? 0) << 16) |
+            ((buf[dataStart + 27] ?? 0) << 24);
+          entries.push({ name, bps, sr, fmt });
+          i = dataStart + size - 1;
+        }
+      }
+      return {
+        ok: true,
+        type: blob.type,
+        head: Array.from(buf.slice(0, 4))
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join(' '),
+        entries,
+      };
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.type).toBe('application/zip');
+    expect(result.head).toBe('50 4b 03 04');
+    expect(result.entries?.length).toBeGreaterThanOrEqual(1);
+    for (const entry of result.entries ?? []) {
+      expect(entry.name).toMatch(/^phrase-\d{2}\.wav$/);
+      expect(entry.fmt).toBe('RIFF');
+      expect(entry.bps).toBe(24);
+      expect(entry.sr).toBeGreaterThan(0);
+    }
+  });
+
   test('preview failure surfaces error state on the preview button', async ({ page }) => {
     await waitForApp(page);
     // Force every sample URL to fail decoding by returning non-audio bytes

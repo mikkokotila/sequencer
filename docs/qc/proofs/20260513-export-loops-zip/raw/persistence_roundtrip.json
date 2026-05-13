@@ -1,0 +1,11 @@
+{
+  "store_path": "src/engine/extensions/store.ts",
+  "persistence_path": "src/transport/persistence.ts",
+  "checks": {
+    "has_reset_fn": true,
+    "reset_calls_state": true,
+    "reset_disables": true,
+    "new_song_calls_reset": true,
+    "new_song_calls_save": true
+  }
+}

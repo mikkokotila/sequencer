@@ -1,0 +1,16 @@
+{
+  "oracle_id": "off_transparent",
+  "task_id": "20260513-export-loops-zip",
+  "subject_sha": "01bd1b045caddfd6f850dd91e22786c57b61cd88f942c339aa1ae72e2c5e9074",
+  "harness_version": "oracle-harness-v2",
+  "status": "PASS",
+  "metrics": {
+    "max_abs_error": 0,
+    "delta_lufs": 0
+  },
+  "raw_artifact": "raw/off_transparent.json",
+  "raw_sha256": "ca778963866d90ed6cf7a269591d4740a5926e6896cbf4e11bad8a6251e06e08",
+  "evidence": "max_abs_error=0",
+  "challenge_id": "181850a3d85f9c51ed2fc0f7b49763b3f745e8e9398a70ef7b66502517f5d5b4",
+  "payload_digest": "8e99708b8f3920c195d829027e4e12a622444b0c8a439d44431e978a6f36d78f"
+}

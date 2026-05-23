@@ -1,13 +1,13 @@
 command: npm run gate:commit-range
 status: 0
-elapsed_ms: 268
+elapsed_ms: 267
 
 --- stdout ---
 
 > sequencer@1.0.0 gate:commit-range
 > node docs/qc/scripts/commit-range-gates.mjs
 
-PASS | c47fcfc62ce17187e2d04218e05bb6d619550c22 | governance trailers + PASS attestation verified (docs/qc/proofs/20260516-engine-timing-fixes/verdict.json)
+PASS | 357200d93f7b56d3e43300e7f773c97a3161a286 | governance trailers + PASS attestation verified (docs/qc/proofs/20260516-engine-timing-fixes/verdict.json)
 
 commit-range-gates: all 1 commit(s) passed in range HEAD~1..HEAD.
 

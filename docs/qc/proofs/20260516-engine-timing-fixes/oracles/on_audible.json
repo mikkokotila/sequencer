@@ -1,15 +1,15 @@
 {
   "oracle_id": "on_audible",
   "task_id": "20260516-engine-timing-fixes",
-  "subject_sha": "3737b9af8f0229a5d9b164a1b222f544efda163451ff37d8bd6a371090efe91d",
+  "subject_sha": "07ba8b7bbdbf288236f1fcda27f58a9d72372ebcffe4d5895b4e53ba96f2343f",
   "harness_version": "oracle-harness-v2",
   "status": "PASS",
   "metrics": {
     "delta_lufs": 1.416895
   },
   "raw_artifact": "raw/on_audible.json",
-  "raw_sha256": "32e393e28be1eb2f4f25514a2707705af0eb48e4ab63a0cc5cc1f3e2df845bc4",
+  "raw_sha256": "d26932cfb55a7f9dbb6ca06ee5124a4539eab92a28538b27711ba64c959134ce",
   "evidence": "delta_lufs=1.4168953474463741",
-  "challenge_id": "2e1345434b4532a8643b92253bad9e1bf06519474eb20480cc965998410f6e5e",
-  "payload_digest": "b8b3c87ed774e27eea960685287873778124d4bc3fbe42c7f9178dce158eccc6"
+  "challenge_id": "74dbb5daf5115ee40c3794ded220cb2ed77fae5fcbb310b29619d1e44917dd73",
+  "payload_digest": "be69cc5f67087feaab0f1cb9e4f9919b33ccc984fc4269b526fed6afb47fcd4c"
 }

@@ -922,10 +922,11 @@ test.describe('Audio Engine Timing', () => {
       (window as unknown as { __timingTrace: typeof tracker }).__timingTrace = tracker;
       BaseAudioContext.prototype.createBufferSource = function (this: BaseAudioContext) {
         const s = origBS.call(this);
-        const origStart = s.start.bind(s);
-        s.start = function (when: number = 0) {
+        const origStart = s.start;
+        s.start = function (this: AudioBufferSourceNode, ...args: Parameters<typeof origStart>) {
+          const when = (args[0] ?? 0) as number;
           tracker.push({ when, ctxTime: s.context.currentTime });
-          return origStart(when);
+          return origStart.apply(this, args);
         };
         return s;
       };

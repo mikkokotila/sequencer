@@ -1,6 +1,6 @@
 command: node docs/qc/scripts/architecture-gates.mjs
 status: 0
-elapsed_ms: 367
+elapsed_ms: 418
 
 --- stdout ---
 PASS | No dummy pass-through extension nodes | No pass-through dummy insert nodes detected.

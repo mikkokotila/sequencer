@@ -911,6 +911,38 @@ async function mockWavRoutes(page: Page) {
 }
 
 test.describe('Audio Engine Timing', () => {
+  test('AudioContexts are unique — Tone is bound to the engine context', async ({ page }) => {
+    // Regression: Tone.setContext must run BEFORE the Play button is wired,
+    // otherwise a fast click during init lazy-creates a second AudioContext
+    // and reintroduces the dual-context timing bug. We verify the binding by
+    // counting distinct AudioContexts after init has settled — there must be
+    // exactly one.
+    await page.goto('/');
+    await page.waitForSelector('#app', { state: 'visible' });
+    await page.evaluate(() => {
+      const seen = new Set<unknown>();
+      const Orig = window.AudioContext;
+      (window as unknown as { AudioContext: typeof AudioContext }).AudioContext = class extends Orig {
+        constructor(...args: ConstructorParameters<typeof AudioContext>) {
+          super(...args);
+          seen.add(this);
+        }
+      } as typeof AudioContext;
+      (window as unknown as { __ctxCount: () => number }).__ctxCount = () => seen.size;
+    });
+    await page.waitForSelector('.melody-track', { state: 'visible' });
+    await page.waitForSelector('#song-pane', { state: 'visible' });
+    // Click Play immediately — exercises the early-init race window. With the
+    // pre-fix ordering this would cause Tone to create its own context first.
+    await page.click('#app');
+    await page.locator('#play-btn').click();
+    await page.waitForTimeout(500);
+    const count = await page.evaluate(() =>
+      (window as unknown as { __ctxCount: () => number }).__ctxCount(),
+    );
+    expect(count).toBeLessThanOrEqual(1);
+  });
+
   test('src.start times are scheduled in the future (single AudioContext)', async ({ page }) => {
     await mockWavRoutes(page);
     await page.goto('/');

@@ -62,6 +62,15 @@ async function init(): Promise<void> {
     createDelay(),
   );
 
+  // 2. Init the AudioContext and bind Tone.js to it BEFORE building the UI.
+  // buildUI() wires playBtn.onclick = togglePlay; if the user clicks Play
+  // during the async init below, togglePlay → Tone.start() / getTransport()
+  // would lazy-create Tone's default Context and reintroduce the dual-context
+  // timing bug. Binding here guarantees every Tone access uses our ctx.
+  initAudio();
+  const ctx = getAudioContext();
+  if (ctx) Tone.setContext(ctx);
+
   // 3. Build the UI
   buildUI();
 
@@ -131,16 +140,8 @@ async function init(): Promise<void> {
     findFirstNonEmpty,
   });
 
-  // 8b. Init audio, load worklets, engine processing, extensions, and playhead
-  // Engine processing MUST init before extensions so that setFinalOutput()
-  // points to the engine chain BEFORE the extension chain is built.
-  initAudio();
-  // Bind Tone.js to our AudioContext. Without this, Tone spins up its own
-  // context and Transport callbacks pass `time` values from a clock that
-  // diverges from the one running our sample playback — every src.start(time)
-  // ends up scheduled in the past and the grid loses sub-ms precision.
-  const ctx = getAudioContext();
-  if (ctx) Tone.setContext(ctx);
+  // 8b. Load worklets, init engine processing + extensions + playhead.
+  // (Audio context + Tone binding already happened at step 2.)
   await loadWorklets();
   initEngineProcessing();
   initExtensions();

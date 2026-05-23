@@ -1,7 +1,7 @@
 {
   "oracle_id": "off_transparent",
   "task_id": "20260516-engine-timing-fixes",
-  "subject_sha": "07ba8b7bbdbf288236f1fcda27f58a9d72372ebcffe4d5895b4e53ba96f2343f",
+  "subject_sha": "3a628b40a95e9023b0e2174866f19e12f08146d32801da7ca883b95fa29f59d7",
   "harness_version": "oracle-harness-v2",
   "status": "PASS",
   "metrics": {
@@ -9,8 +9,8 @@
     "delta_lufs": 0
   },
   "raw_artifact": "raw/off_transparent.json",
-  "raw_sha256": "c454af11e986d78cbf84a5578b877efb5731a0b1dea3ab6a6d7f542564400b73",
+  "raw_sha256": "c1f3ed7e4352828abc719a7e7143210aa13034fedcd8d8703ba2f8359f986e23",
   "evidence": "max_abs_error=0",
-  "challenge_id": "74dbb5daf5115ee40c3794ded220cb2ed77fae5fcbb310b29619d1e44917dd73",
-  "payload_digest": "be69cc5f67087feaab0f1cb9e4f9919b33ccc984fc4269b526fed6afb47fcd4c"
+  "challenge_id": "8b70b8cd3cc5bec909c68f6be5f5921a80d49404090ebc31ce4561045ee48c2f",
+  "payload_digest": "58b96d403cdf241a42fe081bfde96dcd4c729b8970aee21993396f68d8d54a68"
 }

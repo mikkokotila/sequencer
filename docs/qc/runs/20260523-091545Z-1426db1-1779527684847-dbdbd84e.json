@@ -1,0 +1,103 @@
+{
+  "run_id": "1779527684847-dbdbd84e",
+  "task_id": "20260516-pr35-copilot-fixes",
+  "task_type": "refactor",
+  "spec_path": "docs/qc/specs/20260516-pr35-copilot-fixes.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-05-23T09:14:44.846Z",
+  "finished_at_utc": "2026-05-23T09:15:45.730Z",
+  "head_sha": "1426db1",
+  "tree_sha": "150d429f86dd67dbc55dac0d70d68bb8bbe7eaae",
+  "subject_sha": "c3811338a41fbd363075e87c8b5cb142a0b98bc38fc104090c336306ebe48c0f",
+  "verdict": "BLOCKED",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E",
+      "label": "E2E",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-E2E.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E-DELTA",
+      "label": "E2E delta coverage",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-E2E-DELTA.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-CONTRACTS-FULL",
+      "label": "Contract static gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-GATE-CONTRACTS-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-ARCH-FULL",
+      "label": "Architecture gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-GATE-ARCH-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "off_transparent",
+      "label": "off_transparent",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/oracles/off_transparent.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "on_audible",
+      "label": "on_audible",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/oracles/on_audible.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "control_binding",
+      "label": "control_binding",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/oracles/control_binding.json",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "BLOCKED",
+      "code": "GOV-PROOF-001",
+      "message": "Missing proof manifest: docs/qc/proofs/20260516-pr35-copilot-fixes/proof.manifest.json"
+    }
+  ]
+}

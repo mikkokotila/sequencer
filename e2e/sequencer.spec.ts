@@ -405,6 +405,62 @@ test.describe('Track Controls', () => {
     await expect(second).toHaveClass(/preview-error/);
     await expect(second).toHaveAttribute('title', /Preview failed/);
   });
+
+  test('a stale preview-failure for index i does not clobber a newer success for the same i', async ({
+    page,
+  }) => {
+    await waitForApp(page);
+    // First request for index 0: slow + fails. Second request for the same
+    // index 0: fast + decodes into a valid silent WAV (mock_wav).
+    const silentWav = (() => {
+      const sr = 44100;
+      const ch = 2;
+      const frames = Math.floor(sr * 0.05);
+      const dataSize = frames * ch * 2;
+      const buf = Buffer.alloc(44 + dataSize);
+      buf.write('RIFF', 0);
+      buf.writeUInt32LE(36 + dataSize, 4);
+      buf.write('WAVE', 8);
+      buf.write('fmt ', 12);
+      buf.writeUInt32LE(16, 16);
+      buf.writeUInt16LE(1, 20);
+      buf.writeUInt16LE(ch, 22);
+      buf.writeUInt32LE(sr, 24);
+      buf.writeUInt32LE(sr * ch * 2, 28);
+      buf.writeUInt16LE(ch * 2, 32);
+      buf.writeUInt16LE(16, 34);
+      buf.write('data', 36);
+      buf.writeUInt32LE(dataSize, 40);
+      return buf;
+    })();
+    let served = 0;
+    await page.route('**/*.wav', async (route) => {
+      served++;
+      if (served === 1) {
+        // First click: slow fail
+        await new Promise((r) => setTimeout(r, 300));
+        await route.fulfill({ status: 200, contentType: 'text/plain', body: 'not audio' });
+      } else {
+        // Subsequent clicks: valid wav
+        await route.fulfill({ status: 200, contentType: 'audio/wav', body: silentWav });
+      }
+    });
+    await page
+      .locator('.melody-track[data-type="drum"][data-track="0"] .sample-btn')
+      .click();
+    await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
+    const first = page.locator('.browser-item-preview').nth(0);
+    // Click the SAME row twice — exercises the per-invocation token guard.
+    await first.click();
+    await page.waitForTimeout(50);
+    await first.click();
+    // Wait long enough for the first (slow) request to return its failure
+    // AFTER the second (fast) request has already succeeded.
+    await page.waitForTimeout(500);
+    // The newer invocation succeeded → button must NOT be in error state.
+    await expect(first).not.toHaveClass(/preview-error/);
+    await expect(first).toHaveClass(/previewing/);
+  });
 });
 
 // ═══════════════════════════════════════════

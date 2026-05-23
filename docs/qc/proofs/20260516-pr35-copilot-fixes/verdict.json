@@ -1,0 +1,167 @@
+{
+  "task_id": "20260516-pr35-copilot-fixes",
+  "task_type": "refactor",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260516-pr35-copilot-fixes.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-05-23T09:17:08.678Z",
+  "finished_at_utc": "2026-05-23T09:18:09.606Z",
+  "head_sha": "1426db1",
+  "tree_sha": "5a25659c6cf2aef24e9b61458d72ba04091d4f00",
+  "subject_sha": "c3811338a41fbd363075e87c8b5cb142a0b98bc38fc104090c336306ebe48c0f",
+  "subject_files": [
+    "e2e/sequencer.spec.ts",
+    "index.html",
+    "src/ui/browser.ts",
+    "src/ui/build.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260516-pr35-copilot-fixes/proof.manifest.json",
+    "docs/qc/proofs/20260516-pr35-copilot-fixes/verdict.json",
+    "docs/qc/runs/20260523-091135Z-1426db1-1779527432229-6f68b3f1.json",
+    "docs/qc/runs/20260523-091135Z-1426db1-1779527432229-6f68b3f1.md",
+    "docs/qc/runs/20260523-091247Z-1426db1-1779527504095-fb1d12c2.json",
+    "docs/qc/runs/20260523-091247Z-1426db1-1779527504095-fb1d12c2.md",
+    "docs/qc/runs/20260523-091438Z-1426db1-1779527616277-74a364f4.json",
+    "docs/qc/runs/20260523-091438Z-1426db1-1779527616277-74a364f4.md",
+    "docs/qc/runs/20260523-091545Z-1426db1-1779527684847-dbdbd84e.json",
+    "docs/qc/runs/20260523-091545Z-1426db1-1779527684847-dbdbd84e.md",
+    "docs/qc/runs/20260523-091700Z-1426db1-1779527760533-14add25b.json",
+    "docs/qc/runs/20260523-091700Z-1426db1-1779527760533-14add25b.md",
+    "docs/qc/specs/20260516-pr35-copilot-fixes.task.spec.json",
+    "e2e/sequencer.spec.ts",
+    "index.html",
+    "logs/compiler.log",
+    "src/ui/browser.ts",
+    "src/ui/build.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=3, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=3, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4604,
+        "log_file": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 52817,
+        "log_file": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 191,
+        "log_file": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 391,
+        "log_file": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 389,
+        "log_file": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 270,
+        "log_file": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260516-pr35-copilot-fixes/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260516-pr35-copilot-fixes/raw/off_transparent.json",
+        "raw_sha256": "e236a65b45c46b0eecaaad2147e932f6e3629638d5a8540a92fa0548fbc137fe"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260516-pr35-copilot-fixes/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260516-pr35-copilot-fixes/raw/on_audible.json",
+        "raw_sha256": "8d91734a85e2bb993ea4b8a628671aab4bdb6908e6ab749707a31300ca8d4a67"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260516-pr35-copilot-fixes/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260516-pr35-copilot-fixes/raw/control_binding.json",
+        "raw_sha256": "ff4c3bb545df5eb76a3130cc2c9cf63447ba67f4144b1ba0cd209d3fc6161280"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

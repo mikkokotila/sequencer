@@ -1,0 +1,125 @@
+{
+  "run_id": "1779527504095-fb1d12c2",
+  "task_id": "20260516-pr35-copilot-fixes",
+  "task_type": "refactor",
+  "spec_path": "docs/qc/specs/20260516-pr35-copilot-fixes.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-05-23T09:11:44.094Z",
+  "finished_at_utc": "2026-05-23T09:12:47.742Z",
+  "head_sha": "1426db1",
+  "tree_sha": "0cf97a29586056e9a45145ca5c37fefb8e3b5243",
+  "subject_sha": "b4749cbc62f2d2603e309f6859824d21a0d4d0939acd1bf0d616127938013244",
+  "verdict": "FAIL",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E",
+      "label": "E2E",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-E2E.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E-DELTA",
+      "label": "E2E delta coverage",
+      "status": "FAIL",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-E2E-DELTA.log",
+      "failure_items": [
+        {
+          "suite": "Runtime product delta requires test delta",
+          "test_name": "Runtime product delta requires test delta",
+          "file_line": null,
+          "first_message": "Changed runtime files without test changes: index.html, src/ui/browser.ts, src/ui/build.ts",
+          "detail": "Changed runtime files without test changes: index.html, src/ui/browser.ts, src/ui/build.ts",
+          "line": "FAIL | Runtime product delta requires test delta | Changed runtime files without test changes: index.html, src/ui/browser.ts, src/ui/build.ts"
+        },
+        {
+          "suite": "Test delta contains behavioral assertions",
+          "test_name": "Test delta contains behavioral assertions",
+          "file_line": null,
+          "first_message": "No added test/assert lines found in staged test diff (expected test()/it()/expect()/assert() delta).",
+          "detail": "No added test/assert lines found in staged test diff (expected test()/it()/expect()/assert() delta).",
+          "line": "FAIL | Test delta contains behavioral assertions | No added test/assert lines found in staged test diff (expected test()/it()/expect()/assert() delta)."
+        }
+      ]
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-CONTRACTS-FULL",
+      "label": "Contract static gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-GATE-CONTRACTS-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-ARCH-FULL",
+      "label": "Architecture gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-GATE-ARCH-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "off_transparent",
+      "label": "off_transparent",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/oracles/off_transparent.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "on_audible",
+      "label": "on_audible",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/oracles/on_audible.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "control_binding",
+      "label": "control_binding",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-pr35-copilot-fixes/oracles/control_binding.json",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "FAIL",
+      "code": "GOV-PROC-002",
+      "message": "O-E2E-DELTA failed: npm run gate:e2e-delta | first_failure=Changed runtime files without test changes: index.html, src/ui/browser.ts, src/ui/build.ts"
+    },
+    {
+      "severity": "BLOCKED",
+      "code": "GOV-PROOF-001",
+      "message": "Missing proof manifest: docs/qc/proofs/20260516-pr35-copilot-fixes/proof.manifest.json"
+    }
+  ]
+}

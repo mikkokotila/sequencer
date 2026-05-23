@@ -393,6 +393,9 @@ export function buildUI(): void {
   loopsBtn.innerHTML =
     '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M6 7v2M8 6v4M10 7v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
   loopsBtn.onclick = () => {
+    // Clear any prior error state so a retry starts clean
+    loopsBtn.classList.remove('export-error');
+    loopsBtn.title = 'Export Loops (ZIP of WAVs)';
     loopsBtn.classList.add('busy');
     exportLoopsZip()
       .catch((err: unknown) => {

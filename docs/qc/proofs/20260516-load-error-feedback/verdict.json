@@ -1,0 +1,156 @@
+{
+  "task_id": "20260516-load-error-feedback",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260516-load-error-feedback.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-05-23T09:25:33.000Z",
+  "finished_at_utc": "2026-05-23T09:26:34.852Z",
+  "head_sha": "0be16f0",
+  "tree_sha": "08b10efd96c615a7e02ec3a3ea3f9db07e4c7bf6",
+  "subject_sha": "272f915f7d9842a5ac03de30272f10df1e61403c246b1741f3757f642893922d",
+  "subject_files": [
+    "e2e/sequencer.spec.ts",
+    "index.html",
+    "src/ui/browser.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260516-load-error-feedback/proof.manifest.json",
+    "docs/qc/proofs/20260516-load-error-feedback/verdict.json",
+    "docs/qc/runs/20260523-092524Z-0be16f0-1779528260890-c0db08f4.json",
+    "docs/qc/runs/20260523-092524Z-0be16f0-1779528260890-c0db08f4.md",
+    "docs/qc/specs/20260516-load-error-feedback.task.spec.json",
+    "e2e/sequencer.spec.ts",
+    "index.html",
+    "src/ui/browser.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=3, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=3, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 5250,
+        "log_file": "docs/qc/proofs/20260516-load-error-feedback/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 52808,
+        "log_file": "docs/qc/proofs/20260516-load-error-feedback/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 206,
+        "log_file": "docs/qc/proofs/20260516-load-error-feedback/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 375,
+        "log_file": "docs/qc/proofs/20260516-load-error-feedback/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 417,
+        "log_file": "docs/qc/proofs/20260516-load-error-feedback/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 675,
+        "log_file": "docs/qc/proofs/20260516-load-error-feedback/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260516-load-error-feedback/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260516-load-error-feedback/raw/off_transparent.json",
+        "raw_sha256": "36fb2897154552fb1b441e1fb5159d5784a4b6fcc1fe8904d0b2f2f74280b57a"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260516-load-error-feedback/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260516-load-error-feedback/raw/on_audible.json",
+        "raw_sha256": "fc1f0b5771f3f755e86e00b8d48ef073ba1a8ac4a0e792506a000b8c082c538b"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260516-load-error-feedback/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260516-load-error-feedback/raw/control_binding.json",
+        "raw_sha256": "422a5f8093fa582344c69ec5d376e54cf7919c23bb28d4cdcf00d4da29f1797c"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

@@ -379,6 +379,45 @@ test.describe('Track Controls', () => {
     await expect(firstPreview).toHaveAttribute('title', /Preview failed/);
   });
 
+  test('Load failure surfaces error state on the LOAD button, browser stays open', async ({
+    page,
+  }) => {
+    await waitForApp(page);
+    // Make every wav URL fail to decode (non-audio bytes).
+    await page.route('**/*.wav', (route) => {
+      void route.fulfill({ status: 200, contentType: 'text/plain', body: 'not audio' });
+    });
+    await page.locator('.melody-track[data-type="drum"][data-track="0"] .sample-btn').click();
+    await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
+    // Select first item then click LOAD
+    await page.locator('.browser-item').first().click();
+    const loadBtn = page.locator('#browser-load');
+    await expect(loadBtn).toBeEnabled();
+    await loadBtn.click();
+    // The decode rejected → LOAD button must show error state, overlay must
+    // remain open (pre-fix it stayed open but with no visible feedback).
+    await expect(loadBtn).toHaveClass(/load-error/);
+    await expect(loadBtn).toHaveAttribute('title', /Load failed/);
+    await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
+  });
+
+  test('selecting a different row clears the LOAD-failure state', async ({ page }) => {
+    await waitForApp(page);
+    await page.route('**/*.wav', (route) => {
+      void route.fulfill({ status: 200, contentType: 'text/plain', body: 'not audio' });
+    });
+    await page.locator('.melody-track[data-type="drum"][data-track="0"] .sample-btn').click();
+    await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
+    await page.locator('.browser-item').first().click();
+    const loadBtn = page.locator('#browser-load');
+    await loadBtn.click();
+    await expect(loadBtn).toHaveClass(/load-error/);
+    // Picking a different row resets the error.
+    await page.locator('.browser-item').nth(1).click();
+    await expect(loadBtn).not.toHaveClass(/load-error/);
+    await expect(loadBtn).not.toHaveAttribute('title', /Load failed/);
+  });
+
   test('a slow failing preview does not clobber a newer in-flight preview', async ({ page }) => {
     await waitForApp(page);
     // First request: slow fail (250ms). Subsequent requests: fast bytes that

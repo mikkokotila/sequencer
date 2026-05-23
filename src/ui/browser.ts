@@ -354,7 +354,12 @@ function selectBrowserItem(i: number): void {
     row.classList.toggle('selected', Number(row.dataset.index) === i);
   });
   const loadBtn = document.getElementById('browser-load') as HTMLButtonElement | null;
-  if (loadBtn) loadBtn.disabled = false;
+  if (loadBtn) {
+    loadBtn.disabled = false;
+    // Selecting a different row clears any prior load-failure feedback.
+    loadBtn.classList.remove('load-error');
+    loadBtn.removeAttribute('title');
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -490,6 +495,12 @@ export async function confirmBrowserLoad(): Promise<void> {
   if (browserSelected === null) return;
   const item = browserItems[browserSelected];
   if (!item) return;
+  const loadBtn = document.getElementById('browser-load') as HTMLButtonElement | null;
+  // Clear any prior failure state so a retry starts clean
+  if (loadBtn) {
+    loadBtn.classList.remove('load-error');
+    loadBtn.removeAttribute('title');
+  }
   try {
     const { buffer, data } = await fetchAndDecode(item.url);
     const fname = item.name + '.wav';
@@ -508,6 +519,12 @@ export async function confirmBrowserLoad(): Promise<void> {
     closeBrowser();
   } catch (e) {
     console.error('Load failed:', e);
+    // Surface the failure on the Load button instead of silently swallowing.
+    // Keep the browser overlay open so the user can pick another sample.
+    if (loadBtn) {
+      loadBtn.classList.add('load-error');
+      loadBtn.title = `Load failed: ${e instanceof Error ? e.message : String(e)}`;
+    }
   }
 }
 

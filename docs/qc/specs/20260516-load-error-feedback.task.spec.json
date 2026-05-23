@@ -1,0 +1,42 @@
+{
+  "task_id": "20260516-load-error-feedback",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Surface sample-browser LOAD failures in the UI. Same shape as the preview-error fix that landed in PR #35: confirmBrowserLoad in src/ui/browser.ts catches fetchAndDecode rejections but only console.errors them, leaving the user with the browser overlay still open and no visible signal that the load failed. After this fix the LOAD button gets a load-error class + descriptive title; selecting a different row clears the error state; on success the overlay closes as before.",
+    "in_scope": [
+      "src/ui/browser.ts",
+      "index.html",
+      "e2e/sequencer.spec.ts"
+    ],
+    "out_of_scope": [
+      "src/engine/**",
+      "src/transport/**",
+      "docs/qc/scripts/**",
+      "docs/contracts/**"
+    ],
+    "controls": [
+      {
+        "id": "browser_load_failure_visible",
+        "description": "When fetchAndDecode rejects during confirmBrowserLoad, the #browser-load button gains the load-error class and a 'Load failed: <message>' title, while the browser overlay remains open so the user can pick a different sample.",
+        "test": "e2e: mock all .wav fetches to return non-audio bytes; click sample-btn → click first row → click LOAD; assert load-error class + title + overlay still open."
+      },
+      {
+        "id": "browser_load_error_clears_on_row_change",
+        "description": "selectBrowserItem clears the load-error class and the failure title, so picking another row presents a clean LOAD button before the next attempt.",
+        "test": "e2e: trigger a failed LOAD, then click a different .browser-item; assert load-error class absent and no Load-failed title."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": ["none"],
+    "seed": "load-error-feedback-seed-v1",
+    "oracles": ["off_transparent", "on_audible", "control_binding"]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

@@ -354,7 +354,12 @@ function selectBrowserItem(i: number): void {
     row.classList.toggle('selected', Number(row.dataset.index) === i);
   });
   const loadBtn = document.getElementById('browser-load') as HTMLButtonElement | null;
-  if (loadBtn) loadBtn.disabled = false;
+  if (loadBtn) {
+    loadBtn.disabled = false;
+    // Selecting a different row clears any prior load-failure feedback.
+    loadBtn.classList.remove('load-error');
+    loadBtn.removeAttribute('title');
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -486,28 +491,56 @@ export async function previewSample(i: number): Promise<void> {
 //  Confirm load
 // ═══════════════════════════════════════════
 
+// Per-click invocation token. A user can change selection or close the
+// overlay while the awaited fetchAndDecode is in flight; without a token a
+// late completion mutates UI that the user has already moved past.
+let loadTokenCounter = 0;
+let lastLoadToken = 0;
+
 export async function confirmBrowserLoad(): Promise<void> {
   if (browserSelected === null) return;
   const item = browserItems[browserSelected];
   if (!item) return;
+  const myToken = ++loadTokenCounter;
+  lastLoadToken = myToken;
+  const startedAtSelected = browserSelected;
+  const startedAtType = browserType;
+  const startedAtIdx = browserIdx;
+  const loadBtn = document.getElementById('browser-load') as HTMLButtonElement | null;
+  // Clear any prior failure state so a retry starts clean
+  if (loadBtn) {
+    loadBtn.classList.remove('load-error');
+    loadBtn.removeAttribute('title');
+  }
   try {
     const { buffer, data } = await fetchAndDecode(item.url);
+    // If the user moved on (different row, closed overlay, started another
+    // load) drop this result rather than applying it to the wrong slot.
+    if (lastLoadToken !== myToken || browserSelected !== startedAtSelected) return;
     const fname = item.name + '.wav';
-    if (browserType === 'drum') {
-      drumBuf[browserIdx] = buffer;
-      drumSampleData[browserIdx] = { name: fname, data };
-    } else if (browserType === 'melody') {
-      melBuf[browserIdx] = buffer;
-      melSampleData[browserIdx] = { name: fname, data };
+    if (startedAtType === 'drum') {
+      drumBuf[startedAtIdx] = buffer;
+      drumSampleData[startedAtIdx] = { name: fname, data };
+    } else if (startedAtType === 'melody') {
+      melBuf[startedAtIdx] = buffer;
+      melSampleData[startedAtIdx] = { name: fname, data };
     } else {
       setVocalBuf(buffer);
       setVocalSampleData({ name: fname, data });
     }
-    updateSampleBtn(browserType, browserIdx, fname);
+    updateSampleBtn(startedAtType, startedAtIdx, fname);
     scheduleSave();
     closeBrowser();
   } catch (e) {
     console.error('Load failed:', e);
+    // Only surface the failure if this invocation is still the current one
+    // for the still-selected row. Otherwise the user has moved on (selected
+    // another row, closed the overlay) and a stale error would clobber that.
+    if (lastLoadToken !== myToken || browserSelected !== startedAtSelected) return;
+    if (loadBtn) {
+      loadBtn.classList.add('load-error');
+      loadBtn.title = `Load failed: ${e instanceof Error ? e.message : String(e)}`;
+    }
   }
 }
 

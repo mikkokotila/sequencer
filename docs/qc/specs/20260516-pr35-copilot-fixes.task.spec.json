@@ -1,0 +1,48 @@
+{
+  "task_id": "20260516-pr35-copilot-fixes",
+  "task_type": "refactor",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Address three Copilot review threads on PR #35 (post-rebase): (1) Export Loops onclick now clears the export-error class + tooltip before retrying so a transient failure doesn't latch the UI; (2) add CSS rule for #export-loops-btn.export-error so the failure state is actually visible (red border/text) not just a tooltip; (3) gate previewSample's catch and trailing selectBrowserItem on a per-invocation token so a late failure for index i cannot clobber a newer in-flight invocation for the same i (the onclick+ondblclick wiring makes double-fires possible).",
+    "in_scope": [
+      "src/ui/build.ts",
+      "src/ui/browser.ts",
+      "index.html",
+      "e2e/sequencer.spec.ts"
+    ],
+    "out_of_scope": [
+      "src/engine/**",
+      "src/transport/**",
+      "docs/qc/scripts/**",
+      "docs/contracts/**"
+    ],
+    "controls": [
+      {
+        "id": "export_loops_button_clears_error_on_retry",
+        "description": "Clicking the Export Loops button removes any prior export-error class + resets the tooltip before invoking exportLoopsZip, so a successful retry after a failure starts in a clean state.",
+        "test": "Existing 'Export Loops produces a ZIP' e2e exercises the success path; the additional onclick reset is verified by the same test passing (no export-error class on a successful run after construction)."
+      },
+      {
+        "id": "export_loops_error_class_is_visible",
+        "description": "#export-loops-btn.export-error CSS rule sets red border, red text, faint red background so the failure state is visible (matches .browser-item-preview.preview-error).",
+        "test": "Visible-on-fail covered by the existing 'Export Loops surfaces an error state when render throws' e2e (asserts class + title); CSS rule is colocated with the existing busy/preview-error rules."
+      },
+      {
+        "id": "preview_per_invocation_token",
+        "description": "previewSample uses lastPreviewToken: Map<number, number> + previewTokenCounter. A late catch for index i only mutates UI (preview-error class/title, previewingIdx, selectBrowserItem) if its token is still the latest one recorded for i.",
+        "test": "Existing 'a slow failing preview does not clobber a newer in-flight preview' e2e still passes (each row owns its own token); the per-index token specifically prevents same-i double-fires (dblclick) from corrupting the newer invocation's UI."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": ["none"],
+    "seed": "pr35-copilot-fixes-seed-v1",
+    "oracles": ["off_transparent", "on_audible", "control_binding"]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "task_id": "20260513-gitignore-governance-proofs",
+  "task_type": "governance-change",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Slim docs/qc/proofs/ tracking — stop tracking the per-task logs/, oracles/, and raw/ subdirectories (the bulk of the audit duplication, ~75% of governance noise per task). Keep verdict.json, proof.manifest.json, and the human-readable *.md / operator-guidance.md tracked as the attestation surface. Tamper-evidence remains in logs/compiler.log (hash-chained) and in commit trailers (Gov-Verdict / Gov-Attestation). The gov-commit script still runs `git add docs/qc/proofs/<task>/` and silently picks up only the tracked files; the ignored subtrees are local-only and reproducible by running gov:check.",
+    "in_scope": [
+      ".gitignore",
+      "docs/qc/proofs/**",
+      "docs/qc/compiler/obligation-rules.json"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "docs/qc/scripts/**",
+      "docs/contracts/**",
+      "package.json"
+    ],
+    "operator_override": "Operator authorized a one-line edit to docs/qc/compiler/obligation-rules.json (add '.gitignore' to governance_policy path_group) so that '.gitignore' has a binding and this gitignore-proofs task can pass GOV-BIND-001. WA scope normally excludes docs/qc/compiler/**.",
+    "controls": [
+      {
+        "id": "proofs_noise_untracked",
+        "description": "After this commit, every docs/qc/proofs/<task>/logs/, /oracles/, and /raw/ subtree is gitignored. verdict.json, proof.manifest.json, and *.md remain tracked.",
+        "test": "git check-ignore docs/qc/proofs/20260513-export-loops-zip/logs/O-CI.log returns 0; git ls-files docs/qc/proofs/ | grep -E '/(logs|oracles|raw)/' returns no rows."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "none"
+    ],
+    "seed": "gitignore-proofs-seed-v1",
+    "oracles": [
+      "off_transparent",
+      "on_audible"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

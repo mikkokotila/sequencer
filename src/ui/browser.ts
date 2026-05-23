@@ -397,9 +397,18 @@ function restoreOriginalBuffer(): void {
 //  Preview
 // ═══════════════════════════════════════════
 
+// Per-index invocation token. `previewSample` is wired to both `onclick` and
+// `ondblclick`, so a double-click fires twice for the same i. The catch in a
+// stale invocation must not clobber a newer invocation's UI for the same row.
+const lastPreviewToken = new Map<number, number>();
+let previewTokenCounter = 0;
+
 export async function previewSample(i: number): Promise<void> {
   const item = browserItems[i];
   if (!item) return;
+
+  const myToken = ++previewTokenCounter;
+  lastPreviewToken.set(i, myToken);
 
   const hasContent = trackHasContent(browserType, browserIdx);
   const isSequenceMode = isPlaying() && hasContent;
@@ -415,11 +424,18 @@ export async function previewSample(i: number): Promise<void> {
   }
 
   previewingIdx = i;
-  document
-    .querySelectorAll('.browser-item-preview')
-    .forEach((b) => b.classList.remove('previewing'));
-  const btn = document.querySelector(`.browser-item[data-index="${i}"] .browser-item-preview`);
-  if (btn) btn.classList.add('previewing');
+  document.querySelectorAll('.browser-item-preview').forEach((b) => {
+    b.classList.remove('previewing');
+  });
+  const btn = document.querySelector<HTMLElement>(
+    `.browser-item[data-index="${i}"] .browser-item-preview`,
+  );
+  if (btn) {
+    btn.classList.remove('preview-error');
+    btn.removeAttribute('title');
+    btn.title = 'Preview';
+    btn.classList.add('previewing');
+  }
 
   try {
     let buffer: AudioBuffer;
@@ -448,9 +464,22 @@ export async function previewSample(i: number): Promise<void> {
     }
   } catch (e) {
     console.error('Preview failed:', e);
+    // Only react if this invocation is still the latest for this row. A
+    // newer invocation (e.g. dblclick firing a second previewSample(i)) that
+    // succeeded must not be clobbered by our late failure.
+    if (lastPreviewToken.get(i) !== myToken) return;
+    if (previewingIdx === i) previewingIdx = -1;
+    const btn = document.querySelector<HTMLElement>(
+      `.browser-item[data-index="${i}"] .browser-item-preview`,
+    );
+    if (btn) {
+      btn.classList.remove('previewing');
+      btn.classList.add('preview-error');
+      btn.title = `Preview failed: ${e instanceof Error ? e.message : String(e)}`;
+    }
   }
 
-  selectBrowserItem(i);
+  if (lastPreviewToken.get(i) === myToken) selectBrowserItem(i);
 }
 
 // ═══════════════════════════════════════════

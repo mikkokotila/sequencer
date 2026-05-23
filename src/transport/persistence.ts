@@ -441,6 +441,40 @@ export function savePatternFile(): void {
   URL.revokeObjectURL(a.href);
 }
 
+/**
+ * Render every non-empty phrase to a 24-bit PCM WAV and bundle the lot into
+ * an uncompressed ZIP, then trigger a download.
+ */
+export async function exportLoopsZip(): Promise<void> {
+  const { renderPhraseToBuffer } = await import('./render');
+  const { audioBufferToWav24 } = await import('./wav');
+  const { buildStoreZip } = await import('./zip');
+  const { isPhraseEmpty } = await import('./patterns');
+  type Entry = import('./zip').ZipEntry;
+
+  const entries: Entry[] = [];
+  for (let p = 0; p < NUM_PHRASES; p++) {
+    if (isPhraseEmpty(p)) continue;
+    const buf = await renderPhraseToBuffer(p);
+    if (!buf) continue;
+    const wav = audioBufferToWav24(buf);
+    entries.push({ name: `phrase-${String(p + 1).padStart(2, '0')}.wav`, data: wav });
+  }
+
+  if (entries.length === 0) {
+    console.warn('Export Loops: no non-empty phrases to render.');
+    return;
+  }
+
+  const zip = buildStoreZip(entries);
+  const blob = new Blob([zip.buffer as ArrayBuffer], { type: 'application/zip' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = currentSongName.replace(/[^a-zA-Z0-9\-_ ]/g, '') + '-loops.zip';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 export function loadPatternFile(): void {
   const input = document.createElement('input');
   input.type = 'file';

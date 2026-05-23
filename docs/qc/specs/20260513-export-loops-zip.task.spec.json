@@ -1,0 +1,50 @@
+{
+  "task_id": "20260513-export-loops-zip",
+  "task_type": "feature",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Add an Export Loops button that bundles every non-empty phrase as a 24-bit PCM WAV inside an uncompressed ZIP, rendered offline through the channel strip + ADSR + master gain (V1, no extensions/engine-panel processing).",
+    "in_scope": [
+      "src/transport/render.ts",
+      "src/transport/wav.ts",
+      "src/transport/zip.ts",
+      "src/transport/persistence.ts",
+      "src/engine/adsr.ts",
+      "src/ui/build.ts",
+      "index.html",
+      "e2e/sequencer.spec.ts"
+    ],
+    "out_of_scope": [
+      "src/engine/audio.ts",
+      "src/engine/worklets/**",
+      "src/engine/extensions/**",
+      "docs/qc/scripts/**",
+      "docs/contracts/**"
+    ],
+    "controls": [
+      {
+        "id": "export_loops_zip_produces_wavs",
+        "description": "Clicking the Export Loops button while at least one phrase is non-empty produces an uncompressed ZIP blob (application/zip) containing one 24-bit PCM WAV named phrase-NN.wav per non-empty phrase, each rendered via OfflineAudioContext.",
+        "test": "e2e: open default song (kick four-on-the-floor in phrase 1), click Export Loops, intercept URL.createObjectURL blob, parse ZIP local headers and assert at least one entry whose name matches /^phrase-\\d{2}\\.wav$/, fmt='RIFF', bits per sample=24."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "none"
+    ],
+    "seed": "export-loops-zip-seed-v1",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "control_binding",
+      "persistence_roundtrip"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

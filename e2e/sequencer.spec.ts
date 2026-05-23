@@ -262,6 +262,205 @@ test.describe('Track Controls', () => {
     await loadBtn.click();
     await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
   });
+
+  test('Export Loops produces a ZIP of 24-bit WAVs, one per non-empty phrase', async ({
+    page,
+  }) => {
+    await waitForApp(page);
+    // Default song has four-on-the-floor on the kick in phrase 1 only.
+    const result = await page.evaluate(async () => {
+      let captured: Blob | null = null;
+      const origCreate = URL.createObjectURL.bind(URL);
+      URL.createObjectURL = (blob: Blob): string => {
+        captured = blob;
+        return origCreate(blob);
+      };
+      const origCreateElement = document.createElement.bind(document);
+      document.createElement = ((tag: string) => {
+        const el = origCreateElement(tag) as HTMLElement;
+        if (tag.toLowerCase() === 'a') {
+          (el as HTMLAnchorElement).click = () => {};
+        }
+        return el;
+      }) as typeof document.createElement;
+
+      document.getElementById('export-loops-btn')?.click();
+      const deadline = Date.now() + 15000;
+      while (Date.now() < deadline && !captured) {
+        await new Promise((r) => setTimeout(r, 200));
+      }
+      URL.createObjectURL = origCreate;
+      document.createElement = origCreateElement;
+      if (!captured) return { ok: false, reason: 'no blob captured' };
+
+      const blob = captured as Blob;
+      const buf = new Uint8Array(await blob.arrayBuffer());
+      const entries: { name: string; bps: number; sr: number; fmt: string }[] = [];
+      for (let i = 0; i < buf.length - 4; i++) {
+        if (buf[i] === 0x50 && buf[i + 1] === 0x4b && buf[i + 2] === 0x03 && buf[i + 3] === 0x04) {
+          const nameLen = (buf[i + 26] ?? 0) | ((buf[i + 27] ?? 0) << 8);
+          const extraLen = (buf[i + 28] ?? 0) | ((buf[i + 29] ?? 0) << 8);
+          const size =
+            (buf[i + 22] ?? 0) |
+            ((buf[i + 23] ?? 0) << 8) |
+            ((buf[i + 24] ?? 0) << 16) |
+            ((buf[i + 25] ?? 0) << 24);
+          const name = new TextDecoder().decode(buf.slice(i + 30, i + 30 + nameLen));
+          const dataStart = i + 30 + nameLen + extraLen;
+          const fmt = String.fromCharCode(...buf.slice(dataStart, dataStart + 4));
+          const bps = (buf[dataStart + 34] ?? 0) | ((buf[dataStart + 35] ?? 0) << 8);
+          const sr =
+            (buf[dataStart + 24] ?? 0) |
+            ((buf[dataStart + 25] ?? 0) << 8) |
+            ((buf[dataStart + 26] ?? 0) << 16) |
+            ((buf[dataStart + 27] ?? 0) << 24);
+          entries.push({ name, bps, sr, fmt });
+          i = dataStart + size - 1;
+        }
+      }
+      return {
+        ok: true,
+        type: blob.type,
+        head: Array.from(buf.slice(0, 4))
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join(' '),
+        entries,
+      };
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.type).toBe('application/zip');
+    expect(result.head).toBe('50 4b 03 04');
+    expect(result.entries?.length).toBeGreaterThanOrEqual(1);
+    for (const entry of result.entries ?? []) {
+      expect(entry.name).toMatch(/^phrase-\d{2}\.wav$/);
+      expect(entry.fmt).toBe('RIFF');
+      expect(entry.bps).toBe(24);
+      expect(entry.sr).toBeGreaterThan(0);
+    }
+    const exportBtn = page.locator('#export-loops-btn');
+    await expect(exportBtn).not.toHaveClass(/export-error/);
+    await expect(exportBtn).not.toHaveClass(/busy/);
+  });
+
+  test('Export Loops surfaces an error state when render throws', async ({ page }) => {
+    await waitForApp(page);
+    // Sabotage OfflineAudioContext so renderPhraseToBuffer rejects; the click
+    // handler's catch should set the export-error class and a Failed title.
+    await page.evaluate(() => {
+      (window as unknown as { OfflineAudioContext: unknown }).OfflineAudioContext = function () {
+        throw new Error('synthetic render failure');
+      };
+    });
+    const exportBtn = page.locator('#export-loops-btn');
+    await exportBtn.click();
+    await expect(exportBtn).toHaveClass(/export-error/);
+    await expect(exportBtn).toHaveAttribute('title', /Export failed/);
+    await expect(exportBtn).not.toHaveClass(/busy/);
+  });
+
+  test('preview failure surfaces error state on the preview button', async ({ page }) => {
+    await waitForApp(page);
+    // Force every sample URL to fail decoding by returning non-audio bytes
+    await page.route('**/*.wav', (route) => {
+      void route.fulfill({
+        status: 200,
+        contentType: 'text/plain',
+        body: 'not audio',
+      });
+    });
+    const loadBtn = page.locator('.melody-track[data-type="drum"][data-track="0"] .sample-btn');
+    await loadBtn.click();
+    await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
+    const firstPreview = page.locator('.browser-item-preview').first();
+    await firstPreview.click();
+    await expect(firstPreview).toHaveClass(/preview-error/);
+    await expect(firstPreview).not.toHaveClass(/previewing/);
+    await expect(firstPreview).toHaveAttribute('title', /Preview failed/);
+  });
+
+  test('a slow failing preview does not clobber a newer in-flight preview', async ({ page }) => {
+    await waitForApp(page);
+    // First request: slow fail (250ms). Subsequent requests: fast bytes that
+    // also fail to decode but resolve quickly.
+    let served = 0;
+    await page.route('**/*.wav', async (route) => {
+      served++;
+      if (served === 1) await new Promise((r) => setTimeout(r, 250));
+      await route.fulfill({ status: 200, contentType: 'text/plain', body: 'not audio' });
+    });
+    await page
+      .locator('.melody-track[data-type="drum"][data-track="0"] .sample-btn')
+      .click();
+    await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
+    const first = page.locator('.browser-item-preview').nth(0);
+    const second = page.locator('.browser-item-preview').nth(1);
+    await first.click();
+    await second.click();
+    // Wait for both fetches to settle.
+    await page.waitForTimeout(700);
+    // Both rows show error (their own fetches failed), but the race fix means
+    // the second click's identity was preserved through the first's failure.
+    await expect(first).toHaveClass(/preview-error/);
+    await expect(second).toHaveClass(/preview-error/);
+    await expect(second).toHaveAttribute('title', /Preview failed/);
+  });
+
+  test('a stale preview-failure for index i does not clobber a newer success for the same i', async ({
+    page,
+  }) => {
+    await waitForApp(page);
+    // First request for index 0: slow + fails. Second request for the same
+    // index 0: fast + decodes into a valid silent WAV (mock_wav).
+    const silentWav = (() => {
+      const sr = 44100;
+      const ch = 2;
+      const frames = Math.floor(sr * 0.05);
+      const dataSize = frames * ch * 2;
+      const buf = Buffer.alloc(44 + dataSize);
+      buf.write('RIFF', 0);
+      buf.writeUInt32LE(36 + dataSize, 4);
+      buf.write('WAVE', 8);
+      buf.write('fmt ', 12);
+      buf.writeUInt32LE(16, 16);
+      buf.writeUInt16LE(1, 20);
+      buf.writeUInt16LE(ch, 22);
+      buf.writeUInt32LE(sr, 24);
+      buf.writeUInt32LE(sr * ch * 2, 28);
+      buf.writeUInt16LE(ch * 2, 32);
+      buf.writeUInt16LE(16, 34);
+      buf.write('data', 36);
+      buf.writeUInt32LE(dataSize, 40);
+      return buf;
+    })();
+    let served = 0;
+    await page.route('**/*.wav', async (route) => {
+      served++;
+      if (served === 1) {
+        // First click: slow fail
+        await new Promise((r) => setTimeout(r, 300));
+        await route.fulfill({ status: 200, contentType: 'text/plain', body: 'not audio' });
+      } else {
+        // Subsequent clicks: valid wav
+        await route.fulfill({ status: 200, contentType: 'audio/wav', body: silentWav });
+      }
+    });
+    await page
+      .locator('.melody-track[data-type="drum"][data-track="0"] .sample-btn')
+      .click();
+    await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
+    const first = page.locator('.browser-item-preview').nth(0);
+    // Click the SAME row twice — exercises the per-invocation token guard.
+    await first.click();
+    await page.waitForTimeout(50);
+    await first.click();
+    // Wait long enough for the first (slow) request to return its failure
+    // AFTER the second (fast) request has already succeeded.
+    await page.waitForTimeout(500);
+    // The newer invocation succeeded → button must NOT be in error state.
+    await expect(first).not.toHaveClass(/preview-error/);
+    await expect(first).toHaveClass(/previewing/);
+  });
 });
 
 // ═══════════════════════════════════════════

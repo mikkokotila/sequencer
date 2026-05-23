@@ -63,6 +63,7 @@ import {
   saveSong,
   savePatternFile,
   loadPatternFile,
+  exportLoopsZip,
   newSong,
   deleteSong,
 } from '../transport/persistence';
@@ -386,6 +387,25 @@ export function buildUI(): void {
     '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 10V2M5 5l3-3 3 3M3 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   loadBtn.onclick = loadPatternFile;
   fileBtns.appendChild(loadBtn);
+  const loopsBtn = el('button', 'tb');
+  loopsBtn.id = 'export-loops-btn';
+  loopsBtn.title = 'Export Loops (ZIP of WAVs)';
+  loopsBtn.innerHTML =
+    '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M6 7v2M8 6v4M10 7v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
+  loopsBtn.onclick = () => {
+    // Clear any prior error state so a retry starts clean
+    loopsBtn.classList.remove('export-error');
+    loopsBtn.title = 'Export Loops (ZIP of WAVs)';
+    loopsBtn.classList.add('busy');
+    exportLoopsZip()
+      .catch((err: unknown) => {
+        console.error('Export Loops failed:', err);
+        loopsBtn.classList.add('export-error');
+        loopsBtn.title = `Export failed: ${err instanceof Error ? err.message : String(err)}`;
+      })
+      .finally(() => loopsBtn.classList.remove('busy'));
+  };
+  fileBtns.appendChild(loopsBtn);
   transport.appendChild(fileBtns);
 
   // BPM control

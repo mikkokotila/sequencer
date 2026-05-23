@@ -1,0 +1,43 @@
+{
+  "task_id": "20260513-browser-preview-error-feedback",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Surface sample browser preview failures in the UI so a failed fetch/decode is observable to the user (not just logged to console).",
+    "in_scope": [
+      "src/ui/browser.ts",
+      "index.html",
+      "e2e/sequencer.spec.ts"
+    ],
+    "out_of_scope": [
+      "src/engine/**",
+      "src/transport/**",
+      "docs/qc/scripts/**",
+      "docs/contracts/**"
+    ],
+    "controls": [
+      {
+        "id": "browser_preview_failure_visible",
+        "description": "When fetchAndDecode rejects for a preview click, the preview button surfaces an error state (class + title) and the previewing highlight is cleared.",
+        "test": "Mock fetch to return non-audio content; click preview; assert preview button gains the preview-error class, loses the previewing class, and exposes a title attribute matching /Preview failed/."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "none"
+    ],
+    "seed": "browser-preview-error-seed-v1",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "control_binding"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

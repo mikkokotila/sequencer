@@ -1,0 +1,170 @@
+{
+  "task_id": "20260513-browser-preview-error-feedback",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260513-browser-preview-error-feedback.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-05-13T11:48:57.462Z",
+  "finished_at_utc": "2026-05-13T11:49:38.322Z",
+  "head_sha": "e7272fb",
+  "tree_sha": "dfbc85366f308e9b02f3316a2d31bf7a18a5eced",
+  "subject_sha": "f61a6597800fba1245b91af54fe984cf999dab8e3d16bb1eedd6877af411a072",
+  "subject_files": [
+    "e2e/sequencer.spec.ts",
+    "src/ui/browser.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-CI.log",
+    "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-COMMIT-RANGE.log",
+    "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-E2E-DELTA.log",
+    "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-E2E.log",
+    "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-GATE-ARCH-FULL.log",
+    "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-GATE-CONTRACTS-FULL.log",
+    "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-ORACLE-HARNESS.log",
+    "docs/qc/proofs/20260513-browser-preview-error-feedback/oracles/control_binding.json",
+    "docs/qc/proofs/20260513-browser-preview-error-feedback/oracles/off_transparent.json",
+    "docs/qc/proofs/20260513-browser-preview-error-feedback/oracles/on_audible.json",
+    "docs/qc/proofs/20260513-browser-preview-error-feedback/raw/off_transparent.json",
+    "docs/qc/proofs/20260513-browser-preview-error-feedback/raw/on_audible.json",
+    "docs/qc/proofs/20260513-browser-preview-error-feedback/verdict.json",
+    "docs/qc/runs/20260513-114143Z-a549d6d-1778672462917-988dbc85.json",
+    "docs/qc/runs/20260513-114143Z-a549d6d-1778672462917-988dbc85.md",
+    "docs/qc/runs/20260513-114735Z-e7272fb-1778672816754-643568e4.json",
+    "docs/qc/runs/20260513-114735Z-e7272fb-1778672816754-643568e4.md",
+    "docs/qc/runs/20260513-114851Z-e7272fb-1778672891214-ba965d17.json",
+    "docs/qc/runs/20260513-114851Z-e7272fb-1778672891214-ba965d17.md",
+    "docs/qc/specs/20260513-browser-preview-error-feedback.task.spec.json",
+    "e2e/sequencer.spec.ts",
+    "logs/compiler.log",
+    "src/ui/browser.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=3, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=3, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4452,
+        "log_file": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 33132,
+        "log_file": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 164,
+        "log_file": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 333,
+        "log_file": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 365,
+        "log_file": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 245,
+        "log_file": "docs/qc/proofs/20260513-browser-preview-error-feedback/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260513-browser-preview-error-feedback/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260513-browser-preview-error-feedback/raw/off_transparent.json",
+        "raw_sha256": "bd80451b8e5d23a7be8395b9fb89d76243ec19369fdb71eff6b8f82a36a53358"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260513-browser-preview-error-feedback/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260513-browser-preview-error-feedback/raw/on_audible.json",
+        "raw_sha256": "5b3e8bf94f577f629ae04b191b365c3670cdca6e43526121d5646d9bc51ea52f"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260513-browser-preview-error-feedback/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260513-browser-preview-error-feedback/raw/control_binding.json",
+        "raw_sha256": "da3e3c7126ffe721e854208d816cc12228318b3bb2123dfc9cb78919711ab2d3"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

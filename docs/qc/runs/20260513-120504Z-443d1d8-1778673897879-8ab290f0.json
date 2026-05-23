@@ -1,0 +1,43 @@
+{
+  "run_id": "1778673897879-8ab290f0",
+  "task_id": "20260513-gitignore-governance-proofs",
+  "task_type": "governance-change",
+  "spec_path": "docs/qc/specs/20260513-gitignore-governance-proofs.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-05-13T12:04:57.878Z",
+  "finished_at_utc": "2026-05-13T12:05:04.825Z",
+  "head_sha": "443d1d8",
+  "tree_sha": "f5846502338c7dd7a535fb9e2e1919ce309b9825",
+  "subject_sha": "85d306d6c7c70e440364b5cc3b441e8c54e23fba4c5b60df50d474ab32eb4a7f",
+  "verdict": "PASS",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-GATE-GOVERNANCE-SELF",
+      "label": "Governance self-tests",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-gitignore-governance-proofs/logs/O-GATE-GOVERNANCE-SELF.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-gitignore-governance-proofs/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260513-gitignore-governance-proofs/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": []
+}

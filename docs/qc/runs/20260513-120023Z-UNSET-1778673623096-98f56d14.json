@@ -1,0 +1,26 @@
+{
+  "run_id": "1778673623096-98f56d14",
+  "task_id": "20260513-gitignore-governance-proofs",
+  "task_type": "chore",
+  "spec_path": "docs/qc/specs/20260513-gitignore-governance-proofs.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-05-13T12:00:23.095Z",
+  "finished_at_utc": "2026-05-13T12:00:23.098Z",
+  "head_sha": "UNSET",
+  "tree_sha": "UNSET",
+  "subject_sha": "UNSET",
+  "verdict": "BLOCKED",
+  "matrix": [],
+  "diagnostics": [
+    {
+      "severity": "BLOCKED",
+      "code": "GOV-SPEC-007",
+      "message": "Invalid task_type \"chore\". Allowed values: feature, bugfix, refactor, governance-change, qc"
+    },
+    {
+      "severity": "BLOCKED",
+      "code": "GOV-SPEC-002",
+      "message": "Spec schema violations: task_type must be one of: feature, bugfix, refactor, governance-change, qc"
+    }
+  ]
+}

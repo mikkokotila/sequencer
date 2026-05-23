@@ -129,6 +129,17 @@ export function applyEnvelope(
 
   source.connect(env);
   env.connect(dest);
+  // Disconnect the envelope from the destination once the source has finished
+  // playing — without this each ADSR-enabled trigger leaks a GainNode into
+  // the audio graph, accumulating linearly with playback and progressively
+  // loading the audio thread.
+  source.addEventListener('ended', () => {
+    try {
+      env.disconnect();
+    } catch {
+      /* already disconnected */
+    }
+  });
   return { envelope: env, stopAt };
 }
 

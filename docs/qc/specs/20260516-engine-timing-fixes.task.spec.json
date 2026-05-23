@@ -1,0 +1,50 @@
+{
+  "task_id": "20260516-engine-timing-fixes",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Fix two engine-timing bugs that combined to produce audible sloppiness and progressive degradation across a session: (1) Tone.js was running on its own AudioContext while sample playback used the app's AudioContext, so every src.start(time) was scheduled ~22s in the past — measured min delta when - ctxTime = -22.547s on main. After Tone.setContext(audioCtx), measured min delta = +0.043s (Tone's normal lookahead). (2) Each ADSR-enabled trigger leaked a GainNode into the audio graph because the envelope was never disconnected after the source ended — measured 4 alive after one play cycle, 12 after three cycles. After adding source.addEventListener('ended', () => env.disconnect()) the count stays at 0 across cycles.",
+    "in_scope": [
+      "src/main.ts",
+      "src/engine/adsr.ts",
+      "e2e/sequencer.spec.ts"
+    ],
+    "out_of_scope": [
+      "src/engine/audio.ts",
+      "src/engine/scheduler.ts",
+      "src/engine/worklets/**",
+      "src/engine/extensions/**",
+      "docs/qc/scripts/**",
+      "docs/contracts/**"
+    ],
+    "controls": [
+      {
+        "id": "tone_uses_app_audio_context",
+        "description": "After initAudio(), main.ts calls Tone.setContext(getAudioContext()) so the Tone.Transport clock runs on the same AudioContext that owns all sample playback nodes. Every src.start(time) lands at or after the context's currentTime.",
+        "test": "e2e: instrument createBufferSource.start to capture (when, ctxTime); after one play, assert no captured delta is negative and min delta >= 0."
+      },
+      {
+        "id": "adsr_envelope_disconnects_on_source_end",
+        "description": "applyEnvelope registers an 'ended' listener on the source that disconnects the env GainNode. Over multiple play/stop cycles the alive-GainNode count stays bounded.",
+        "test": "e2e: instrument createGain + disconnect to track alive count; after 3 play/stop cycles with ADSR enabled, alive count equals the pre-cycle baseline."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "none"
+    ],
+    "seed": "engine-timing-fixes-seed-v1",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "control_binding"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

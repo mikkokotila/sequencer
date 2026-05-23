@@ -2,7 +2,8 @@
  * Entry point — initializes all modules and wires them together.
  */
 
-import { initAudio, loadWorklets } from './engine/audio';
+import * as Tone from 'tone';
+import { initAudio, loadWorklets, getAudioContext } from './engine/audio';
 import { openDB, dbGet, saveSong, loadSong, scheduleSave } from './transport/persistence';
 import { loadManifest, wireBrowserEvents } from './ui/browser';
 import { buildUI, refreshUI, refreshSongName, updateSongPane } from './ui/build';
@@ -134,6 +135,12 @@ async function init(): Promise<void> {
   // Engine processing MUST init before extensions so that setFinalOutput()
   // points to the engine chain BEFORE the extension chain is built.
   initAudio();
+  // Bind Tone.js to our AudioContext. Without this, Tone spins up its own
+  // context and Transport callbacks pass `time` values from a clock that
+  // diverges from the one running our sample playback — every src.start(time)
+  // ends up scheduled in the past and the grid loses sub-ms precision.
+  const ctx = getAudioContext();
+  if (ctx) Tone.setContext(ctx);
   await loadWorklets();
   initEngineProcessing();
   initExtensions();

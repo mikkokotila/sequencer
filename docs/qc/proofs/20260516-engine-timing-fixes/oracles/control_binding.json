@@ -1,0 +1,15 @@
+{
+  "oracle_id": "control_binding",
+  "task_id": "20260516-engine-timing-fixes",
+  "subject_sha": "15315585162e2d06a198691ee8aa298a7e51d63b66d9a6707229b275f104faba",
+  "harness_version": "oracle-harness-v2",
+  "status": "PASS",
+  "metrics": {
+    "binding_coverage": 1
+  },
+  "raw_artifact": "raw/control_binding.json",
+  "raw_sha256": "d637138242dae502a2f040909e2525574d6ac24d668196ce58730786fc0453f6",
+  "evidence": "controls_declared=2",
+  "challenge_id": "ab12dac75f66d9e489be236e6620b43f8bf171ed8f4e16070ac585431bcb11cb",
+  "payload_digest": "9180ab49cef206dc413b5507b19cfcacd3aa479cf9ff6ac30dc2a5588f1a9b31"
+}

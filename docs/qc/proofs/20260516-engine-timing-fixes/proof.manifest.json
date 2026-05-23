@@ -1,0 +1,69 @@
+{
+  "task_id": "20260516-engine-timing-fixes",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-CI.log"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-E2E.log"
+    },
+    {
+      "id": "O-E2E-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-E2E-DELTA.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-GATE-CONTRACTS-FULL.log"
+    },
+    {
+      "id": "O-GATE-ARCH-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-GATE-ARCH-FULL.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/commit.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/quality-gates.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/governance-compiler.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/architecture-invariants.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "Verified in headless Chromium and via two new e2e regression tests. Baseline measurement on origin/main: min delta when - ctxTime = -22.547s, env GainNodes alive grew 4 -> 8 -> 12 over three play/stop cycles. Post-fix: min delta = +0.043s, max +0.099s (Tone lookahead window); env GainNodes alive returns to baseline after every cycle including under stress (5 cycles + edits-during-play + BPM 100->145)."
+  },
+  "artifacts": [
+    "verdict.json",
+    "compiler-report.md"
+  ]
+}

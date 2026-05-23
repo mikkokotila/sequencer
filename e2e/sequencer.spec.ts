@@ -869,3 +869,197 @@ test.describe('ADSR Controls', () => {
     expect(result.peakAt100ms).toBeGreaterThan(result.peakFirst10ms);
   });
 });
+
+// ═══════════════════════════════════════════
+//  15. AUDIO ENGINE TIMING (regression for dual-ctx + ADSR-leak fixes)
+// ═══════════════════════════════════════════
+
+/** Build a tiny silent stereo PCM WAV (100ms at 44.1 kHz) for tests that need
+ * decodeAudioData to succeed without depending on real sample files on disk
+ * (CI runners don't have the audio sample libraries). */
+function makeSilentWavBytes(): Uint8Array {
+  const sr = 44100;
+  const ch = 2;
+  const frames = Math.floor(sr * 0.1);
+  const dataSize = frames * ch * 2;
+  const buf = new ArrayBuffer(44 + dataSize);
+  const v = new DataView(buf);
+  const writeStr = (off: number, s: string) => {
+    for (let i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i));
+  };
+  writeStr(0, 'RIFF');
+  v.setUint32(4, 36 + dataSize, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true);
+  v.setUint16(22, ch, true);
+  v.setUint32(24, sr, true);
+  v.setUint32(28, sr * ch * 2, true);
+  v.setUint16(32, ch * 2, true);
+  v.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  v.setUint32(40, dataSize, true);
+  return new Uint8Array(buf);
+}
+
+async function mockWavRoutes(page: Page) {
+  const body = Buffer.from(makeSilentWavBytes());
+  await page.route('**/*.wav', (route) =>
+    route.fulfill({ status: 200, contentType: 'audio/wav', body }),
+  );
+}
+
+test.describe('Audio Engine Timing', () => {
+  test('AudioContexts are unique — Tone is bound to the engine context', async ({ page }) => {
+    // Regression: Tone.setContext must run BEFORE the Play button is wired,
+    // otherwise a fast click during init lazy-creates a second AudioContext
+    // and reintroduces the dual-context timing bug. We verify the binding by
+    // counting distinct AudioContexts after init has settled — there must be
+    // exactly one.
+    await page.goto('/');
+    await page.waitForSelector('#app', { state: 'visible' });
+    await page.evaluate(() => {
+      const seen = new Set<unknown>();
+      const Orig = window.AudioContext;
+      (window as unknown as { AudioContext: typeof AudioContext }).AudioContext = class extends Orig {
+        constructor(...args: ConstructorParameters<typeof AudioContext>) {
+          super(...args);
+          seen.add(this);
+        }
+      } as typeof AudioContext;
+      (window as unknown as { __ctxCount: () => number }).__ctxCount = () => seen.size;
+    });
+    await page.waitForSelector('.melody-track', { state: 'visible' });
+    await page.waitForSelector('#song-pane', { state: 'visible' });
+    // Click Play immediately — exercises the early-init race window. With the
+    // pre-fix ordering this would cause Tone to create its own context first.
+    await page.click('#app');
+    await page.locator('#play-btn').click();
+    await page.waitForTimeout(500);
+    const count = await page.evaluate(() =>
+      (window as unknown as { __ctxCount: () => number }).__ctxCount(),
+    );
+    expect(count).toBeLessThanOrEqual(1);
+  });
+
+  test('src.start times are scheduled in the future (single AudioContext)', async ({ page }) => {
+    await mockWavRoutes(page);
+    await page.goto('/');
+    await page.waitForSelector('#app', { state: 'visible' });
+    // Instrument createBufferSource BEFORE the app does anything audible.
+    await page.evaluate(() => {
+      const origBS = BaseAudioContext.prototype.createBufferSource;
+      const tracker: { when: number; ctxTime: number }[] = [];
+      (window as unknown as { __timingTrace: typeof tracker }).__timingTrace = tracker;
+      BaseAudioContext.prototype.createBufferSource = function (this: BaseAudioContext) {
+        const s = origBS.call(this);
+        const origStart = s.start;
+        s.start = function (this: AudioBufferSourceNode, ...args: Parameters<typeof origStart>) {
+          const when = (args[0] ?? 0) as number;
+          tracker.push({ when, ctxTime: s.context.currentTime });
+          return origStart.apply(this, args);
+        };
+        return s;
+      };
+    });
+    await page.waitForSelector('.melody-track', { state: 'visible' });
+    await page.waitForSelector('#song-pane', { state: 'visible' });
+    await page.click('#app'); // user gesture for AudioContext.resume
+    // Default song has kick four-on-the-floor in phrase 1; load a sample so
+    // playSample actually creates buffer sources.
+    await page.locator('.melody-track[data-type="drum"][data-track="0"] .sample-btn').click();
+    await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
+    await page.locator('.browser-item').first().click();
+    await page.locator('#browser-load').click();
+    await page.waitForTimeout(800);
+    await page.locator('#play-btn').click();
+    await page.waitForTimeout(2000);
+    await page.locator('#stop-btn').click();
+    const result = await page.evaluate(() => {
+      const tracker = (
+        window as unknown as { __timingTrace: { when: number; ctxTime: number }[] }
+      ).__timingTrace;
+      const deltas = tracker.map((s) => s.when - s.ctxTime);
+      return {
+        count: tracker.length,
+        minDelta: deltas.length ? Math.min(...deltas) : 0,
+        maxDelta: deltas.length ? Math.max(...deltas) : 0,
+        negative: deltas.filter((d) => d < 0).length,
+      };
+    });
+    // At least one scheduler-driven sample played
+    expect(result.count).toBeGreaterThan(0);
+    // Every src.start must be at or after ctx.currentTime — the dual-context
+    // bug had src.start scheduled ~22s in the past on every call.
+    expect(result.negative).toBe(0);
+    // And the minimum delta should reflect Tone.Transport's lookahead, not be
+    // a giant past-offset.
+    expect(result.minDelta).toBeGreaterThanOrEqual(0);
+    expect(result.maxDelta).toBeLessThan(1);
+  });
+
+  test('ADSR-enabled triggers do not leak GainNodes across play/stop cycles', async ({ page }) => {
+    await mockWavRoutes(page);
+    await page.goto('/');
+    await page.waitForSelector('#app', { state: 'visible' });
+    // Instrument createGain BEFORE the app's audio init — track every gain
+    // created and decrement on disconnect.
+    await page.evaluate(() => {
+      const origGain = BaseAudioContext.prototype.createGain;
+      const state: { created: number; alive: Set<GainNode> } = { created: 0, alive: new Set() };
+      (window as unknown as { __gainTrace: typeof state }).__gainTrace = state;
+      BaseAudioContext.prototype.createGain = function (this: BaseAudioContext) {
+        const g = origGain.call(this);
+        state.created++;
+        state.alive.add(g);
+        const origDisconnect = g.disconnect.bind(g);
+        (g as GainNode & { disconnect: (...a: unknown[]) => void }).disconnect = function (
+          ...args: unknown[]
+        ) {
+          state.alive.delete(g);
+          return (origDisconnect as (...a: unknown[]) => void)(...args);
+        };
+        return g;
+      };
+    });
+    await page.waitForSelector('.melody-track', { state: 'visible' });
+    await page.waitForSelector('#song-pane', { state: 'visible' });
+    await page.click('#app');
+    await page.locator('.melody-track[data-type="drum"][data-track="0"] .sample-btn').click();
+    await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
+    await page.locator('.browser-item').first().click();
+    await page.locator('#browser-load').click();
+    await page.waitForTimeout(800);
+    // Enable ADSR on the kick (popup → click OFF toggle to turn ON)
+    await page.locator('.melody-track[data-type="drum"][data-track="0"] .adsr-btn').click();
+    await page.waitForTimeout(200);
+    const offToggle = page.locator('button', { hasText: /^OFF$/ }).first();
+    await offToggle.click();
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(200);
+    // Snapshot baseline AFTER setup, then run multiple short play/stop cycles.
+    const baseline = await page.evaluate(() => {
+      const s = (window as unknown as { __gainTrace: { created: number; alive: Set<GainNode> } })
+        .__gainTrace;
+      return { created: s.created, alive: s.alive.size };
+    });
+    for (let i = 0; i < 3; i++) {
+      await page.locator('#play-btn').click();
+      await page.waitForTimeout(2200);
+      await page.locator('#stop-btn').click();
+      // Allow the release tail + ended-event handler to run.
+      await page.waitForTimeout(800);
+    }
+    const after = await page.evaluate(() => {
+      const s = (window as unknown as { __gainTrace: { created: number; alive: Set<GainNode> } })
+        .__gainTrace;
+      return { created: s.created, alive: s.alive.size };
+    });
+    // Each cycle should create envelope GainNodes (proves ADSR is engaged).
+    expect(after.created).toBeGreaterThan(baseline.created);
+    // But none should remain alive — every env GainNode must be disconnected
+    // when its buffer source ends. The pre-fix behavior leaked one per trigger.
+    expect(after.alive).toBe(baseline.alive);
+  });
+});

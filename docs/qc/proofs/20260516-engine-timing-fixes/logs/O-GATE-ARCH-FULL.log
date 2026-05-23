@@ -1,0 +1,25 @@
+command: node docs/qc/scripts/architecture-gates.mjs
+status: 0
+elapsed_ms: 418
+
+--- stdout ---
+PASS | No dummy pass-through extension nodes | No pass-through dummy insert nodes detected.
+PASS | No global window.SEQ extension coupling | No window.SEQ usage found in extensions.
+PASS | Engine interface contract is actually consumed | No legacy engine interface module present (dead boundary removed).
+PASS | Scheduler does not import transport internals directly | No direct scheduler->transport state imports detected.
+PASS | Persistence lifecycle decoupled from UI callback injection | No persistence callback injection API detected.
+PASS | Preview audio nodes are explicitly cleaned up | Preview node cleanup logic detected.
+PASS | Audio initialization ownership is centralized | initAudio call sites: 3
+PASS | Decode failures are not silently swallowed | No silent decode catch blocks detected.
+PASS | UI does not duplicate transport business logic | No duplicate replicateTrack/setMelodyCell in UI layer.
+PASS | Painting event setup is idempotent | Found setup guard.
+PASS | Playhead/cell rendering avoids repeated inline style mutation | No inline style thrash patterns found.
+PASS | PaintType does not use empty-string sentinel | No empty-string PaintType sentinel detected.
+PASS | Transport UI avoids large innerHTML template injection | No transport.innerHTML injection detected.
+PASS | Benchmark harness is deterministic (no proxy timing/randomness) | No forbidden benchmark timing proxies detected.
+PASS | Fake benchmark processor removed | benchmark-processor.ts correctly removed.
+
+architecture-gates: all 15 checks passed.
+
+
+--- stderr ---

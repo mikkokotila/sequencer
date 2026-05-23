@@ -1,0 +1,8 @@
+{
+  "spec_path": "docs/qc/specs/20260516-engine-timing-fixes.task.spec.json",
+  "controls_declared": 2,
+  "control_ids": [
+    "tone_uses_app_audio_context",
+    "adsr_envelope_disconnects_on_source_end"
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "task_id": "20260516-engine-timing-fixes",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260516-engine-timing-fixes.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-05-23T08:49:39.902Z",
+  "finished_at_utc": "2026-05-23T08:50:40.034Z",
+  "head_sha": "5465a67",
+  "tree_sha": "67c100f35363edd8e5c475659adf0eef47ffe755",
+  "subject_sha": "3a628b40a95e9023b0e2174866f19e12f08146d32801da7ca883b95fa29f59d7",
+  "subject_files": [
+    "e2e/sequencer.spec.ts",
+    "src/main.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-CI.log",
+    "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-COMMIT-RANGE.log",
+    "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-E2E-DELTA.log",
+    "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-E2E.log",
+    "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-GATE-ARCH-FULL.log",
+    "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-GATE-CONTRACTS-FULL.log",
+    "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-ORACLE-HARNESS.log",
+    "docs/qc/proofs/20260516-engine-timing-fixes/oracles/control_binding.json",
+    "docs/qc/proofs/20260516-engine-timing-fixes/oracles/off_transparent.json",
+    "docs/qc/proofs/20260516-engine-timing-fixes/oracles/on_audible.json",
+    "docs/qc/proofs/20260516-engine-timing-fixes/raw/off_transparent.json",
+    "docs/qc/proofs/20260516-engine-timing-fixes/raw/on_audible.json",
+    "docs/qc/proofs/20260516-engine-timing-fixes/verdict.json",
+    "docs/qc/runs/20260523-084619Z-5465a67-1779525921582-d1c90b50.json",
+    "docs/qc/runs/20260523-084619Z-5465a67-1779525921582-d1c90b50.md",
+    "docs/qc/runs/20260523-084725Z-5465a67-1779525986518-d03b164b.json",
+    "docs/qc/runs/20260523-084725Z-5465a67-1779525986518-d03b164b.md",
+    "docs/qc/runs/20260523-084925Z-5465a67-1779526106287-2ce6dd74.json",
+    "docs/qc/runs/20260523-084925Z-5465a67-1779526106287-2ce6dd74.md",
+    "e2e/sequencer.spec.ts",
+    "logs/compiler.log",
+    "src/main.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=3, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=3, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 5002,
+        "log_file": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 51241,
+        "log_file": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 214,
+        "log_file": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 378,
+        "log_file": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 418,
+        "log_file": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 326,
+        "log_file": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260516-engine-timing-fixes/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260516-engine-timing-fixes/raw/off_transparent.json",
+        "raw_sha256": "c1f3ed7e4352828abc719a7e7143210aa13034fedcd8d8703ba2f8359f986e23"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260516-engine-timing-fixes/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260516-engine-timing-fixes/raw/on_audible.json",
+        "raw_sha256": "6a69a7291ead18fecca49479537b14d7e3220b3753981130e5aeb1d9d4389cbf"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260516-engine-timing-fixes/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260516-engine-timing-fixes/raw/control_binding.json",
+        "raw_sha256": "d637138242dae502a2f040909e2525574d6ac24d668196ce58730786fc0453f6"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

@@ -1,0 +1,120 @@
+{
+  "run_id": "1779525986518-d03b164b",
+  "task_id": "20260516-engine-timing-fixes",
+  "task_type": "bugfix",
+  "spec_path": "docs/qc/specs/20260516-engine-timing-fixes.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-05-23T08:46:26.517Z",
+  "finished_at_utc": "2026-05-23T08:47:25.836Z",
+  "head_sha": "5465a67",
+  "tree_sha": "c91fb124afec14ee7f9cb4a436ad02a6c98eccf9",
+  "subject_sha": "892365c4f3200f72f723b9b16cf8974755d57228789851f529dd4dcfff578611",
+  "verdict": "FAIL",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E",
+      "label": "E2E",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-E2E.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E-DELTA",
+      "label": "E2E delta coverage",
+      "status": "FAIL",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-E2E-DELTA.log",
+      "failure_items": [
+        {
+          "suite": "Runtime product delta requires test delta",
+          "test_name": "Runtime product delta requires test delta",
+          "file_line": null,
+          "first_message": "Changed runtime files without test changes: src/main.ts",
+          "detail": "Changed runtime files without test changes: src/main.ts",
+          "line": "FAIL | Runtime product delta requires test delta | Changed runtime files without test changes: src/main.ts"
+        },
+        {
+          "suite": "Test delta contains behavioral assertions",
+          "test_name": "Test delta contains behavioral assertions",
+          "file_line": null,
+          "first_message": "No added test/assert lines found in staged test diff (expected test()/it()/expect()/assert() delta).",
+          "detail": "No added test/assert lines found in staged test diff (expected test()/it()/expect()/assert() delta).",
+          "line": "FAIL | Test delta contains behavioral assertions | No added test/assert lines found in staged test diff (expected test()/it()/expect()/assert() delta)."
+        }
+      ]
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-CONTRACTS-FULL",
+      "label": "Contract static gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-GATE-CONTRACTS-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-ARCH-FULL",
+      "label": "Architecture gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-GATE-ARCH-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "off_transparent",
+      "label": "off_transparent",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-engine-timing-fixes/oracles/off_transparent.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "on_audible",
+      "label": "on_audible",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-engine-timing-fixes/oracles/on_audible.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "control_binding",
+      "label": "control_binding",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260516-engine-timing-fixes/oracles/control_binding.json",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "FAIL",
+      "code": "GOV-PROC-002",
+      "message": "O-E2E-DELTA failed: npm run gate:e2e-delta | first_failure=Changed runtime files without test changes: src/main.ts"
+    }
+  ]
+}

@@ -1,16 +1,15 @@
 command: npm run gate:e2e-delta
 status: 0
-elapsed_ms: 207
+elapsed_ms: 235
 
 --- stdout ---
 
 > sequencer@1.0.0 gate:e2e-delta
 > node docs/qc/scripts/e2e-delta-gates.mjs
 
-PASS | Runtime product delta requires test delta | runtime_files=2, test_files=1
-PASS | Test delta contains behavioral assertions | Found added/modified test declaration or assertion line in staged test diff.
+PASS | Runtime product delta requires test delta | No runtime product files changed.
 
-e2e-delta-gates: all 2 checks passed.
+e2e-delta-gates: all 1 checks passed.
 
 
 --- stderr ---

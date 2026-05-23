@@ -874,8 +874,45 @@ test.describe('ADSR Controls', () => {
 //  15. AUDIO ENGINE TIMING (regression for dual-ctx + ADSR-leak fixes)
 // ═══════════════════════════════════════════
 
+/** Build a tiny silent stereo PCM WAV (100ms at 44.1 kHz) for tests that need
+ * decodeAudioData to succeed without depending on real sample files on disk
+ * (CI runners don't have the audio sample libraries). */
+function makeSilentWavBytes(): Uint8Array {
+  const sr = 44100;
+  const ch = 2;
+  const frames = Math.floor(sr * 0.1);
+  const dataSize = frames * ch * 2;
+  const buf = new ArrayBuffer(44 + dataSize);
+  const v = new DataView(buf);
+  const writeStr = (off: number, s: string) => {
+    for (let i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i));
+  };
+  writeStr(0, 'RIFF');
+  v.setUint32(4, 36 + dataSize, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true);
+  v.setUint16(22, ch, true);
+  v.setUint32(24, sr, true);
+  v.setUint32(28, sr * ch * 2, true);
+  v.setUint16(32, ch * 2, true);
+  v.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  v.setUint32(40, dataSize, true);
+  return new Uint8Array(buf);
+}
+
+async function mockWavRoutes(page: Page) {
+  const body = Buffer.from(makeSilentWavBytes());
+  await page.route('**/*.wav', (route) =>
+    route.fulfill({ status: 200, contentType: 'audio/wav', body }),
+  );
+}
+
 test.describe('Audio Engine Timing', () => {
   test('src.start times are scheduled in the future (single AudioContext)', async ({ page }) => {
+    await mockWavRoutes(page);
     await page.goto('/');
     await page.waitForSelector('#app', { state: 'visible' });
     // Instrument createBufferSource BEFORE the app does anything audible.
@@ -930,6 +967,7 @@ test.describe('Audio Engine Timing', () => {
   });
 
   test('ADSR-enabled triggers do not leak GainNodes across play/stop cycles', async ({ page }) => {
+    await mockWavRoutes(page);
     await page.goto('/');
     await page.waitForSelector('#app', { state: 'visible' });
     // Instrument createGain BEFORE the app's audio init — track every gain

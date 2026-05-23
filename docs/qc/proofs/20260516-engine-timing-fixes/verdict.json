@@ -5,15 +5,13 @@
   "spec_path": "docs/qc/specs/20260516-engine-timing-fixes.task.spec.json",
   "policy_version": "2.0.0",
   "diagnostics_version": "1.0.0",
-  "started_at_utc": "2026-05-23T08:19:56.832Z",
-  "finished_at_utc": "2026-05-23T08:20:52.338Z",
-  "head_sha": "7066cf7",
-  "tree_sha": "8eae9661788bddc7fd35a71e4f096287a967e542",
-  "subject_sha": "15315585162e2d06a198691ee8aa298a7e51d63b66d9a6707229b275f104faba",
+  "started_at_utc": "2026-05-23T08:28:16.443Z",
+  "finished_at_utc": "2026-05-23T08:29:13.958Z",
+  "head_sha": "c47fcfc",
+  "tree_sha": "d1a0ce96769802d49590afdf5ef3ce3dd0769123",
+  "subject_sha": "3737b9af8f0229a5d9b164a1b222f544efda163451ff37d8bd6a371090efe91d",
   "subject_files": [
-    "e2e/sequencer.spec.ts",
-    "src/engine/adsr.ts",
-    "src/main.ts"
+    "e2e/sequencer.spec.ts"
   ],
   "simulated_files": [],
   "changed_files": [
@@ -27,17 +25,12 @@
     "docs/qc/proofs/20260516-engine-timing-fixes/oracles/control_binding.json",
     "docs/qc/proofs/20260516-engine-timing-fixes/oracles/off_transparent.json",
     "docs/qc/proofs/20260516-engine-timing-fixes/oracles/on_audible.json",
-    "docs/qc/proofs/20260516-engine-timing-fixes/proof.manifest.json",
-    "docs/qc/proofs/20260516-engine-timing-fixes/raw/control_binding.json",
     "docs/qc/proofs/20260516-engine-timing-fixes/raw/off_transparent.json",
     "docs/qc/proofs/20260516-engine-timing-fixes/raw/on_audible.json",
     "docs/qc/proofs/20260516-engine-timing-fixes/verdict.json",
-    "docs/qc/runs/20260523-081944Z-7066cf7-1779524326783-8cdc1d8e.json",
-    "docs/qc/runs/20260523-081944Z-7066cf7-1779524326783-8cdc1d8e.md",
-    "docs/qc/specs/20260516-engine-timing-fixes.task.spec.json",
-    "e2e/sequencer.spec.ts",
-    "src/engine/adsr.ts",
-    "src/main.ts"
+    "docs/qc/runs/20260523-082759Z-c47fcfc-1779524822370-f489d1b4.json",
+    "docs/qc/runs/20260523-082759Z-c47fcfc-1779524822370-f489d1b4.md",
+    "e2e/sequencer.spec.ts"
   ],
   "phases": [
     {
@@ -75,7 +68,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 4866,
+        "elapsed_ms": 4975,
         "log_file": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-CI.log"
       },
       {
@@ -85,7 +78,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 47213,
+        "elapsed_ms": 48969,
         "log_file": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-E2E.log"
       },
       {
@@ -95,7 +88,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 207,
+        "elapsed_ms": 235,
         "log_file": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-E2E-DELTA.log"
       },
       {
@@ -105,7 +98,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 380,
+        "elapsed_ms": 397,
         "log_file": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-GATE-CONTRACTS-FULL.log"
       },
       {
@@ -115,7 +108,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 406,
+        "elapsed_ms": 401,
         "log_file": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-GATE-ARCH-FULL.log"
       },
       {
@@ -125,7 +118,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 306,
+        "elapsed_ms": 268,
         "log_file": "docs/qc/proofs/20260516-engine-timing-fixes/logs/O-COMMIT-RANGE.log"
       }
     ],
@@ -145,14 +138,14 @@
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260516-engine-timing-fixes/oracles/off_transparent.json",
         "raw_artifact": "docs/qc/proofs/20260516-engine-timing-fixes/raw/off_transparent.json",
-        "raw_sha256": "d2041dfe3f71db7b5425fe1be3862d31257faecd74e2b3c59a421b7d61f278da"
+        "raw_sha256": "aac2f102294996507af702e5afc74335766a8e8b1e4c11dcaad462fac72a37de"
       },
       {
         "oracle_id": "on_audible",
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260516-engine-timing-fixes/oracles/on_audible.json",
         "raw_artifact": "docs/qc/proofs/20260516-engine-timing-fixes/raw/on_audible.json",
-        "raw_sha256": "29932a403c8a0e8dd0aaf5ff32f68fa2a3ffe8f147b867bc6b893eb86a181d87"
+        "raw_sha256": "32e393e28be1eb2f4f25514a2707705af0eb48e4ab63a0cc5cc1f3e2df845bc4"
       },
       {
         "oracle_id": "control_binding",

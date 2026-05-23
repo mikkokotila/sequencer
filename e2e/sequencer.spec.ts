@@ -418,6 +418,31 @@ test.describe('Track Controls', () => {
     await expect(loadBtn).not.toHaveAttribute('title', /Load failed/);
   });
 
+  test('a slow LOAD failure does not clobber the LOAD button after the user moves on', async ({
+    page,
+  }) => {
+    await waitForApp(page);
+    // Slow fail (400ms) so we have time to navigate away in the test before
+    // the catch fires.
+    await page.route('**/*.wav', async (route) => {
+      await new Promise((r) => setTimeout(r, 400));
+      await route.fulfill({ status: 200, contentType: 'text/plain', body: 'not audio' });
+    });
+    await page.locator('.melody-track[data-type="drum"][data-track="0"] .sample-btn').click();
+    await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
+    await page.locator('.browser-item').first().click();
+    const loadBtn = page.locator('#browser-load');
+    await loadBtn.click();
+    // Don't wait for the in-flight load to fail — move to another row first.
+    await page.locator('.browser-item').nth(1).click();
+    // Wait for the original slow failure to settle.
+    await page.waitForTimeout(700);
+    // The stale failure must NOT have re-marked the LOAD button as load-error,
+    // because the user has selected a different row in the meantime.
+    await expect(loadBtn).not.toHaveClass(/load-error/);
+    await expect(loadBtn).not.toHaveAttribute('title', /Load failed/);
+  });
+
   test('a slow failing preview does not clobber a newer in-flight preview', async ({ page }) => {
     await waitForApp(page);
     // First request: slow fail (250ms). Subsequent requests: fast bytes that

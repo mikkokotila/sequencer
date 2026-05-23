@@ -5,25 +5,21 @@
   "spec_path": "docs/qc/specs/20260516-load-error-feedback.task.spec.json",
   "policy_version": "2.0.0",
   "diagnostics_version": "1.0.0",
-  "started_at_utc": "2026-05-23T09:25:33.000Z",
-  "finished_at_utc": "2026-05-23T09:26:34.852Z",
-  "head_sha": "0be16f0",
-  "tree_sha": "08b10efd96c615a7e02ec3a3ea3f9db07e4c7bf6",
-  "subject_sha": "272f915f7d9842a5ac03de30272f10df1e61403c246b1741f3757f642893922d",
+  "started_at_utc": "2026-05-23T09:35:14.419Z",
+  "finished_at_utc": "2026-05-23T09:36:20.090Z",
+  "head_sha": "8499a6b",
+  "tree_sha": "5bd217f92aa347f30f71433d0cc4e547df32b606",
+  "subject_sha": "fd0381349c0329925d96d64860bf14510e6e84f60079f845ae100f34fb1c2d9e",
   "subject_files": [
     "e2e/sequencer.spec.ts",
-    "index.html",
     "src/ui/browser.ts"
   ],
   "simulated_files": [],
   "changed_files": [
-    "docs/qc/proofs/20260516-load-error-feedback/proof.manifest.json",
     "docs/qc/proofs/20260516-load-error-feedback/verdict.json",
-    "docs/qc/runs/20260523-092524Z-0be16f0-1779528260890-c0db08f4.json",
-    "docs/qc/runs/20260523-092524Z-0be16f0-1779528260890-c0db08f4.md",
-    "docs/qc/specs/20260516-load-error-feedback.task.spec.json",
+    "docs/qc/runs/20260523-093459Z-8499a6b-1779528835292-a804c159.json",
+    "docs/qc/runs/20260523-093459Z-8499a6b-1779528835292-a804c159.md",
     "e2e/sequencer.spec.ts",
-    "index.html",
     "src/ui/browser.ts"
   ],
   "phases": [
@@ -62,7 +58,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 5250,
+        "elapsed_ms": 5554,
         "log_file": "docs/qc/proofs/20260516-load-error-feedback/logs/O-CI.log"
       },
       {
@@ -72,7 +68,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 52808,
+        "elapsed_ms": 56165,
         "log_file": "docs/qc/proofs/20260516-load-error-feedback/logs/O-E2E.log"
       },
       {
@@ -82,7 +78,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 206,
+        "elapsed_ms": 219,
         "log_file": "docs/qc/proofs/20260516-load-error-feedback/logs/O-E2E-DELTA.log"
       },
       {
@@ -92,7 +88,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 375,
+        "elapsed_ms": 416,
         "log_file": "docs/qc/proofs/20260516-load-error-feedback/logs/O-GATE-CONTRACTS-FULL.log"
       },
       {
@@ -102,7 +98,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 417,
+        "elapsed_ms": 403,
         "log_file": "docs/qc/proofs/20260516-load-error-feedback/logs/O-GATE-ARCH-FULL.log"
       },
       {
@@ -112,7 +108,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 675,
+        "elapsed_ms": 286,
         "log_file": "docs/qc/proofs/20260516-load-error-feedback/logs/O-COMMIT-RANGE.log"
       }
     ],
@@ -132,14 +128,14 @@
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260516-load-error-feedback/oracles/off_transparent.json",
         "raw_artifact": "docs/qc/proofs/20260516-load-error-feedback/raw/off_transparent.json",
-        "raw_sha256": "36fb2897154552fb1b441e1fb5159d5784a4b6fcc1fe8904d0b2f2f74280b57a"
+        "raw_sha256": "5fad51c808258119d458da22fe0377d868a43475a2e847f9e52af9174ac53a61"
       },
       {
         "oracle_id": "on_audible",
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260516-load-error-feedback/oracles/on_audible.json",
         "raw_artifact": "docs/qc/proofs/20260516-load-error-feedback/raw/on_audible.json",
-        "raw_sha256": "fc1f0b5771f3f755e86e00b8d48ef073ba1a8ac4a0e792506a000b8c082c538b"
+        "raw_sha256": "96921dbf3f732451182f2a99f7b3daec27126e419d5ec20e843d47973807cee8"
       },
       {
         "oracle_id": "control_binding",

@@ -72,10 +72,33 @@ export function setPlayingPhrase(p: number): void {
 }
 
 // ═══════════════════════════════════════════
+//  VISUAL SYNC
+// ═══════════════════════════════════════════
+
+/**
+ * Run a UI-facing callback at the AudioContext time the step is actually heard.
+ *
+ * Tone.Transport callbacks fire inside the scheduling lookahead — measured here
+ * at 49-91ms (median 83ms) ahead of the audio. Painting the playhead straight
+ * from that callback puts the highlight ~2/3 of a 16th note ahead of the sound
+ * at 120 BPM, and more than a full step ahead above ~180 BPM. Tone.Draw exists
+ * for exactly this: it re-times the callback onto the animation frame nearest
+ * the given AudioContext time.
+ */
+function scheduleVisual(fn: () => void, time: number): void {
+  Tone.getDraw().schedule(fn, time);
+}
+
+/** Drop any visual callbacks still queued from the lookahead window. */
+function cancelPendingVisuals(): void {
+  Tone.getDraw().cancel(0);
+}
+
+// ═══════════════════════════════════════════
 //  PHRASE ADVANCE
 // ═══════════════════════════════════════════
 
-function advancePhrase(): void {
+function advancePhrase(time: number): void {
   if (!transport) return;
   const next = transport.findNextPhrase(playingPhrase);
   if (next < 0) {
@@ -83,7 +106,8 @@ function advancePhrase(): void {
     return;
   }
   playingPhrase = next;
-  onPhraseChange?.();
+  // Defer to audio time — the phrase only actually changes when the step sounds.
+  scheduleVisual(() => onPhraseChange?.(), time);
 }
 
 // ═══════════════════════════════════════════
@@ -187,14 +211,18 @@ function scheduleStep(time: number): void {
     }
   }
 
-  // Emit step event for UI playhead (no DOM here)
-  emit('engine:step', { step: s, phrase: playingPhrase });
+  // Emit step event for UI playhead (no DOM here). Deferred to the step's own
+  // audio time so the highlight lands with the sound, not a lookahead early.
+  const stepPhrase = playingPhrase;
+  scheduleVisual(() => {
+    emit('engine:step', { step: s, phrase: stepPhrase });
+  }, time);
 
   // Advance step
   curStep++;
   if (curStep >= STEPS) {
     curStep = 0;
-    advancePhrase();
+    advancePhrase(time);
   }
 }
 
@@ -218,6 +246,7 @@ export function startPlayback(): void {
     scheduledEventId = null;
   }
   tr.cancel(0);
+  cancelPendingVisuals();
 
   // Sync Tone.js BPM
   tr.bpm.value = transport.getBpm();
@@ -247,6 +276,10 @@ export function stopPlayback(): void {
   tr.stop();
   tr.position = 0;
   stopSequencerVoicesNow();
+
+  // Drop lookahead-queued visuals first, otherwise one can land after the
+  // clear below and leave a highlighted column behind on a stopped transport.
+  cancelPendingVisuals();
 
   curStep = 0;
 

@@ -1,0 +1,54 @@
+{
+  "task_id": "20260821-playhead-sync-integrity",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Close three transport/UI synchronisation integrity defects found by QC over baseline b04dd33..df835b3. (1) Visual/audio desync: scheduleStep emits 'engine:step' synchronously inside Tone.Transport's lookahead callback, so the playhead paints 49-91ms (median 83ms, measured) BEFORE the sample is audible \u2014 at 120 BPM a 16th step is 125ms, so the playhead leads by ~2/3 of a step, and above ~180 BPM by more than a full step. Fixed by deferring visual emission to AudioContext time via Tone.getDraw().schedule(cb, time), the API Tone documents for exactly this purpose. (2) Stale playhead highlight: highlightStep() early-returns when the viewed phrase is not the playing phrase without clearing the previous highlight, leaving a full 42-cell column permanently lit \u2014 measured as still lit after Stop. Fixed by clearing on the early-return path, clearing on view switch, and sweeping residual .playing on stop. (3) Dead phrase-change callback: setOnPhraseChange() is never called anywhere in the codebase, so the song pane's .playing-phrase indicator never lights up during playback at all (measured: zero slots marked at rest, during play, and after stop). Fixed by wiring it to updateSongPane. This task also carries the on-demand QC run the fixes came from: docs/qc/runs/20260821-191400Z-df835b3.md records the full gate matrix over b04dd33..df835b3, and docs/qc/baseline.md is updated to record the run WITHOUT advancing baseline_sha, because gate:commit-range over the full range still reports 24 pre-compiler commits missing governance trailers (unchanged blocker, GA scope).",
+    "in_scope": [
+      "src/engine/scheduler.ts",
+      "src/ui/playhead.ts",
+      "src/main.ts",
+      "e2e/sequencer.spec.ts",
+      "docs/qc/baseline.md",
+      "docs/qc/runs/**",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**"
+    ],
+    "out_of_scope": [
+      "src/engine/audio.ts",
+      "src/engine/worklets/**",
+      "src/engine/extensions/**",
+      "docs/qc/scripts/**",
+      "docs/contracts/**",
+      "package.json"
+    ],
+    "controls": [
+      {
+        "id": "playhead_paints_at_audio_time",
+        "description": "The 'engine:step' visual event is delivered at the AudioContext time of the step, not at Tone.Transport lookahead schedule time. Measured lead between the step's audio time and the moment the playhead paints must collapse from ~83ms to within one animation frame.",
+        "test": "e2e: instrument the live event bus; capture engine:trigger.time (audio time) and the ctx.currentTime at which the corresponding engine:step is delivered; assert the median absolute lead is below 20ms where it was previously 49-91ms."
+      },
+      {
+        "id": "no_stale_highlight_on_phrase_view_switch",
+        "description": "Switching the viewed phrase away from the playing phrase during playback clears the playhead column instead of freezing it lit, and Stop leaves zero .playing cells.",
+        "test": "e2e: play, switch the viewed phrase to a non-playing slot, assert zero .playing cells while off-view; press Stop and assert zero .playing cells remain."
+      },
+      {
+        "id": "playing_phrase_indicator_tracks_transport",
+        "description": "The song pane marks the currently playing phrase slot with .playing-phrase while the transport runs and clears it on stop.",
+        "test": "e2e: assert no slot is marked at rest, exactly the playing slot is marked during playback, and none is marked after Stop."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": ["none"],
+    "seed": "playhead-sync-integrity-seed-v1",
+    "oracles": ["off_transparent", "on_audible", "control_binding"]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

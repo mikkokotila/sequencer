@@ -9,7 +9,13 @@ import { loadManifest, wireBrowserEvents } from './ui/browser';
 import { buildUI, refreshUI, refreshSongName, updateSongPane } from './ui/build';
 import { setupPainting, setOnSave, setOnSongPaneUpdate } from './ui/painting';
 import { initExtensions } from './engine/extensions/registry';
-import { togglePlay, syncBpm, stopPlayback, bindTransport } from './engine/scheduler';
+import {
+  togglePlay,
+  syncBpm,
+  stopPlayback,
+  bindTransport,
+  setOnPhraseChange,
+} from './engine/scheduler';
 import { on } from './events';
 import { initPlayhead } from './ui/playhead';
 import { genId } from './ui/helpers';
@@ -83,6 +89,10 @@ async function init(): Promise<void> {
   setOnSave(scheduleSave);
   setOnSongPaneUpdate(updateSongPane);
   setOnBpmChange(syncBpm);
+  // The scheduler owns which phrase is playing; without this the song pane's
+  // `.playing-phrase` marker never lights up at all — start, stop and
+  // auto-advance all route through this one callback.
+  setOnPhraseChange(updateSongPane);
 
   // 4b. Wire persistence lifecycle events
   on('persistence:songCreated', () => {

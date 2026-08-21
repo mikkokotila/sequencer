@@ -1,0 +1,97 @@
+{
+  "run_id": "1787339966274-f71b7e19",
+  "task_id": "20260821-playhead-sync-integrity",
+  "task_type": "bugfix",
+  "spec_path": "docs/qc/specs/20260821-playhead-sync-integrity.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-08-21T19:19:26.273Z",
+  "finished_at_utc": "2026-08-21T19:20:30.327Z",
+  "head_sha": "df835b3",
+  "tree_sha": "86dcf44d5a0a62de43d682dd72491a123d6c4481",
+  "subject_sha": "750cb88c122da97ca564347a447cfc12ca8d025962d97ce75c87ae116742cac9",
+  "verdict": "PASS",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E",
+      "label": "E2E",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-E2E.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E-DELTA",
+      "label": "E2E delta coverage",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-E2E-DELTA.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-CONTRACTS-FULL",
+      "label": "Contract static gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-GATE-CONTRACTS-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-ARCH-FULL",
+      "label": "Architecture gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-GATE-ARCH-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "off_transparent",
+      "label": "off_transparent",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/oracles/off_transparent.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "on_audible",
+      "label": "on_audible",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/oracles/on_audible.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "control_binding",
+      "label": "control_binding",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/oracles/control_binding.json",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": []
+}

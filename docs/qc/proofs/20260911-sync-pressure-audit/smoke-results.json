@@ -1,0 +1,52 @@
+[
+  {
+    "port": 5173,
+    "initial": {
+      "tracks": 9,
+      "extensions": 7,
+      "title": "SEQUENCER"
+    },
+    "playing": {
+      "highlights": 42,
+      "marker": 1
+    },
+    "sample": {
+      "decoded": false,
+      "overlayOpen": true,
+      "loadText": "LOAD"
+    },
+    "errors": [],
+    "consoleErrors": [
+      "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "Load failed: TypeError: Failed to fetch\n    at fetchAndDecode (http://127.0.0.1:5173/src/engine/audio.ts:136:22)\n    at confirmBrowserLoad (http://127.0.0.1:5173/src/ui/browser.ts:379:36)\n    at loadBtn.onclick (http://127.0.0.1:5173/src/ui/browser.ts:420:12)",
+      "WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+      "WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED"
+    ],
+    "failures": [
+      {
+        "url": "http://127.0.0.1:5173/DRUMS/01.%20Individual%20Hits/01.%20Bass%20Drum/BD%202600%2001.wav",
+        "failure": {
+          "errorText": "net::ERR_CONNECTION_REFUSED"
+        }
+      }
+    ]
+  },
+  {
+    "port": 5175,
+    "initial": {
+      "tracks": 9,
+      "extensions": 1,
+      "title": "SEQUENCER"
+    },
+    "playing": {
+      "highlights": 0,
+      "marker": 1
+    },
+    "sample": null,
+    "errors": [
+      "Unable to load a worklet's module."
+    ],
+    "consoleErrors": [],
+    "failures": []
+  }
+]

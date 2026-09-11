@@ -1,0 +1,79 @@
+{
+  "task_id": "20260911-sync-pressure-audit",
+  "task_type": "qc",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260911-sync-pressure-audit.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-11T14:10:53.845Z",
+  "finished_at_utc": "2026-09-11T14:10:58.620Z",
+  "head_sha": "0003e3f",
+  "tree_sha": "b98e3129e0202bc7ab9396648699ca1f0ebd253c",
+  "subject_sha": "0000000000000000000000000000000000000000000000000000000000000000",
+  "subject_files": [],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260911-sync-pressure-audit/e2e.txt",
+    "docs/qc/proofs/20260911-sync-pressure-audit/repeat.txt",
+    "docs/qc/runs/20260911-140906Z-b450673.md",
+    "docs/qc/runs/20260911-140943Z-df835b3-1789135778543-952c2ad4.json",
+    "docs/qc/runs/20260911-140943Z-df835b3-1789135778543-952c2ad4.md"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=2, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=2, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4380,
+        "log_file": "docs/qc/proofs/20260911-sync-pressure-audit/logs/O-CI.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 265,
+        "log_file": "docs/qc/proofs/20260911-sync-pressure-audit/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": null,
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

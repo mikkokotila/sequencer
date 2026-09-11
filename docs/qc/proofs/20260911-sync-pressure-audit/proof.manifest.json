@@ -1,0 +1,12 @@
+{
+ "task_id":"20260911-sync-pressure-audit",
+ "tree_sha":"__AUTO__",
+ "commit_shas":[],
+ "required_gates":[
+  {"id":"O-CI","result":"PASS","blocking":true,"evidence":"docs/qc/proofs/20260911-sync-pressure-audit/logs/O-CI.log"},
+  {"id":"O-COMMIT-RANGE","result":"PASS","blocking":true,"evidence":"docs/qc/proofs/20260911-sync-pressure-audit/logs/O-COMMIT-RANGE.log"}
+ ],
+ "contracts":[{"path":"docs/contracts/commit.md","status":"PASS"},{"path":"docs/contracts/quality-gates.md","status":"PASS"}],
+ "browser_verification":{"status":"VERIFIED","details":"Headed Chromium instrumentation of b450673; independent source-start, audio-worklet onset and DOM observations. Runtime verdict is recorded separately from audit packaging gates."},
+ "artifacts":["verdict.json","compiler-report.md","stress.mjs","stress-results.json"]
+}

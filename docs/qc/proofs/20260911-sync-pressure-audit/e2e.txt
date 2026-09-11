@@ -1,0 +1,126 @@
+
+> sequencer@1.0.0 e2e
+> npx playwright test --reporter=line
+
+[WebServer] (node:17234) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:17269) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 74 tests using 1 worker
+
+(node:17276) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:17276) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/74] [chromium] › e2e/sequencer.spec.ts:91:3 › App Initialization › renders all track sections
+[2/74] [chromium] › e2e/sequencer.spec.ts:98:3 › App Initialization › renders song pane with 12 phrase slots
+[3/74] [chromium] › e2e/sequencer.spec.ts:104:3 › App Initialization › renders transport bar with all controls
+[4/74] [chromium] › e2e/sequencer.spec.ts:117:3 › App Initialization › renders extension icons
+[5/74] [chromium] › e2e/sequencer.spec.ts:123:3 › App Initialization › renders engine icon with divider
+[6/74] [chromium] › e2e/sequencer.spec.ts:129:3 › App Initialization › song name shows Untitled by default
+[7/74] [chromium] › e2e/sequencer.spec.ts:135:3 › App Initialization › BPM defaults to 120
+[8/74] [chromium] › e2e/sequencer.spec.ts:147:3 › Drum Grid › clicking a drum cell toggles it on
+[9/74] [chromium] › e2e/sequencer.spec.ts:155:3 › Drum Grid › clicking an active drum cell toggles it off
+[10/74] [chromium] › e2e/sequencer.spec.ts:164:3 › Drum Grid › default kick pattern has four-on-the-floor
+[11/74] [chromium] › e2e/sequencer.spec.ts:179:3 › Melody Grid › clicking a melody cell toggles it on
+[12/74] [chromium] › e2e/sequencer.spec.ts:188:3 › Melody Grid › clicking an active melody cell toggles it off
+[13/74] [chromium] › e2e/sequencer.spec.ts:205:3 › Vocal Grid › clicking a vocal cell toggles it on
+[14/74] [chromium] › e2e/sequencer.spec.ts:218:3 › Track Controls › mute button toggles muted state
+[15/74] [chromium] › e2e/sequencer.spec.ts:228:3 › Track Controls › CLR button clears all cells in track
+[16/74] [chromium] › e2e/sequencer.spec.ts:240:3 › Track Controls › FILL replicates pattern across all bars
+[17/74] [chromium] › e2e/sequencer.spec.ts:259:3 › Track Controls › LOAD button opens sample browser
+[18/74] [chromium] › e2e/sequencer.spec.ts:266:3 › Track Controls › Export Loops produces a ZIP of 24-bit WAVs, one per non-empty phrase
+[19/74] [chromium] › e2e/sequencer.spec.ts:344:3 › Track Controls › Export Loops surfaces an error state when render throws
+[20/74] [chromium] › e2e/sequencer.spec.ts:360:3 › Track Controls › preview failure surfaces error state on the preview button
+[21/74] [chromium] › e2e/sequencer.spec.ts:380:3 › Track Controls › Load failure surfaces error state on the LOAD button, browser stays open
+[22/74] [chromium] › e2e/sequencer.spec.ts:402:3 › Track Controls › selecting a different row clears the LOAD-failure state
+[23/74] [chromium] › e2e/sequencer.spec.ts:419:3 › Track Controls › a slow LOAD failure does not clobber the LOAD button after the user moves on
+[24/74] [chromium] › e2e/sequencer.spec.ts:444:3 › Track Controls › a slow failing preview does not clobber a newer in-flight preview
+[25/74] [chromium] › e2e/sequencer.spec.ts:469:3 › Track Controls › a stale preview-failure for index i does not clobber a newer success for the same i
+[26/74] [chromium] › e2e/sequencer.spec.ts:529:3 › Melody Track Controls › octave buttons change octave value
+[27/74] [chromium] › e2e/sequencer.spec.ts:545:3 › Melody Track Controls › harmony toggle cycles through modes
+[28/74] [chromium] › e2e/sequencer.spec.ts:572:3 › BPM Control › BPM number input updates value
+[29/74] [chromium] › e2e/sequencer.spec.ts:580:3 › BPM Control › BPM clamps to range 40-220
+[30/74] [chromium] › e2e/sequencer.spec.ts:594:3 › Song Management › song name is visible
+[31/74] [chromium] › e2e/sequencer.spec.ts:599:3 › Song Management › double-click song name enables editing
+[32/74] [chromium] › e2e/sequencer.spec.ts:605:3 › Song Management › new song resets patterns and extensions deterministically
+[33/74] [chromium] › e2e/sequencer.spec.ts:647:3 › Sample Browser › opens and closes
+[34/74] [chromium] › e2e/sequencer.spec.ts:658:3 › Sample Browser › search filters items
+[35/74] [chromium] › e2e/sequencer.spec.ts:679:3 › Phrase Pane › clicking phrase slot switches active phrase
+[36/74] [chromium] › e2e/sequencer.spec.ts:689:3 › Phrase Pane › phrase 1 has content indicator if default pattern exists
+[37/74] [chromium] › e2e/sequencer.spec.ts:696:3 › Phrase Pane › fill-with-prev button copies previous phrase
+[38/74] [chromium] › e2e/sequencer.spec.ts:715:3 › Extension Panels › clicking extension icon opens side panel
+[39/74] [chromium] › e2e/sequencer.spec.ts:723:3 › Extension Panels › clicking same icon closes panel
+[40/74] [chromium] › e2e/sequencer.spec.ts:732:3 › Extension Panels › extension panel has on/off toggle
+[41/74] [chromium] › e2e/sequencer.spec.ts:738:3 › Extension Panels › toggling extension on/off changes state
+[42/74] [chromium] › e2e/sequencer.spec.ts:749:3 › Extension Panels › compressor model selector switches between FET/OPTO/VCA
+[43/74] [chromium] › e2e/sequencer.spec.ts:784:3 › Extension Panels › transformer extension opens and has controls
+[44/74] [chromium] › e2e/sequencer.spec.ts:793:3 › Extension Panels › close button closes panel
+[45/74] [chromium] › e2e/sequencer.spec.ts:801:3 › Extension Panels › app shifts when panel opens
+[46/74] [chromium] › e2e/sequencer.spec.ts:813:3 › Engine Control Panel › clicking engine icon opens full-screen panel
+[47/74] [chromium] › e2e/sequencer.spec.ts:819:3 › Engine Control Panel › closing engine panel restores app view
+[48/74] [chromium] › e2e/sequencer.spec.ts:832:3 › Engine Control Panel › Escape closes engine panel
+[49/74] [chromium] › e2e/sequencer.spec.ts:840:3 › Engine Control Panel › engine panel has all control sections
+[50/74] [chromium] › e2e/sequencer.spec.ts:854:3 › Keyboard Shortcuts › Space toggles play/stop
+[51/74] [chromium] › e2e/sequencer.spec.ts:865:3 › Keyboard Shortcuts › Escape closes browser modal
+[52/74] [chromium] › e2e/sequencer.spec.ts:879:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles
+  1) [chromium] › e2e/sequencer.spec.ts:879:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 4
+    Received:    3
+
+      71 |   const a = log.filter((e) => e.track === trackA);
+      72 |   const b = log.filter((e) => e.track === trackB);
+    > 73 |   expect(a.length).toBeGreaterThanOrEqual(4);
+         |                    ^
+      74 |   expect(a.length).toBe(b.length);
+      75 |   for (let i = 0; i < a.length; i++) {
+      76 |     const ea = a[i];
+        at assertInterTrackSync (<repository>/e2e/sequencer.spec.ts:73:20)
+        at <repository>/e2e/sequencer.spec.ts:903:5
+
+    Error Context: test-results/sequencer-Transport-Sync-r-9b02f-ated-edit-stop-start-cycles-chromium/error-context.md
+
+
+(node:17445) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:17445) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[53/74] [chromium] › e2e/sequencer.spec.ts:942:3 › Persistence › pattern survives page reload
+[54/74] [chromium] › e2e/sequencer.spec.ts:970:3 › Grid Alignment › bar dividers are visible
+[55/74] [chromium] › e2e/sequencer.spec.ts:976:3 › Grid Alignment › drum and melody grids are vertically aligned
+[56/74] [chromium] › e2e/sequencer.spec.ts:991:3 › MIDI Controls › MIDI button visible on all 3 melody tracks
+[57/74] [chromium] › e2e/sequencer.spec.ts:997:3 › MIDI Controls › MIDI button not on drum tracks
+[58/74] [chromium] › e2e/sequencer.spec.ts:1003:3 › MIDI Controls › clicking MIDI button opens midi browser
+[59/74] [chromium] › e2e/sequencer.spec.ts:1010:3 › MIDI Controls › Escape closes midi browser
+[60/74] [chromium] › e2e/sequencer.spec.ts:1019:3 › MIDI Controls › close button closes midi browser
+[61/74] [chromium] › e2e/sequencer.spec.ts:1028:3 › MIDI Controls › midi browser shows status element
+[62/74] [chromium] › e2e/sequencer.spec.ts:1041:3 › ADSR Controls › ADSR button visible on all 9 tracks
+[63/74] [chromium] › e2e/sequencer.spec.ts:1047:3 › ADSR Controls › clicking ADSR button opens popup
+[64/74] [chromium] › e2e/sequencer.spec.ts:1054:3 › ADSR Controls › ADSR popup has canvas visualization
+[65/74] [chromium] › e2e/sequencer.spec.ts:1061:3 › ADSR Controls › ADSR popup has 4 sliders
+[66/74] [chromium] › e2e/sequencer.spec.ts:1069:3 › ADSR Controls › Escape closes ADSR popup
+[67/74] [chromium] › e2e/sequencer.spec.ts:1078:3 › ADSR Controls › close button closes ADSR popup
+[68/74] [chromium] › e2e/sequencer.spec.ts:1087:3 › ADSR Controls › ADSR envelope actually modulates audio when enabled
+[69/74] [chromium] › e2e/sequencer.spec.ts:1180:3 › Audio Engine Timing › AudioContexts are unique — Tone is bound to the engine context
+[70/74] [chromium] › e2e/sequencer.spec.ts:1213:3 › Audio Engine Timing › src.start times are scheduled in the future (single AudioContext)
+[71/74] [chromium] › e2e/sequencer.spec.ts:1268:3 › Audio Engine Timing › ADSR-enabled triggers do not leak GainNodes across play/stop cycles
+[72/74] [chromium] › e2e/sequencer.spec.ts:1359:3 › Transport/UI Synchronisation › playhead paints at the audio time of the step, not at lookahead time
+[73/74] [chromium] › e2e/sequencer.spec.ts:1423:3 › Transport/UI Synchronisation › switching the viewed phrase mid-playback does not freeze a lit column
+[74/74] [chromium] › e2e/sequencer.spec.ts:1447:3 › Transport/UI Synchronisation › song pane marks the playing phrase while the transport runs
+  1 failed
+    [chromium] › e2e/sequencer.spec.ts:879:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles 
+  73 passed (1.2m)

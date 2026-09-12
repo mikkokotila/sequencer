@@ -1,0 +1,38 @@
+[WebServer] (node:22013) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:22035) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:22037) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22037) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › e2e/sync-pressure.spec.ts:268:1 › stop cancels all tracks together when its loop crosses an audio block (5.6s)
+
+
+  1) [chromium] › e2e/sync-pressure.spec.ts:268:1 › stop cancels all tracks together when its loop crosses an audio block
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 39
+    Received: 49
+
+      308 |   for (let t = 1; t < 9; t++) {
+      309 |     const track = result.onsets.filter((e) => e.track === t);
+    > 310 |     expect(track.length).toBe(first.length);
+          |                          ^
+      311 |     for (let i = 0; i < track.length; i++)
+      312 |       expect(Math.abs(track[i]!.time - first[i]!.time)).toBeLessThanOrEqual(1 / result.sampleRate);
+      313 |   }
+        at <repository>/e2e/sync-pressure.spec.ts:310:26
+
+    attachment #1: stop-boundary-observations (application/json) ───────────────────────────────────
+    test-results/sync-pressure-stop-cancels-ba26c-loop-crosses-an-audio-block-chromium/attachments/stop-boundary-observations-c94415df78a45007317b19cb7af2794d14e0b8e5.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/sync-pressure-stop-cancels-ba26c-loop-crosses-an-audio-block-chromium/error-context.md
+
+  1 failed
+    [chromium] › e2e/sync-pressure.spec.ts:268:1 › stop cancels all tracks together when its loop crosses an audio block

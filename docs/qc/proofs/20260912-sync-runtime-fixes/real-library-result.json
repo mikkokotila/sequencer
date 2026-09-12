@@ -1,0 +1,5 @@
+{
+  "sample_status": 403,
+  "message": "Sample library access denied. Allow access to the library folder or move it to an accessible location.",
+  "app_status_after_sample_request": 200
+}

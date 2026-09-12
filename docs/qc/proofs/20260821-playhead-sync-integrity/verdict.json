@@ -1,0 +1,169 @@
+{
+  "task_id": "20260821-playhead-sync-integrity",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260821-playhead-sync-integrity.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-08-21T19:19:26.273Z",
+  "finished_at_utc": "2026-08-21T19:20:30.326Z",
+  "head_sha": "df835b3",
+  "tree_sha": "86dcf44d5a0a62de43d682dd72491a123d6c4481",
+  "subject_sha": "750cb88c122da97ca564347a447cfc12ca8d025962d97ce75c87ae116742cac9",
+  "subject_files": [
+    "docs/qc/baseline.md",
+    "e2e/sequencer.spec.ts",
+    "src/engine/scheduler.ts",
+    "src/main.ts",
+    "src/ui/playhead.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/baseline.md",
+    "docs/qc/proofs/20260821-playhead-sync-integrity.md",
+    "docs/qc/proofs/20260821-playhead-sync-integrity/proof.manifest.json",
+    "docs/qc/proofs/20260821-playhead-sync-integrity/verdict.json",
+    "docs/qc/runs/20260821-191232Z-df835b3-1787339484255-ed99210b.json",
+    "docs/qc/runs/20260821-191232Z-df835b3-1787339484255-ed99210b.md",
+    "docs/qc/runs/20260821-191359Z-df835b3-1787339574686-8b367f54.json",
+    "docs/qc/runs/20260821-191359Z-df835b3-1787339574686-8b367f54.md",
+    "docs/qc/runs/20260821-191400Z-df835b3.md",
+    "docs/qc/runs/20260821-191758Z-df835b3-1787339814461-03f09605.json",
+    "docs/qc/runs/20260821-191758Z-df835b3-1787339814461-03f09605.md",
+    "docs/qc/runs/20260821-191920Z-df835b3-1787339896380-16970e1e.json",
+    "docs/qc/runs/20260821-191920Z-df835b3-1787339896380-16970e1e.md",
+    "docs/qc/specs/20260821-playhead-sync-integrity.task.spec.json",
+    "e2e/sequencer.spec.ts",
+    "logs/compiler.log",
+    "src/engine/scheduler.ts",
+    "src/main.ts",
+    "src/ui/playhead.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=3, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=3, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 3959,
+        "log_file": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 57272,
+        "log_file": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 177,
+        "log_file": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 322,
+        "log_file": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 336,
+        "log_file": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 363,
+        "log_file": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260821-playhead-sync-integrity/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260821-playhead-sync-integrity/raw/off_transparent.json",
+        "raw_sha256": "9da9a4584a59009dc2027b63a3c8af2123c307a6d004702cf38f7b9bdc0cc602"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260821-playhead-sync-integrity/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260821-playhead-sync-integrity/raw/on_audible.json",
+        "raw_sha256": "bf5a6c0577f2f5d518c62e905db408ab73c33e7382787b06a3baab4cacfd8230"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260821-playhead-sync-integrity/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260821-playhead-sync-integrity/raw/control_binding.json",
+        "raw_sha256": "d2baebeea782ac6790a2c5ca056ed61111f674e98b3ba4eba0d3375250dfd6fc"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

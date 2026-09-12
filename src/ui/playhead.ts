@@ -14,6 +14,10 @@ let prevVisualStep = -1;
 /** Highlight the current step (only when viewing the playing phrase). */
 function highlightStep(step: number, phrase: number): void {
   if (phrase !== currentPhrase) {
+    // The playing phrase is no longer the one on screen. Clear the column we
+    // last lit, otherwise it stays highlighted for the rest of the session —
+    // updateXCell() only restores `.active`, it never removes `.playing`.
+    if (prevVisualStep >= 0) clearHL(prevVisualStep);
     prevVisualStep = -1;
     return;
   }
@@ -71,6 +75,18 @@ function clearHL(s: number): void {
   }
 }
 
+/**
+ * Remove every residual `.playing` mark.
+ *
+ * clearHL() only knows about the single step it last tracked, so it cannot
+ * recover a column orphaned by a phrase-view switch. This sweep is the
+ * backstop for stop and view-switch transitions; it is not on the per-step path.
+ */
+function clearAllHighlights(): void {
+  document.querySelectorAll('.playing').forEach((c) => c.classList.remove('playing'));
+  prevVisualStep = -1;
+}
+
 /** Inject playhead CSS rules so highlight is driven by class toggles, not inline styles. */
 function injectPlayheadCSS(): void {
   const style = document.createElement('style');
@@ -121,8 +137,16 @@ export function initPlayhead(): void {
       clearHL(prevVisualStep);
       prevVisualStep = -1;
     }
+    // Backstop: a column orphaned by an earlier view switch is not tracked by
+    // prevVisualStep, so clear anything still marked.
+    clearAllHighlights();
     // Remove play button active state
     const playBtn = document.getElementById('play-btn');
     if (playBtn) playBtn.classList.remove('active');
+  });
+
+  // Switching the viewed phrase must not leave the old column frozen on screen.
+  on('transport:phraseChanged', () => {
+    clearAllHighlights();
   });
 }

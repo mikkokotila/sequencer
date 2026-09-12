@@ -1,21 +1,20 @@
 /**
- * Scheduler — Tone.js Transport for tempo-accurate scheduling,
- * AudioBufferSourceNode for sample playback.
- * NO DOM access. NO direct transport imports. Emits events for UI playhead.
- *
- * Transport data is injected via bindTransport() from main.ts,
- * keeping the engine→transport boundary clean.
+ * Sample-accurate scheduling on the engine's single AudioContext.
+ * A 350 ms queue survives the measured 180 ms main-thread stalls. Pattern and
+ * tempo edits take effect at the first unqueued step.
+ * Audible position is independent of this scheduling cursor.
  */
-
-import * as Tone from 'tone';
 import { STEPS, DRUMS_CFG, MEL_CFG, HARMONY_SEMITONES } from '../config';
-import { getAudioContext, getTrackGains, playSample, stopSequencerVoicesNow } from './audio';
+import {
+  getAudioContext,
+  getTrackGains,
+  playSample,
+  stopSequencerVoicesNow,
+  SEQUENCER_LEAD_SECONDS,
+} from './audio';
+import { getOutputTime } from './output-clock';
 import type { Phrase } from '../types';
 import { emit } from '../events';
-
-// ═══════════════════════════════════════════
-//  Transport data source (injected, not imported)
-// ═══════════════════════════════════════════
 
 export interface TransportSource {
   readonly phrases: Phrase[];
@@ -41,15 +40,25 @@ export function bindTransport(src: TransportSource): void {
   transport = src;
 }
 
-// ── Internal state ──
+interface ScheduledStep {
+  step: number;
+  phrase: number;
+  time: number;
+}
+
+const LOOKAHEAD = 0.35;
+const TICK_MS = 25;
 let playing = false;
 let curStep = 0;
-let playingPhrase = 0;
-let scheduledEventId: number | null = null;
+let queuedPhrase = 0;
+let playingPhrase = -1;
+let nextStepTime = 0;
+let tempo = 120;
 let startPending = false;
 let startNonce = 0;
-
-// ── Callbacks ──
+let timer: ReturnType<typeof setInterval> | null = null;
+let frame = 0;
+const visualQueue: ScheduledStep[] = [];
 let onPhraseChange: (() => void) | null = null;
 const stopCallbacks: (() => void)[] = [];
 
@@ -59,52 +68,27 @@ export function setOnPhraseChange(fn: () => void): void {
 export function onStop(fn: () => void): void {
   stopCallbacks.push(fn);
 }
-
-// ── Accessors ──
 export function isPlaying(): boolean {
   return playing;
 }
+/** The phrase at the output device, never the lookahead cursor. */
 export function getPlayingPhrase(): number {
   return playingPhrase;
 }
+/** Queue a phrase jump without moving its marker ahead of its sound. */
 export function setPlayingPhrase(p: number): void {
-  playingPhrase = p;
+  if (!transport?.phrases[p]) return;
+  queuedPhrase = p;
 }
 
-// ═══════════════════════════════════════════
-//  PHRASE ADVANCE
-// ═══════════════════════════════════════════
-
-function advancePhrase(): void {
+function scheduleStep(time: number, s: number, stepPhrase: number, stepDur: number): void {
   if (!transport) return;
-  const next = transport.findNextPhrase(playingPhrase);
-  if (next < 0) {
-    stopPlayback();
-    return;
-  }
-  playingPhrase = next;
-  onPhraseChange?.();
-}
-
-// ═══════════════════════════════════════════
-//  STEP SCHEDULING (called by Tone.Transport)
-// ═══════════════════════════════════════════
-
-function scheduleStep(time: number): void {
-  const ctx = getAudioContext();
-  if (!ctx || !transport) return;
-
-  const s = curStep;
-  const phrase = transport.phrases[playingPhrase];
+  const phrase = transport.phrases[stepPhrase];
   if (!phrase) return;
-
   const pd = phrase.drumPat;
   const pm = phrase.melPat;
   const pv = phrase.vocalPat;
   const gains = getTrackGains();
-
-  // Step duration for ADSR release scheduling (16th note at current BPM)
-  const stepDur = 60 / transport.getBpm() / 4;
 
   // Drums
   for (let t = 0; t < DRUMS_CFG.length; t++) {
@@ -115,7 +99,7 @@ function scheduleStep(time: number): void {
       emit('engine:trigger', {
         track: t,
         step: s,
-        phrase: playingPhrase,
+        phrase: stepPhrase,
         time,
         source: 'drum',
       });
@@ -150,7 +134,7 @@ function scheduleStep(time: number): void {
       emit('engine:trigger', {
         track: trackIdx,
         step: s,
-        phrase: playingPhrase,
+        phrase: stepPhrase,
         time,
         source: 'melody',
       });
@@ -177,7 +161,7 @@ function scheduleStep(time: number): void {
     emit('engine:trigger', {
       track: vocalIdx,
       step: s,
-      phrase: playingPhrase,
+      phrase: stepPhrase,
       time,
       source: 'vocal',
     });
@@ -187,103 +171,115 @@ function scheduleStep(time: number): void {
     }
   }
 
-  // Emit step event for UI playhead (no DOM here)
-  emit('engine:step', { step: s, phrase: playingPhrase });
+  visualQueue.push({ step: s, phrase: stepPhrase, time });
+}
 
-  // Advance step
-  curStep++;
-  if (curStep >= STEPS) {
-    curStep = 0;
-    advancePhrase();
+function pump(): void {
+  const ctx = getAudioContext();
+  if (!playing || !ctx || !transport || ctx.state !== 'running') return;
+  // If a suspension longer than the queue occurs, resume with a shared future
+  // deadline. Never submit a burst of overdue sources across audio blocks.
+  if (nextStepTime < ctx.currentTime + 0.01) {
+    nextStepTime = ctx.currentTime + SEQUENCER_LEAD_SECONDS;
+  }
+  const horizon = ctx.currentTime + LOOKAHEAD;
+  while (nextStepTime < horizon) {
+    const duration = 60 / tempo / 4;
+    scheduleStep(nextStepTime, curStep, queuedPhrase, duration);
+    nextStepTime += duration;
+    curStep++;
+    if (curStep === STEPS) {
+      curStep = 0;
+      const next = transport.findNextPhrase(queuedPhrase);
+      if (next < 0) {
+        stopPlayback();
+        return;
+      }
+      queuedPhrase = next;
+    }
   }
 }
 
-// ═══════════════════════════════════════════
-//  TRANSPORT
-// ═══════════════════════════════════════════
+function paintOutput(): void {
+  if (!playing) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const now = getOutputTime(ctx);
+  let audible: ScheduledStep | undefined;
+  // A long frame cannot be painted retroactively. Show the current audible
+  // step on recovery, rather than replaying a backlog of obsolete highlights.
+  while (visualQueue[0] && visualQueue[0].time <= now) {
+    audible = visualQueue.shift();
+  }
+  if (audible) {
+    const changed = playingPhrase !== audible.phrase;
+    playingPhrase = audible.phrase;
+    emit('engine:step', audible);
+    if (changed) onPhraseChange?.();
+  }
+  frame = requestAnimationFrame(paintOutput);
+}
 
-/** Start playback using Tone.Transport. */
 export function startPlayback(): void {
-  if (playing || startPending) return;
-  if (!transport) return;
+  const ctx = getAudioContext();
+  if (playing || startPending || !transport || ctx?.state !== 'running') return;
   playing = true;
   curStep = 0;
-  playingPhrase = transport.findFirstNonEmpty();
-
-  const tr = Tone.getTransport();
-
-  // Defensive cleanup: prevent duplicate repeat callbacks from prior races.
-  if (scheduledEventId !== null) {
-    tr.clear(scheduledEventId);
-    scheduledEventId = null;
-  }
-  tr.cancel(0);
-
-  // Sync Tone.js BPM
-  tr.bpm.value = transport.getBpm();
-  tr.position = 0;
-
-  // Schedule repeating callback: 16th notes (4 per beat)
-  scheduledEventId = tr.scheduleRepeat((time) => {
-    scheduleStep(time);
-  }, '16n');
-
-  tr.start();
+  queuedPhrase = transport.findFirstNonEmpty();
+  playingPhrase = -1;
+  visualQueue.length = 0;
+  syncBpm(transport.getBpm());
+  nextStepTime = ctx.currentTime + SEQUENCER_LEAD_SECONDS;
+  pump();
+  timer = setInterval(pump, TICK_MS);
+  frame = requestAnimationFrame(paintOutput);
   onPhraseChange?.();
 }
 
-/** Stop playback. */
 export function stopPlayback(): void {
   startNonce++;
   startPending = false;
   playing = false;
-  const tr = Tone.getTransport();
-
-  if (scheduledEventId !== null) {
-    tr.clear(scheduledEventId);
-    scheduledEventId = null;
-  }
-  tr.cancel(0);
-  tr.stop();
-  tr.position = 0;
+  if (timer !== null) clearInterval(timer);
+  timer = null;
+  cancelAnimationFrame(frame);
+  visualQueue.length = 0;
   stopSequencerVoicesNow();
-
   curStep = 0;
-
-  // Notify UI to clear playhead
+  playingPhrase = -1;
   emit('engine:stop', {} as Record<string, never>);
-
   for (const fn of stopCallbacks) {
     try {
       fn();
     } catch {
-      /* swallow */
+      /* A listener must not prevent transport cleanup. */
     }
   }
-
   onPhraseChange?.();
 }
 
-/** Toggle play/stop. */
 export function togglePlay(): void {
   if (playing || startPending) {
     stopPlayback();
-  } else {
-    const req = ++startNonce;
-    startPending = true;
-    void Tone.start()
-      .then(() => {
-        if (req !== startNonce) return;
-        startPending = false;
-        startPlayback();
-      })
-      .catch(() => {
-        if (req === startNonce) startPending = false;
-      });
+    return;
   }
+  const ctx = getAudioContext();
+  if (!ctx || !transport) return;
+  const req = ++startNonce;
+  startPending = true;
+  void ctx
+    .resume()
+    .then(() => {
+      if (req !== startNonce) return;
+      startPending = false;
+      startPlayback();
+    })
+    .catch(() => {
+      if (req === startNonce) startPending = false;
+    });
 }
 
-/** Update BPM on the Tone.Transport (call when user changes BPM). */
+/** Already submitted steps retain their timestamps; tempo changes never overlap them. */
 export function syncBpm(newBpm: number): void {
-  Tone.getTransport().bpm.value = newBpm;
+  tempo = Number.isFinite(newBpm) ? Math.max(40, Math.min(220, newBpm)) : 120;
 }

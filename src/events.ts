@@ -7,7 +7,7 @@
 
 export interface EventMap {
   // Engine → UI: playback position
-  'engine:step': { step: number; phrase: number };
+  'engine:step': { step: number; phrase: number; time: number };
   'engine:trigger': {
     track: number;
     step: number;

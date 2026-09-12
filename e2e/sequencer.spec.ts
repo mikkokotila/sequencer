@@ -7,6 +7,7 @@ async function waitForApp(page: Page) {
   await page.waitForSelector('.melody-track', { state: 'visible' });
   // Wait for song pane
   await page.waitForSelector('#song-pane', { state: 'visible' });
+  await page.waitForSelector('html[data-ready="true"]');
 }
 
 type TriggerEvent = {
@@ -263,9 +264,7 @@ test.describe('Track Controls', () => {
     await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
   });
 
-  test('Export Loops produces a ZIP of 24-bit WAVs, one per non-empty phrase', async ({
-    page,
-  }) => {
+  test('Export Loops produces a ZIP of 24-bit WAVs, one per non-empty phrase', async ({ page }) => {
     await waitForApp(page);
     // Default song has four-on-the-floor on the kick in phrase 1 only.
     const result = await page.evaluate(async () => {
@@ -453,9 +452,7 @@ test.describe('Track Controls', () => {
       if (served === 1) await new Promise((r) => setTimeout(r, 250));
       await route.fulfill({ status: 200, contentType: 'text/plain', body: 'not audio' });
     });
-    await page
-      .locator('.melody-track[data-type="drum"][data-track="0"] .sample-btn')
-      .click();
+    await page.locator('.melody-track[data-type="drum"][data-track="0"] .sample-btn').click();
     await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
     const first = page.locator('.browser-item-preview').nth(0);
     const second = page.locator('.browser-item-preview').nth(1);
@@ -509,9 +506,7 @@ test.describe('Track Controls', () => {
         await route.fulfill({ status: 200, contentType: 'audio/wav', body: silentWav });
       }
     });
-    await page
-      .locator('.melody-track[data-type="drum"][data-track="0"] .sample-btn')
-      .click();
+    await page.locator('.melody-track[data-type="drum"][data-track="0"] .sample-btn').click();
     await expect(page.locator('#browser-overlay')).toHaveClass(/open/);
     const first = page.locator('.browser-item-preview').nth(0);
     // Click the SAME row twice — exercises the per-invocation token guard.
@@ -903,7 +898,14 @@ test.describe('Transport Sync', () => {
 
     await startTriggerCapture(page, [0, 1]);
     await playBtn.click();
-    await page.waitForTimeout(1600);
+    await page.waitForFunction(
+      () => {
+        const w = window as unknown as { __syncCapture: { log: TriggerEvent[] } };
+        return w.__syncCapture.log.filter((e) => e.track === 0).length >= 4;
+      },
+      null,
+      { timeout: 5000 },
+    );
     await stopBtn.click();
     const baseline = await stopTriggerCapture(page);
     assertInterTrackSync(baseline, 0, 1);
@@ -913,13 +915,22 @@ test.describe('Transport Sync', () => {
     for (let i = 0; i < 6; i++) {
       await playBtn.click();
       await page.waitForTimeout(140);
-      await hatTrack.locator('.step-cell').nth((i * 5) % 64).click();
-      await melodyTrack.locator('.melody-cell').nth((i * 71) % (64 * 12)).click();
-      await page.locator('#bpm-range').evaluate((el, bpm) => {
-        const input = el as HTMLInputElement;
-        input.value = String(bpm);
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-      }, 108 + (i % 4) * 6);
+      await hatTrack
+        .locator('.step-cell')
+        .nth((i * 5) % 64)
+        .click();
+      await melodyTrack
+        .locator('.melody-cell')
+        .nth((i * 71) % (64 * 12))
+        .click();
+      await page.locator('#bpm-range').evaluate(
+        (el, bpm) => {
+          const input = el as HTMLInputElement;
+          input.value = String(bpm);
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        },
+        108 + (i % 4) * 6,
+      );
       await stopBtn.click();
       await page.waitForTimeout(50);
     }
@@ -1174,36 +1185,19 @@ async function mockWavRoutes(page: Page) {
 }
 
 test.describe('Audio Engine Timing', () => {
-  test('AudioContexts are unique — Tone is bound to the engine context', async ({ page }) => {
-    // Regression: Tone.setContext must run BEFORE the Play button is wired,
-    // otherwise a fast click during init lazy-creates a second AudioContext
-    // and reintroduces the dual-context timing bug. We verify the binding by
-    // counting distinct AudioContexts after init has settled — there must be
-    // exactly one.
-    await page.goto('/');
-    await page.waitForSelector('#app', { state: 'visible' });
-    await page.evaluate(() => {
-      const seen = new Set<unknown>();
-      const Orig = window.AudioContext;
-      (window as unknown as { AudioContext: typeof AudioContext }).AudioContext = class extends Orig {
-        constructor(...args: ConstructorParameters<typeof AudioContext>) {
-          super(...args);
-          seen.add(this);
-        }
-      } as typeof AudioContext;
-      (window as unknown as { __ctxCount: () => number }).__ctxCount = () => seen.size;
-    });
-    await page.waitForSelector('.melody-track', { state: 'visible' });
-    await page.waitForSelector('#song-pane', { state: 'visible' });
-    // Click Play immediately — exercises the early-init race window. With the
-    // pre-fix ordering this would cause Tone to create its own context first.
-    await page.click('#app');
+  test('exactly one AudioContext is constructed, including during initialization', async ({
+    page,
+  }) => {
+    await captureAppContext(page);
+    await waitForApp(page);
     await page.locator('#play-btn').click();
-    await page.waitForTimeout(500);
-    const count = await page.evaluate(() =>
-      (window as unknown as { __ctxCount: () => number }).__ctxCount(),
-    );
-    expect(count).toBeLessThanOrEqual(1);
+    await page.waitForTimeout(300);
+    const contexts = await page.evaluate(() => {
+      const w = window as unknown as { __ctxs: AudioContext[] };
+      return w.__ctxs.map((ctx) => ctx.state);
+    });
+    expect(contexts).toEqual(['running']);
+    await page.locator('#stop-btn').click();
   });
 
   test('src.start times are scheduled in the future (single AudioContext)', async ({ page }) => {
@@ -1240,9 +1234,8 @@ test.describe('Audio Engine Timing', () => {
     await page.waitForTimeout(2000);
     await page.locator('#stop-btn').click();
     const result = await page.evaluate(() => {
-      const tracker = (
-        window as unknown as { __timingTrace: { when: number; ctxTime: number }[] }
-      ).__timingTrace;
+      const tracker = (window as unknown as { __timingTrace: { when: number; ctxTime: number }[] })
+        .__timingTrace;
       const deltas = tracker.map((s) => s.when - s.ctxTime);
       return {
         count: tracker.length,
@@ -1256,8 +1249,7 @@ test.describe('Audio Engine Timing', () => {
     // Every src.start must be at or after ctx.currentTime — the dual-context
     // bug had src.start scheduled ~22s in the past on every call.
     expect(result.negative).toBe(0);
-    // And the minimum delta should reflect Tone.Transport's lookahead, not be
-    // a giant past-offset.
+    // The scheduler queues within its bounded future window.
     expect(result.minDelta).toBeGreaterThanOrEqual(0);
     expect(result.maxDelta).toBeLessThan(1);
   });
@@ -1324,5 +1316,146 @@ test.describe('Audio Engine Timing', () => {
     // But none should remain alive — every env GainNode must be disconnected
     // when its buffer source ends. The pre-fix behavior leaked one per trigger.
     expect(after.alive).toBe(baseline.alive);
+  });
+});
+
+// ═══════════════════════════════════════════
+//  21. TRANSPORT / UI SYNCHRONISATION
+// ═══════════════════════════════════════════
+
+type StepEvent = { step: number; phrase: number };
+
+/**
+ * Record every AudioContext constructed on the page, before any page script
+ * runs, so an unused context created by an imported dependency cannot hide
+ * from the one-context ownership assertion.
+ */
+async function captureAppContext(page: Page) {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __ctxs: AudioContext[] };
+    const Orig = window.AudioContext;
+    w.__ctxs = [];
+    (window as unknown as { AudioContext: typeof AudioContext }).AudioContext = class extends Orig {
+      constructor(...args: ConstructorParameters<typeof AudioContext>) {
+        super(...args);
+        w.__ctxs.push(this);
+      }
+    } as typeof AudioContext;
+  });
+}
+
+test.describe('Transport/UI Synchronisation', () => {
+  test('playhead paints at device output time, including output latency', async ({ page }) => {
+    await captureAppContext(page);
+    await waitForApp(page);
+    await page.click('#app'); // user gesture for AudioContext.resume
+
+    // Record, per step: the audio time the step was scheduled for
+    // (engine:trigger.time) and the ctx.currentTime at which the visual
+    // engine:step event was actually delivered to the playhead.
+    await page.evaluate(() => {
+      const w = window as unknown as {
+        __ctxs: AudioContext[];
+        __trigAt: Map<number, number>;
+        __stepAt: { step: number; at: number }[];
+        __SEQ_EVENT_BUS__?: {
+          on: <T>(e: string, fn: (d: T) => void) => void;
+        };
+      };
+      w.__trigAt = new Map<number, number>();
+      w.__stepAt = [];
+      const liveCtx = () => w.__ctxs.find((c) => c.state === 'running') ?? null;
+      const bus = w.__SEQ_EVENT_BUS__;
+      if (!bus) throw new Error('E2E sync capture missing live event bus');
+      bus.on<TriggerEvent>('engine:trigger', (e) => {
+        if (!w.__trigAt.has(e.step)) w.__trigAt.set(e.step, e.time);
+      });
+      bus.on<StepEvent>('engine:step', (e) => {
+        const ctx = liveCtx();
+        if (ctx) {
+          const stamp = ctx.getOutputTimestamp();
+          const at =
+            (stamp.contextTime ?? 0) + (performance.now() - (stamp.performanceTime ?? 0)) / 1000;
+          w.__stepAt.push({ step: e.step, at });
+        }
+      });
+    });
+
+    await page.locator('#play-btn').click();
+    await page.waitForTimeout(2500);
+    await page.locator('#stop-btn').click();
+
+    const result = await page.evaluate(() => {
+      const w = window as unknown as {
+        __trigAt: Map<number, number>;
+        __stepAt: { step: number; at: number }[];
+      };
+      const leads: number[] = [];
+      for (const s of w.__stepAt) {
+        const audioTime = w.__trigAt.get(s.step);
+        if (audioTime === undefined) continue;
+        // Positive => the playhead painted BEFORE the sound.
+        leads.push(audioTime - s.at);
+      }
+      leads.sort((a, b) => a - b);
+      return {
+        samples: leads.length,
+        medianLeadMs: leads.length ? (leads[Math.floor(leads.length / 2)] as number) * 1000 : null,
+        maxLeadMs: leads.length ? (leads[leads.length - 1] as number) * 1000 : null,
+      };
+    });
+
+    expect(result.samples).toBeGreaterThan(3);
+    // Compare against the independent device timestamp, not the render clock.
+    // A currentTime-only assertion passed with ~95ms of output lead in the audit.
+    expect(Math.abs(result.medianLeadMs as number)).toBeLessThan(30);
+  });
+
+  test('switching the viewed phrase mid-playback does not freeze a lit column', async ({
+    page,
+  }) => {
+    await waitForApp(page);
+    await page.click('#app');
+
+    const litCells = () => page.evaluate(() => document.querySelectorAll('.playing').length);
+
+    await page.locator('#play-btn').click();
+    await page.waitForTimeout(1200);
+    // Viewing the playing phrase: a column is lit.
+    expect(await litCells()).toBeGreaterThan(0);
+
+    // Switch the VIEW to an empty phrase while phrase 1 keeps playing.
+    await page.locator('.phrase-slot').nth(3).click();
+    await page.waitForTimeout(900);
+    // Pre-fix a full 42-cell column stayed lit here for the rest of the session.
+    expect(await litCells()).toBe(0);
+
+    await page.locator('#stop-btn').click();
+    await page.waitForTimeout(300);
+    expect(await litCells()).toBe(0);
+  });
+
+  test('song pane marks the playing phrase while the transport runs', async ({ page }) => {
+    await waitForApp(page);
+    await page.click('#app');
+
+    const marked = () =>
+      page.evaluate(() =>
+        [...document.querySelectorAll('.phrase-slot')]
+          .map((s, i) => (s.classList.contains('playing-phrase') ? i : -1))
+          .filter((i) => i >= 0),
+      );
+
+    expect(await marked()).toEqual([]);
+
+    await page.locator('#play-btn').click();
+    await page.waitForTimeout(900);
+    // Pre-fix setOnPhraseChange() was never called, so this marker never
+    // appeared at all — at rest, during playback or after stop.
+    expect(await marked()).toEqual([0]);
+
+    await page.locator('#stop-btn').click();
+    await page.waitForTimeout(300);
+    expect(await marked()).toEqual([]);
   });
 });

@@ -1,0 +1,73 @@
+{
+  "task_id": "20260821-playhead-sync-integrity",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-CI.log"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-E2E.log"
+    },
+    {
+      "id": "O-E2E-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-E2E-DELTA.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-GATE-CONTRACTS-FULL.log"
+    },
+    {
+      "id": "O-GATE-ARCH-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-GATE-ARCH-FULL.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/commit.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/quality-gates.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/governance-compiler.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/architecture-invariants.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/capability-proof-guardrails.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "Three new Playwright tests in e2e/sequencer.spec.ts, each verified to FAIL against the pre-fix sources (git stash of src/engine/scheduler.ts, src/ui/playhead.ts, src/main.ts) and PASS after. (1) Playhead audio-time sync: instruments the live event bus, correlating engine:trigger.time (the step's AudioContext time) against ctx.currentTime at engine:step delivery; measured lead fell from 49-91ms (median 83ms) pre-fix to single-digit ms post-fix, asserted < 30ms. (2) Stale column: a phrase-view switch mid-playback left a 42-cell column lit indefinitely and through Stop; now asserts zero .playing cells off-view and after Stop. (3) Playing-phrase marker: asserted zero marked at rest, exactly the playing slot during playback, zero after Stop; pre-fix it was never marked in any state because setOnPhraseChange() had no caller. Full suite: 74/74 passing."
+  },
+  "artifacts": [
+    "verdict.json",
+    "compiler-report.md"
+  ]
+}

@@ -11,11 +11,17 @@ npm run dev
 
 Opens at [http://localhost:5173](http://localhost:5173). Vite provides hot module replacement — changes take effect immediately without restart.
 
+Sample libraries must be readable folders (or root symlinks) named `DRUMS` and `SYNTHS`, with paths matching `samples.json`. To keep them outside the checkout, set `SEQUENCER_SAMPLE_ROOT` to their parent directory before starting Vite. This also works with `npm run preview`. Static production hosting must serve these two library paths separately; the manifest and compiled worklets are included in the build. Audio files are not bundled.
+
+If macOS denies access to a library folder, allow the terminal/application access in System Settings or move the library to an accessible location. The sample browser reports the denial and remains available for retry; unreadable files cannot terminate the server. Individual samples can also be loaded from files.
+
+Playback uses a 350 ms scheduling queue. Edits affect the next unqueued step; already queued notes keep their timing. The playhead follows estimated device output. After a blocked browser frame it jumps directly to the current audible step. Stalls longer than the queue can interrupt playback; missed scheduling deadlines are reanchored without an overdue burst.
+
 ## Quality gates
 
 ```
 npm run ci          # typecheck + lint + format + circular deps
-npm run e2e         # Playwright end-to-end tests (58 tests)
+npm run e2e         # browser regression and audio synchronization stress tests
 ```
 
 Manual audio tests (open in browser):
@@ -48,7 +54,7 @@ src/
 │   ├── adsr.ts                   Per-track ADSR envelope state + automation
 │   ├── audio.ts                  AudioContext, channel strip, mix bus
 │   ├── midi.ts                   MIDI input management + live play
-│   ├── scheduler.ts              Tone.js Transport scheduling
+│   ├── scheduler.ts              Native AudioContext scheduling + output clock
 │   ├── worklet-loader.ts         AudioWorklet module loading
 │   ├── worklets/                 DSP processors (AudioWorklet)
 │   │   ├── compressor-processor.ts   Three-model compressor (FET/Opto/VCA)
@@ -105,7 +111,7 @@ samples.json                   Sample browser manifest
 
 - **TypeScript** — strict mode with `noUncheckedIndexedAccess`
 - **Vite** — dev server + build
-- **Tone.js** — Transport scheduling
+- **Web Audio** — one AudioContext, buffered scheduling and device output timestamps
 - **AudioWorklet** — all custom DSP on the audio thread
 - **ESLint** — typescript-eslint strict-type-checked
 - **Prettier** — formatting

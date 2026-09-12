@@ -1,0 +1,21 @@
+{
+  "run_id": "1789211062077-ae11a67e",
+  "task_id": "20260912-sync-observer-window",
+  "task_type": "bugfix",
+  "spec_path": "docs/qc/specs/20260912-sync-observer-window.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-09-12T11:04:22.076Z",
+  "finished_at_utc": "2026-09-12T11:04:22.079Z",
+  "head_sha": "UNSET",
+  "tree_sha": "UNSET",
+  "subject_sha": "UNSET",
+  "verdict": "BLOCKED",
+  "matrix": [],
+  "diagnostics": [
+    {
+      "severity": "BLOCKED",
+      "code": "GOV-SPEC-003",
+      "message": "capability.controls must define at least one control truth table for non-governance tasks."
+    }
+  ]
+}

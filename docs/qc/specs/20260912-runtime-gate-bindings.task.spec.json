@@ -1,0 +1,41 @@
+{
+  "task_id": "20260912-runtime-gate-bindings",
+  "task_type": "governance-change",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Unblock PR #39 runtime fixes after GOV-BIND-001 identified Vite, Playwright configuration and server code as unbound. Classify these as product paths so existing CI, E2E, delta, contract, architecture and commit-attestation obligations apply. This mid-task governance repair stays on the user-requested PR #39 branch. Product edits remain outside this governance commit. No historical exception is added.",
+    "in_scope": [
+      "docs/qc/compiler/obligation-rules.json",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "e2e/**",
+      "server/**",
+      "vite.config.ts",
+      "playwright.config.ts",
+      "package.json",
+      "package-lock.json"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "Compiler GOV-BIND-001 failure on the actual staged runtime slice"
+    ],
+    "seed": "runtime-bindings-20260912",
+    "oracles": [
+      "off_transparent",
+      "on_audible"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

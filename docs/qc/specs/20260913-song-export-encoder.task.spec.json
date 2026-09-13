@@ -1,0 +1,41 @@
+{
+  "task_id": "20260913-song-export-encoder",
+  "task_type": "governance-change",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Add the pinned browser MP3 encoder required by the explicitly requested WAV/MP3 song-download feature. Dependency configuration and product implementation receive separate attestations in the same feature PR; no governance requirements are changed.",
+    "in_scope": [
+      "package.json",
+      "package-lock.json",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "e2e/**",
+      "index.html",
+      "README.md",
+      "docs/contracts/**",
+      "docs/qc/compiler/**"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "Pinned @breezystack/lamejs 1.2.7; npm install reported zero vulnerabilities; Chrome and production-preview export decode tests passed."
+    ],
+    "seed": "20260913-song-export-encoder",
+    "oracles": [
+      "off_transparent",
+      "on_audible"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

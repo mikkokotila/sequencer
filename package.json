@@ -46,6 +46,7 @@
     "vite": "^6.0.0"
   },
   "dependencies": {
+    "@breezystack/lamejs": "1.2.7",
     "tone": "^15.1.22"
   },
   "lint-staged": {

@@ -1,0 +1,43 @@
+{
+  "run_id": "1789301723066-c7e9d7da",
+  "task_id": "20260913-song-export-encoder",
+  "task_type": "governance-change",
+  "spec_path": "docs/qc/specs/20260913-song-export-encoder.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-09-13T12:15:23.065Z",
+  "finished_at_utc": "2026-09-13T12:15:32.566Z",
+  "head_sha": "ea2060c",
+  "tree_sha": "7e6b211f9266c6f19332912233ab3b97bde157d5",
+  "subject_sha": "cf1ef172610aa2bb14e4422f0038555f7b1981996628f5c5fc5db36026534ea1",
+  "verdict": "PASS",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-GATE-GOVERNANCE-SELF",
+      "label": "Governance self-tests",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-song-export-encoder/logs/O-GATE-GOVERNANCE-SELF.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-song-export-encoder/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-song-export-encoder/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": []
+}

@@ -24,7 +24,7 @@ interface ReverbNodes {
   sendBus: GainNode;
   freeverb: AudioWorkletNode;
   wetGain: GainNode;
-  ctx: AudioContext;
+  ctx: BaseAudioContext;
 }
 
 const TRACK_COUNT = 9;
@@ -84,7 +84,7 @@ export function createReverb(): Extension {
     name: 'Plate Reverb',
     icon: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8c0-3 2-5 5-5s5 2 5 5-2 5-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M5 8c0-2 1.3-3 3-3s3 1 3 3-1.3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity="0.6"/><circle cx="8" cy="8" r="1" fill="currentColor" opacity="0.4"/></svg>',
 
-    init(ctx: AudioContext, host: ExtensionHost): NodePair | null {
+    init(ctx: BaseAudioContext, host: ExtensionHost): NodePair | null {
       hostRef = host;
       const freeverb = new AudioWorkletNode(ctx, 'freeverb-processor');
 

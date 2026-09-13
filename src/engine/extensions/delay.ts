@@ -25,7 +25,7 @@ interface DelayNodes {
   sendBus: GainNode;
   delay: AudioWorkletNode;
   wetGain: GainNode;
-  ctx: AudioContext;
+  ctx: BaseAudioContext;
 }
 
 const TRACK_COUNT = 9;
@@ -85,7 +85,7 @@ export function createDelay(): Extension {
     name: 'Tape Delay',
     icon: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="5" cy="8" r="3.5" stroke="currentColor" stroke-width="1.3"/><circle cx="11" cy="8" r="3.5" stroke="currentColor" stroke-width="1.3"/><line x1="5" y1="4.5" x2="11" y2="4.5" stroke="currentColor" stroke-width="1" opacity="0.4"/><line x1="5" y1="11.5" x2="11" y2="11.5" stroke="currentColor" stroke-width="1" opacity="0.4"/></svg>',
 
-    init(ctx: AudioContext, host: ExtensionHost): NodePair | null {
+    init(ctx: BaseAudioContext, host: ExtensionHost): NodePair | null {
       hostRef = host;
       const sendBus = ctx.createGain();
       sendBus.gain.value = 1 / Math.sqrt(TRACK_COUNT);

@@ -100,3 +100,23 @@ export function bindEngineNodes(
   engineCompressor = compressor;
   applyEngineParams();
 }
+
+/** Build the identical permanent master chain for playback and offline export. */
+export function createEngineProcessing(ctx: BaseAudioContext, settings: EngineSettings) {
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = cutoffToFreq(settings.cutoff);
+  filter.Q.value = resonanceToQ(settings.resonance);
+  const saturation = ctx.createWaveShaper();
+  saturation.oversample = '4x';
+  saturation.curve = makeSaturationCurve(settings.saturation);
+  const compressor = ctx.createDynamicsCompressor();
+  compressor.ratio.value = 4;
+  compressor.knee.value = 10;
+  compressor.attack.value = 0.003;
+  compressor.release.value = 0.25;
+  compressor.threshold.value = compToThreshold(settings.compression);
+  filter.connect(saturation);
+  saturation.connect(compressor);
+  return { filter, saturation, compressor };
+}

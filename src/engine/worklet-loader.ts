@@ -10,18 +10,28 @@ import freeverbUrl from './worklets/freeverb-processor.ts?worker&url';
 import delayUrl from './worklets/delay-processor.ts?worker&url';
 import transformerUrl from './worklets/transformer-processor.ts?worker&url';
 
-const loaded = new Set<string>();
+// Registration belongs to each context, including each independent offline bounce.
+const loaded = new WeakMap<BaseAudioContext, Map<string, Promise<void>>>();
 
-async function load(ctx: AudioContext, name: string, url: string): Promise<void> {
-  if (loaded.has(name)) return;
-  await ctx.audioWorklet.addModule(url);
-  loaded.add(name);
+function load(ctx: BaseAudioContext, name: string, url: string): Promise<void> {
+  let modules = loaded.get(ctx);
+  if (!modules) {
+    modules = new Map();
+    loaded.set(ctx, modules);
+  }
+  let pending = modules.get(name);
+  if (!pending) {
+    pending = ctx.audioWorklet.addModule(url).catch((error: unknown) => {
+      modules.delete(name);
+      throw error;
+    });
+    modules.set(name, pending);
+  }
+  return pending;
 }
 
-/**
- * Load all DSP worklet processors. Call once during audio init.
- */
-export async function loadAllWorklets(ctx: AudioContext): Promise<void> {
+/** Register the same DSP processors for live playback and offline rendering. */
+export async function loadAllWorklets(ctx: BaseAudioContext): Promise<void> {
   await Promise.all([
     load(ctx, 'compressor-processor', compressorUrl),
     load(ctx, 'saturation-processor', saturationUrl),

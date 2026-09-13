@@ -63,8 +63,10 @@ class CompressorProcessor extends AudioWorkletProcessor {
   private downHist1: Float64Array[];
   private downHist2: Float64Array[];
 
-  constructor() {
+  constructor(options?: { processorOptions?: { model?: number } }) {
     super();
+    // Offline rendering must start in the selected model before any port messages.
+    this.model = Math.max(0, Math.min(2, (options?.processorOptions?.model ?? 0) | 0));
 
     // Envelope state (2 channels)
     this.envDb = new Float64Array(2);

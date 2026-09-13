@@ -1,0 +1,11 @@
+# Full-song WAV and MP3 download
+
+The toolbar now downloads the current song as stereo 24-bit/44.1 kHz WAV or 320 kbps MP3. The GUI calls exportSongAudio, the same public API available to programmatic callers. Numeric phrase order skips empty phrases and plays each active phrase once. Snapshotting preserves samples, notes, tempo, mutes, levels, pans, octaves, harmony, ADSR, all five built-in effects and engine controls. Rendering uses an independent offline graph; a worker encodes the file.
+
+The initial audio probe caught a native compressor startup gain ramp. A silent one-second pre-roll, removed before encoding, now settles the graph. WAV and MP3 first/second phrase energy ratios match the expected four-to-one relationship. Each effect audibly changes output and repeat renders match within 1e-6. Sample and delay tails survive the final phrase. A ten-minute limit including tails bounds offline allocation; MP3 frame delay/padding is documented.
+
+Sixteen new Chrome regressions cover decodable stereo formats, real GUI downloads, phrase order and empty slots, captured mix and unchanged original sample buffers, all built-in effects, deterministic repeat renders, captured ADSR/engine/mutes, final-note tails, visible missing-sample and encoder errors, retry, graph cancellation, worker cancellation, ongoing playback, octave pitch, polyphonic harmony and vocal timing. The production-preview regression downloads both formats from the bundled worker/worklets. Existing contract, architecture, audio and compiler-owned oracle checks remain mandatory.
+
+Real-browser verification performed in the running GUI at 127.0.0.1:5173: inspected the centered dialog and completed both exports of the 132 BPM, 48-bar NEON SAUVAGE - Library song. Progress, successful completion and re-enabled controls were observed. Automated Chrome tests separately verify actual download bytes and decode the results. The existing song, samples and transport settings remain intact.
+
+The complete local Chrome regression suite passed all 138 tests, including sync pressure and production-preview downloads. Static CI also passed. Compiler-executed validation and final verdict are recorded in this task's verdict.json and gate logs. No contract, baseline, debt threshold, or oracle was weakened. The MP3 dependency configuration has its own attested commit in this PR.

@@ -1,0 +1,78 @@
+{
+  "task_id": "20260913-song-audio-export",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-song-audio-export/logs/O-CI.log"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-song-audio-export/logs/O-E2E.log"
+    },
+    {
+      "id": "O-E2E-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-song-audio-export/logs/O-E2E-DELTA.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-song-audio-export/logs/O-GATE-CONTRACTS-FULL.log"
+    },
+    {
+      "id": "O-GATE-ARCH-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-song-audio-export/logs/O-GATE-ARCH-FULL.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-song-audio-export/logs/O-COMMIT-RANGE.log"
+    },
+    {
+      "id": "O-AUDIO-GATES",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-song-audio-export/logs/O-AUDIO-GATES.log"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/commit.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/quality-gates.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/e2e.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/architecture-invariants.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/audio-determinism.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "Actual local GUI at 127.0.0.1:5173: centered export dialog inspected; full 132 BPM, 48-bar NEON SAUVAGE - Library song completed WAV and MP3 exports with success status and re-enabled controls. Automated Chrome and built production preview independently verify actual downloaded files and decoded audio. Sixteen new Chrome regressions cover levels, pan, phrase order, effects, deterministic repeats, snapshots, tails, error/retry, cancellation, melody/harmony/vocals and uninterrupted live playback."
+  },
+  "artifacts": [
+    "verdict.json"
+  ]
+}

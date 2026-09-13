@@ -1,0 +1,63 @@
+{
+  "task_id": "20260913-song-audio-export",
+  "task_type": "feature",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Download the complete current song as stereo 24-bit 44.1 kHz WAV or 320 kbps MP3 through one public API and GUI. Capture the full arrangement and mix before asynchronous work, reuse every built-in DSP processor in an independent offline graph, and preserve live playback. Explicit user feature instruction authorizes product implementation despite the default GA-only scope.",
+    "in_scope": [
+      "src/**",
+      "e2e/song-export.spec.ts",
+      "e2e/production.spec.ts",
+      "index.html",
+      "README.md",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "samples/**",
+      "samples.json",
+      "server/**",
+      "package.json",
+      "package-lock.json",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**"
+    ],
+    "controls": [
+      {
+        "id": "song_audio_download",
+        "description": "Toolbar dialog chooses WAV or MP3, reports progress, cancels without downloading, and permits retry after failure.",
+        "test": "Chrome GUI downloads real files, checks format headers, retries an injected encoder failure, cancels graph initialization, and verifies live playback remains running."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "Stereo phrase-order and gain fixture decoded from WAV and MP3",
+      "All five built-in effects and repeat-bounce comparisons",
+      "Captured ADSR, engine settings, mutes, melody octaves, harmony and vocal timing",
+      "Final-note sample and feedback-delay tails",
+      "GUI download, cancellation, error retry and playback isolation",
+      "Built production preview with real WAV and MP3 downloads",
+      "Manual full NEON SAUVAGE - Library song exports in the running local GUI"
+    ],
+    "seed": "20260913-song-audio-export",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding",
+      "benchmark_worklet_budget"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

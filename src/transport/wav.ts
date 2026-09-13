@@ -2,7 +2,9 @@
  * Encode an AudioBuffer to a 24-bit signed PCM WAV file (universal sampler format).
  * Channel count and sample rate are preserved from the input.
  */
-export function audioBufferToWav24(buffer: AudioBuffer): Uint8Array {
+export function audioBufferToWav24(
+  buffer: Pick<AudioBuffer, 'numberOfChannels' | 'sampleRate' | 'length' | 'getChannelData'>,
+): Uint8Array {
   const channels = buffer.numberOfChannels;
   const sampleRate = buffer.sampleRate;
   const frames = buffer.length;

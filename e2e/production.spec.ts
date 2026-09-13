@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
+import { readZip, records, field, blocks, events } from './s2400-files';
 import { readFile } from 'node:fs/promises';
 import { preview, type PreviewServer } from 'vite';
 
@@ -19,7 +20,7 @@ test.afterAll(async () => {
   }
 });
 
-test('production build initializes worklets, plays samples, and downloads WAV and MP3', async ({ page }) => {
+test('production build initializes worklets, plays samples, and downloads WAV, MP3 and S2400', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.addInitScript(() => {
@@ -78,15 +79,22 @@ test('production build initializes worklets, plays samples, and downloads WAV an
     ),
   ).toBe(1);
   await page.locator('#export-song-btn').click();
-  for (const format of ['wav', 'mp3']) {
+  for (const format of ['wav', 'mp3', 'zip']) {
     const download = page.waitForEvent('download');
-    await page.locator(`#export-${format}-btn`).click();
+    await page.locator(`#export-${format === 'zip' ? 's2400' : format}-btn`).click();
     const file = await download;
     expect(file.suggestedFilename()).toMatch(new RegExp(`\\.${format}$`));
     const bytes = await readFile((await file.path())!);
     expect(bytes.length).toBeGreaterThan(1000);
     if (format === 'wav') expect(bytes.toString('ascii', 0, 4)).toBe('RIFF');
-    else expect(bytes[0]).toBe(0xff);
+    else if (format === 'mp3') expect(bytes[0]).toBe(0xff);
+    else {
+      const files = readZip(bytes);
+      const project = records([...files].find(([name]) => name.endsWith('.S24'))![1]);
+      expect(field(project, 0)).toBe(0x30003);
+      expect(events(blocks(project, 16)[0]!)).toHaveLength(4);
+      expect([...files.keys()].filter(name => name.endsWith('.wav'))).toHaveLength(1);
+    }
     await expect(page.locator('#song-export-status')).toContainText('downloaded');
   }
   await page.locator('#song-export-close').click();

@@ -3,6 +3,7 @@ import {
   downloadSongAudio,
   type AudioExportFormat,
 } from '../transport/song-audio';
+import { exportS2400Drums } from '../transport/s2400';
 import { currentSongName } from '../transport/song';
 
 /** Mount once; audio export never edits the song or changes its live transport. */
@@ -25,35 +26,52 @@ export function createSongExportButton(): HTMLButtonElement {
       <button type="button" id="export-wav-btn">Download WAV<span>24-bit · 44.1 kHz · stereo</span></button>
       <button type="button" id="export-mp3-btn">Download MP3<span>320 kbps · stereo</span></button>
     </div>
+    <div class="song-export-formats">
+      <button type="button" id="export-s2400-btn">Export S2400 drums<span>Experimental · project + samples · ZIP</span></button>
+    </div>
+    <p class="song-export-description">S2400: drum phrases on A1–A5, including muted rows. Dry samples and track levels; no synths, effects, envelopes, pan, or song chain. Hardware playback needs verification.</p>
     <progress id="song-export-progress" max="1" value="0" hidden aria-label="Audio export progress"></progress>
     <p id="song-export-status" role="status" aria-live="polite"></p>
     <button type="button" id="song-export-close">Close</button>`;
   document.body.appendChild(dialog);
   const wav = dialog.querySelector<HTMLButtonElement>('#export-wav-btn')!;
   const mp3 = dialog.querySelector<HTMLButtonElement>('#export-mp3-btn')!;
+  const s2400 = dialog.querySelector<HTMLButtonElement>('#export-s2400-btn')!;
   const close = dialog.querySelector<HTMLButtonElement>('#song-export-close')!;
   const progress = dialog.querySelector<HTMLProgressElement>('#song-export-progress')!;
   const status = dialog.querySelector<HTMLElement>('#song-export-status')!;
   let controller: AbortController | null = null;
-  const run = async (format: AudioExportFormat) => {
+  const run = async (format: AudioExportFormat | 's2400') => {
     if (controller) return;
     controller = new AbortController();
-    wav.disabled = mp3.disabled = true;
+    wav.disabled = mp3.disabled = s2400.disabled = true;
     progress.hidden = false;
     progress.value = 0;
     status.classList.remove('export-error');
     close.textContent = 'Cancel';
     try {
-      const result = await exportSongAudio(format, {
-        signal: controller.signal,
-        onProgress: ({ stage, fraction }) => {
-          progress.value = fraction;
-          status.textContent =
-            stage === 'rendering'
-              ? 'Rendering song…'
-              : `Encoding ${format.toUpperCase()}… ${Math.round(fraction * 100)}%`;
-        },
-      });
+      const result =
+        format === 's2400'
+          ? await exportS2400Drums({
+              signal: controller.signal,
+              onProgress: ({ stage, fraction }) => {
+                progress.value = fraction;
+                status.textContent =
+                  stage === 'samples'
+                    ? 'Preparing drum samples…'
+                    : `Packaging S2400 project… ${Math.round(fraction * 100)}%`;
+              },
+            })
+          : await exportSongAudio(format, {
+              signal: controller.signal,
+              onProgress: ({ stage, fraction }) => {
+                progress.value = fraction;
+                status.textContent =
+                  stage === 'rendering'
+                    ? 'Rendering song…'
+                    : `Encoding ${format.toUpperCase()}… ${Math.round(fraction * 100)}%`;
+              },
+            });
       downloadSongAudio(result);
       status.textContent = `${result.filename} downloaded.`;
     } catch (error) {
@@ -66,7 +84,7 @@ export function createSongExportButton(): HTMLButtonElement {
       }
     } finally {
       controller = null;
-      wav.disabled = mp3.disabled = false;
+      wav.disabled = mp3.disabled = s2400.disabled = false;
       progress.hidden = true;
       close.textContent = 'Close';
       close.disabled = false;
@@ -77,6 +95,9 @@ export function createSongExportButton(): HTMLButtonElement {
   };
   mp3.onclick = () => {
     void run('mp3');
+  };
+  s2400.onclick = () => {
+    void run('s2400');
   };
   close.onclick = () => {
     if (controller) {

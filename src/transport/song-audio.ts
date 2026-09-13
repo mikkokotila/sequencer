@@ -87,7 +87,7 @@ export async function exportSongAudio(
   return { blob, filename: `${name}.${format}`, duration: song.buffer.duration };
 }
 
-export function downloadSongAudio(result: SongAudioExport): void {
+export function downloadSongAudio(result: Pick<SongAudioExport, 'blob' | 'filename'>): void {
   const url = URL.createObjectURL(result.blob);
   const anchor = document.createElement('a');
   anchor.href = url;

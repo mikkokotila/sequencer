@@ -1,0 +1,199 @@
+{
+  "task_id": "20260913-s2400-drum-export",
+  "task_type": "feature",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260913-s2400-drum-export.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-13T14:35:01.285Z",
+  "finished_at_utc": "2026-09-13T14:38:44.530Z",
+  "head_sha": "88a286f",
+  "tree_sha": "338206999df42926a51964d5f077567d77a4a9f5",
+  "subject_sha": "8c499efc20c6f2c26c26ce8141f0428879529ab0c336310be1e0920438de3f71",
+  "subject_files": [
+    "README.md",
+    "docs/s2400-export.md",
+    "e2e/production.spec.ts",
+    "e2e/s2400-export.spec.ts",
+    "e2e/s2400-files.ts",
+    "src/transport/s2400-encoder.worker.ts",
+    "src/transport/s2400-format.ts",
+    "src/transport/s2400.ts",
+    "src/transport/song-audio.ts",
+    "src/ui/song-export.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "README.md",
+    "docs/qc/proofs/20260913-s2400-drum-export.md",
+    "docs/qc/proofs/20260913-s2400-drum-export/proof.manifest.json",
+    "docs/qc/proofs/20260913-s2400-drum-export/verdict.json",
+    "docs/qc/runs/20260913-143443Z-88a286f-1789309858924-31e7390f.json",
+    "docs/qc/runs/20260913-143443Z-88a286f-1789309858924-31e7390f.md",
+    "docs/qc/specs/20260913-s2400-drum-export.task.spec.json",
+    "docs/s2400-export.md",
+    "e2e/production.spec.ts",
+    "e2e/s2400-export.spec.ts",
+    "e2e/s2400-files.ts",
+    "src/transport/s2400-encoder.worker.ts",
+    "src/transport/s2400-format.ts",
+    "src/transport/s2400.ts",
+    "src/transport/song-audio.ts",
+    "src/ui/song-export.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=7, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=7, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 5923,
+        "log_file": "docs/qc/proofs/20260913-s2400-drum-export/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 200536,
+        "log_file": "docs/qc/proofs/20260913-s2400-drum-export/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 274,
+        "log_file": "docs/qc/proofs/20260913-s2400-drum-export/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 440,
+        "log_file": "docs/qc/proofs/20260913-s2400-drum-export/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 462,
+        "log_file": "docs/qc/proofs/20260913-s2400-drum-export/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 428,
+        "log_file": "docs/qc/proofs/20260913-s2400-drum-export/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-s2400-drum-export/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260913-s2400-drum-export/raw/off_transparent.json",
+        "raw_sha256": "e9d2b3e71db4383ff6218a05c13cf6a3f225283f7fe2d44879ada11aab76658a"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-s2400-drum-export/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260913-s2400-drum-export/raw/on_audible.json",
+        "raw_sha256": "8d27e641463a93bb1ba390e2431ec7077d5173ad6a30c28853dda26ff2c138fe"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-s2400-drum-export/oracles/low_end_continuity.json",
+        "raw_artifact": "docs/qc/proofs/20260913-s2400-drum-export/raw/low_end_continuity.json",
+        "raw_sha256": "0b1b6e836b914ee14470e2c15c70e6c75da465607cf3e8f7894bab2d2af9b059"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-s2400-drum-export/oracles/clip_guard.json",
+        "raw_artifact": "docs/qc/proofs/20260913-s2400-drum-export/raw/clip_guard.json",
+        "raw_sha256": "577eb1a5c97c754dd62de48d7515c3f72af029a5b60714e3a185116c29d64b16"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-s2400-drum-export/oracles/default_safety.json",
+        "raw_artifact": "docs/qc/proofs/20260913-s2400-drum-export/raw/default_safety.json",
+        "raw_sha256": "e5c69e061b2a7855df1294eba0964340213dca2ec76f11199a5e44c9d4be53c9"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-s2400-drum-export/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260913-s2400-drum-export/raw/control_binding.json",
+        "raw_sha256": "ac3dd72eef98097554b03f1fd750e7947c2f9dffeb6f27ff2053fcfaf437cff0"
+      },
+      {
+        "oracle_id": "benchmark_worklet_budget",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-s2400-drum-export/oracles/benchmark_worklet_budget.json",
+        "raw_artifact": "docs/qc/proofs/20260913-s2400-drum-export/raw/benchmark_worklet_budget.json",
+        "raw_sha256": "6d1a9aad0de6a6129639975940d55da190837a6e0f30e13d5ef4cab2fc65a0cc"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

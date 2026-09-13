@@ -1,0 +1,1 @@
+FAIL-ITEM | e2e | diagnostic.spec.ts › diagnostic sentinel @ ../../../../private/tmp/sequencer-reporter-check/diagnostic.spec.ts:2 | Error: expect(received).toBe(expected) // Object.is equality Expected: "expected sentinel" Received: "actual sentinel"

@@ -4,6 +4,7 @@ export default defineConfig({
   testDir: './e2e',
   timeout: 30000,
   retries: 0,
+  reporter: [[process.env.CI ? 'dot' : 'list'], ['./e2e/qc-reporter.ts']],
   // Audio timing probes must not compete with separate browser test workers.
   workers: 1,
   use: {

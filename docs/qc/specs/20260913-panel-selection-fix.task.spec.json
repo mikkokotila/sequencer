@@ -1,0 +1,54 @@
+{
+  "task_id": "20260913-panel-selection-fix",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Fix F16 stale extension-panel selection when Engine closes the effect panel, and complete comprehensive post-remediation QC of PR #41. Explicit user authorization covers every found issue and the same PR despite default GA-only scope/routing. Preserve original failures and historical BLOCKED proof status. Preserve failed benchmark measurements and use a bounded, hardware-independent real compressor overload in CI. Browser scope is Chrome only per the latest user instruction. Retain exact failing test names, source locations and assertion details in the compiler CI output through its existing FAIL-ITEM protocol.",
+    "in_scope": [
+      "src/ui/engine-panel.ts",
+      "e2e/panel-selection.spec.ts",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log",
+      "tests/benchmark.html",
+      "e2e/benchmark-pressure.spec.ts",
+      "e2e/qc-reporter.ts",
+      "playwright.config.ts"
+    ],
+    "out_of_scope": [
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**",
+      "package.json",
+      "package-lock.json"
+    ],
+    "controls": [
+      {
+        "id": "panel_selection",
+        "description": "Opening Engine clears selection of the effect panel that it closes, keeping visual and stored panel ownership consistent.",
+        "test": "Open Reverb, enter/close Engine, then one Reverb click must reopen its panel and select its icon."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "Chrome UI panel switching",
+      "At least eight milliseconds of injected work in shipped compressor per render quantum",
+      "Chrome-only post-fix model, sustained sync, actual DSP, resources, exports and production playback"
+    ],
+    "seed": "20260913-panel-selection-fix",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "control_binding",
+      "benchmark_worklet_budget"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

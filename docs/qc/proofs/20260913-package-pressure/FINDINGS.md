@@ -1,6 +1,6 @@
 # Findings on merged main cd2564c
 
-Priorities describe observed impact; no product fixes are included in this QC branch. `pressure-results.json` records each reproduction and positive controls.
+This is the original pre-remediation capture on merged main. Current dispositions and repair evidence are in [the final QC report](../20260913-package-final-qc/REPORT.md). Priorities describe the original observed impact. `pressure-results.json` records each reproduction and positive controls.
 
 | ID | Priority | Reproduction / observed failure | Repair acceptance criterion |
 |---|---|---|---|

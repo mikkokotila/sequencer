@@ -1,0 +1,74 @@
+{
+  "task_id": "20260913-panel-selection-fix",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-panel-selection-fix/logs/O-CI.log"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-panel-selection-fix/logs/O-E2E.log"
+    },
+    {
+      "id": "O-E2E-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-panel-selection-fix/logs/O-E2E-DELTA.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-panel-selection-fix/logs/O-GATE-CONTRACTS-FULL.log"
+    },
+    {
+      "id": "O-GATE-ARCH-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-panel-selection-fix/logs/O-GATE-ARCH-FULL.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-panel-selection-fix/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/commit.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/quality-gates.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/e2e.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/architecture-invariants.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/audio-determinism.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "Exact Reverb → Engine → close → Reverb UI flow reproduced before fix and passes after it. Comprehensive final QC artifacts include real Chrome/Chromium, audible sync, actual DSP, persistence, export and production checks with synthetic data."
+  },
+  "artifacts": [
+    "verdict.json",
+    "logs/O-E2E.log",
+    "logs/O-AUDIO-GATES.log"
+  ]
+}

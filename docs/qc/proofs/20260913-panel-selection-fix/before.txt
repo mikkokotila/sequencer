@@ -1,0 +1,43 @@
+[2m[WebServer] [22m(node:13249) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m(node:13281) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:13283) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:13283) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › e2e/panel-selection.spec.ts:3:1 › closing Engine restores single-click access to the previously open effect (6.4s)
+
+
+  1) [chromium] › e2e/panel-selection.spec.ts:3:1 › closing Engine restores single-click access to the previously open effect 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveClass[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: locator('#ext-panel')
+    Expected pattern: [32m/open/[39m
+    Received string:  [31m"ext-panel"[39m
+    Timeout: 5000ms
+
+    Call log:
+    [2m  - Expect "toHaveClass" with timeout 5000ms[22m
+    [2m  - waiting for locator('#ext-panel')[22m
+    [2m    9 × locator resolved to <div id="ext-panel" class="ext-panel">…</div>[22m
+    [2m      - unexpected value "ext-panel"[22m
+
+
+       9 |   await page.locator('#engine-panel').getByRole('button', { name: '×', exact: true }).click();
+      10 |   await effect.click();
+    > 11 |   await expect(page.locator('#ext-panel')).toHaveClass(/open/);
+         |                                            ^
+      12 |   await expect(effect).toHaveClass(/active/);
+      13 | });
+      14 |
+        at /Users/mikkokotila/dev/sequencer/e2e/panel-selection.spec.ts:11:44
+
+    Error Context: test-results/panel-selection-closing-En-ed75f--the-previously-open-effect-chromium/error-context.md
+
+  1 failed
+    [chromium] › e2e/panel-selection.spec.ts:3:1 › closing Engine restores single-click access to the previously open effect 

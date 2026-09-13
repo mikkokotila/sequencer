@@ -1,0 +1,65 @@
+[
+  {
+    "browser": "chrome",
+    "status": "PASS",
+    "errors": [],
+    "checks": {
+      "initial": 1,
+      "afterClick": {
+        "started": 65,
+        "state": "running",
+        "time": 1.3003174603174603
+      },
+      "playback": {
+        "started": 70,
+        "time": 1.3351473922902495,
+        "playing": 0,
+        "marked": 0
+      },
+      "reload": true,
+      "layout1440": {
+        "viewport": 1440,
+        "pageWidth": 1434,
+        "play": {
+          "x": 33,
+          "y": 27,
+          "width": 22,
+          "height": 22,
+          "top": 27,
+          "right": 55,
+          "bottom": 49,
+          "left": 33
+        }
+      },
+      "layout768": {
+        "viewport": 768,
+        "pageWidth": 762,
+        "play": {
+          "x": 33,
+          "y": 27,
+          "width": 22,
+          "height": 22,
+          "top": 27,
+          "right": 55,
+          "bottom": 49,
+          "left": 33
+        }
+      },
+      "layout390": {
+        "viewport": 390,
+        "pageWidth": 384,
+        "play": {
+          "x": 33,
+          "y": 23,
+          "width": 22,
+          "height": 22,
+          "top": 23,
+          "right": 55,
+          "bottom": 45,
+          "left": 33
+        }
+      }
+    },
+    "version": "152.0.7977.83"
+  }
+]

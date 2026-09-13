@@ -12,6 +12,7 @@
 import { getAudioContext, getMixBus, setFinalOutput } from '../engine/audio';
 import { makeSlider, formatPct } from './helpers';
 import { emit, on } from '../events';
+import { setActiveExtensionId } from '../engine/extensions/store';
 import {
   bindEngineNodes,
   getEngineSettings,
@@ -586,6 +587,7 @@ export function open(): void {
   const extPanel = document.getElementById('ext-panel');
   if (extPanel?.classList.contains('open')) {
     extPanel.classList.remove('open');
+    setActiveExtensionId(null);
     document.getElementById('app')?.classList.remove('ext-panel-open');
     document.body.classList.remove('ext-panel-open');
     document.querySelectorAll('.ext-icon-btn.active').forEach((b) => b.classList.remove('active'));

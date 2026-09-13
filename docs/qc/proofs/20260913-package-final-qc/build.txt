@@ -1,0 +1,24 @@
+
+> sequencer@1.0.0 build
+> tsc --noEmit && vite build
+
+vite v6.4.3 building for production...
+transforming...
+✓ 48 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/mikkokotila/dev/sequencer/src/transport/patterns.ts is dynamically imported by /Users/mikkokotila/dev/sequencer/src/transport/persistence.ts but also statically imported by /Users/mikkokotila/dev/sequencer/src/main.ts, /Users/mikkokotila/dev/sequencer/src/transport/persistence.ts, /Users/mikkokotila/dev/sequencer/src/transport/render.ts, /Users/mikkokotila/dev/sequencer/src/ui/browser.ts, /Users/mikkokotila/dev/sequencer/src/ui/build.ts, /Users/mikkokotila/dev/sequencer/src/ui/cells.ts, /Users/mikkokotila/dev/sequencer/src/ui/painting.ts, /Users/mikkokotila/dev/sequencer/src/ui/playhead.ts, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/assets/delay-processor-CYMTgXOV.js          1.88 kB
+dist/assets/saturation-processor-BKRLux1x.js     2.21 kB
+dist/assets/freeverb-processor-CSJPR_zk.js       2.21 kB
+dist/assets/transformer-processor-AR-TTqPL.js    2.70 kB
+dist/assets/compressor-processor-BeLFYLE-.js     4.70 kB
+dist/index.html                                 33.50 kB │ gzip:  6.00 kB
+dist/assets/samples-58LlxDFW.json               51.06 kB │ gzip:  8.93 kB
+dist/assets/wav-ekpZnCtt.js                      0.84 kB │ gzip:  0.52 kB │ map:   3.84 kB
+dist/assets/zip-CPCViK5t.js                      1.75 kB │ gzip:  0.69 kB │ map:   7.06 kB
+dist/assets/render-D0EXfR0t.js                   2.05 kB │ gzip:  1.04 kB │ map:   9.65 kB
+dist/assets/index-DLuBT_KG.js                  104.60 kB │ gzip: 32.36 kB │ map: 415.98 kB
+✓ built in 431ms

@@ -1,0 +1,5 @@
+audio-gate	Run xvfb-run -a npm run audio:gates	2026-09-13T10:24:45.8344466Z PASS | audio-quality | 25/25 passed, 0 failed
+audio-gate	Run xvfb-run -a npm run audio:gates	2026-09-13T10:24:45.8345293Z PASS | e2e-signal | 14/14 passed, 0 failed
+audio-gate	Run xvfb-run -a npm run audio:gates	2026-09-13T10:24:45.8345994Z PASS | signal-purity | 8/8 passed, 0 failed
+audio-gate	Run xvfb-run -a npm run audio:gates	2026-09-13T10:24:45.8349403Z PASS | benchmark | real p99=1.481ms budget=2.667ms samples=3787 structural_ok=1 gate_fail=0 worklet_runtime=1 random_calls=0 interval_calls=0 gate_class="gate pass" gate="PASS — p99 upper bound 1.481ms, budget 2.667ms, 3787 worklet process() samples, 10095.157000000001ms, 100.0% render coverage"
+audio-gate	Run xvfb-run -a npm run audio:gates	2026-09-13T10:24:45.8353903Z audio-gates: all 4 checks passed.

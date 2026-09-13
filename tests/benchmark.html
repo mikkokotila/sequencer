@@ -219,23 +219,27 @@ async function runBenchmark() {
     await delay(duration * 1000 + 100);
     observer.port.postMessage('stop');
     await Promise.race([stoppedMessage, delay(3000).then(() => { throw new Error('Measurement worklet did not acknowledge stop'); })]);
-    if (processorError || timer?.error) throw new Error(processorError || timer.error);
-    if (timer?.precisionMs !== 0.1) throw new Error('Unverified worklet clock precision');
-    if (samples.length < 50 || samples.some(s => s.error)) throw new Error(samples.find(s => s.error)?.error || 'Insufficient real processing samples');
-    const frames = samples[0].frames;
-    if (frames !== 128 || samples.some(s => s.frames !== frames)) throw new Error('Unexpected render quantum');
-    const measuredMs = samples.at(-1).endedAt - samples[0].startedAt;
+    // Retain raw measurements even when an overloaded renderer invalidates its clock.
+    // Failure evidence must remain inspectable; missing evidence is never a PASS.
+    const frames = samples[0]?.frames ?? 128;
+    const measuredMs = samples.length ? samples.at(-1).endedAt - samples[0].startedAt : 0;
     const coverage = samples.length * frames / (measuredMs / 1000 * ctx.sampleRate);
     const data = samples.map(s => s.durationUpperBoundMs);
     const sorted = [...data].sort((a,b) => a-b);
     const p99 = sorted[Math.floor(sorted.length * 0.99)], p50 = sorted[Math.floor(sorted.length * 0.5)], max = sorted.at(-1);
     const budget = frames / ctx.sampleRate * 1000;
     const continuous = samples.every((s, i) => i === 0 || s.frame === samples[i - 1].frame + frames);
-    const passed = p99 < budget && measuredMs >= duration * 1000 && coverage >= 0.9 && continuous;
+    const measurementError = processorError || timer?.error ||
+      (timer?.precisionMs !== 0.1 ? 'Unverified worklet clock precision' : null) ||
+      (samples.length < 50 ? 'Insufficient real processing samples' : null) ||
+      samples.find(s => s.error)?.error ||
+      (frames !== 128 || samples.some(s => s.frames !== frames) ? 'Unexpected render quantum' : null);
+    const passed = !measurementError && p99 < budget && measuredMs >= duration * 1000 && coverage >= 0.9 && continuous;
     window.__benchmarkEvidence = { schemaVersion: 1, timer: 'shared-worker-handshake', quantizationUpperBoundMs: 0.2,
       workload: { voices, effects: extensions.map(e => e.id), processors: EXPECTED_PROCESSORS, durationMs: measuredMs },
       sampleRate: ctx.sampleRate, frames, budgetMs: budget, p99UpperBoundMs: p99, p50UpperBoundMs: p50, maxUpperBoundMs: max,
-      sampleCount: samples.length, coverage, continuous, samples, passed };
+      sampleCount: samples.length, coverage, continuous, samples, passed, measurementError };
+    if (measurementError) throw new Error(measurementError);
     for (const [id, value] of Object.entries({ budget, p50, p99, max, load: p99 / budget * 100 })) document.getElementById(id).textContent = value.toFixed(3);
     drawChart(data, budget);
     gate.className = `gate ${passed ? 'pass' : 'fail'}`;

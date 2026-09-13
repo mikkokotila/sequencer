@@ -1,0 +1,12 @@
+[
+  {
+    "id": "reverb",
+    "disabledAfterSetState": 0.699999988079071,
+    "disabledAfterStopCallback": 0.699999988079071
+  },
+  {
+    "id": "delay",
+    "disabledAfterSetState": 0.699999988079071,
+    "disabledAfterStopCallback": 0.699999988079071
+  }
+]

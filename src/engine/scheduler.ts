@@ -224,6 +224,7 @@ export function startPlayback(): void {
   const ctx = getAudioContext();
   if (playing || startPending || !transport || ctx?.state !== 'running') return;
   playing = true;
+  emit('engine:start', {});
   curStep = 0;
   queuedPhrase = transport.findFirstNonEmpty();
   playingPhrase = -1;

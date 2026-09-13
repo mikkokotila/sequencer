@@ -15,6 +15,7 @@ export interface EventMap {
     time: number;
     source: 'drum' | 'melody' | 'vocal';
   };
+  'engine:start': Record<string, never>;
   'engine:stop': Record<string, never>;
 
   // Transport → UI: state changed, re-render

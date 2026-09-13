@@ -1,0 +1,80 @@
+{
+  "task_id": "20260913-audio-pressure-fixes",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-CI.log"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-E2E.log"
+    },
+    {
+      "id": "O-E2E-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-E2E-DELTA.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-GATE-CONTRACTS-FULL.log"
+    },
+    {
+      "id": "O-GATE-ARCH-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-GATE-ARCH-FULL.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-COMMIT-RANGE.log"
+    },
+    {
+      "id": "O-AUDIO-GATES",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-AUDIO-GATES.log"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/commit.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/quality-gates.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/e2e.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/architecture-invariants.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/audio-determinism.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "Real Chromium regressions exercise audible aux memory reset, disabled-state isolation, rapid restart and queued save/load. Headed DSP capacity and deliberately overloaded shipped compressor are validated from raw processing packets. No physical MIDI or acoustic loopback."
+  },
+  "artifacts": [
+    "verdict.json",
+    "logs/O-E2E.log",
+    "logs/O-AUDIO-GATES.log"
+  ]
+}

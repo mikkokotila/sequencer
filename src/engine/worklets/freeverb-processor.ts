@@ -21,6 +21,12 @@ class CombFilter {
     this.lastFiltered = 0;
   }
 
+  reset(): void {
+    this.buffer.fill(0);
+    this.index = 0;
+    this.lastFiltered = 0;
+  }
+
   process(input: number, feedback: number, damping: number): number {
     const idx = this.index;
     const delayed = this.buffer[idx] ?? 0;
@@ -40,6 +46,11 @@ class AllpassFilter {
   constructor(delaySamples: number) {
     this.bufferLength = delaySamples;
     this.buffer = new Float32Array(delaySamples);
+    this.index = 0;
+  }
+
+  reset(): void {
+    this.buffer.fill(0);
     this.index = 0;
   }
 
@@ -81,6 +92,20 @@ class FreeverbProcessor extends AudioWorkletProcessor {
       const baseDelay = ALLPASS_DELAYS[i] ?? 556;
       this.allpasses.push(new AllpassFilter(Math.round(baseDelay * rateScale)));
     }
+    this.port.onmessage = (event: MessageEvent<unknown>) => {
+      const message = event.data;
+      if (
+        !message ||
+        typeof message !== 'object' ||
+        !('type' in message) ||
+        message.type !== 'reset' ||
+        !('generation' in message)
+      )
+        return;
+      for (const comb of this.combs) comb.reset();
+      for (const allpass of this.allpasses) allpass.reset();
+      this.port.postMessage({ type: 'reset', generation: message.generation });
+    };
   }
 
   process(

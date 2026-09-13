@@ -1,0 +1,226 @@
+{
+  "task_id": "20260913-audio-pressure-fixes",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260913-audio-pressure-fixes.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-13T10:16:07.479Z",
+  "finished_at_utc": "2026-09-13T10:19:55.663Z",
+  "head_sha": "1ae38c8",
+  "tree_sha": "a330cb3a6f7c88d40eee9f48204286d4ea97009f",
+  "subject_sha": "c1805d62ca03de367efdfb6229cc816efbcee4045a6cfa7b33a44a20a51a5c4d",
+  "subject_files": [
+    "e2e/aux-integrity.spec.ts",
+    "e2e/benchmark-pressure.spec.ts",
+    "src/engine/extensions/aux-lifecycle.ts",
+    "src/engine/extensions/delay.ts",
+    "src/engine/extensions/reverb.ts",
+    "src/engine/scheduler.ts",
+    "src/engine/worklets/delay-processor.ts",
+    "src/engine/worklets/freeverb-processor.ts",
+    "src/events.ts",
+    "src/transport/persistence.ts",
+    "tests/benchmark-clock.js",
+    "tests/benchmark-measurement.js",
+    "tests/benchmark.html",
+    "vite.config.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260913-audio-pressure-fixes.md",
+    "docs/qc/proofs/20260913-audio-pressure-fixes/aux-before-probe.mjs",
+    "docs/qc/proofs/20260913-audio-pressure-fixes/aux-before.json",
+    "docs/qc/proofs/20260913-audio-pressure-fixes/proof.manifest.json",
+    "docs/qc/proofs/20260913-audio-pressure-fixes/verdict.json",
+    "docs/qc/runs/20260913-101057Z-ad6cf2f-1789294018219-55280f1e.json",
+    "docs/qc/runs/20260913-101057Z-ad6cf2f-1789294018219-55280f1e.md",
+    "docs/qc/specs/20260913-audio-pressure-fixes.task.spec.json",
+    "e2e/aux-integrity.spec.ts",
+    "e2e/benchmark-pressure.spec.ts",
+    "src/engine/extensions/aux-lifecycle.ts",
+    "src/engine/extensions/delay.ts",
+    "src/engine/extensions/reverb.ts",
+    "src/engine/scheduler.ts",
+    "src/engine/worklets/delay-processor.ts",
+    "src/engine/worklets/freeverb-processor.ts",
+    "src/events.ts",
+    "src/transport/persistence.ts",
+    "tests/benchmark-clock.js",
+    "tests/benchmark-measurement.js",
+    "tests/benchmark.html",
+    "vite.config.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=7, oracles=8, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=7, oracles=8, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 6172,
+        "log_file": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 188585,
+        "log_file": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 265,
+        "log_file": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 414,
+        "log_file": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 467,
+        "log_file": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 342,
+        "log_file": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-COMMIT-RANGE.log"
+      },
+      {
+        "id": "O-AUDIO-GATES",
+        "label": "Audio browser gates",
+        "command": "npm run audio:gates",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 16432,
+        "log_file": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-AUDIO-GATES.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-audio-pressure-fixes/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260913-audio-pressure-fixes/raw/off_transparent.json",
+        "raw_sha256": "c1f1811dd7d42969fcca7c240f1c1fc697a0e6868fe520d49ed717e8f8ff66a4"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-audio-pressure-fixes/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260913-audio-pressure-fixes/raw/on_audible.json",
+        "raw_sha256": "58965408e81f802dfe55b062231a92798e1006298c557ac92707580f9c26da72"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-audio-pressure-fixes/oracles/low_end_continuity.json",
+        "raw_artifact": "docs/qc/proofs/20260913-audio-pressure-fixes/raw/low_end_continuity.json",
+        "raw_sha256": "e93d0f8b972927957438e4e2f2e1c918d5583d38fcd5baa22a24f24fa445003d"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-audio-pressure-fixes/oracles/clip_guard.json",
+        "raw_artifact": "docs/qc/proofs/20260913-audio-pressure-fixes/raw/clip_guard.json",
+        "raw_sha256": "97cfdedd80336a64b50529ec51c9517cafc9555da8424653b934406840c4466f"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-audio-pressure-fixes/oracles/default_safety.json",
+        "raw_artifact": "docs/qc/proofs/20260913-audio-pressure-fixes/raw/default_safety.json",
+        "raw_sha256": "98111a3b1d9beb525568fe68cdc83f3befb7c2258eae81441b7cbb85c9856ea9"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-audio-pressure-fixes/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260913-audio-pressure-fixes/raw/control_binding.json",
+        "raw_sha256": "97b279f72b940b7a66e187d5e7834d06e991a133b3185a58556b5573ad07cb10"
+      },
+      {
+        "oracle_id": "persistence_roundtrip",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-audio-pressure-fixes/oracles/persistence_roundtrip.json",
+        "raw_artifact": "docs/qc/proofs/20260913-audio-pressure-fixes/raw/persistence_roundtrip.json",
+        "raw_sha256": "9f27ad9a8ded97fe2629013a5c5e4553acd9cf03d8eef09cccb9775dc3515ffb"
+      },
+      {
+        "oracle_id": "benchmark_worklet_budget",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-audio-pressure-fixes/oracles/benchmark_worklet_budget.json",
+        "raw_artifact": "docs/qc/proofs/20260913-audio-pressure-fixes/raw/benchmark_worklet_budget.json",
+        "raw_sha256": "b601121b7abfdf5bc8be991eb8fba9bb6a7b69573c000800adf52de1ad958d27"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

@@ -1,3 +1,4 @@
+import { createAuxLifecycle, type AuxLifecycle } from './aux-lifecycle';
 /**
  * Plate Reverb — Freeverb-based reverb with per-channel aux sends.
  *
@@ -60,10 +61,11 @@ export function createReverb(): Extension {
 
   let nodes: ReverbNodes | null = null;
   let enabled = false;
+  let lifecycle: AuxLifecycle | null = null;
   let sendGains: GainNode[] = [];
 
   function applyState(): void {
-    if (!nodes) return;
+    if (!nodes || !enabled || (lifecycle && !lifecycle.ready)) return;
     // Map decay (0-1) to roomSize for freeverb
     setWorkletParam(nodes.freeverb, 'roomSize', state.decay);
     setWorkletParam(nodes.freeverb, 'damping', state.damping);
@@ -115,17 +117,20 @@ export function createReverb(): Extension {
       // Wet return goes to mixBus (not masterGain — no feedback loop)
       wetGain.connect(host.mixBus);
 
-      host.onStop(() => {
-        if (!nodes) return;
-        const now = nodes.ctx.currentTime;
-        nodes.wetGain.gain.setValueAtTime(nodes.wetGain.gain.value, now);
-        nodes.wetGain.gain.linearRampToValueAtTime(0, now + 0.3);
-        setTimeout(() => {
-          if (!nodes) return;
-          nodes.wetGain.gain.cancelScheduledValues(0);
-          nodes.wetGain.gain.value = state.mix;
-        }, 500);
-      });
+      lifecycle = createAuxLifecycle(
+        ctx,
+        wetGain,
+        freeverb,
+        () => enabled,
+        applyState,
+        () => {
+          /* Reverb feedback lives inside the resettable processor. */
+        },
+        0.3,
+      );
+      lifecycle.update();
+      for (const send of sendGains) send.gain.value = 0;
+      host.onStop(lifecycle.stop);
 
       // Reverb is an aux-send effect — it taps from channelPans, not the serial chain.
       // Returning null tells the registry to skip this extension in the insert chain.
@@ -254,21 +259,19 @@ export function createReverb(): Extension {
 
     setState(s: ExtensionState): void {
       state = { ...state, ...(s as Partial<ReverbState>) };
-      applyState();
+      if (enabled) lifecycle?.update();
     },
 
     setEnabled(on: boolean): void {
       enabled = on;
       if (!nodes) return;
-      if (on) {
-        applyState();
-      } else {
-        nodes.wetGain.gain.value = 0;
-        for (const sg of sendGains) sg.gain.value = 0;
-      }
+      lifecycle?.update();
+      if (!on) for (const send of sendGains) send.gain.value = 0;
     },
 
     destroy(): void {
+      lifecycle?.dispose();
+      lifecycle = null;
       sendGains.forEach((sg) => {
         try {
           sg.disconnect();

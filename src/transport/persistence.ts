@@ -219,6 +219,7 @@ async function applySong(song: SongData, generation: number, persisted: boolean)
   const buffers = await Promise.all(
     [...song.drumSampleData, ...song.melSampleData, song.vocalSampleData].map(decode),
   );
+  await saveQueue;
   if (generation !== loadGeneration) return false;
   if (saveTimer) clearTimeout(saveTimer);
   stateGeneration++;
@@ -345,6 +346,9 @@ export async function saveSongCopy(): Promise<void> {
 export async function reloadSavedSong(): Promise<void> {
   const generation = ++loadGeneration;
   if (!currentSongId) return;
+  if (saveTimer) clearTimeout(saveTimer);
+  await saveQueue;
+  if (generation !== loadGeneration) return;
   const saved = await dbGet<SongData>('songs', currentSongId);
   if (!saved)
     throw new Error(

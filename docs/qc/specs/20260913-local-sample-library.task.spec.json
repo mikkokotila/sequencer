@@ -1,0 +1,56 @@
+{
+  "task_id": "20260913-local-sample-library",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Use gitignored package-root samples/drums and samples/synths as the canonical library location. Rebase all 1989 manifest entries to the copied library, including 159 nested synth presets, and retain clean UI names. Explicit user instruction authorizes this product configuration fix despite default GA scope.",
+    "in_scope": [
+      ".gitignore",
+      "README.md",
+      "server/sample-library.mjs",
+      "samples.json",
+      "src/ui/browser.ts",
+      "e2e/sample-library.spec.ts",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "samples/**",
+      "src/engine/**",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**",
+      "package.json",
+      "package-lock.json"
+    ],
+    "controls": [
+      {
+        "id": "local_samples",
+        "description": "Both development and preview load WAVs from the canonical root samples folders, with nested synth names readable in the GUI.",
+        "test": "Temporary real file fixtures exercise dev/preview middleware; Chrome exercises the nested manifest path and basename label."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "Temporary package-root drums and nested synth WAVs",
+      "Real locally copied library checked for 1989 readable WAV headers",
+      "Chrome GUI loading and persistence"
+    ],
+    "seed": "20260913-local-sample-library",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "control_binding",
+      "benchmark_worklet_budget"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "task_id": "20260913-sample-manifest-binding",
+  "task_type": "governance-change",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Repair observed GOV-BIND-001 on samples.json by binding the tracked sample catalog to product obligations. Preserve all existing gates and oracle requirements. This governance unblock and the package-local library fix are separate attested commits in one PR.",
+    "in_scope": [
+      "docs/qc/compiler/obligation-rules.json",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "e2e/**",
+      "server/**",
+      "vite.config.ts",
+      "playwright.config.ts",
+      "package.json",
+      "package-lock.json",
+      "samples.json"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "Observed local-sample-library compiler verdict: GOV-BIND-001 for samples.json; 122 E2E tests and all four runtime oracles passed."
+    ],
+    "seed": "20260913-sample-manifest-binding",
+    "oracles": [
+      "off_transparent",
+      "on_audible"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

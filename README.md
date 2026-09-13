@@ -11,9 +11,17 @@ npm run dev
 
 Opens at [http://localhost:5173](http://localhost:5173). Vite provides hot module replacement — changes take effect immediately without restart.
 
-Sample libraries must be readable folders (or root symlinks) named `DRUMS` and `SYNTHS`, with paths matching `samples.json`. To keep them outside the checkout, set `SEQUENCER_SAMPLE_ROOT` to their parent directory before starting Vite. This also works with `npm run preview`. Static production hosting must serve these two library paths separately; the manifest and compiled worklets are included in the build. Audio files are not bundled.
+Keep local sample files in the package root under these lowercase folders:
 
-If macOS denies access to a library folder, allow the terminal/application access in System Settings or move the library to an accessible location. The sample browser reports the denial and remains available for retry; unreadable files cannot terminate the server. Individual samples can also be loaded from files.
+```text
+samples/
+  drums/     # drum library, including its category subfolders
+  synths/    # synth library, including its instrument/preset subfolders
+```
+
+The entire `samples/` directory is ignored by Git. `samples.json` is the tracked browser index; its paths match the supplied Essential WAV From Mars library, preserving the original folders inside `drums/` and `synths/`. Synth entries point to the original C1 WAVs inside each preset folder. When changing the library contents, update the matching index paths.
+
+Both `npm run dev` and `npm run preview` serve `/samples/drums/...` and `/samples/synths/...` from this directory. The package no longer uses the old `DRUMS`/`SYNTHS` links or `SEQUENCER_SAMPLE_ROOT`. Static production hosting must serve the same `/samples/` paths separately; audio files are not bundled. Sample loading failures remain visible in the browser and permit retry.
 
 Playback uses a 350 ms scheduling queue. Edits affect the next unqueued step; already queued notes keep their timing. The playhead follows estimated device output. After a blocked browser frame it jumps directly to the current audible step. Stalls longer than the queue can interrupt playback; missed scheduling deadlines are reanchored without an overdue burst.
 
@@ -102,8 +110,8 @@ docs/contracts/                Design contracts
 tests/                         Audio quality test suites
 e2e/                           Playwright E2E tests
 
-DRUMS/                         Drum sample library
-SYNTHS/                        Synth sample library
+samples/drums/                 Local drum sample library (gitignored)
+samples/synths/                Local synth sample library (gitignored)
 samples.json                   Sample browser manifest
 ```
 

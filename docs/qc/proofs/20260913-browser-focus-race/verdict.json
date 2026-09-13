@@ -1,0 +1,152 @@
+{
+  "task_id": "20260913-browser-focus-race",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260913-browser-focus-race.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-13T11:46:09.673Z",
+  "finished_at_utc": "2026-09-13T11:49:16.634Z",
+  "head_sha": "67329fb",
+  "tree_sha": "c5d1327d2d5b9fbd8a73b99ad0f38b2b4f729148",
+  "subject_sha": "164c7184906fb5e5b46fdb687698654b360f28914165f56f5c63050b6ab6d402",
+  "subject_files": [
+    "e2e/package-integrity.spec.ts",
+    "src/ui/browser.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260913-browser-focus-race.md",
+    "docs/qc/proofs/20260913-browser-focus-race/proof.manifest.json",
+    "docs/qc/specs/20260913-browser-focus-race.task.spec.json",
+    "e2e/package-integrity.spec.ts",
+    "src/ui/browser.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=3, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=3, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4998,
+        "log_file": "docs/qc/proofs/20260913-browser-focus-race/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 178082,
+        "log_file": "docs/qc/proofs/20260913-browser-focus-race/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 308,
+        "log_file": "docs/qc/proofs/20260913-browser-focus-race/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 442,
+        "log_file": "docs/qc/proofs/20260913-browser-focus-race/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 443,
+        "log_file": "docs/qc/proofs/20260913-browser-focus-race/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 416,
+        "log_file": "docs/qc/proofs/20260913-browser-focus-race/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-browser-focus-race/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260913-browser-focus-race/raw/off_transparent.json",
+        "raw_sha256": "a4407c55df19ec0c424b5c8087ba10e1835c3413efd006e6aeec9981e499a0c0"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-browser-focus-race/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260913-browser-focus-race/raw/on_audible.json",
+        "raw_sha256": "68d02768fd901d7995e26fde6883667891eae0241a302ca89b3ad7b7f89fb2c7"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-browser-focus-race/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260913-browser-focus-race/raw/control_binding.json",
+        "raw_sha256": "c2b80a637f77fd94584c33fe3e89b4876f2815e6794a2e673a432831327a309c"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

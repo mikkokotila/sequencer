@@ -1,0 +1,46 @@
+{
+  "task_id": "20260913-canonical-oracle-snapshot",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-GATE-GOVERNANCE-SELF",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-canonical-oracle-snapshot/logs/O-GATE-GOVERNANCE-SELF.log"
+    },
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-canonical-oracle-snapshot/logs/O-CI.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-canonical-oracle-snapshot/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/commit.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/quality-gates.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "NOT_PERFORMED",
+    "details": "No real-browser verification performed for this path canonicalization alone; the dependent audio product compiler run verifies the real benchmark through this corrected snapshot."
+  },
+  "artifacts": [
+    "verdict.json",
+    "normal-probe.json",
+    "overload-probe.json",
+    "audit-before.json",
+    "audit-after.json"
+  ]
+}

@@ -815,7 +815,8 @@ async function createIndexSnapshot(treeSha) {
   // Source remains frozen to the index; resolve installed, lockfile-managed tooling
   // when Vite loads the snapshot's config and actual product modules.
   await fs.symlink(path.join(root, 'node_modules'), path.join(snapshotRoot, 'node_modules'), 'dir');
-  return snapshotRoot;
+  // Vite keys HTML proxy modules by canonical path; macOS /var aliases /private/var.
+  return await fs.realpath(snapshotRoot);
 }
 
 function stableValue(value) {

@@ -1,0 +1,43 @@
+{
+  "run_id": "1789294335866-157ac09a",
+  "task_id": "20260913-canonical-oracle-snapshot",
+  "task_type": "governance-change",
+  "spec_path": "docs/qc/specs/20260913-canonical-oracle-snapshot.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-09-13T10:12:15.865Z",
+  "finished_at_utc": "2026-09-13T10:12:24.407Z",
+  "head_sha": "ad6cf2f",
+  "tree_sha": "2c0bd8488c49bd4bf08b867cfaffd98755aa72e4",
+  "subject_sha": "3f37c03e5060bd89e4d752fdf191524a551e7e065cd95ced415043d7109f01eb",
+  "verdict": "PASS",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-GATE-GOVERNANCE-SELF",
+      "label": "Governance self-tests",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-canonical-oracle-snapshot/logs/O-GATE-GOVERNANCE-SELF.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-canonical-oracle-snapshot/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-canonical-oracle-snapshot/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": []
+}

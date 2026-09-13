@@ -1,0 +1,34 @@
+{
+  "run_id": "1789288659114-fda8d488",
+  "task_id": "20260913-package-pressure",
+  "task_type": "qc",
+  "spec_path": "docs/qc/specs/20260913-package-pressure.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-09-13T08:37:39.113Z",
+  "finished_at_utc": "2026-09-13T08:37:45.005Z",
+  "head_sha": "cd2564c",
+  "tree_sha": "e195fdfcdee9490f735c4db18b25f9dd5c8c20fb",
+  "subject_sha": "0000000000000000000000000000000000000000000000000000000000000000",
+  "verdict": "PASS",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-pressure/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-pressure/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": []
+}

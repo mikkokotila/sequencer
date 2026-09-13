@@ -1,0 +1,12 @@
+{
+  "testedCommit": "cd2564ccb172832a47b0c180ced32fbf3927256d",
+  "node": "23.10.0",
+  "platform": "macOS arm64",
+  "chromium": "145.0.7632.6",
+  "firefox": "146.0.1",
+  "webkit": "26.0",
+  "runtimeSampleRate": 44100,
+  "benchmarkSampleRate": 48000,
+  "userDataPolicy": "private browser contexts; existing worktrees and sample links preserved",
+  "qcRun": "docs/qc/runs/20260913-083738Z-cd2564c.md"
+}

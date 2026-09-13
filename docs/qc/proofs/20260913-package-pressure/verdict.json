@@ -1,0 +1,128 @@
+{
+  "task_id": "20260913-package-pressure",
+  "task_type": "qc",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260913-package-pressure.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-13T08:38:16.381Z",
+  "finished_at_utc": "2026-09-13T08:38:21.752Z",
+  "head_sha": "cd2564c",
+  "tree_sha": "dd6eb4d9a6279fb589d4d9edf3357305c4e3ec6d",
+  "subject_sha": "0000000000000000000000000000000000000000000000000000000000000000",
+  "subject_files": [],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260913-package-pressure.md",
+    "docs/qc/proofs/20260913-package-pressure/FINDINGS.md",
+    "docs/qc/proofs/20260913-package-pressure/REPRODUCE.md",
+    "docs/qc/proofs/20260913-package-pressure/audio.txt",
+    "docs/qc/proofs/20260913-package-pressure/benchmark-audit-results.json",
+    "docs/qc/proofs/20260913-package-pressure/benchmark-audit.mjs",
+    "docs/qc/proofs/20260913-package-pressure/benchmark-audit.txt",
+    "docs/qc/proofs/20260913-package-pressure/check-export.py",
+    "docs/qc/proofs/20260913-package-pressure/chromium-1440.png",
+    "docs/qc/proofs/20260913-package-pressure/chromium-390.png",
+    "docs/qc/proofs/20260913-package-pressure/chromium-768.png",
+    "docs/qc/proofs/20260913-package-pressure/compatibility-first-results.json",
+    "docs/qc/proofs/20260913-package-pressure/compatibility-recheck-results.json",
+    "docs/qc/proofs/20260913-package-pressure/compatibility-recheck.txt",
+    "docs/qc/proofs/20260913-package-pressure/compatibility-results.json",
+    "docs/qc/proofs/20260913-package-pressure/compatibility.mjs",
+    "docs/qc/proofs/20260913-package-pressure/compatibility.txt",
+    "docs/qc/proofs/20260913-package-pressure/dependency-audit.json",
+    "docs/qc/proofs/20260913-package-pressure/environment.json",
+    "docs/qc/proofs/20260913-package-pressure/export-independent-check.json",
+    "docs/qc/proofs/20260913-package-pressure/export-pressure.mjs",
+    "docs/qc/proofs/20260913-package-pressure/export-results.json",
+    "docs/qc/proofs/20260913-package-pressure/export.txt",
+    "docs/qc/proofs/20260913-package-pressure/firefox-1440.png",
+    "docs/qc/proofs/20260913-package-pressure/firefox-390.png",
+    "docs/qc/proofs/20260913-package-pressure/firefox-768.png",
+    "docs/qc/proofs/20260913-package-pressure/firefox-diagnosis-results.json",
+    "docs/qc/proofs/20260913-package-pressure/firefox-diagnosis.mjs",
+    "docs/qc/proofs/20260913-package-pressure/firefox-diagnosis.txt",
+    "docs/qc/proofs/20260913-package-pressure/first-pass-results.json",
+    "docs/qc/proofs/20260913-package-pressure/first-pass.txt",
+    "docs/qc/proofs/20260913-package-pressure/global-debt.txt",
+    "docs/qc/proofs/20260913-package-pressure/history.txt",
+    "docs/qc/proofs/20260913-package-pressure/logs/O-CI.log",
+    "docs/qc/proofs/20260913-package-pressure/logs/O-COMMIT-RANGE.log",
+    "docs/qc/proofs/20260913-package-pressure/pressure-results.json",
+    "docs/qc/proofs/20260913-package-pressure/pressure.mjs",
+    "docs/qc/proofs/20260913-package-pressure/pressure.txt",
+    "docs/qc/proofs/20260913-package-pressure/production-dependency-audit.json",
+    "docs/qc/proofs/20260913-package-pressure/proof.manifest.json",
+    "docs/qc/proofs/20260913-package-pressure/soak-results.json",
+    "docs/qc/proofs/20260913-package-pressure/soak.mjs",
+    "docs/qc/proofs/20260913-package-pressure/soak.txt",
+    "docs/qc/proofs/20260913-package-pressure/ui-resource-pressure.mjs",
+    "docs/qc/proofs/20260913-package-pressure/ui-resource-results.json",
+    "docs/qc/proofs/20260913-package-pressure/ui-resource.txt",
+    "docs/qc/proofs/20260913-package-pressure/verify.txt",
+    "docs/qc/proofs/20260913-package-pressure/webkit-1440.png",
+    "docs/qc/proofs/20260913-package-pressure/webkit-390.png",
+    "docs/qc/proofs/20260913-package-pressure/webkit-768.png",
+    "docs/qc/runs/20260913-083738Z-cd2564c.md",
+    "docs/qc/runs/20260913-083745Z-cd2564c-1789288659114-fda8d488.json",
+    "docs/qc/runs/20260913-083745Z-cd2564c-1789288659114-fda8d488.md",
+    "docs/qc/specs/20260913-package-pressure.task.spec.json"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=2, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=2, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4748,
+        "log_file": "docs/qc/proofs/20260913-package-pressure/logs/O-CI.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 478,
+        "log_file": "docs/qc/proofs/20260913-package-pressure/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": null,
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

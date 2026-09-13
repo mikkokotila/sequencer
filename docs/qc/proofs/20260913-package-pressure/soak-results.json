@@ -1,0 +1,66 @@
+{
+  "starts": 16704,
+  "lateStarts": 0,
+  "onsetsPerTrack": [
+    1752,
+    1752,
+    1752,
+    1752,
+    1752,
+    1752,
+    1752,
+    1752,
+    1752
+  ],
+  "maxSkewSamples": 0,
+  "active": 0,
+  "maxActive": 54,
+  "changes": 600,
+  "stalls": 9,
+  "clockChecks": [
+    {
+      "batch": 0,
+      "time": 30.702585034013605,
+      "playing": true,
+      "active": 27
+    },
+    {
+      "batch": 1,
+      "time": 60.85950113378685,
+      "playing": true,
+      "active": 36
+    },
+    {
+      "batch": 2,
+      "time": 91.98004535147392,
+      "playing": true,
+      "active": 27
+    },
+    {
+      "batch": 3,
+      "time": 124.65632653061225,
+      "playing": true,
+      "active": 36
+    },
+    {
+      "batch": 4,
+      "time": 155.6085260770975,
+      "playing": true,
+      "active": 27
+    },
+    {
+      "batch": 5,
+      "time": 186.5491156462585,
+      "playing": true,
+      "active": 36
+    }
+  ],
+  "processorErrors": 0,
+  "lit": 0,
+  "marked": 0,
+  "sampleRate": 44100,
+  "errors": [],
+  "metricsBefore": [],
+  "metricsAfter": [],
+  "status": "PASS"
+}

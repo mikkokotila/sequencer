@@ -1,0 +1,378 @@
+{
+  "testedCommit": "cd2564ccb172832a47b0c180ced32fbf3927256d",
+  "seed": 20260913,
+  "results": [
+    {
+      "id": "seeded-5000-edit-copy-fill-persistence",
+      "status": "PASS",
+      "measurements": {
+        "operations": 5000,
+        "stateMatches": true,
+        "savedMatches": true,
+        "reloadMatches": true
+      },
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "pageErrors": [],
+      "durationMs": 1274
+    },
+    {
+      "id": "loaded-audio-survives-indexeddb-reload",
+      "status": "PASS",
+      "measurements": {
+        "before": {
+          "bytes": 132344,
+          "length": 44100
+        },
+        "after": {
+          "bytes": 132344,
+          "length": 44100
+        }
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "durationMs": 941
+    },
+    {
+      "id": "adsr-and-master-save-reload",
+      "status": "FAIL",
+      "measurements": {
+        "before": {
+          "adsr": {
+            "attack": 0.42,
+            "decay": 0.7,
+            "sustain": 0.25,
+            "release": 1.3
+          },
+          "enabled": true,
+          "master": 0.23000000417232513
+        },
+        "after": {
+          "adsr": {
+            "attack": 0.005,
+            "decay": 0.1,
+            "sustain": 1,
+            "release": 0.1
+          },
+          "enabled": false,
+          "master": 0.800000011920929
+        }
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failure": "ADSR/master settings silently lost after save/reload",
+      "durationMs": 903
+    },
+    {
+      "id": "pattern-file-export-import-with-sample",
+      "status": "FAIL",
+      "measurements": {
+        "exportBytes": 199923,
+        "sampleData": {},
+        "after": {
+          "sampleLoaded": false,
+          "sampleDataType": "[object Object]"
+        }
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failure": "An exported pattern with a loaded sample cannot reload its audio",
+      "durationMs": 1015
+    },
+    {
+      "id": "valid-pattern-file-roundtrip",
+      "status": "PASS",
+      "measurements": {
+        "bytes": 199888,
+        "patternsRestored": true
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "durationMs": 607
+    },
+    {
+      "id": "six-extension-settings-save-reload",
+      "status": "PASS",
+      "measurements": {
+        "count": 6,
+        "unchanged": true
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "durationMs": 904
+    },
+    {
+      "id": "import-rejects-syntax-without-state-loss",
+      "status": "FAIL",
+      "measurements": {
+        "patternsPreserved": true,
+        "bpm": 120,
+        "phrase": 0,
+        "name": "Untitled",
+        "errorVisible": false,
+        "title": "Import Pattern"
+      },
+      "consoleErrors": [
+        "Load failed: SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n    at JSON.parse (<anonymous>)\n    at input.onchange (http://127.0.0.1:5173/src/transport/persistence.ts:367:25)"
+      ],
+      "pageErrors": [],
+      "failure": "Invalid import must preserve the song and report a visible error",
+      "durationMs": 765
+    },
+    {
+      "id": "import-rejects-negative-bpm-without-state-loss",
+      "status": "FAIL",
+      "measurements": {
+        "patternsPreserved": false,
+        "bpm": -10,
+        "phrase": 0,
+        "name": "Invalid",
+        "errorVisible": false,
+        "title": "Import Pattern"
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failure": "Invalid import must preserve the song and report a visible error",
+      "durationMs": 749
+    },
+    {
+      "id": "import-rejects-invalid-phrase-without-state-loss",
+      "status": "FAIL",
+      "measurements": {
+        "patternsPreserved": false,
+        "bpm": 120,
+        "phrase": 99,
+        "name": "Invalid",
+        "errorVisible": false,
+        "title": "Import Pattern"
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failure": "Invalid import must preserve the song and report a visible error",
+      "durationMs": 754
+    },
+    {
+      "id": "import-rejects-object-name-without-state-loss",
+      "status": "FAIL",
+      "measurements": {
+        "patternsPreserved": false,
+        "bpm": 120,
+        "phrase": 0,
+        "name": {
+          "x": 1
+        },
+        "errorVisible": false,
+        "title": "Import Pattern"
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failure": "Invalid import must preserve the song and report a visible error",
+      "durationMs": 766
+    },
+    {
+      "id": "delete-only-song-does-not-resurrect-it",
+      "status": "FAIL",
+      "measurements": {
+        "deletedId": "mtzk06wye3sgy",
+        "currentId": "mtzk06zk9gs6r",
+        "storedIds": [
+          "mtzk06wye3sgy",
+          "mtzk06zk9gs6r"
+        ]
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failure": "Deleting the last song saves it back before creating its replacement",
+      "durationMs": 551
+    },
+    {
+      "id": "latest-song-load-wins-under-slow-decode",
+      "status": "FAIL",
+      "measurements": {
+        "id": "slow-A",
+        "name": "Slow older song",
+        "bpm": 189,
+        "sampleLoaded": true
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failure": "Older async load overwrote the newer song with mixed state",
+      "durationMs": 482
+    },
+    {
+      "id": "aborted-storage-transaction-must-reject",
+      "status": "FAIL",
+      "measurements": {
+        "resolved": true,
+        "error": null,
+        "stored": false
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failure": "Storage API reports success even though transaction aborts and data was not saved",
+      "durationMs": 484
+    },
+    {
+      "id": "two-tabs-detect-or-preserve-conflicting-edits",
+      "status": "FAIL",
+      "measurements": {
+        "name": "Untitled",
+        "bpm": 175
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failure": "Stale tab silently overwrites another tab’s saved changes",
+      "durationMs": 910
+    },
+    {
+      "id": "new-song-resets-engine-controls",
+      "status": "FAIL",
+      "measurements": {
+        "sliderCount": 4,
+        "lowpassFrequencies": [
+          200
+        ]
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failure": "New Song retains engine filtering from the previous song",
+      "durationMs": 445
+    },
+    {
+      "id": "midi-repeated-note-off-stops-all-voices",
+      "status": "FAIL",
+      "measurements": {
+        "contextState": "running",
+        "clockAdvance": 0.3134693877551021,
+        "started": 2,
+        "afterNoteOff": 1,
+        "afterDisconnect": 1
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failure": "Repeated MIDI pitch leaves an untracked voice playing after note-off/disconnect",
+      "durationMs": 1920
+    },
+    {
+      "id": "midi-mono-retrigger-ended-race",
+      "status": "FAIL",
+      "measurements": {
+        "contextState": "running",
+        "clockAdvance": 0.26122448979591834,
+        "started": 2,
+        "active": 1
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failure": "Old ended callback deletes the replacement MIDI voice, so note-off misses it",
+      "durationMs": 1882
+    },
+    {
+      "id": "midi-polyphony-stealing-and-device-disconnect",
+      "status": "PASS",
+      "measurements": {
+        "contextState": "running",
+        "clockAdvance": 0.20317460317460317,
+        "started": 16,
+        "playing": 8,
+        "afterDisconnect": 0,
+        "binding": null
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "durationMs": 1792
+    },
+    {
+      "id": "offline-render-duration-onsets-pan-mute-and-pcm",
+      "status": "PASS",
+      "measurements": {
+        "frames": 236537,
+        "expectedFrames": 236537,
+        "onsets": [
+          0,
+          21048,
+          48110,
+          93212,
+          141321,
+          189430
+        ],
+        "expected": [
+          0,
+          21048,
+          48109,
+          93211,
+          141320,
+          189430
+        ],
+        "peak": 0.04000000283122063,
+        "rightPeak": 0,
+        "mutedPeak": 0,
+        "finite": true,
+        "pcm": [
+          -8388608,
+          4194304,
+          -8388608,
+          -4194304,
+          0,
+          2097152,
+          8388607,
+          -2097152,
+          8388607,
+          0
+        ]
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "durationMs": 496
+    },
+    {
+      "id": "keyboard-space-is-inert-inside-modals",
+      "status": "FAIL",
+      "measurements": {
+        "playing": true,
+        "browserOpen": "browser-overlay open"
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failure": "Space on a modal button unexpectedly starts global playback",
+      "durationMs": 607
+    },
+    {
+      "id": "startup-recovery-indexeddb-denied",
+      "status": "FAIL",
+      "measurements": {
+        "readyWait": "page.waitForSelector: Timeout 12000ms exceeded.",
+        "state": {
+          "playDisabled": true,
+          "visibleError": false,
+          "text": "Untitled\nBPM\nKick\nLOAD\nFILL\nCLR\nM\nADSR\nSnare\nLOAD\nFILL\nCLR\nM\nADSR\nClosed Hat\nLOAD\nFILL\nCLR\nM\nADSR\nOpen Hat\nLOAD\nFILL\nCLR\nM\nADSR\nCrash\nLOAD\nFILL\nCLR\nM\n"
+        }
+      },
+      "consoleErrors": [],
+      "pageErrors": [
+        "QC storage denied"
+      ],
+      "failure": "Initialization failure strands the package without visible recovery feedback",
+      "durationMs": 12348
+    },
+    {
+      "id": "startup-recovery-worklet-network-failure",
+      "status": "FAIL",
+      "measurements": {
+        "readyWait": "page.waitForSelector: Timeout 12000ms exceeded.",
+        "state": {
+          "playDisabled": true,
+          "visibleError": false,
+          "text": "Untitled\nBPM\nKick\nLOAD\nFILL\nCLR\nM\nADSR\nSnare\nLOAD\nFILL\nCLR\nM\nADSR\nClosed Hat\nLOAD\nFILL\nCLR\nM\nADSR\nOpen Hat\nLOAD\nFILL\nCLR\nM\nADSR\nCrash\nLOAD\nFILL\nCLR\nM\n"
+        }
+      },
+      "consoleErrors": [],
+      "pageErrors": [
+        "QC worklet download failed"
+      ],
+      "failure": "Initialization failure strands the package without visible recovery feedback",
+      "durationMs": 12394
+    }
+  ]
+}

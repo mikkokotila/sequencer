@@ -1,0 +1,2 @@
+{"gate":"PASS — p99 2.667ms, budget 5.33ms, 1566 worklet process() samples, p50 2.667ms","p99":"2.667","budget":"5.33","messages":[{"qc":true,"hasPerf":false,"quantum":128,"sampleRate":48000}],"injectedSinIterationsPerQuantum":0,"wallMs":5721}
+{"gate":"PASS — p99 2.667ms, budget 5.33ms, 289 worklet process() samples, p50 2.667ms","p99":"2.667","budget":"5.33","messages":[{"qc":true,"hasPerf":false,"quantum":128,"sampleRate":48000}],"injectedSinIterationsPerQuantum":2000000,"wallMs":5447}

@@ -1,0 +1,45 @@
+{
+  "task_id": "20260913-package-pressure",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-pressure/logs/O-CI.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-pressure/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/commit.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/quality-gates.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "Real browser QC performed. Runtime FAIL and historical BLOCKED are independent of packaging attestation; raw case results, benchmark challenge and Firefox uncertainty retained."
+  },
+  "artifacts": [
+    "FINDINGS.md",
+    "pressure-results.json",
+    "soak-results.json",
+    "export-independent-check.json",
+    "benchmark-audit-results.json",
+    "ui-resource-results.json",
+    "compatibility-results.json",
+    "compatibility-recheck-results.json",
+    "firefox-diagnosis-results.json",
+    "verdict.json"
+  ]
+}

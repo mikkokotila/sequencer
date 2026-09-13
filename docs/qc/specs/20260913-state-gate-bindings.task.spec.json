@@ -1,0 +1,42 @@
+{
+  "task_id": "20260913-state-gate-bindings",
+  "task_type": "governance-change",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Unblock user-authorized fixes in PR #41 after contract gates failed on the atomic song loader and extracted engine controls. Follow local reset helper calls and inspect engine control mappings at their actual engine module, retaining prior-layout support. Preserve reset and numeric safety requirements. Product changes are a separate attested slice in the same user-requested PR.",
+    "in_scope": [
+      "docs/qc/scripts/contract-gates.mjs",
+      "docs/qc/scripts/oracle-harness.mjs",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "e2e/**",
+      "server/**",
+      "vite.config.ts",
+      "playwright.config.ts",
+      "package.json",
+      "package-lock.json"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "Observed deterministic-reset and control-curve gate failures on the runtime refactor"
+    ],
+    "seed": "20260913-state-gate-bindings",
+    "oracles": [
+      "off_transparent",
+      "on_audible"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

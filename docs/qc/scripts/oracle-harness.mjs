@@ -539,7 +539,9 @@ async function generatePersistenceRoundtrip(repoRoot) {
   const hasResetFn = !!resetFn && !!resetFn.body;
   const resetCallsState = hasResetFn ? hasCallNamed(tsRef, resetFn.body, 'setState') : false;
   const resetDisables = hasResetFn ? hasSetEnabledFalse(tsRef, resetFn.body) : false;
-  const newSongCallsReset = !!newSongFn?.body && hasCallNamed(tsRef, newSongFn.body, 'resetAllExtensions');
+  const applySongFn = getFunctionDeclaration(tsRef, persistenceAst, 'applySong');
+  const newSongCallsReset = !!newSongFn?.body && (hasCallNamed(tsRef, newSongFn.body, 'resetAllExtensions') ||
+    (hasCallNamed(tsRef, newSongFn.body, 'applySong') && !!applySongFn?.body && hasCallNamed(tsRef, applySongFn.body, 'resetAllExtensions')));
   const newSongCallsSave = !!newSongFn?.body && hasCallNamed(tsRef, newSongFn.body, 'saveSong');
 
   const pass = hasResetFn && resetCallsState && resetDisables && newSongCallsReset && newSongCallsSave;

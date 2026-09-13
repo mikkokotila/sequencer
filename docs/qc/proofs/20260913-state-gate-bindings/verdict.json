@@ -1,0 +1,92 @@
+{
+  "task_id": "20260913-state-gate-bindings",
+  "task_type": "governance-change",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260913-state-gate-bindings.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-13T09:20:58.296Z",
+  "finished_at_utc": "2026-09-13T09:21:05.300Z",
+  "head_sha": "1f081f0",
+  "tree_sha": "d4ab53db148da9f356122da8cd77ab1c76f24522",
+  "subject_sha": "8eef52721e6298706a08ccf34b76000b971e6d2ce18e8df5fb403ac7acc105c9",
+  "subject_files": [
+    "docs/qc/scripts/contract-gates.mjs",
+    "docs/qc/scripts/oracle-harness.mjs"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260913-state-gate-bindings.md",
+    "docs/qc/proofs/20260913-state-gate-bindings/proof.manifest.json",
+    "docs/qc/scripts/contract-gates.mjs",
+    "docs/qc/scripts/oracle-harness.mjs",
+    "docs/qc/specs/20260913-state-gate-bindings.task.spec.json"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=3, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=3, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-GATE-GOVERNANCE-SELF",
+        "label": "Governance self-tests",
+        "command": "npm run gate:governance-self",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 2180,
+        "log_file": "docs/qc/proofs/20260913-state-gate-bindings/logs/O-GATE-GOVERNANCE-SELF.log"
+      },
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4389,
+        "log_file": "docs/qc/proofs/20260913-state-gate-bindings/logs/O-CI.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 280,
+        "log_file": "docs/qc/proofs/20260913-state-gate-bindings/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": null,
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

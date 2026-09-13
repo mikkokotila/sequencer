@@ -1,19 +1,15 @@
 command: npm run gate:commit-range
 status: 0
-elapsed_ms: 478
+elapsed_ms: 265
 
 --- stdout ---
 
 > sequencer@1.0.0 gate:commit-range
 > node docs/qc/scripts/commit-range-gates.mjs
 
-PASS | 4a52cd314477a3411f14f035835184ae38f2f97c | non-product commit; governance attestation trailers not required
-PASS | 4ffe45970933d57b29f18faebca5af9a019ac98f | non-product commit; governance attestation trailers not required
-PASS | b801e6a4e52a9bb51771ae89f98cdc4e69b04ac0 | governance trailers + PASS attestation verified (docs/qc/proofs/20260912-sync-runtime-fixes/verdict.json)
-PASS | 5bbfbbf3a2fb7a2c2e18b4cc6a76c731fe58ce68 | governance trailers + PASS attestation verified (docs/qc/proofs/20260912-sync-observer-window/verdict.json)
-PASS | cd2564ccb172832a47b0c180ced32fbf3927256d | non-product commit; governance attestation trailers not required
+PASS | 8cc418325a1ee5634fa1b9ad9178ef03af9a9318 | non-product commit; governance attestation trailers not required
 
-commit-range-gates: all 5 commit(s) passed in range HEAD~1..HEAD.
+commit-range-gates: all 1 commit(s) passed in range HEAD~1..HEAD.
 
 
 --- stderr ---

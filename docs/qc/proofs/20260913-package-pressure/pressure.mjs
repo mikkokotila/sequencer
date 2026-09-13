@@ -73,11 +73,11 @@ await run('seeded-5000-edit-copy-fill-persistence',async(c,r)=>{
   const p=await fresh(c);
   r.measurements=await p.evaluate(async()=>{
     await q.persistence.newSong();
-    let seed=20260913; const rnd=n=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed%n;};
-    const expected=structuredClone(q.patterns.phrases);
+    let seed=20260913; const rnd=n=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return (seed>>>8)%n;};
+    const expected=structuredClone(q.patterns.phrases);const operationCounts=Array(6).fill(0);
     for(let i=0;i<5000;i++){
       const pi=rnd(12),t=rnd(5),s=rnd(64),n=rnd(12),op=rnd(6),v=!!rnd(2);
-      q.patterns.switchToPhrase(pi);
+      operationCounts[op]++;q.patterns.switchToPhrase(pi);
       if(op===0){q.patterns.setDrumStep(t,s,v);expected[pi].drumPat[t][s]=v;}
       if(op===1){q.patterns.setMelodyCell(t%3,s,11-n,v);if(t%3===0&&v)expected[pi].melPat[0][s].fill(false);expected[pi].melPat[t%3][s][n]=v;}
       if(op===2){q.patterns.setVocalStep(s,v);expected[pi].vocalPat[s]=v;}
@@ -89,12 +89,12 @@ await run('seeded-5000-edit-copy-fill-persistence',async(c,r)=>{
     q.song.setBpm(177);q.song.setCurrentSongName('Seeded QC');await q.persistence.saveSong();
     const saved=await q.persistence.dbGet('songs',q.song.currentSongId);
     window.expected=JSON.stringify(expected);
-    return {operations:5000,stateMatches,savedMatches:JSON.stringify(saved.phrases)===window.expected};
+    return {operations:5000,operationCounts,stateMatches,savedMatches:JSON.stringify(saved.phrases)===window.expected};
   });
   const expected=await p.evaluate(()=>window.expected);
   await p.reload();await p.waitForSelector('html[data-ready="true"]');await modules(p);
   r.measurements.reloadMatches=await p.evaluate(e=>JSON.stringify(q.patterns.phrases)===e,expected);
-  assert(r.measurements.stateMatches&&r.measurements.savedMatches&&r.measurements.reloadMatches,'Edit/model/database/reload mismatch');
+  assert(r.measurements.operationCounts.every(n=>n>0)&&r.measurements.stateMatches&&r.measurements.savedMatches&&r.measurements.reloadMatches,'Edit/model/database/reload mismatch');
 });
 await run('loaded-audio-survives-indexeddb-reload',async(c,r)=>{
   const p=await fresh(c);

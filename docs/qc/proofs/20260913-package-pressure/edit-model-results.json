@@ -1,0 +1,29 @@
+{
+  "testedCommit": "cd2564ccb172832a47b0c180ced32fbf3927256d",
+  "seed": 20260913,
+  "results": [
+    {
+      "id": "seeded-5000-edit-copy-fill-persistence",
+      "status": "PASS",
+      "measurements": {
+        "operations": 5000,
+        "operationCounts": [
+          811,
+          795,
+          854,
+          846,
+          838,
+          856
+        ],
+        "stateMatches": true,
+        "savedMatches": true,
+        "reloadMatches": true
+      },
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "pageErrors": [],
+      "durationMs": 1497
+    }
+  ]
+}

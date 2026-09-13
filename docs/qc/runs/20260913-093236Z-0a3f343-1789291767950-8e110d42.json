@@ -1,0 +1,142 @@
+{
+  "run_id": "1789291767950-8e110d42",
+  "task_id": "20260913-package-runtime-fixes",
+  "task_type": "bugfix",
+  "spec_path": "docs/qc/specs/20260913-package-runtime-fixes.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-09-13T09:29:27.949Z",
+  "finished_at_utc": "2026-09-13T09:32:36.875Z",
+  "head_sha": "0a3f343",
+  "tree_sha": "7562a7e5093f26f02955f58f6cdbb54b7ec76cd2",
+  "subject_sha": "63ef6fa2abb43bf656b8bcd683c19220be929f54f8c768f03e8c008106147a04",
+  "verdict": "PASS",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-runtime-fixes/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E",
+      "label": "E2E",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-runtime-fixes/logs/O-E2E.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E-DELTA",
+      "label": "E2E delta coverage",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-runtime-fixes/logs/O-E2E-DELTA.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-CONTRACTS-FULL",
+      "label": "Contract static gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-runtime-fixes/logs/O-GATE-CONTRACTS-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-ARCH-FULL",
+      "label": "Architecture gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-runtime-fixes/logs/O-GATE-ARCH-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-runtime-fixes/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-AUDIO-GATES",
+      "label": "Audio browser gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-runtime-fixes/logs/O-AUDIO-GATES.log",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "off_transparent",
+      "label": "off_transparent",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-runtime-fixes/oracles/off_transparent.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "on_audible",
+      "label": "on_audible",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-runtime-fixes/oracles/on_audible.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "low_end_continuity",
+      "label": "low_end_continuity",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-runtime-fixes/oracles/low_end_continuity.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "clip_guard",
+      "label": "clip_guard",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-runtime-fixes/oracles/clip_guard.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "default_safety",
+      "label": "default_safety",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-runtime-fixes/oracles/default_safety.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "control_binding",
+      "label": "control_binding",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-runtime-fixes/oracles/control_binding.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "persistence_roundtrip",
+      "label": "persistence_roundtrip",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-package-runtime-fixes/oracles/persistence_roundtrip.json",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": []
+}

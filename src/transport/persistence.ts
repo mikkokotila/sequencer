@@ -3,15 +3,7 @@
  */
 
 import type { ExtensionState, Phrase, SampleData, SongData } from '../types';
-import {
-  DRUMS_CFG,
-  MEL_CFG,
-  STEPS,
-  NUM_PHRASES,
-  DEFAULT_DRUM_NAMES,
-  DEFAULT_MEL_NAMES,
-  DEFAULT_VOCAL_NAME,
-} from '../config';
+import { DRUMS_CFG, MEL_CFG, STEPS, NUM_PHRASES } from '../config';
 import {
   phrases,
   octaves,
@@ -24,7 +16,6 @@ import {
 } from './patterns';
 import {
   db,
-  setDb,
   bpm,
   setBpm,
   currentSongId,
@@ -60,84 +51,12 @@ function genId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
-// ═══════════════════════════════════════════
-//  IndexedDB primitives
-// ═══════════════════════════════════════════
-
-type StoreName = 'songs' | 'meta';
-
-export function openDB(): Promise<IDBDatabase> {
-  return new Promise<IDBDatabase>((resolve, reject) => {
-    const req = indexedDB.open('sequencer-db', 1);
-    req.onupgradeneeded = () => {
-      const d = req.result;
-      if (!d.objectStoreNames.contains('songs')) {
-        d.createObjectStore('songs', { keyPath: 'id' });
-      }
-      if (!d.objectStoreNames.contains('meta')) {
-        d.createObjectStore('meta');
-      }
-    };
-    req.onsuccess = () => {
-      setDb(req.result);
-      resolve(req.result);
-    };
-    req.onerror = () => reject(new Error(String(req.error)));
-  });
-}
-
-export function dbPut(store: StoreName, val: unknown, key?: IDBValidKey): Promise<IDBValidKey> {
-  return new Promise<IDBValidKey>((res, rej) => {
-    if (!db) {
-      rej(new Error('DB not open'));
-      return;
-    }
-    const tx = db.transaction(store, 'readwrite');
-    const s = tx.objectStore(store);
-    const r = key !== undefined ? s.put(val, key) : s.put(val);
-    r.onsuccess = () => res(r.result);
-    r.onerror = () => rej(new Error(String(r.error)));
-  });
-}
-
-export function dbGet<T = unknown>(store: StoreName, key: IDBValidKey): Promise<T | undefined> {
-  return new Promise<T | undefined>((res, rej) => {
-    if (!db) {
-      rej(new Error('DB not open'));
-      return;
-    }
-    const tx = db.transaction(store, 'readonly');
-    const r = tx.objectStore(store).get(key);
-    r.onsuccess = () => res(r.result as T | undefined);
-    r.onerror = () => rej(new Error(String(r.error)));
-  });
-}
-
-export function dbGetAll<T = unknown>(store: StoreName): Promise<T[]> {
-  return new Promise<T[]>((res, rej) => {
-    if (!db) {
-      rej(new Error('DB not open'));
-      return;
-    }
-    const tx = db.transaction(store, 'readonly');
-    const r = tx.objectStore(store).getAll();
-    r.onsuccess = () => res(r.result as T[]);
-    r.onerror = () => rej(new Error(String(r.error)));
-  });
-}
-
-export function dbDelete(store: StoreName, key: IDBValidKey): Promise<void> {
-  return new Promise<void>((res, rej) => {
-    if (!db) {
-      rej(new Error('DB not open'));
-      return;
-    }
-    const tx = db.transaction(store, 'readwrite');
-    const r = tx.objectStore(store).delete(key);
-    r.onsuccess = () => res();
-    r.onerror = () => rej(new Error(String(r.error)));
-  });
-}
+export { openDB, dbPut, dbGet, dbGetAll, dbDelete } from './database';
+import { dbPut, dbGet, dbGetAll, transactionResult } from './database';
+import { normalizeSong, encodeSongFile, MAX_SONG_FILE_BYTES } from './song-format';
+import { getMasterGain } from '../engine/audio';
+import { getTrackAdsr, isAdsrEnabled, setTrackAdsr, setAdsrEnabled } from '../engine/adsr';
+import { getEngineSettings, setEngineSettings } from '../engine/master-controls';
 
 // ═══════════════════════════════════════════
 //  Song serialization
@@ -166,11 +85,16 @@ export function collectSongData(name: string): SongData {
       ? { name: vocalSampleData.name, data: vocalSampleData.data }
       : null,
     extensions: SEQ_EXTENSIONS.reduce<Record<string, ExtensionState>>((o, ext) => {
-      const s = ext.getState();
+      const s = structuredClone(ext.getState());
       s._enabled = !!ext._enabled;
       o[ext.id] = s;
       return o;
     }, {}),
+    sound: {
+      masterGain: getMasterGain()?.gain.value ?? 0.8,
+      engine: getEngineSettings(),
+      adsr: mutedArr.map((_, i) => ({ ...getTrackAdsr(i), enabled: isAdsrEnabled(i) })),
+    },
     updatedAt: Date.now(),
   };
 }
@@ -179,245 +103,254 @@ export function collectSongData(name: string): SongData {
 //  Save / schedule
 // ═══════════════════════════════════════════
 
-export async function saveSong(): Promise<void> {
-  if (!db || !currentSongId) return;
+export class SaveConflictError extends Error {
+  constructor() {
+    super(
+      'This song was changed or deleted in another tab. Export your local copy, then reload the saved song.',
+    );
+    this.name = 'SaveConflictError';
+  }
+}
+
+export function reportPersistenceError(error: unknown): void {
+  emit('persistence:status', {
+    message:
+      error instanceof Error ? error.message : 'Song storage failed. Export a copy and retry.',
+    conflict: error instanceof SaveConflictError,
+  });
+}
+
+let loadGeneration = 0;
+let stateGeneration = 0;
+let saveQueue: Promise<void> = Promise.resolve();
+let baseline: SongData | null = null;
+const revisions = new Map<string, number>();
+
+function unchanged(a: SongData, b: SongData | null): boolean {
+  if (a.id !== b?.id) return false;
+  const samples = (s: SongData): (SampleData | null)[] => [
+    ...s.drumSampleData,
+    ...s.melSampleData,
+    s.vocalSampleData,
+  ];
+  const before = samples(b);
+  if (samples(a).some((s, i) => s?.data !== before[i]?.data || s?.name !== before[i]?.name))
+    return false;
+  const metadata = (s: SongData): string =>
+    JSON.stringify({
+      ...s,
+      updatedAt: undefined,
+      revision: undefined,
+      drumSampleData: undefined,
+      melSampleData: undefined,
+      vocalSampleData: undefined,
+    });
+  return metadata(a) === metadata(b);
+}
+
+async function writeSnapshot(data: SongData, generation: number): Promise<void> {
+  if (!db) throw new Error('Song storage is not open. Export a copy before closing this tab.');
+  if (unchanged(data, baseline)) return;
+  const expected = revisions.get(data.id);
+  const tx = db.transaction(['songs', 'meta'], 'readwrite');
+  const songs = tx.objectStore('songs');
+  const read = songs.get(data.id) as IDBRequest<SongData | undefined>;
+  const result = { conflict: false };
+  const committed = transactionResult(tx, () => undefined);
+  read.onsuccess = () => {
+    const saved = read.result;
+    if (
+      (saved && (expected === undefined || (saved.revision ?? 0) !== expected)) ||
+      (!saved && expected !== undefined)
+    ) {
+      result.conflict = true;
+      tx.abort();
+      return;
+    }
+    data.revision = (expected ?? 0) + 1;
+    songs.put(data);
+    if (data.id === currentSongId) tx.objectStore('meta').put(data.id, 'currentSongId');
+  };
+  try {
+    await committed;
+  } catch (error) {
+    throw result.conflict ? new SaveConflictError() : error;
+  }
+  // A load that completed while the transaction was pending owns its own revision.
+  if (generation === stateGeneration) {
+    revisions.set(data.id, data.revision!);
+    if (currentSongId === data.id) baseline = data;
+    emit('persistence:status', { message: '', conflict: false });
+  }
+}
+
+export function saveSong(): Promise<void> {
+  if (!currentSongId) return Promise.resolve();
   const data = collectSongData(currentSongName);
-  data.id = currentSongId;
-  await dbPut('songs', data);
-  await dbPut('meta', currentSongId, 'currentSongId');
+  const generation = stateGeneration;
+  const pending = saveQueue.then(() => writeSnapshot(data, generation));
+  saveQueue = pending.catch(() => undefined);
+  return pending;
 }
 
 export function scheduleSave(): void {
   if (saveTimer) clearTimeout(saveTimer);
   setSaveTimer(
     setTimeout(() => {
-      void saveSong();
+      void saveSong().catch(reportPersistenceError);
     }, 500),
   );
 }
 
-// ═══════════════════════════════════════════
-//  Load song
-// ═══════════════════════════════════════════
-
-/**
- * Partial song data coming from the DB or a file import.
- * Uses loose types for backward compatibility with older song formats
- * where phrases may not exist (flat drumPat/melPat/vocalPat on root).
- */
-interface LegacySongInput {
-  id?: string;
-  name?: string;
-  bpm?: number;
-  phrases?: Phrase[];
-  /** Legacy flat patterns (pre-phrase format) */
-  drumPat?: boolean[][];
-  melPat?: boolean[][][];
-  vocalPat?: boolean[];
-  currentPhrase?: number;
-  octaves?: number[];
-  harmonies?: number[];
-  drumNames?: string[];
-  melNames?: string[];
-  vocalName?: string;
-  mutedArr?: boolean[];
-  drumSampleData?: (SampleData | null)[];
-  melSampleData?: (SampleData | null)[];
-  vocalSampleData?: SampleData | null;
-  extensions?: Record<string, ExtensionState>;
-}
-
-export async function loadSong(song: LegacySongInput): Promise<void> {
-  setBpm(song.bpm ?? 120);
-
-  // Load phrases (backward-compat: old songs have flat drumPat/melPat/vocalPat)
-  for (let pi = 0; pi < NUM_PHRASES; pi++) {
-    const sp = song.phrases?.[pi];
-    const p = phrases[pi];
-    if (!p) continue;
-    const sd = sp ? sp.drumPat : pi === 0 ? song.drumPat : null;
-    const sm = sp ? sp.melPat : pi === 0 ? song.melPat : null;
-    const sv = sp ? sp.vocalPat : pi === 0 ? song.vocalPat : null;
-
-    for (let t = 0; t < DRUMS_CFG.length; t++) {
-      for (let s = 0; s < STEPS; s++) {
-        const row = p.drumPat[t];
-        if (row) row[s] = !!sd?.[t]?.[s];
-      }
-    }
-    for (let t = 0; t < MEL_CFG.length; t++) {
-      for (let s = 0; s < STEPS; s++) {
-        for (let n = 0; n < 12; n++) {
-          const step = p.melPat[t]?.[s];
-          if (step) step[n] = !!sm?.[t]?.[s]?.[n];
-        }
-      }
-    }
-    for (let s = 0; s < STEPS; s++) {
-      p.vocalPat[s] = !!sv?.[s];
-    }
-  }
-
-  const phraseIdx = song.currentPhrase ?? 0;
-  setCurrentPhrase(phraseIdx);
-  const activePhrase = phrases[phraseIdx];
-  if (activePhrase) {
-    setDrumPat(activePhrase.drumPat);
-    setMelPat(activePhrase.melPat);
-    setVocalPat(activePhrase.vocalPat);
-  }
-
-  for (let t = 0; t < MEL_CFG.length; t++) {
-    octaves[t] = song.octaves?.[t] ?? 3;
-    harmonies[t] = song.harmonies?.[t] ?? 0;
-  }
-
-  setDrumNames(song.drumNames ?? [...DEFAULT_DRUM_NAMES]);
-  setMelNames(song.melNames ?? [...DEFAULT_MEL_NAMES]);
-  setVocalName(song.vocalName ?? DEFAULT_VOCAL_NAME);
-
-  for (let i = 0; i < mutedArr.length; i++) {
-    mutedArr[i] = !!song.mutedArr?.[i];
-  }
-
+/** Decode everything off to the side. An older operation never partially mutates live state. */
+async function applySong(song: SongData, generation: number, persisted: boolean): Promise<boolean> {
   const ctx = getAudioContext();
-
-  // Decode drum samples
-  for (let t = 0; t < DRUMS_CFG.length; t++) {
-    const sd = song.drumSampleData?.[t];
-    if (sd?.data) {
-      drumSampleData[t] = sd;
-      try {
-        drumBuf[t] = ctx ? await ctx.decodeAudioData(sd.data.slice(0)) : null;
-      } catch (e: unknown) {
-        console.warn(`Failed to decode drum sample ${t}:`, e);
-        drumBuf[t] = null;
-      }
-    } else {
-      drumBuf[t] = null;
-      drumSampleData[t] = null;
-    }
-  }
-
-  // Decode melody samples
-  for (let t = 0; t < MEL_CFG.length; t++) {
-    const sd = song.melSampleData?.[t];
-    if (sd?.data) {
-      melSampleData[t] = sd;
-      try {
-        melBuf[t] = ctx ? await ctx.decodeAudioData(sd.data.slice(0)) : null;
-      } catch (e: unknown) {
-        console.warn(`Failed to decode melody sample ${t}:`, e);
-        melBuf[t] = null;
-      }
-    } else {
-      melBuf[t] = null;
-      melSampleData[t] = null;
-    }
-  }
-
-  // Decode vocal sample
-  const vsd = song.vocalSampleData;
-  if (vsd?.data) {
-    setVocalSampleData(vsd);
+  const decode = async (sample: SampleData | null): Promise<AudioBuffer | null> => {
+    if (!sample) return null;
+    if (!ctx) throw new Error('Audio is not ready. Retry loading the song.');
     try {
-      setVocalBuf(ctx ? await ctx.decodeAudioData(vsd.data.slice(0)) : null);
-    } catch (e: unknown) {
-      console.warn('Failed to decode vocal sample:', e);
-      setVocalBuf(null);
+      return await ctx.decodeAudioData(sample.data.slice(0));
+    } catch {
+      throw new Error(
+        `Could not decode sample "${sample.name}". The current song has been preserved.`,
+      );
     }
-  } else {
-    setVocalBuf(null);
-    setVocalSampleData(null);
+  };
+  const buffers = await Promise.all(
+    [...song.drumSampleData, ...song.melSampleData, song.vocalSampleData].map(decode),
+  );
+  if (generation !== loadGeneration) return false;
+  if (saveTimer) clearTimeout(saveTimer);
+  stateGeneration++;
+  emit('persistence:beforeLoad', {});
+  setBpm(song.bpm);
+  for (let i = 0; i < NUM_PHRASES; i++) {
+    const target = phrases[i]!;
+    const source = song.phrases[i]!;
+    target.drumPat.forEach((row, t) => row.splice(0, STEPS, ...source.drumPat[t]!));
+    target.melPat.forEach((track, t) =>
+      track.forEach((step, j) => step.splice(0, 12, ...source.melPat[t]![j]!)),
+    );
+    target.vocalPat.splice(0, STEPS, ...source.vocalPat);
   }
-
-  // Restore extension states
-  if (song.extensions) {
-    SEQ_EXTENSIONS.forEach((ext) => {
-      const s = song.extensions?.[ext.id];
-      if (s) {
-        ext.setState(s);
-        ext._enabled = !!s._enabled;
-        if (ext.setEnabled) ext.setEnabled(ext._enabled);
-      }
-    });
+  setCurrentPhrase(song.currentPhrase);
+  const active = phrases[song.currentPhrase]!;
+  setDrumPat(active.drumPat);
+  setMelPat(active.melPat);
+  setVocalPat(active.vocalPat);
+  octaves.splice(0, octaves.length, ...song.octaves);
+  harmonies.splice(0, harmonies.length, ...song.harmonies);
+  setDrumNames(song.drumNames);
+  setMelNames(song.melNames);
+  setVocalName(song.vocalName);
+  mutedArr.splice(0, mutedArr.length, ...song.mutedArr);
+  drumSampleData.splice(0, drumSampleData.length, ...song.drumSampleData);
+  melSampleData.splice(0, melSampleData.length, ...song.melSampleData);
+  setVocalSampleData(song.vocalSampleData);
+  drumBuf.splice(0, drumBuf.length, ...buffers.slice(0, DRUMS_CFG.length));
+  melBuf.splice(
+    0,
+    melBuf.length,
+    ...buffers.slice(DRUMS_CFG.length, DRUMS_CFG.length + MEL_CFG.length),
+  );
+  setVocalBuf(buffers[buffers.length - 1] ?? null);
+  resetAllExtensions();
+  for (const ext of SEQ_EXTENSIONS) {
+    const state = song.extensions[ext.id];
+    if (!state) continue;
+    ext.setState(state);
+    ext._enabled = !!state._enabled;
+    ext.setEnabled?.(ext._enabled);
   }
-
-  setCurrentSongId(song.id ?? null);
-  setCurrentSongName(song.name ?? 'Untitled');
+  const sound = song.sound!;
+  sound.adsr.forEach((params, i) => {
+    setTrackAdsr(i, params);
+    setAdsrEnabled(i, params.enabled);
+  });
+  const master = getMasterGain();
+  if (master) master.gain.value = sound.masterGain;
+  setEngineSettings(sound.engine);
+  setCurrentSongId(song.id || null);
+  setCurrentSongName(song.name);
+  baseline = persisted ? collectSongData(song.name) : null;
+  if (persisted) revisions.set(song.id, song.revision ?? 0);
+  emit('persistence:status', { message: '', conflict: false });
+  return true;
 }
 
-// ═══════════════════════════════════════════
-//  New / delete song
-// ═══════════════════════════════════════════
+export async function loadSong(value: unknown, persisted = false): Promise<boolean> {
+  const generation = ++loadGeneration;
+  return applySong(normalizeSong(value), generation, persisted);
+}
 
 export async function newSong(): Promise<void> {
+  const generation = ++loadGeneration;
   await saveSong();
-
-  // Clear all phrases
-  for (let pi = 0; pi < NUM_PHRASES; pi++) {
-    const p = phrases[pi];
-    if (!p) continue;
-    p.drumPat.forEach((r) => r.fill(false));
-    p.melPat.forEach((t) => t.forEach((s) => s.fill(false)));
-    p.vocalPat.fill(false);
-  }
-
-  // Reset phrase pointers
-  setCurrentPhrase(0);
-  const p0 = phrases[0];
-  if (p0) {
-    setDrumPat(p0.drumPat);
-    setMelPat(p0.melPat);
-    setVocalPat(p0.vocalPat);
-  }
-
-  // Reset track metadata
-  octaves.fill(3);
-  harmonies.fill(0);
-  setDrumNames([...DEFAULT_DRUM_NAMES]);
-  setMelNames([...DEFAULT_MEL_NAMES]);
-  setVocalName(DEFAULT_VOCAL_NAME);
-  mutedArr.fill(false);
-
-  // Clear buffers
-  drumBuf.fill(null);
-  melBuf.fill(null);
-  setVocalBuf(null);
-  drumSampleData.fill(null);
-  melSampleData.fill(null);
-  setVocalSampleData(null);
-
-  // Reset all extensions to canonical defaults with _enabled=false
-  resetAllExtensions();
-
-  // Reset BPM and song identity
-  setBpm(120);
-  setCurrentSongId(genId());
-  setCurrentSongName('Untitled');
-
+  if (generation !== loadGeneration) return;
+  // applySong resets all extensions, envelopes, engine controls and samples together.
+  if (!(await applySong(normalizeSong({ id: genId() }), generation, false))) return;
   await saveSong();
-  emit('persistence:songCreated', {});
+  if (generation === loadGeneration) emit('persistence:songCreated', {});
 }
 
 export async function deleteSong(): Promise<boolean> {
-  if (!currentSongId) return false;
-  await dbDelete('songs', currentSongId);
-
-  const songs = await dbGetAll<SongData>('songs');
-  if (songs.length > 0) {
-    const last = songs[songs.length - 1];
-    if (last) {
-      await loadSong(last);
-      emit('persistence:songDeleted', {});
+  if (!currentSongId || !db) return false;
+  const generation = ++loadGeneration;
+  if (saveTimer) clearTimeout(saveTimer);
+  await saveQueue;
+  if (generation !== loadGeneration) return false;
+  const id = currentSongId;
+  const tx = db.transaction(['songs', 'meta'], 'readwrite');
+  const read = tx.objectStore('songs').get(id) as IDBRequest<SongData | undefined>;
+  const result = { conflict: false };
+  const committed = transactionResult(tx, () => undefined);
+  read.onsuccess = () => {
+    if (!read.result || (read.result.revision ?? 0) !== revisions.get(id)) {
+      result.conflict = true;
+      tx.abort();
+      return;
     }
-  } else {
-    await newSong();
-    return true;
+    tx.objectStore('songs').delete(id);
+    tx.objectStore('meta').delete('currentSongId');
+  };
+  try {
+    await committed;
+  } catch (error) {
+    throw result.conflict ? new SaveConflictError() : error;
   }
-
-  await dbPut('meta', currentSongId, 'currentSongId');
+  const songs = await dbGetAll<SongData>('songs');
+  if (generation !== loadGeneration) return false;
+  const replacement = songs[songs.length - 1];
+  if (!(await applySong(normalizeSong(replacement ?? { id: genId() }), generation, !!replacement)))
+    return false;
+  if (replacement) await dbPut('meta', replacement.id, 'currentSongId');
+  else await saveSong();
+  emit('persistence:songDeleted', {});
   return true;
+}
+
+export async function saveSongCopy(): Promise<void> {
+  const generation = ++loadGeneration;
+  await saveQueue;
+  if (generation !== loadGeneration) return;
+  stateGeneration++;
+  setCurrentSongId(genId());
+  setCurrentSongName(`${currentSongName} (copy)`);
+  baseline = null;
+  await saveSong();
+  emit('persistence:songSwitched', {});
+}
+
+/** Explicit recovery discards local edits only after the user chooses Reload saved. */
+export async function reloadSavedSong(): Promise<void> {
+  const generation = ++loadGeneration;
+  if (!currentSongId) return;
+  const saved = await dbGet<SongData>('songs', currentSongId);
+  if (!saved)
+    throw new Error(
+      'The saved song was deleted. Export your local copy before creating a new song.',
+    );
+  if (await applySong(normalizeSong(saved), generation, true)) emit('persistence:songSwitched', {});
 }
 
 // ═══════════════════════════════════════════
@@ -426,14 +359,15 @@ export async function deleteSong(): Promise<boolean> {
 
 export function savePatternFile(): void {
   const data = collectSongData(currentSongName);
-  // Strip DB-only fields for a clean export
-  const exportData: Record<string, unknown> = { ...data };
-  delete exportData.id;
-  delete exportData.updatedAt;
-
-  const blob = new Blob([JSON.stringify(exportData)], {
-    type: 'application/json',
-  });
+  let encoded: string;
+  try {
+    normalizeSong(data, true);
+    encoded = encodeSongFile(data);
+  } catch (error) {
+    reportPersistenceError(error);
+    return;
+  }
+  const blob = new Blob([encoded], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = currentSongName.replace(/[^a-zA-Z0-9\-_ ]/g, '') + '.json';
@@ -479,35 +413,37 @@ export function loadPatternFile(): void {
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.json';
-  input.onchange = async (e: Event) => {
-    const target = e.target as HTMLInputElement;
-    const file = target.files?.[0];
+  input.onchange = async () => {
+    const file = input.files?.[0];
     if (!file) return;
+    const generation = ++loadGeneration;
+    const id = currentSongId;
     try {
+      if (file.size > MAX_SONG_FILE_BYTES) throw new Error('Song file exceeds the 128 MiB limit.');
       const text = await file.text();
-      const data = JSON.parse(text) as LegacySongInput;
-      const merged: LegacySongInput = { ...data };
-      if (currentSongId) merged.id = currentSongId;
-      await loadSong(merged);
-      emit('persistence:fileLoaded', {});
-      scheduleSave();
-    } catch (err) {
-      console.error('Load failed:', err);
+      if (generation !== loadGeneration) return;
+      const song = normalizeSong(JSON.parse(text) as unknown, true);
+      song.id = id ?? genId();
+      if (await applySong(song, generation, false)) {
+        emit('persistence:fileLoaded', {});
+        scheduleSave();
+      }
+    } catch (error) {
+      if (generation === loadGeneration) reportPersistenceError(error);
     }
   };
   input.click();
 }
 
-// ═══════════════════════════════════════════
-//  Switch song (used by song pane)
-// ═══════════════════════════════════════════
-
 export async function switchSong(id: string): Promise<void> {
   if (id === currentSongId) return;
+  const generation = ++loadGeneration;
   await saveSong();
+  if (generation !== loadGeneration) return;
   const song = await dbGet<SongData>('songs', id);
-  if (!song) return;
-  await loadSong(song);
-  emit('persistence:songSwitched', {});
-  await dbPut('meta', currentSongId, 'currentSongId');
+  if (!song) throw new Error('This song no longer exists. Refresh the song list.');
+  if (await applySong(normalizeSong(song), generation, true)) {
+    emit('persistence:songSwitched', {});
+    await dbPut('meta', id, 'currentSongId');
+  }
 }

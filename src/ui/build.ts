@@ -64,6 +64,7 @@ import {
   savePatternFile,
   loadPatternFile,
   exportLoopsZip,
+  reportPersistenceError,
   newSong,
   deleteSong,
 } from '../transport/persistence';
@@ -356,7 +357,7 @@ export function buildUI(): void {
   songNewBtn.innerHTML =
     '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
   songNewBtn.onclick = () => {
-    void newSong();
+    void newSong().catch(reportPersistenceError);
   };
   songBtns.appendChild(songNewBtn);
   const songDelBtn = el('button', 'tb');
@@ -365,7 +366,7 @@ export function buildUI(): void {
   songDelBtn.innerHTML =
     '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M3 4.5h10M5.5 4.5V3a1 1 0 011-1h3a1 1 0 011 1v1.5M4.5 4.5l.7 8.5a1 1 0 001 .9h3.6a1 1 0 001-.9l.7-8.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   songDelBtn.onclick = () => {
-    void deleteSong();
+    void deleteSong().catch(reportPersistenceError);
   };
   songBtns.appendChild(songDelBtn);
   songCtrl.appendChild(songBtns);

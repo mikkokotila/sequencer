@@ -3,11 +3,18 @@
  */
 
 import { initAudio, loadWorklets } from './engine/audio';
-import { openDB, dbGet, saveSong, loadSong, scheduleSave } from './transport/persistence';
+import {
+  openDB,
+  dbGet,
+  saveSong,
+  loadSong,
+  scheduleSave,
+  reportPersistenceError,
+} from './transport/persistence';
 import { loadManifest, wireBrowserEvents } from './ui/browser';
 import { buildUI, refreshUI, refreshSongName, updateSongPane } from './ui/build';
 import { setupPainting, setOnSave, setOnSongPaneUpdate } from './ui/painting';
-import { initExtensions } from './engine/extensions/registry';
+import { initExtensions, toggleExtension } from './engine/extensions/registry';
 import {
   togglePlay,
   syncBpm,
@@ -18,7 +25,7 @@ import {
 import { on } from './events';
 import { initPlayhead } from './ui/playhead';
 import { genId } from './ui/helpers';
-import { SEQ_EXTENSIONS } from './engine/extensions/store';
+import { SEQ_EXTENSIONS, activeExtensionId } from './engine/extensions/store';
 import {
   currentSongId,
   setCurrentSongId,
@@ -37,11 +44,11 @@ import {
   findNextPhrase,
   findFirstNonEmpty,
 } from './transport/patterns';
-import { initEngineProcessing } from './ui/engine-panel';
+import { initEngineProcessing, close as closeEnginePanel } from './ui/engine-panel';
 import { initMidi, disconnectAllMidi } from './engine/midi';
 import { buildMidiBrowserDOM, wireMidiBrowserEvents } from './ui/midi-browser';
-import { buildAdsrPopupDOM, updateAdsrBtnState } from './ui/adsr-popup';
-import { resetAllAdsr } from './engine/adsr';
+import { buildAdsrPopupDOM, updateAdsrBtnState, closeAdsrPopup } from './ui/adsr-popup';
+import { initPersistenceStatus, showStartupError } from './ui/persistence-status';
 import { TOTAL_TRACKS } from './config';
 
 // Register all extensions
@@ -53,6 +60,7 @@ import { createPultecEq } from './engine/extensions/pultec-eq';
 import { createTransformer } from './engine/extensions/transformer';
 
 async function init(): Promise<void> {
+  initPersistenceStatus();
   // 1. Register extensions
   // Order: master bus inserts first, then aux effects, then metering
   // Master bus chain: Pultec EQ → Vari-Mu → Transformer (serial inserts)
@@ -72,6 +80,7 @@ async function init(): Promise<void> {
 
   // 3. Build the UI
   buildUI();
+  document.getElementById('app')?.setAttribute('inert', '');
   const playButton = document.getElementById('play-btn') as HTMLButtonElement | null;
   if (playButton) playButton.disabled = true;
 
@@ -89,11 +98,19 @@ async function init(): Promise<void> {
   // auto-advance all route through this one callback.
   setOnPhraseChange(updateSongPane);
 
+  on('engine:settingsChanged', scheduleSave);
+  on('persistence:beforeLoad', () => {
+    stopPlayback();
+    disconnectAllMidi();
+    closeAdsrPopup();
+    closeEnginePanel();
+    if (activeExtensionId) toggleExtension(activeExtensionId);
+  });
+
   // 4b. Wire persistence lifecycle events
   on('persistence:songCreated', () => {
     stopPlayback();
     disconnectAllMidi();
-    resetAllAdsr();
     refreshUI();
     for (let i = 0; i < TOTAL_TRACKS; i++) updateAdsrBtnState(i);
     refreshSongName();
@@ -107,14 +124,12 @@ async function init(): Promise<void> {
   on('persistence:songSwitched', () => {
     stopPlayback();
     disconnectAllMidi();
-    resetAllAdsr();
     refreshUI();
     for (let i = 0; i < TOTAL_TRACKS; i++) updateAdsrBtnState(i);
     refreshSongName();
     updateSongPane();
   });
   on('persistence:fileLoaded', () => {
-    resetAllAdsr();
     refreshUI();
     for (let i = 0; i < TOTAL_TRACKS; i++) updateAdsrBtnState(i);
     refreshSongName();
@@ -168,7 +183,7 @@ async function init(): Promise<void> {
   }
 
   if (song) {
-    await loadSong(song);
+    await loadSong(song, true);
     refreshUI();
     refreshSongName();
     updateSongPane();
@@ -176,23 +191,36 @@ async function init(): Promise<void> {
 
   // 10. Space bar for play/stop
   document.addEventListener('keydown', (e: KeyboardEvent) => {
-    const tag = (e.target as HTMLElement).tagName;
-    if (e.code === 'Space' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) {
-      e.preventDefault();
-      togglePlay();
-    }
+    const target = e.target instanceof Element ? e.target : null;
+    if (e.code !== 'Space' || e.repeat || e.defaultPrevented) return;
+    if (
+      target?.closest(
+        'button, input, textarea, select, a, [role="button"], [contenteditable]:not([contenteditable="false"])',
+      )
+    )
+      return;
+    if (
+      document.querySelector(
+        '.browser-overlay.open, .midi-overlay.open, .adsr-popup.open, [role="dialog"][aria-modal="true"]',
+      )
+    )
+      return;
+    e.preventDefault();
+    togglePlay();
   });
 
+  document.getElementById('app')?.removeAttribute('inert');
+  for (let i = 0; i < TOTAL_TRACKS; i++) updateAdsrBtnState(i);
   if (playButton) playButton.disabled = false;
   document.documentElement.dataset.ready = 'true';
 
   // Save on visibility change (tab close/switch)
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
-      void saveSong();
+      void saveSong().catch(reportPersistenceError);
     }
   });
 }
 
 // Boot
-void init();
+void init().catch(showStartupError);

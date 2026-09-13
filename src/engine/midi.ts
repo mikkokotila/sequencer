@@ -23,11 +23,18 @@ export interface MidiInputInfo {
   state: string;
 }
 
+interface MidiVoice {
+  note: number;
+  source: AudioBufferSourceNode;
+  envelope: GainNode | null;
+}
+
 interface MidiTrackBinding {
   inputId: string;
   inputName: string;
   listener: (e: Event) => void;
-  activeSources: Map<number, { source: AudioBufferSourceNode; envelope: GainNode | null }>;
+  activeSources: Map<number, MidiVoice>;
+  voices: Set<MidiVoice>;
 }
 
 // ═══════════════════════════════════════════
@@ -132,6 +139,7 @@ export function connectMidiToTrack(inputId: string, trackIndex: number): boolean
     inputName: input.name ?? 'Unknown Device',
     listener,
     activeSources: new Map(),
+    voices: new Set(),
   };
 
   emit('midi:connected', {
@@ -149,7 +157,7 @@ export function disconnectMidiFromTrack(trackIndex: number): void {
   if (!binding) return;
 
   // Stop all active voices
-  for (const [, entry] of binding.activeSources) {
+  for (const entry of binding.voices) {
     try {
       entry.source.stop();
     } catch {
@@ -157,6 +165,7 @@ export function disconnectMidiFromTrack(trackIndex: number): void {
     }
   }
   binding.activeSources.clear();
+  binding.voices.clear();
 
   // Remove listener from MIDI input
   if (midiAccess) {
@@ -223,21 +232,21 @@ function handleNoteOn(trackIndex: number, note: number, velocity: number): void 
     }
   }
 
-  // Poly tracks: enforce MAX_POLYPHONY via voice stealing
-  if (binding.activeSources.size >= MAX_POLYPHONY) {
-    const oldest = binding.activeSources.entries().next();
-    if (!oldest.done) {
-      const [oldestNote, oldestEntry] = oldest.value;
-      if (oldestEntry.envelope) {
-        triggerRelease(ctx, oldestEntry.envelope, oldestEntry.source, getTrackAdsr(globalTrackIdx));
-      } else {
-        try {
-          oldestEntry.source.stop();
-        } catch {
-          /* already stopped */
-        }
-      }
-      binding.activeSources.delete(oldestNote);
+  // A pitch owns one held voice. Retain releasing voices separately until ended,
+  // so retriggering and device disconnection cannot orphan them.
+  const repeated = binding.activeSources.get(note);
+  if (repeated) {
+    repeated.source.stop();
+    binding.activeSources.delete(note);
+  }
+  // Bound total voices, including release tails and pending ended callbacks.
+  while (binding.voices.size >= MAX_POLYPHONY) {
+    const oldest = binding.voices.values().next().value;
+    if (!oldest) break;
+    oldest.source.stop();
+    binding.voices.delete(oldest);
+    if (binding.activeSources.get(oldest.note) === oldest) {
+      binding.activeSources.delete(oldest.note);
     }
   }
 
@@ -273,11 +282,15 @@ function handleNoteOn(trackIndex: number, note: number, velocity: number): void 
   src.start(startAt);
 
   // Store source + envelope for note-off release
-  binding.activeSources.set(note, { source: src, envelope });
+  const voice: MidiVoice = { note, source: src, envelope };
+  binding.activeSources.set(note, voice);
+  binding.voices.add(voice);
 
   // Auto-cleanup when sample ends naturally
   src.onended = () => {
-    binding.activeSources.delete(note);
+    if (binding.activeSources.get(note) === voice) binding.activeSources.delete(note);
+    binding.voices.delete(voice);
+    src.disconnect();
     try {
       velocityGain.disconnect();
     } catch {

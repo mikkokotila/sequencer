@@ -11,11 +11,21 @@
 
 import { getAudioContext, getMixBus, setFinalOutput } from '../engine/audio';
 import { makeSlider, formatPct } from './helpers';
+import { emit, on } from '../events';
+import {
+  bindEngineNodes,
+  getEngineSettings,
+  setEngineSettings,
+  cutoffToFreq,
+  resonanceToQ,
+  compToThreshold,
+} from '../engine/master-controls';
 
 // ── State ──
 let isOpen = false;
 let panelEl: HTMLDivElement | null = null;
 let animFrame = 0;
+let openGeneration = 0;
 
 // Analyser nodes (read-only taps for visualization)
 let analyser: AnalyserNode | null = null;
@@ -27,81 +37,12 @@ let waveformCanvas: HTMLCanvasElement | null = null;
 let spectrumCtx: CanvasRenderingContext2D | null = null;
 let waveformCtx: CanvasRenderingContext2D | null = null;
 
-// ── Engine-level processing nodes ──
-// These are REAL Web Audio API native nodes, owned by the engine alone.
-// They sit after the extension chain and before ctx.destination.
-let engineFilter: BiquadFilterNode | null = null; // lowpass filter (cutoff + resonance)
-let engineSaturation: WaveShaperNode | null = null; // soft clipping
-let engineCompressor: DynamicsCompressorNode | null = null; // dynamics control
-
-// Engine control values (0–1 normalized)
-let engineCutoff = 1.0; // 1.0 = 20kHz (fully open, identity)
-let engineResonance = 0.0; // 0.0 = Q=0.707 (flat, identity)
-let engineSatAmount = 0.0; // 0.0 = no distortion (identity)
-let engineCompAmount = 0.0; // 0.0 = threshold=0dB (no compression, identity)
-
 // Demo oscillator sources
 let demoOscs: OscillatorNode[] = [];
 let demoRunning = false;
 
 // ── Audio Setup ──
 let engineInitialized = false;
-
-/**
- * Generate a tanh-based soft-clipping curve for the WaveShaperNode.
- * amount=0 returns null (identity). amount=1 returns heavy clipping.
- */
-function makeSaturationCurve(amount: number): Float32Array<ArrayBuffer> | null {
-  if (amount < 0.001) return null; // identity
-  const samples = 8192;
-  const curve = new Float32Array(new ArrayBuffer(samples * 4));
-  const k = 1 + amount * 9; // 1 (gentle) to 10 (heavy)
-  const norm = Math.tanh(k); // normalize so output stays in [-1, 1]
-  for (let i = 0; i < samples; i++) {
-    const x = (i / (samples - 1)) * 2 - 1; // -1 to +1
-    curve[i] = Math.tanh(k * x) / norm;
-  }
-  return curve;
-}
-
-/**
- * Map a 0–1 cutoff slider value to a frequency in Hz.
- * Exponential mapping: 0→200Hz, 0.5→~2kHz, 1→20000Hz.
- */
-function cutoffToFreq(v: number): number {
-  // Exponential: 200 * (100^v) → 200 at v=0, 20000 at v=1
-  return 200 * Math.pow(100, v);
-}
-
-/**
- * Map a 0–1 resonance slider value to BiquadFilter Q.
- * 0→0.707 (flat), 1→15 (sharp resonant peak).
- */
-function resonanceToQ(v: number): number {
-  return 0.707 + v * 14.293; // 0.707 to 15
-}
-
-/**
- * Map a 0–1 compression slider value to DynamicsCompressor threshold in dB.
- * 0→0dB (no compression), 1→-60dB (heavy compression).
- */
-function compToThreshold(v: number): number {
-  return -v * 60; // 0 to -60
-}
-
-/** Apply current engine control values to the real audio nodes. */
-function applyEngineParams(): void {
-  if (engineFilter) {
-    engineFilter.frequency.value = cutoffToFreq(engineCutoff);
-    engineFilter.Q.value = resonanceToQ(engineResonance);
-  }
-  if (engineSaturation) {
-    engineSaturation.curve = makeSaturationCurve(engineSatAmount);
-  }
-  if (engineCompressor) {
-    engineCompressor.threshold.value = compToThreshold(engineCompAmount);
-  }
-}
 
 export function initEngineProcessing(): void {
   if (engineInitialized) return;
@@ -112,23 +53,21 @@ export function initEngineProcessing(): void {
   // ── Create engine-level processing nodes ──
 
   // 1. Lowpass filter (cutoff + resonance)
-  engineFilter = ctx.createBiquadFilter();
+  const engineFilter = ctx.createBiquadFilter();
   engineFilter.type = 'lowpass';
-  engineFilter.frequency.value = cutoffToFreq(engineCutoff); // 20kHz = fully open
-  engineFilter.Q.value = resonanceToQ(engineResonance); // 0.707 = flat
 
   // 2. Saturation (WaveShaperNode)
-  engineSaturation = ctx.createWaveShaper();
-  engineSaturation.curve = makeSaturationCurve(engineSatAmount); // null = identity
+  const engineSaturation = ctx.createWaveShaper();
   engineSaturation.oversample = '4x'; // anti-alias the nonlinearity
 
   // 3. Dynamics compressor
-  engineCompressor = ctx.createDynamicsCompressor();
-  engineCompressor.threshold.value = compToThreshold(engineCompAmount); // 0dB = off
+  const engineCompressor = ctx.createDynamicsCompressor();
   engineCompressor.ratio.value = 4; // moderate ratio
   engineCompressor.knee.value = 10; // soft knee
   engineCompressor.attack.value = 0.003; // 3ms
   engineCompressor.release.value = 0.25; // 250ms
+
+  bindEngineNodes(engineFilter, engineSaturation, engineCompressor);
 
   // Wire: engineFilter → engineSaturation → engineCompressor → ctx.destination
   engineFilter.connect(engineSaturation);
@@ -548,25 +487,34 @@ function buildPanel(): HTMLDivElement {
     return `${compToThreshold(v).toFixed(0)}dB`;
   };
 
-  makeSlider(ctrlSide, 'CUTOFF', engineCutoff, 0, 1, 0.01, formatCutoff, (v) => {
-    engineCutoff = v;
-    applyEngineParams();
+  makeSlider(ctrlSide, 'CUTOFF', getEngineSettings().cutoff, 0, 1, 0.01, formatCutoff, (v) => {
+    setEngineSettings({ ...getEngineSettings(), cutoff: v });
+    emit('engine:settingsChanged', {});
   });
 
-  makeSlider(ctrlSide, 'RESONANCE', engineResonance, 0, 1, 0.01, formatQ, (v) => {
-    engineResonance = v;
-    applyEngineParams();
+  makeSlider(ctrlSide, 'RESONANCE', getEngineSettings().resonance, 0, 1, 0.01, formatQ, (v) => {
+    setEngineSettings({ ...getEngineSettings(), resonance: v });
+    emit('engine:settingsChanged', {});
   });
 
-  makeSlider(ctrlSide, 'SATURATION', engineSatAmount, 0, 1, 0.01, formatPct, (v) => {
-    engineSatAmount = v;
-    applyEngineParams();
+  makeSlider(ctrlSide, 'SATURATION', getEngineSettings().saturation, 0, 1, 0.01, formatPct, (v) => {
+    setEngineSettings({ ...getEngineSettings(), saturation: v });
+    emit('engine:settingsChanged', {});
   });
 
-  makeSlider(ctrlSide, 'COMPRESSION', engineCompAmount, 0, 1, 0.01, formatComp, (v) => {
-    engineCompAmount = v;
-    applyEngineParams();
-  });
+  makeSlider(
+    ctrlSide,
+    'COMPRESSION',
+    getEngineSettings().compression,
+    0,
+    1,
+    0.01,
+    formatComp,
+    (v) => {
+      setEngineSettings({ ...getEngineSettings(), compression: v });
+      emit('engine:settingsChanged', {});
+    },
+  );
 
   // Test signal toggle
   const demoBtn = document.createElement('button');
@@ -628,7 +576,8 @@ export function toggle(): void {
 export function open(): void {
   if (isOpen) return;
 
-  if (!panelEl) {
+  if (panelEl) panelEl.remove();
+  {
     panelEl = buildPanel();
     document.body.appendChild(panelEl);
   }
@@ -648,12 +597,15 @@ export function open(): void {
   if (app) app.style.display = 'none';
   if (songPane) songPane.style.display = 'none';
 
+  const generation = ++openGeneration;
   requestAnimationFrame(() => {
+    if (!isOpen || generation !== openGeneration) return;
     if (panelEl) {
       panelEl.style.opacity = '1';
       panelEl.style.pointerEvents = 'auto';
     }
     requestAnimationFrame(() => {
+      if (!isOpen || generation !== openGeneration) return;
       resizeCanvases();
       animLoop();
     });
@@ -667,6 +619,7 @@ export function open(): void {
 export function close(): void {
   if (!isOpen) return;
   isOpen = false;
+  openGeneration++;
 
   if (animFrame) cancelAnimationFrame(animFrame);
   stopDemoOscs();
@@ -696,3 +649,10 @@ if (typeof window !== 'undefined') {
     if (isOpen) resizeCanvases();
   });
 }
+
+on('engine:settingsRestored', () => {
+  if (!isOpen && panelEl) {
+    panelEl.remove();
+    panelEl = null;
+  }
+});

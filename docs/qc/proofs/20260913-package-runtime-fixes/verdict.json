@@ -1,0 +1,218 @@
+{
+  "task_id": "20260913-package-runtime-fixes",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260913-package-runtime-fixes.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-13T09:29:27.949Z",
+  "finished_at_utc": "2026-09-13T09:32:36.874Z",
+  "head_sha": "0a3f343",
+  "tree_sha": "7562a7e5093f26f02955f58f6cdbb54b7ec76cd2",
+  "subject_sha": "63ef6fa2abb43bf656b8bcd683c19220be929f54f8c768f03e8c008106147a04",
+  "subject_files": [
+    "e2e/package-integrity.spec.ts",
+    "index.html",
+    "src/engine/adsr.ts",
+    "src/engine/extensions/mixer.ts",
+    "src/engine/master-controls.ts",
+    "src/engine/midi.ts",
+    "src/events.ts",
+    "src/main.ts",
+    "src/transport/database.ts",
+    "src/transport/persistence.ts",
+    "src/transport/song-format.ts",
+    "src/types.ts",
+    "src/ui/adsr-popup.ts",
+    "src/ui/build.ts",
+    "src/ui/engine-panel.ts",
+    "src/ui/persistence-status.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260913-package-runtime-fixes.md",
+    "docs/qc/proofs/20260913-package-runtime-fixes/proof.manifest.json",
+    "docs/qc/specs/20260913-package-runtime-fixes.task.spec.json",
+    "e2e/package-integrity.spec.ts",
+    "index.html",
+    "src/engine/adsr.ts",
+    "src/engine/extensions/mixer.ts",
+    "src/engine/master-controls.ts",
+    "src/engine/midi.ts",
+    "src/events.ts",
+    "src/main.ts",
+    "src/transport/database.ts",
+    "src/transport/persistence.ts",
+    "src/transport/song-format.ts",
+    "src/types.ts",
+    "src/ui/adsr-popup.ts",
+    "src/ui/build.ts",
+    "src/ui/engine-panel.ts",
+    "src/ui/persistence-status.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=7, oracles=7, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=7, oracles=7, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 5366,
+        "log_file": "docs/qc/proofs/20260913-package-runtime-fixes/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 165080,
+        "log_file": "docs/qc/proofs/20260913-package-runtime-fixes/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 290,
+        "log_file": "docs/qc/proofs/20260913-package-runtime-fixes/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 474,
+        "log_file": "docs/qc/proofs/20260913-package-runtime-fixes/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 563,
+        "log_file": "docs/qc/proofs/20260913-package-runtime-fixes/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 287,
+        "log_file": "docs/qc/proofs/20260913-package-runtime-fixes/logs/O-COMMIT-RANGE.log"
+      },
+      {
+        "id": "O-AUDIO-GATES",
+        "label": "Audio browser gates",
+        "command": "npm run audio:gates",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 14105,
+        "log_file": "docs/qc/proofs/20260913-package-runtime-fixes/logs/O-AUDIO-GATES.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-package-runtime-fixes/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260913-package-runtime-fixes/raw/off_transparent.json",
+        "raw_sha256": "4f6320cbe8dde03eb8892223777d8366c944c7da80c50620138b9459f5a462cb"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-package-runtime-fixes/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260913-package-runtime-fixes/raw/on_audible.json",
+        "raw_sha256": "2067a24b0d572780480c6d00fda007498883c36913ec4df7aa860ef2b3bb42bb"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-package-runtime-fixes/oracles/low_end_continuity.json",
+        "raw_artifact": "docs/qc/proofs/20260913-package-runtime-fixes/raw/low_end_continuity.json",
+        "raw_sha256": "8d98f3fd21be4ff29c3f926d0df75123f9b2730bd0d9f33a1eb8c99453830d1c"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-package-runtime-fixes/oracles/clip_guard.json",
+        "raw_artifact": "docs/qc/proofs/20260913-package-runtime-fixes/raw/clip_guard.json",
+        "raw_sha256": "d9d8de5208d8207270e501a62f843b1d25ff7c5b26f54a6e9cfa6946265b9ba6"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-package-runtime-fixes/oracles/default_safety.json",
+        "raw_artifact": "docs/qc/proofs/20260913-package-runtime-fixes/raw/default_safety.json",
+        "raw_sha256": "2dbc956db43815b2a347048f556ada1f20d93ce0eea7ddf2af8a62b09f809d51"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-package-runtime-fixes/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260913-package-runtime-fixes/raw/control_binding.json",
+        "raw_sha256": "5700416285e4b99f29c5ea7835c207d9ec8bf38694ecd85469e75513b6605592"
+      },
+      {
+        "oracle_id": "persistence_roundtrip",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-package-runtime-fixes/oracles/persistence_roundtrip.json",
+        "raw_artifact": "docs/qc/proofs/20260913-package-runtime-fixes/raw/persistence_roundtrip.json",
+        "raw_sha256": "9f27ad9a8ded97fe2629013a5c5e4553acd9cf03d8eef09cccb9775dc3515ffb"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

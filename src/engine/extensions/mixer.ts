@@ -211,6 +211,7 @@ export function createMixer(): Extension {
           hostRef!.masterGain.gain.value = v;
         }
         val.textContent = `${Math.round(v * 100)}%`;
+        hostRef!.notifyStateChange();
       };
       row.appendChild(slider);
       sep.appendChild(row);

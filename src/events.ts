@@ -29,6 +29,11 @@ export interface EventMap {
   'ui:loadSample': { type: string; track: number; buffer: ArrayBuffer; name: string };
   'ui:setBpm': { bpm: number };
 
+  'engine:settingsChanged': Record<string, never>;
+  'engine:settingsRestored': Record<string, never>;
+  'persistence:beforeLoad': Record<string, never>;
+  'persistence:status': { message: string; conflict: boolean };
+
   // Persistence lifecycle
   'persistence:songCreated': Record<string, never>;
   'persistence:songDeleted': Record<string, never>;

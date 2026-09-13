@@ -15,6 +15,7 @@ import { emit, on } from '../events';
 import { setActiveExtensionId } from '../engine/extensions/store';
 import {
   bindEngineNodes,
+  createEngineProcessing,
   getEngineSettings,
   setEngineSettings,
   cutoffToFreq,
@@ -51,28 +52,12 @@ export function initEngineProcessing(): void {
   const mix = getMixBus();
   if (!ctx || !mix) return;
 
-  // ── Create engine-level processing nodes ──
-
-  // 1. Lowpass filter (cutoff + resonance)
-  const engineFilter = ctx.createBiquadFilter();
-  engineFilter.type = 'lowpass';
-
-  // 2. Saturation (WaveShaperNode)
-  const engineSaturation = ctx.createWaveShaper();
-  engineSaturation.oversample = '4x'; // anti-alias the nonlinearity
-
-  // 3. Dynamics compressor
-  const engineCompressor = ctx.createDynamicsCompressor();
-  engineCompressor.ratio.value = 4; // moderate ratio
-  engineCompressor.knee.value = 10; // soft knee
-  engineCompressor.attack.value = 0.003; // 3ms
-  engineCompressor.release.value = 0.25; // 250ms
-
+  const {
+    filter: engineFilter,
+    saturation: engineSaturation,
+    compressor: engineCompressor,
+  } = createEngineProcessing(ctx, getEngineSettings());
   bindEngineNodes(engineFilter, engineSaturation, engineCompressor);
-
-  // Wire: engineFilter → engineSaturation → engineCompressor → ctx.destination
-  engineFilter.connect(engineSaturation);
-  engineSaturation.connect(engineCompressor);
   engineCompressor.connect(ctx.destination);
 
   // Tell the audio system that extensions should route into our engine chain

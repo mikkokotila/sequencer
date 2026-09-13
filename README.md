@@ -23,6 +23,24 @@ The entire `samples/` directory is ignored by Git. `samples.json` is the tracked
 
 Both `npm run dev` and `npm run preview` serve `/samples/drums/...` and `/samples/synths/...` from this directory. The package no longer uses the old `DRUMS`/`SYNTHS` links or `SEQUENCER_SAMPLE_ROOT`. Static production hosting must serve the same `/samples/` paths separately; audio files are not bundled. Sample loading failures remain visible in the browser and permit retry.
 
+Use **Download Song Audio** in the toolbar to save the full song as stereo **WAV (24-bit, 44.1 kHz)** or **MP3 (320 kbps)**. The export plays every non-empty phrase once in numeric order, matching transport order, and includes samples, mutes, levels, pan, octaves, harmonies, envelopes, all enabled effects, and engine controls. Sample and effect tails are retained; only inaudible padding is trimmed. MP3 can include the small encoder delay/padding inherent in its frames. Exports capture the current song when started, so subsequent edits cannot alter the file. Rendering and encoding stay local, with progress, cancellation, and retry on failure. The export limit is ten minutes including tails.
+
+Programmatic callers use the same API as the GUI:
+
+```ts
+import { exportSongAudio, downloadSongAudio } from './src/transport/song-audio';
+
+const abortController = new AbortController();
+const result = await exportSongAudio('mp3', {
+  signal: abortController.signal, // optional
+  onProgress: ({ stage, fraction }) => console.log(stage, fraction), // optional
+});
+// result contains a Blob, filename, and rendered duration in seconds.
+downloadSongAudio(result); // optional: trigger a browser download
+```
+
+MP3 encoding uses [@breezystack/lamejs](https://github.com/gideonstele/lamejs), licensed under LGPL-3.0. The existing ZIP export remains available for individual dry phrase loops.
+
 Playback uses a 350 ms scheduling queue. Edits affect the next unqueued step; already queued notes keep their timing. The playhead follows estimated device output. After a blocked browser frame it jumps directly to the current audible step. Stalls longer than the queue can interrupt playback; missed scheduling deadlines are reanchored without an overdue burst.
 
 ## Quality gates

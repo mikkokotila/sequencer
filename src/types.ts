@@ -75,7 +75,7 @@ export interface Extension {
   readonly id: string;
   readonly name: string;
   readonly icon: string;
-  init(ctx: AudioContext, host: ExtensionHost): NodePair | null;
+  init(ctx: BaseAudioContext, host: ExtensionHost): NodePair | null;
   createUI(container: HTMLElement): void;
   getState(): ExtensionState;
   setState(s: ExtensionState): void;

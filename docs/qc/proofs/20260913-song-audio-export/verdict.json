@@ -1,0 +1,234 @@
+{
+  "task_id": "20260913-song-audio-export",
+  "task_type": "feature",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260913-song-audio-export.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-13T12:19:20.744Z",
+  "finished_at_utc": "2026-09-13T12:23:14.281Z",
+  "head_sha": "adaef9a",
+  "tree_sha": "e6744e3c8b6619b00e3a9ddf20e41c02ced3d740",
+  "subject_sha": "d858a369423410895acb7a587f7bd43bbcd66dcf3ac6d4aa309ccf51bcaf2df8",
+  "subject_files": [
+    "README.md",
+    "e2e/production.spec.ts",
+    "e2e/song-export.spec.ts",
+    "index.html",
+    "src/engine/adsr.ts",
+    "src/engine/extensions/aux-lifecycle.ts",
+    "src/engine/extensions/compressor.ts",
+    "src/engine/extensions/delay.ts",
+    "src/engine/extensions/mixer.ts",
+    "src/engine/extensions/pultec-eq.ts",
+    "src/engine/extensions/reverb.ts",
+    "src/engine/extensions/transformer.ts",
+    "src/engine/master-controls.ts",
+    "src/engine/worklet-loader.ts",
+    "src/engine/worklets/compressor-processor.ts",
+    "src/transport/audio-encoder.worker.ts",
+    "src/transport/render-song.ts",
+    "src/transport/song-audio.ts",
+    "src/transport/wav.ts",
+    "src/types.ts",
+    "src/ui/build.ts",
+    "src/ui/engine-panel.ts",
+    "src/ui/song-export.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "README.md",
+    "docs/qc/proofs/20260913-song-audio-export.md",
+    "docs/qc/proofs/20260913-song-audio-export/proof.manifest.json",
+    "docs/qc/runs/20260913-121532Z-ea2060c-1789301723066-c7e9d7da.json",
+    "docs/qc/runs/20260913-121532Z-ea2060c-1789301723066-c7e9d7da.md",
+    "docs/qc/specs/20260913-song-audio-export.task.spec.json",
+    "e2e/production.spec.ts",
+    "e2e/song-export.spec.ts",
+    "index.html",
+    "src/engine/adsr.ts",
+    "src/engine/extensions/aux-lifecycle.ts",
+    "src/engine/extensions/compressor.ts",
+    "src/engine/extensions/delay.ts",
+    "src/engine/extensions/mixer.ts",
+    "src/engine/extensions/pultec-eq.ts",
+    "src/engine/extensions/reverb.ts",
+    "src/engine/extensions/transformer.ts",
+    "src/engine/master-controls.ts",
+    "src/engine/worklet-loader.ts",
+    "src/engine/worklets/compressor-processor.ts",
+    "src/transport/audio-encoder.worker.ts",
+    "src/transport/render-song.ts",
+    "src/transport/song-audio.ts",
+    "src/transport/wav.ts",
+    "src/types.ts",
+    "src/ui/build.ts",
+    "src/ui/engine-panel.ts",
+    "src/ui/song-export.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=7, oracles=7, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=7, oracles=7, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 6173,
+        "log_file": "docs/qc/proofs/20260913-song-audio-export/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 192873,
+        "log_file": "docs/qc/proofs/20260913-song-audio-export/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 600,
+        "log_file": "docs/qc/proofs/20260913-song-audio-export/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 446,
+        "log_file": "docs/qc/proofs/20260913-song-audio-export/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 499,
+        "log_file": "docs/qc/proofs/20260913-song-audio-export/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 351,
+        "log_file": "docs/qc/proofs/20260913-song-audio-export/logs/O-COMMIT-RANGE.log"
+      },
+      {
+        "id": "O-AUDIO-GATES",
+        "label": "Audio browser gates",
+        "command": "npm run audio:gates",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 16750,
+        "log_file": "docs/qc/proofs/20260913-song-audio-export/logs/O-AUDIO-GATES.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-song-audio-export/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260913-song-audio-export/raw/off_transparent.json",
+        "raw_sha256": "b6488bd30cd0a594aa7cc052e4e5daa88a07f0d2c0a5f03091c93f34b3c45b26"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-song-audio-export/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260913-song-audio-export/raw/on_audible.json",
+        "raw_sha256": "a88b72f3bfc90334b7b2e911f6c9634212ee90852fa25489b5dd3c847c991186"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-song-audio-export/oracles/low_end_continuity.json",
+        "raw_artifact": "docs/qc/proofs/20260913-song-audio-export/raw/low_end_continuity.json",
+        "raw_sha256": "5e02a82529c7f7b36824e93627a4c2bf2f486a8ac1ea2cd910b4cf51215fbf7e"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-song-audio-export/oracles/clip_guard.json",
+        "raw_artifact": "docs/qc/proofs/20260913-song-audio-export/raw/clip_guard.json",
+        "raw_sha256": "45c92f204d37e1a6b43ed15243d229ba5acff66df864089fbd4b000017b2e148"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-song-audio-export/oracles/default_safety.json",
+        "raw_artifact": "docs/qc/proofs/20260913-song-audio-export/raw/default_safety.json",
+        "raw_sha256": "99d72f8bd538d64f270989c03ca1b974bc1ec48be36618a16cc054b90a6e1617"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-song-audio-export/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260913-song-audio-export/raw/control_binding.json",
+        "raw_sha256": "7637949f048f1fcc2d459ccfa0f6abdb973c1de3d110bfaff59a1bd942b05fd7"
+      },
+      {
+        "oracle_id": "benchmark_worklet_budget",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-song-audio-export/oracles/benchmark_worklet_budget.json",
+        "raw_artifact": "docs/qc/proofs/20260913-song-audio-export/raw/benchmark_worklet_budget.json",
+        "raw_sha256": "2af9ba4cd58e7d21554cd904fea17952d6a2e1d17d2eeec2ac24af76f135eb43"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

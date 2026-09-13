@@ -9,7 +9,7 @@ export interface AuxLifecycle {
 }
 
 export function createAuxLifecycle(
-  ctx: AudioContext,
+  ctx: BaseAudioContext,
   wet: GainNode,
   processor: AudioWorkletNode,
   enabled: () => boolean,
@@ -17,6 +17,26 @@ export function createAuxLifecycle(
   silenceFeedback: () => void,
   fadeSeconds: number,
 ): AuxLifecycle {
+  // A fresh offline graph has no processor history or live transport lifecycle.
+  // Apply before rendering: asynchronous reset acknowledgements would otherwise
+  // race the first notes and make a bounce depend on main-thread timing.
+  if (ctx instanceof OfflineAudioContext) {
+    return {
+      ready: true,
+      update(): void {
+        wet.gain.value = 0;
+        if (enabled()) apply();
+        else silenceFeedback();
+      },
+      stop(): void {
+        wet.gain.value = 0;
+        silenceFeedback();
+      },
+      dispose(): void {
+        wet.gain.value = 0;
+      },
+    };
+  }
   let generation = 0;
   let pendingRestore: number | null = null;
   let timer: ReturnType<typeof setTimeout> | null = null;

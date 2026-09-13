@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
 import { preview, type PreviewServer } from 'vite';
 
 let server: PreviewServer;
@@ -18,7 +19,7 @@ test.afterAll(async () => {
   }
 });
 
-test('production build initializes every worklet and plays a decoded sample', async ({ page }) => {
+test('production build initializes worklets, plays samples, and downloads WAV and MP3', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.addInitScript(() => {
@@ -76,5 +77,18 @@ test('production build initializes every worklet and plays a decoded sample', as
       () => (window as unknown as { __contexts: AudioContext[] }).__contexts.length,
     ),
   ).toBe(1);
+  await page.locator('#export-song-btn').click();
+  for (const format of ['wav', 'mp3']) {
+    const download = page.waitForEvent('download');
+    await page.locator(`#export-${format}-btn`).click();
+    const file = await download;
+    expect(file.suggestedFilename()).toMatch(new RegExp(`\\.${format}$`));
+    const bytes = await readFile((await file.path())!);
+    expect(bytes.length).toBeGreaterThan(1000);
+    if (format === 'wav') expect(bytes.toString('ascii', 0, 4)).toBe('RIFF');
+    else expect(bytes[0]).toBe(0xff);
+    await expect(page.locator('#song-export-status')).toContainText('downloaded');
+  }
+  await page.locator('#song-export-close').click();
   expect(errors).toEqual([]);
 });

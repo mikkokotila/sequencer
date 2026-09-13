@@ -96,8 +96,9 @@ export function applyEnvelope(
   trackIndex: number,
   startTime: number,
   stepDuration?: number,
+  capturedParams?: AdsrParams,
 ): { envelope: GainNode; stopAt: number } {
-  const adsr = getTrackAdsr(trackIndex);
+  const adsr = capturedParams ?? getTrackAdsr(trackIndex);
   const env = ctx.createGain();
 
   // Attack: ramp from 0 to 1

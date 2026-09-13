@@ -30,7 +30,7 @@ interface CompressorNodes {
   wetGain: GainNode;
   dryGain: GainNode;
   outputGain: GainNode;
-  ctx: AudioContext;
+  ctx: BaseAudioContext;
 }
 
 interface SpeedPreset {
@@ -137,11 +137,13 @@ export function createCompressor(): Extension {
     name: 'Compressor',
     icon: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 12L5 4L8 10L11 2L14 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 
-    init(ctx: AudioContext, host: ExtensionHost): NodePair | null {
+    init(ctx: BaseAudioContext, host: ExtensionHost): NodePair | null {
       hostRef = host;
       const inputGain = ctx.createGain();
       const saturation = new AudioWorkletNode(ctx, 'saturation-processor');
-      const compressor = new AudioWorkletNode(ctx, 'compressor-processor');
+      const compressor = new AudioWorkletNode(ctx, 'compressor-processor', {
+        processorOptions: { model: state.model ?? 0 },
+      });
       const wetGain = ctx.createGain();
       const dryGain = ctx.createGain();
       const outputGain = ctx.createGain();

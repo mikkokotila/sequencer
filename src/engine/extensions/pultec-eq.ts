@@ -32,7 +32,7 @@ interface PultecNodes {
   highAttenFilter: BiquadFilterNode;
   tubeSat: AudioWorkletNode;
   outputGain: GainNode;
-  ctx: AudioContext;
+  ctx: BaseAudioContext;
 }
 
 interface SelectOption {
@@ -137,7 +137,7 @@ export function createPultecEq(): Extension {
     name: 'Pultec EQ',
     icon: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1 10 Q4 4 8 8 Q12 12 15 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="1" y1="13" x2="15" y2="13" stroke="currentColor" stroke-width="0.8" opacity="0.3"/></svg>',
 
-    init(ctx: AudioContext, host: ExtensionHost): NodePair | null {
+    init(ctx: BaseAudioContext, host: ExtensionHost): NodePair | null {
       hostRef = host;
       const lowBoostFilter = ctx.createBiquadFilter();
       lowBoostFilter.type = 'lowshelf';

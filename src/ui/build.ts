@@ -1,3 +1,4 @@
+import { createSongExportButton } from './song-export';
 /**
  * Main UI builder — constructs the transport, track panels, grids,
  * song pane, and wires all interactive controls.
@@ -407,6 +408,7 @@ export function buildUI(): void {
       .finally(() => loopsBtn.classList.remove('busy'));
   };
   fileBtns.appendChild(loopsBtn);
+  fileBtns.appendChild(createSongExportButton());
   transport.appendChild(fileBtns);
 
   // BPM control

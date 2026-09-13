@@ -205,8 +205,14 @@ test('ADSR, master gain and permanent engine sound survive reload and reset on N
 
 test('Space respects modal buttons and contenteditable without starting transport', async ({ page }) => {
   await ready(page);
+  await page.clock.install({ time: new Date('2026-09-13T00:00:00Z') });
+  await page.clock.pauseAt(new Date('2026-09-13T00:00:01Z'));
   await page.locator('.sample-btn').first().click();
-  await page.locator('#browser-close').focus(); await page.keyboard.press('Space');
+  await page.locator('#browser-close').focus();
+  // Moving focus during opening must survive the former delayed autofocus.
+  await page.clock.runFor(100);
+  await expect(page.locator('#browser-close')).toBeFocused();
+  await page.keyboard.press('Space');
   await expect(page.locator('#browser-overlay')).not.toHaveClass(/open/);
   await expect(page.locator('#play-btn')).not.toHaveClass(/active/);
   await page.evaluate(() => { const e = document.createElement('div'); e.contentEditable = 'true'; e.id = 'editable-test'; document.body.append(e); e.focus(); });

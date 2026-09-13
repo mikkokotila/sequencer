@@ -1,0 +1,53 @@
+{
+  "task_id": "20260913-browser-focus-race",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Fix the sample-browser autofocus race exposed by PR #42 Chrome CI: a 50 ms callback could steal focus from Close before Space activated it. Focus the mounted search field synchronously and deterministically exercise focus ownership across the former delay.",
+    "in_scope": [
+      "src/ui/browser.ts",
+      "e2e/package-integrity.spec.ts",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "samples/**",
+      "samples.json",
+      "server/**",
+      "src/engine/**",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**",
+      "package.json",
+      "package-lock.json"
+    ],
+    "controls": [
+      {
+        "id": "browser_focus",
+        "description": "Opening focuses search immediately; later user focus changes remain authoritative.",
+        "test": "Controlled-clock Chrome regression moves focus to Close before advancing through the former autofocus delay, then verifies Space closes the browser without starting transport."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "PR #42 e2e-gate run 34755019044: modal Space failure",
+      "Controlled-clock regression fails before fix and passes 20 consecutive times afterward",
+      "Actual local app: search focused on opening; Close returns to stopped library song"
+    ],
+    "seed": "20260913-browser-focus-race",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "control_binding"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

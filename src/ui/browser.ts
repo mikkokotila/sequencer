@@ -265,10 +265,7 @@ export function openBrowser(type: TrackType, idx: number): void {
   renderBrowserList('');
   const overlay = document.getElementById('browser-overlay');
   if (overlay) overlay.classList.add('open');
-  setTimeout(() => {
-    const s = document.getElementById('browser-search') as HTMLInputElement | null;
-    s?.focus();
-  }, 50);
+  searchEl?.focus();
 }
 
 export function closeBrowser(): void {

@@ -1,0 +1,113 @@
+{
+  "task_id": "20260913-benchmark-gate-integrity",
+  "task_type": "governance-change",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260913-benchmark-gate-integrity.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-13T09:55:53.864Z",
+  "finished_at_utc": "2026-09-13T09:56:02.481Z",
+  "head_sha": "05dc391",
+  "tree_sha": "f4010eeb8ebe83f2c5723f094fb0b903ea61d3c2",
+  "subject_sha": "ed21efe59acfb569fbe01d8a84f6da912433ab79bd310fd438a52ae390f3065e",
+  "subject_files": [
+    ".github/actions/setup-node-ci/action.yml",
+    "docs/contracts/quality-gates.md",
+    "docs/qc/compiler/obligation-rules.json",
+    "docs/qc/scripts/audio-gates.mjs",
+    "docs/qc/scripts/benchmark-evidence.mjs",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "docs/qc/scripts/governance-self-tests.mjs",
+    "docs/qc/scripts/oracle-harness.mjs",
+    "package-lock.json",
+    "package.json"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    ".github/actions/setup-node-ci/action.yml",
+    "docs/contracts/quality-gates.md",
+    "docs/qc/compiler/obligation-rules.json",
+    "docs/qc/proofs/20260913-benchmark-gate-integrity.md",
+    "docs/qc/proofs/20260913-benchmark-gate-integrity/audit-after.json",
+    "docs/qc/proofs/20260913-benchmark-gate-integrity/audit-before.json",
+    "docs/qc/proofs/20260913-benchmark-gate-integrity/normal-probe.json",
+    "docs/qc/proofs/20260913-benchmark-gate-integrity/overload-probe.json",
+    "docs/qc/proofs/20260913-benchmark-gate-integrity/proof.manifest.json",
+    "docs/qc/proofs/20260913-benchmark-gate-integrity/verdict.json",
+    "docs/qc/scripts/audio-gates.mjs",
+    "docs/qc/scripts/benchmark-evidence.mjs",
+    "docs/qc/scripts/governance-compiler.mjs",
+    "docs/qc/scripts/governance-self-tests.mjs",
+    "docs/qc/scripts/oracle-harness.mjs",
+    "docs/qc/specs/20260913-benchmark-gate-integrity.task.spec.json",
+    "package-lock.json",
+    "package.json"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=3, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=3, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-GATE-GOVERNANCE-SELF",
+        "label": "Governance self-tests",
+        "command": "npm run gate:governance-self",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 2339,
+        "log_file": "docs/qc/proofs/20260913-benchmark-gate-integrity/logs/O-GATE-GOVERNANCE-SELF.log"
+      },
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 5434,
+        "log_file": "docs/qc/proofs/20260913-benchmark-gate-integrity/logs/O-CI.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 416,
+        "log_file": "docs/qc/proofs/20260913-benchmark-gate-integrity/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": null,
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

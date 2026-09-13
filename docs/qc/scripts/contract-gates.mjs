@@ -252,7 +252,21 @@ async function checkNewSongExtensionReset() {
   let hasStateReset = false;
   let hasEnabledReset = false;
 
-  walk(newSongFn.body, (node) => {
+  const functions = new Map();
+  walk(sourceFile, node => {
+    if (ts.isFunctionDeclaration(node) && node.name && node.body) functions.set(node.name.text, node.body);
+  });
+  const visited = new Set();
+  const inspectReset = body => {
+    if (visited.has(body)) return;
+    visited.add(body);
+    walk(body, node => {
+      if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
+        const helper = functions.get(node.expression.text);
+        if (helper) inspectReset(helper);
+      }
+    });
+    walk(body, (node) => {
     if (!ts.isCallExpression(node)) return;
     if (ts.isIdentifier(node.expression) && node.expression.text === 'resetAllExtensions') {
       hasHelperResetCall = true;
@@ -263,6 +277,9 @@ async function checkNewSongExtensionReset() {
       if (node.expression.name.text === 'setEnabled') hasEnabledReset = true;
     }
   });
+
+  };
+  inspectReset(newSongFn.body);
 
   const hasInlineReset = hasStateReset && hasEnabledReset;
   const ok = hasHelperResetCall || hasInlineReset;
@@ -440,7 +457,8 @@ function isFiniteNumber(value) {
 }
 
 async function checkEngineControlCurves() {
-  const rel = 'src/ui/engine-panel.ts';
+  const engineModule = 'src/engine/master-controls.ts';
+  const rel = await fs.access(path.join(root, engineModule)).then(() => engineModule, () => 'src/ui/engine-panel.ts');
 
   const sourceText = await fs.readFile(path.join(root, rel), 'utf8');
   const sourceFile = createSourceFile(rel, sourceText, ts.ScriptKind.TS);

@@ -1,0 +1,71 @@
+{
+  "task_id": "20260913-audio-pressure-fixes",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Fix F13 with a real shipped-DSP benchmark and F15 with owned aux-effect reset/stop lifecycles; close the remaining same-tab save/load revision race. The user explicitly requests fixes for every finding in the same PR #41; this overrides default GA-only product scope and fresh-branch routing. Preserve original failures and missing historical proof.",
+    "in_scope": [
+      "src/engine/extensions/**",
+      "src/engine/worklets/**",
+      "src/engine/scheduler.ts",
+      "src/events.ts",
+      "src/transport/persistence.ts",
+      "tests/**",
+      "e2e/**",
+      "vite.config.ts",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**",
+      "package.json",
+      "package-lock.json"
+    ],
+    "controls": [
+      {
+        "id": "aux_memory_and_timers",
+        "description": "Disabled aux effects cannot be revived by state changes or stale stop callbacks; replay clears old processor buffers.",
+        "test": "Browser regressions verify wet gain zero, audible tail before reset and silence after reset, and no delayed reset after rapid restart."
+      },
+      {
+        "id": "benchmark_truth",
+        "description": "Measure real shipped DSP span with conservative timestamp bounds and the actual 128-frame budget; reject overload.",
+        "test": "Headed positive compiler oracle and independently recomputed real compressor overload regression."
+      },
+      {
+        "id": "queued_load",
+        "description": "An in-flight same-tab save cannot leave a subsequent load using an obsolete revision.",
+        "test": "Load the current ID during queued save, save again and verify resulting database record."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "Synthetic sample voices and all six shipped extensions",
+      "Audible reverb/delay tail, disabled state and rapid restart",
+      "Two-million-sine-iteration mutation inside shipped compressor",
+      "Queued IndexedDB save/load"
+    ],
+    "seed": "20260913-audio-pressure-fixes",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding",
+      "persistence_roundtrip",
+      "benchmark_worklet_budget"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

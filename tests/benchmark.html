@@ -39,22 +39,22 @@
 </head>
 <body>
 <h1>DSP BENCHMARK &mdash; STRESS TEST</h1>
-<div class="subtitle">Measures real AudioWorklet process() duration under maximum load via MeasureProcessor. Reports p99 latency.</div>
+<div class="subtitle">Times the shipped DSP processors and intervening effects under load. Reports a conservative p99 upper bound including a clock handshake and 0.2ms precision allowance; native sample generation precedes the measured span.</div>
 
 <div class="config">
   <div>
-    <label>BUFFER SIZE</label>
+    <label>RENDER QUANTUM</label>
     <select id="buf-size">
       <option value="128">128</option>
-      <option value="256" selected>256</option>
-      <option value="512">512</option>
+      
+      
     </select>
   </div>
   <div>
     <label>POLYPHONY</label>
     <select id="polyphony">
-      <option value="4">4 voices</option>
-      <option value="8">8 voices</option>
+      
+      
       <option value="16" selected>16 voices</option>
       <option value="32">32 voices</option>
     </select>
@@ -62,7 +62,7 @@
   <div>
     <label>DURATION</label>
     <select id="duration">
-      <option value="5">5 seconds</option>
+      
       <option value="10" selected>10 seconds</option>
       <option value="30">30 seconds</option>
     </select>
@@ -78,12 +78,12 @@
     <span class="metric-unit">ms</span>
   </div>
   <div class="metric">
-    <span class="metric-name">P50 (MEDIAN)</span>
+    <span class="metric-name">P50 UPPER BOUND</span>
     <span class="metric-value" id="p50">&mdash;</span>
     <span class="metric-unit">ms</span>
   </div>
   <div class="metric">
-    <span class="metric-name">P99</span>
+    <span class="metric-name">P99 UPPER BOUND</span>
     <span class="metric-value" id="p99">&mdash;</span>
     <span class="metric-unit">ms</span>
   </div>
@@ -104,228 +104,158 @@
   </div>
 
   <div class="history">
-    <div class="history-header">PROCESS() DURATION OVER TIME (ms)</div>
+    <div class="history-header">PRODUCT DSP DURATION UPPER BOUND (ms)</div>
     <canvas id="chart"></canvas>
   </div>
 
   <div class="gate" id="gate"></div>
 </div>
 
-<script>
-const SAMPLE_RATE = 48000;
+<script type="module">
+import compressorUrl from '/src/engine/worklets/compressor-processor.ts?worker&url';
+import saturationUrl from '/src/engine/worklets/saturation-processor.ts?worker&url';
+import freeverbUrl from '/src/engine/worklets/freeverb-processor.ts?worker&url';
+import delayUrl from '/src/engine/worklets/delay-processor.ts?worker&url';
+import transformerUrl from '/src/engine/worklets/transformer-processor.ts?worker&url';
+import measurementCode from './benchmark-measurement.js?raw';
+import clockCode from './benchmark-clock.js?raw';
+import { createCompressor } from '/src/engine/extensions/compressor.ts';
+import { createPultecEq } from '/src/engine/extensions/pultec-eq.ts';
+import { createTransformer } from '/src/engine/extensions/transformer.ts';
+import { createReverb } from '/src/engine/extensions/reverb.ts';
+import { createDelay } from '/src/engine/extensions/delay.ts';
+import { createMixer } from '/src/engine/extensions/mixer.ts';
+import { makeSaturationCurve, cutoffToFreq, resonanceToQ, compToThreshold } from '/src/engine/master-controls.ts';
 
-/**
- * MeasureProcessor — real AudioWorklet that times its own process() calls.
- * Defined as inline Blob URL so the benchmark is self-contained.
- * Sits at the end of the DSP chain, passes audio through, and measures
- * elapsed compute time inside each process() callback.
- */
-const MEASURE_PROCESSOR_CODE = `
-class MeasureProcessor extends AudioWorkletProcessor {
-  constructor() {
-    super();
-    this._active = true;
-    this._lastFrame = null;
-    this.port.onmessage = (e) => {
-      if (e.data === 'stop') this._active = false;
-    };
-  }
-
-  process(inputs, outputs) {
-    if (!this._active) return false;
-
-    const hasPerf = typeof performance !== 'undefined' && performance && typeof performance.now === 'function';
-    const t0 = hasPerf ? performance.now() : 0;
-
-    // Pass audio through (input to output) so the chain stays connected
-    const input = inputs[0];
-    const output = outputs[0];
-    if (input && output) {
-      for (let ch = 0; ch < output.length; ch++) {
-        const inCh = input[ch];
-        const outCh = output[ch];
-        if (inCh && outCh) {
-          outCh.set(inCh);
-        }
-      }
-    }
-
-    if (hasPerf) {
-      const t1 = performance.now();
-      this.port.postMessage(t1 - t0);
-      return true;
-    }
-
-    // Fallback when high-resolution timer is unavailable in worklet scope:
-    // use render-frame interval timing to avoid zero/false-pass samples.
-    if (this._lastFrame === null) {
-      this._lastFrame = currentFrame;
-      return true;
-    }
-    const elapsed = ((currentFrame - this._lastFrame) / sampleRate) * 1000;
-    this._lastFrame = currentFrame;
-    this.port.postMessage(elapsed);
-
-    return true;
-  }
-}
-
-registerProcessor('measure-processor', MeasureProcessor);
-`;
+const SR = 48000;
+const EXPECTED_PROCESSORS = ['compressor-processor', 'saturation-processor', 'freeverb-processor', 'delay-processor', 'transformer-processor'];
+const HOT_SETTINGS = {
+  'pultec-eq': { lowBoost: 4, lowAtten: 2, lowFreq: 60, highBoost: 4, highBandwidth: 0.5, highBoostFreq: 5000, highAtten: 2, highAttenFreq: 10000, tubeColor: 0.7 },
+  compressor: { drive: 0.7, compress: -24, ratio: 8, knee: 20, speed: 1, mix: 1, output: 0.7, model: 0 },
+  transformer: { drive: 0.7, color: 0.7, air: 0.7 },
+  reverb: { decay: 0.9, damping: 0.5, mix: 0.5, sends: Array(9).fill(0.4) },
+  delay: { time: 0.375, feedback: 0.85, tone: 0.7, mix: 0.5, sends: Array(9).fill(0.4) },
+  mixer: { levels: Array(9).fill(0.8) },
+};
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+let running = false;
 
 async function runBenchmark() {
-  const bufSize = Number(document.getElementById('buf-size').value);
-  const voices = Number(document.getElementById('polyphony').value);
-  const duration = Number(document.getElementById('duration').value);
-  const budget = (bufSize / SAMPLE_RATE) * 1000; // ms
-
-  const btn = document.getElementById('run-btn');
-  btn.textContent = 'RUNNING...';
-  btn.classList.add('running');
-
-  document.getElementById('results').style.display = 'block';
-  document.getElementById('budget').textContent = budget.toFixed(2);
-
-  // Create real AudioContext for accurate worklet timing
-  const ctx = new AudioContext({ sampleRate: SAMPLE_RATE });
-  if (ctx.state === 'suspended') await ctx.resume();
-
-  // Register the MeasureProcessor worklet from Blob URL
-  const blob = new Blob([MEASURE_PROCESSOR_CODE], { type: 'application/javascript' });
-  const workletUrl = URL.createObjectURL(blob);
-  await ctx.audioWorklet.addModule(workletUrl);
-  URL.revokeObjectURL(workletUrl);
-
-  // Build stress chain: N voices -> saturation -> compressor -> MeasureProcessor -> output
-  const masterGain = ctx.createGain();
-  masterGain.gain.value = 0.3 / Math.sqrt(voices); // normalize
-  masterGain.connect(ctx.destination);
-
-  // Saturation (4x oversampled waveshaper)
-  const sat = ctx.createWaveShaper();
-  const n = 4096;
-  const curve = new Float32Array(n);
-  const amount = 0.5;
-  const k = 1 + amount * 50;
-  for (let i = 0; i < n; i++) {
-    const x = (i * 2) / n - 1;
-    const shaped = (Math.PI + k) * x / (Math.PI + k * Math.abs(x));
-    curve[i] = x * (1 - amount) + shaped * amount;
-  }
-  sat.curve = curve;
-  sat.oversample = '4x';
-
-  // Compressor (native node)
-  const comp = ctx.createDynamicsCompressor();
-  comp.threshold.value = -24;
-  comp.ratio.value = 4;
-  comp.knee.value = 20;
-
-  // MeasureProcessor — real AudioWorkletNode that times its own process()
-  const measureNode = new AudioWorkletNode(ctx, 'measure-processor');
-
-  // Chain: voices -> sat -> comp -> measureNode -> master -> destination
-  sat.connect(comp);
-  comp.connect(measureNode);
-  measureNode.connect(masterGain);
-
-  // Spawn voices — deterministic frequencies (no randomness)
-  const oscs = [];
-  for (let v = 0; v < voices; v++) {
-    const osc = ctx.createOscillator();
-    osc.type = 'sawtooth';
-    osc.frequency.value = 55 + v * 7.3 + ((v * 1.37) % 2); // deterministic detuning
-    const g = ctx.createGain();
-    g.gain.value = 0.15;
-    osc.connect(g).connect(sat);
-    osc.start();
-    oscs.push(osc);
-  }
-
-  // Collect direct per-process elapsed timings emitted from the worklet.
-  const timings = [];
-  let processorError = null;
-  measureNode.onprocessorerror = () => {
-    processorError = 'AudioWorklet processor error';
-  };
-  measureNode.port.onmessage = (e) => {
-    if (e.data && e.data.type === 'error') {
-      processorError = String(e.data.reason || 'AudioWorklet processor error');
-      return;
-    }
-    const v = Number(e.data);
-    if (Number.isFinite(v) && v >= 0) {
-      timings.push(v);
-    }
-  };
-
-  // Wait for test duration
-  await new Promise(r => setTimeout(r, duration * 1000));
-
-  // Stop worklet and oscillators
-  measureNode.port.postMessage('stop');
-  oscs.forEach(o => { try { o.stop(); } catch(e) {} });
-
-  // Small delay to collect final batch
-  await new Promise(r => setTimeout(r, 200));
-  ctx.close();
-
-  // Analyze results from real worklet process() timing
-  if (processorError) {
-    document.getElementById('gate').className = 'gate fail';
-    document.getElementById('gate').textContent = 'FAIL — ' + processorError;
-    btn.textContent = 'RUN STRESS TEST';
-    btn.classList.remove('running');
-    return;
-  }
-
-  const data = timings;
-  if (data.length < 10) {
-    document.getElementById('gate').className = 'gate fail';
-    document.getElementById('gate').textContent = 'FAIL — insufficient data collected (' + data.length + ' samples)';
-    btn.textContent = 'RUN STRESS TEST';
-    btn.classList.remove('running');
-    return;
-  }
-
-  const sorted = [...data].sort((a, b) => a - b);
-  const p50 = sorted[Math.floor(sorted.length * 0.5)];
-  const p99 = sorted[Math.floor(sorted.length * 0.99)];
-  const max = sorted[sorted.length - 1];
-  const loadPct = (p99 / budget) * 100;
-
-  document.getElementById('p50').textContent = p50.toFixed(3);
-  document.getElementById('p99').textContent = p99.toFixed(3);
-  document.getElementById('max').textContent = max.toFixed(3);
-  document.getElementById('load').textContent = loadPct.toFixed(1);
-
-  // Color code
-  const p99El = document.getElementById('p99');
-  p99El.className = 'metric-value ' + (p99 < budget * 0.5 ? 'pass' : p99 < budget * 0.75 ? 'warn' : 'fail');
-  const loadEl = document.getElementById('load');
-  loadEl.className = 'metric-value ' + (loadPct < 50 ? 'pass' : loadPct < 75 ? 'warn' : 'fail');
-
-  // Load meter
-  const fill = document.getElementById('load-fill');
-  fill.style.width = Math.min(100, loadPct) + '%';
-  fill.style.background = loadPct < 50 ? '#4afe70' : loadPct < 75 ? '#EEA83E' : '#ff3c5a';
-
-  // Chart
-  drawChart(data, budget);
-
-  // Gate verdict — in interactive profile, p99 must be under budget
+  if (running) return;
+  running = true;
+  const button = document.getElementById('run-btn');
   const gate = document.getElementById('gate');
-  const passed = p99 < budget;
-  gate.className = 'gate ' + (passed ? 'pass' : 'fail');
-  gate.textContent = (passed ? 'PASS' : 'FAIL')
-    + ' — p99 ' + p99.toFixed(3) + 'ms'
-    + ', budget ' + budget.toFixed(2) + 'ms'
-    + ', ' + data.length + ' worklet process() samples'
-    + ', p50 ' + p50.toFixed(3) + 'ms';
-
-  btn.textContent = 'RUN STRESS TEST';
-  btn.classList.remove('running');
+  button.disabled = true; button.textContent = 'RUNNING…';
+  gate.className = 'gate'; gate.textContent = 'Warming up the real product effects…';
+  document.getElementById('results').style.display = 'block';
+  window.__benchmarkEvidence = null;
+  let ctx, extensions = [], sources = [], observer, clockWorker, clockControl;
+  try {
+    const voices = Number(document.getElementById('polyphony').value);
+    const duration = Number(document.getElementById('duration').value);
+    if (voices < 16 || duration < 10) throw new Error('The gate requires at least 16 voices and 10 seconds.');
+    if (!crossOriginIsolated || typeof SharedArrayBuffer !== 'function') throw new Error('The benchmark requires its isolated local server route.');
+    const clockTicks = new SharedArrayBuffer(16);
+    const controlBuffer = new SharedArrayBuffer(12);
+    clockControl = new Int32Array(controlBuffer);
+    const clockUrl = URL.createObjectURL(new Blob([clockCode], { type: 'application/javascript' }));
+    clockWorker = new Worker(clockUrl);
+    URL.revokeObjectURL(clockUrl);
+    await new Promise((resolve, reject) => {
+      const deadline = setTimeout(() => reject(new Error('Measurement clock startup timed out')), 5000);
+      clockWorker.onerror = () => { clearTimeout(deadline); reject(new Error('Measurement clock failed')); };
+      clockWorker.onmessage = ({ data }) => { clearTimeout(deadline); data.type === 'ready' ? resolve() : reject(new Error(data.error)); };
+      clockWorker.postMessage({ ticks: clockTicks, control: controlBuffer });
+    });
+    ctx = new AudioContext({ sampleRate: SR });
+    await ctx.resume();
+    const url = URL.createObjectURL(new Blob([measurementCode], { type: 'application/javascript' }));
+    try { await ctx.audioWorklet.addModule(url); } finally { URL.revokeObjectURL(url); }
+    await Promise.all([compressorUrl, saturationUrl, freeverbUrl, delayUrl, transformerUrl].map(url => ctx.audioWorklet.addModule(url)));
+    const mixBus = ctx.createGain(), masterGain = ctx.createGain();
+    mixBus.connect(masterGain); masterGain.gain.value = 0.8;
+    const channelFaders = Array.from({ length: 9 }, () => ctx.createGain());
+    const channelPans = channelFaders.map(fader => { const pan = ctx.createStereoPanner(); fader.connect(pan).connect(mixBus); return pan; });
+    const stopCallbacks = [];
+    const host = { channelFaders, channelPans, mixBus, masterGain, trackCount: 9,
+      onStop: callback => stopCallbacks.push(callback), getTrackInfo: () => ({ name: 'Benchmark', color: '#888', bright: '#ccc', type: 'melody' }), notifyStateChange() {} };
+    extensions = [createPultecEq(), createCompressor(), createTransformer(), createMixer(), createReverb(), createDelay()];
+    let previous = masterGain;
+    for (const extension of extensions) {
+      const nodes = extension.init(ctx, host);
+      extension.setState(HOT_SETTINGS[extension.id]);
+      extension._enabled = true; extension.setEnabled?.(true);
+      if (nodes) { previous.connect(nodes.input); previous = nodes.output; }
+    }
+    // Same permanent engine mappings and native processing settings as the product.
+    const filter = ctx.createBiquadFilter(); filter.type = 'lowpass';
+    filter.frequency.value = cutoffToFreq(0.7); filter.Q.value = resonanceToQ(0.3);
+    const saturation = ctx.createWaveShaper(); saturation.curve = makeSaturationCurve(0.7); saturation.oversample = '4x';
+    const compression = ctx.createDynamicsCompressor(); compression.threshold.value = compToThreshold(0.4);
+    compression.ratio.value = 4; compression.knee.value = 10; compression.attack.value = 0.003; compression.release.value = 0.25;
+    observer = new AudioWorkletNode(ctx, 'graph-measurement', { outputChannelCount: [2], processorOptions: { ticks: clockTicks, control: controlBuffer } });
+    const quiet = ctx.createGain(); quiet.gain.value = 0.001;
+    previous.connect(filter).connect(saturation).connect(compression).connect(observer).connect(quiet).connect(ctx.destination);
+    const samples = [];
+    let timer = null, processorError = null, stopped;
+    const stoppedMessage = new Promise(resolve => { stopped = resolve; });
+    observer.onprocessorerror = () => { processorError = 'Measurement worklet failed'; };
+    observer.port.onmessage = event => {
+      const packet = event.data;
+      if (packet.type === 'started') timer = packet;
+      if (packet.type === 'sample') samples.push(packet);
+      if (packet.type === 'stopped') stopped();
+    };
+    for (let v = 0; v < voices; v++) {
+      const source = ctx.createBufferSource();
+      const buffer = ctx.createBuffer(1, SR, SR), data = buffer.getChannelData(0);
+      const hz = 55 + 11 * v;
+      for (let i = 0; i < data.length; i++) data[i] = Math.sin(2 * Math.PI * hz * i / SR) * 0.025;
+      source.buffer = buffer; source.loop = true; source.connect(channelFaders[v % 9]); source.start(); sources.push(source);
+    }
+    await delay(1500);
+    observer.port.postMessage('start');
+    gate.textContent = 'Measuring product DSP with all effects active…';
+    await delay(duration * 1000 + 100);
+    observer.port.postMessage('stop');
+    await Promise.race([stoppedMessage, delay(3000).then(() => { throw new Error('Measurement worklet did not acknowledge stop'); })]);
+    // Retain raw measurements even when an overloaded renderer invalidates its clock.
+    // Failure evidence must remain inspectable; missing evidence is never a PASS.
+    const frames = samples[0]?.frames ?? 128;
+    const measuredMs = samples.length ? samples.at(-1).endedAt - samples[0].startedAt : 0;
+    const coverage = samples.length * frames / (measuredMs / 1000 * ctx.sampleRate);
+    const data = samples.map(s => s.durationUpperBoundMs);
+    const sorted = [...data].sort((a,b) => a-b);
+    const p99 = sorted[Math.floor(sorted.length * 0.99)], p50 = sorted[Math.floor(sorted.length * 0.5)], max = sorted.at(-1);
+    const budget = frames / ctx.sampleRate * 1000;
+    const continuous = samples.every((s, i) => i === 0 || s.frame === samples[i - 1].frame + frames);
+    const measurementError = processorError || timer?.error ||
+      (timer?.precisionMs !== 0.1 ? 'Unverified worklet clock precision' : null) ||
+      (samples.length < 50 ? 'Insufficient real processing samples' : null) ||
+      samples.find(s => s.error)?.error ||
+      (frames !== 128 || samples.some(s => s.frames !== frames) ? 'Unexpected render quantum' : null);
+    const passed = !measurementError && p99 < budget && measuredMs >= duration * 1000 && coverage >= 0.9 && continuous;
+    window.__benchmarkEvidence = { schemaVersion: 1, timer: 'shared-worker-handshake', quantizationUpperBoundMs: 0.2,
+      workload: { voices, effects: extensions.map(e => e.id), processors: EXPECTED_PROCESSORS, durationMs: measuredMs },
+      sampleRate: ctx.sampleRate, frames, budgetMs: budget, p99UpperBoundMs: p99, p50UpperBoundMs: p50, maxUpperBoundMs: max,
+      sampleCount: samples.length, coverage, continuous, samples, passed, measurementError };
+    if (measurementError) throw new Error(measurementError);
+    for (const [id, value] of Object.entries({ budget, p50, p99, max, load: p99 / budget * 100 })) document.getElementById(id).textContent = value.toFixed(3);
+    drawChart(data, budget);
+    gate.className = `gate ${passed ? 'pass' : 'fail'}`;
+    gate.textContent = `${passed ? 'PASS' : 'FAIL'} — p99 upper bound ${p99.toFixed(3)}ms, budget ${budget.toFixed(3)}ms, ${samples.length} worklet process() samples, ${measuredMs}ms, ${(coverage*100).toFixed(1)}% render coverage`;
+  } catch (error) {
+    gate.className = 'gate fail'; gate.textContent = `FAIL — ${error.message}`;
+  } finally {
+    for (const source of sources) { try { source.stop(); source.disconnect(); } catch {} }
+    for (const extension of extensions) { try { extension.destroy(); } catch {} }
+    if (clockControl) Atomics.store(clockControl, 2, 1);
+    if (clockWorker) clockWorker.terminate();
+    if (ctx) await ctx.close();
+    running = false; button.disabled = false; button.textContent = 'RUN STRESS TEST';
+  }
 }
+document.getElementById('run-btn').onclick = runBenchmark;
 
 function drawChart(data, budget) {
   const canvas = document.getElementById('chart');
@@ -379,7 +309,7 @@ function drawChart(data, budget) {
   }
 }
 
-document.getElementById('run-btn').onclick = runBenchmark;
+
 </script>
 </body>
 </html>

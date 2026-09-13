@@ -27,7 +27,8 @@
       "docs/qc/scripts/**",
       "package.json",
       "package-lock.json",
-      ".husky/**"
+      ".husky/**",
+      ".github/actions/**"
     ],
     "compiler_managed": [
       "docs/qc/proofs/**",

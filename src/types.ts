@@ -43,6 +43,12 @@ export interface SongData {
   vocalSampleData: SampleData | null;
   extensions: Record<string, ExtensionState>;
   updatedAt: number;
+  revision?: number;
+  sound?: {
+    masterGain: number;
+    adsr: (AdsrParams & { enabled: boolean })[];
+    engine: EngineSettings;
+  };
 }
 
 // Extension system
@@ -112,4 +118,17 @@ export interface LoadedSample {
   buffer: AudioBuffer;
   data: ArrayBuffer;
   name: string;
+}
+
+export interface AdsrParams {
+  attack: number;
+  decay: number;
+  sustain: number;
+  release: number;
+}
+export interface EngineSettings {
+  cutoff: number;
+  resonance: number;
+  saturation: number;
+  compression: number;
 }

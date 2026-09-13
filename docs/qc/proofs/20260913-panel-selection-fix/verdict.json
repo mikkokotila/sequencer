@@ -1,0 +1,216 @@
+{
+  "task_id": "20260913-panel-selection-fix",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260913-panel-selection-fix.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-13T10:37:39.285Z",
+  "finished_at_utc": "2026-09-13T10:41:06.518Z",
+  "head_sha": "c952f3d",
+  "tree_sha": "6f3169acd20756e0f74ea71a6bcb391f3b0b1fb3",
+  "subject_sha": "2bc6a6019b0c0bf8a3f958ab9b356546349fb106dd98dd349934dbe4131b1c6f",
+  "subject_files": [
+    "e2e/benchmark-pressure.spec.ts",
+    "e2e/panel-selection.spec.ts",
+    "e2e/qc-reporter.ts",
+    "playwright.config.ts",
+    "src/ui/engine-panel.ts",
+    "tests/benchmark.html"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260913-package-final-qc/REPORT.md",
+    "docs/qc/proofs/20260913-package-final-qc/benchmark-32-voices-raw.json",
+    "docs/qc/proofs/20260913-package-final-qc/benchmark-32-voices.json",
+    "docs/qc/proofs/20260913-package-final-qc/benchmark-pressure.mjs",
+    "docs/qc/proofs/20260913-package-final-qc/benchmark-pressure.txt",
+    "docs/qc/proofs/20260913-package-final-qc/browser-scope.txt",
+    "docs/qc/proofs/20260913-package-final-qc/build.txt",
+    "docs/qc/proofs/20260913-package-final-qc/check-export.py",
+    "docs/qc/proofs/20260913-package-final-qc/chrome-1440.png",
+    "docs/qc/proofs/20260913-package-final-qc/chrome-390.png",
+    "docs/qc/proofs/20260913-package-final-qc/chrome-768.png",
+    "docs/qc/proofs/20260913-package-final-qc/chromium-1440.png",
+    "docs/qc/proofs/20260913-package-final-qc/chromium-390.png",
+    "docs/qc/proofs/20260913-package-final-qc/chromium-768.png",
+    "docs/qc/proofs/20260913-package-final-qc/compatibility-results.json",
+    "docs/qc/proofs/20260913-package-final-qc/compatibility.mjs",
+    "docs/qc/proofs/20260913-package-final-qc/compatibility.txt",
+    "docs/qc/proofs/20260913-package-final-qc/dependency-audit.json",
+    "docs/qc/proofs/20260913-package-final-qc/edit-model.txt",
+    "docs/qc/proofs/20260913-package-final-qc/environment.json",
+    "docs/qc/proofs/20260913-package-final-qc/export-check.txt",
+    "docs/qc/proofs/20260913-package-final-qc/export-independent-check.json",
+    "docs/qc/proofs/20260913-package-final-qc/export-pressure.mjs",
+    "docs/qc/proofs/20260913-package-final-qc/export-results.json",
+    "docs/qc/proofs/20260913-package-final-qc/export.txt",
+    "docs/qc/proofs/20260913-package-final-qc/interrupted-multibrowser-results.json",
+    "docs/qc/proofs/20260913-package-final-qc/interrupted-multibrowser.txt",
+    "docs/qc/proofs/20260913-package-final-qc/linux-audio-ci.txt",
+    "docs/qc/proofs/20260913-package-final-qc/pressure-results.json",
+    "docs/qc/proofs/20260913-package-final-qc/pressure.mjs",
+    "docs/qc/proofs/20260913-package-final-qc/production-results.json",
+    "docs/qc/proofs/20260913-package-final-qc/production-smoke.mjs",
+    "docs/qc/proofs/20260913-package-final-qc/production.txt",
+    "docs/qc/proofs/20260913-package-final-qc/soak-results.json",
+    "docs/qc/proofs/20260913-package-final-qc/soak.mjs",
+    "docs/qc/proofs/20260913-package-final-qc/soak.txt",
+    "docs/qc/proofs/20260913-package-final-qc/ui-resource-pressure.mjs",
+    "docs/qc/proofs/20260913-package-final-qc/ui-resource-results.json",
+    "docs/qc/proofs/20260913-package-final-qc/ui-resource.txt",
+    "docs/qc/proofs/20260913-package-final-qc/webkit-1440.png",
+    "docs/qc/proofs/20260913-package-final-qc/webkit-390.png",
+    "docs/qc/proofs/20260913-package-final-qc/webkit-768.png",
+    "docs/qc/proofs/20260913-package-pressure/FINDINGS.md",
+    "docs/qc/proofs/20260913-panel-selection-fix.md",
+    "docs/qc/proofs/20260913-panel-selection-fix/after.txt",
+    "docs/qc/proofs/20260913-panel-selection-fix/before.txt",
+    "docs/qc/proofs/20260913-panel-selection-fix/linux-compiler-failure.txt",
+    "docs/qc/proofs/20260913-panel-selection-fix/linux-e2e-failure.txt",
+    "docs/qc/proofs/20260913-panel-selection-fix/proof.manifest.json",
+    "docs/qc/proofs/20260913-panel-selection-fix/reporter-sentinel.txt",
+    "docs/qc/runs/20260913-final-package-pressure.md",
+    "docs/qc/specs/20260913-panel-selection-fix.task.spec.json",
+    "e2e/benchmark-pressure.spec.ts",
+    "e2e/panel-selection.spec.ts",
+    "e2e/qc-reporter.ts",
+    "playwright.config.ts",
+    "src/ui/engine-panel.ts",
+    "tests/benchmark.html"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=4, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=4, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 5566,
+        "log_file": "docs/qc/proofs/20260913-panel-selection-fix/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 184883,
+        "log_file": "docs/qc/proofs/20260913-panel-selection-fix/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 266,
+        "log_file": "docs/qc/proofs/20260913-panel-selection-fix/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 384,
+        "log_file": "docs/qc/proofs/20260913-panel-selection-fix/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 426,
+        "log_file": "docs/qc/proofs/20260913-panel-selection-fix/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 377,
+        "log_file": "docs/qc/proofs/20260913-panel-selection-fix/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-panel-selection-fix/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260913-panel-selection-fix/raw/off_transparent.json",
+        "raw_sha256": "146f97d37b5d520f8b8df7632f708c130da155f19938f46ca8f21bc524f18acb"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-panel-selection-fix/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260913-panel-selection-fix/raw/on_audible.json",
+        "raw_sha256": "f404813a45eaaab5e73d1f83f9ad1e683cd1362ff2c4797b5bbfac252dcb2020"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-panel-selection-fix/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260913-panel-selection-fix/raw/control_binding.json",
+        "raw_sha256": "2922312c58f92af8addb4aa520b363ac33d64caaa9eebd8344d29d86d0ec7a45"
+      },
+      {
+        "oracle_id": "benchmark_worklet_budget",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-panel-selection-fix/oracles/benchmark_worklet_budget.json",
+        "raw_artifact": "docs/qc/proofs/20260913-panel-selection-fix/raw/benchmark_worklet_budget.json",
+        "raw_sha256": "d0d2b1ccb67bb83f10d5676690c89b18ac8201157e1e78b9e5560cf400b01014"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

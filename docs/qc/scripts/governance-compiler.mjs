@@ -812,7 +812,11 @@ async function createIndexSnapshot(treeSha) {
     await fs.rm(snapshotRoot, { recursive: true, force: true });
     throw new Error(`Failed to create git-index snapshot (${treeSha}): ${out.stderr || out.stdout || 'unknown error'}`);
   }
-  return snapshotRoot;
+  // Source remains frozen to the index; resolve installed, lockfile-managed tooling
+  // when Vite loads the snapshot's config and actual product modules.
+  await fs.symlink(path.join(root, 'node_modules'), path.join(snapshotRoot, 'node_modules'), 'dir');
+  // Vite keys HTML proxy modules by canonical path; macOS /var aliases /private/var.
+  return await fs.realpath(snapshotRoot);
 }
 
 function stableValue(value) {

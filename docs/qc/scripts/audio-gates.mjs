@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { setTimeout as delay } from 'node:timers/promises';
 import { createServer } from 'vite';
+import { validateBenchmarkEvidence } from './benchmark-evidence.mjs';
 
 const PORT = Number(process.env.AUDIO_GATE_PORT || '5174');
 const BASE = `http://localhost:${PORT}`;
@@ -159,6 +160,7 @@ async function run() {
       const sampleMatch =
         gateText.match(/(\d+)\s+worklet process\(\)\s+samples/i) || gateText.match(/(\d+)\s*samples/i);
       return {
+        evidence: window.__benchmarkEvidence ?? null,
         gateText,
         gateClass,
         p99Text,
@@ -179,7 +181,9 @@ async function run() {
       benchmark.randomCalls === 0 &&
       benchmark.intervalCalls === 0;
 
+    const rawEvidence = validateBenchmarkEvidence(benchmark.evidence);
     const benchmarkOk =
+      rawEvidence.ok &&
       !gateShowsFail &&
       structuralOk &&
       p99 !== null &&
@@ -188,7 +192,7 @@ async function run() {
       sampleCount >= 50 &&
       p99 <= budget;
 
-    const benchmarkFailures = [];
+    const benchmarkFailures = rawEvidence.failures.map(message => ({ suite: 'benchmark', test_name: 'raw-product-dsp-evidence', file_line: null, first_message: message }));
     if (gateShowsFail) {
       benchmarkFailures.push({
         suite: 'benchmark',

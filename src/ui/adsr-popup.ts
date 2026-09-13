@@ -1,3 +1,4 @@
+import { emit } from '../events';
 /**
  * ADSR popup — per-track envelope controls with live visualization.
  *
@@ -69,6 +70,7 @@ export function buildAdsrPopupDOM(): void {
   toggleBtn.onclick = () => {
     const on = !isAdsrEnabled(activeTrackIndex);
     setAdsrEnabled(activeTrackIndex, on);
+    emit('engine:settingsChanged', {});
     updateToggle();
     updateAdsrBtnState(activeTrackIndex);
   };
@@ -115,6 +117,7 @@ export function buildAdsrPopupDOM(): void {
     slider.oninput = () => {
       const v = parseFloat(slider.value);
       setTrackAdsr(activeTrackIndex, { [p.key]: v });
+      emit('engine:settingsChanged', {});
       updateValues();
       drawEnvelope();
     };

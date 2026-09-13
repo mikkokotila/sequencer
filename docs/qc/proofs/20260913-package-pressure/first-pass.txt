@@ -1,0 +1,24 @@
+PASS seeded-5000-edit-copy-fill-persistence {"operations":5000,"stateMatches":true,"savedMatches":true,"reloadMatches":true} 
+PASS loaded-audio-survives-indexeddb-reload {"before":{"bytes":132344,"length":44100},"after":{"bytes":132344,"length":44100}} 
+FAIL adsr-and-master-save-reload {"before":{"adsr":{"attack":0.42,"decay":0.7,"sustain":0.25,"release":1.3},"enabled":true,"master":0.23000000417232513},"after":{"adsr":{"attack":0.005,"decay":0.1,"sustain":1,"release":0.1},"enabled":false,"master":0.800000011920929}} ADSR/master settings silently lost after save/reload
+FAIL pattern-file-export-import-with-sample {"exportBytes":199923,"sampleData":{},"after":{"sampleLoaded":false,"sampleDataType":"[object Object]"}} An exported pattern with a loaded sample cannot reload its audio
+FAIL import-rejects-syntax-without-state-loss {"patternsPreserved":true,"bpm":120,"phrase":0,"name":"Untitled","errorVisible":false,"title":"Import Pattern"} Invalid import must preserve the song and report a visible error
+FAIL import-rejects-negative-bpm-without-state-loss {"patternsPreserved":false,"bpm":-10,"phrase":0,"name":"Invalid","errorVisible":false,"title":"Import Pattern"} Invalid import must preserve the song and report a visible error
+FAIL import-rejects-invalid-phrase-without-state-loss {"patternsPreserved":false,"bpm":120,"phrase":99,"name":"Invalid","errorVisible":false,"title":"Import Pattern"} Invalid import must preserve the song and report a visible error
+FAIL import-rejects-object-name-without-state-loss {"patternsPreserved":false,"bpm":120,"phrase":0,"name":{"x":1},"errorVisible":false,"title":"Import Pattern"} Invalid import must preserve the song and report a visible error
+FAIL delete-only-song-does-not-resurrect-it {"deletedId":"mtzjqo8gy9w3w","currentId":"mtzjqoaytdoyg","storedIds":["mtzjqo8gy9w3w","mtzjqoaytdoyg"]} Deleting the last song saves it back before creating its replacement
+FAIL latest-song-load-wins-under-slow-decode {"id":"slow-A","name":"Slow older song","bpm":189,"sampleLoaded":true} Older async load overwrote the newer song with mixed state
+FAIL aborted-storage-transaction-must-reject {"resolved":true,"error":null,"stored":false} Storage API reports success even though transaction aborts and data was not saved
+FAIL two-tabs-detect-or-preserve-conflicting-edits {"name":"Untitled","bpm":175} Stale tab silently overwrites another tab’s saved changes
+FAIL new-song-resets-engine-controls {"sliderCount":4,"lowpassFrequencies":[200]} New Song retains engine filtering from the previous song
+FAIL midi-repeated-note-off-stops-all-voices {"started":2,"afterNoteOff":2,"afterDisconnect":2} Repeated MIDI pitch leaves an untracked voice playing after note-off/disconnect
+FAIL midi-mono-retrigger-ended-race {"started":2,"active":2} Old ended callback deletes the replacement MIDI voice, so note-off misses it
+FAIL midi-polyphony-stealing-and-device-disconnect {"started":16,"playing":16,"afterDisconnect":16,"binding":null} MIDI polyphony/device cleanup failed
+PASS offline-render-duration-onsets-pan-mute-and-pcm {"frames":236537,"expectedFrames":236537,"onsets":[0,21048,48110,93212,141321,189430],"expected":[0,21048,48109,93211,141320,189430],"peak":0.04000000283122063,"rightPeak":0,"mutedPeak":0,"finite":true,"pcm":[-8388608,4194304,-8388608,-4194304,0,2097152,8388607,-2097152,8388607,0]} 
+FAIL keyboard-space-is-inert-inside-modals {} locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-action="load"]').first()[22m
+
+FAIL startup-recovery-indexeddb-denied {"readyWait":"page.waitForSelector: Timeout 12000ms exceeded.","state":{"playDisabled":true,"visibleError":false,"text":"Untitled\nBPM\nKick\nLOAD\nFILL\nCLR\nM\nADSR\nSnare\nLOAD\nFILL\nCLR\nM\nADSR\nClosed Hat\nLOAD\nFILL\nCLR\nM\nADSR\nOpen Hat\nLOAD\nFILL\nCLR\nM\nADSR\nCrash\nLOAD\nFILL\nCLR\nM\n"}} Initialization failure strands the package without visible recovery feedback
+FAIL startup-recovery-worklet-network-failure {"readyWait":"page.waitForSelector: Timeout 12000ms exceeded.","state":{"visibleError":false,"text":"EXTENSION\n×\nSelect Sample\n×\n0 samples\nLOAD"}} Initialization failure strands the package without visible recovery feedback
+{"passed":3,"failed":17}

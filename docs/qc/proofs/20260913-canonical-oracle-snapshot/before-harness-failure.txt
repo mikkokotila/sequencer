@@ -1,0 +1,45 @@
+command: node "/var/folders/zg/pwnp530s7m5731gmlbhqyh_r0000gn/T/gov-index-31IYCR/docs/qc/scripts/oracle-harness.mjs" --task-id "20260913-audio-pressure-fixes" --oracles "off_transparent,on_audible,low_end_continuity,clip_guard,default_safety,control_binding,persistence_roundtrip,benchmark_worklet_budget" --subject-sha "c1805d62ca03de367efdfb6229cc816efbcee4045a6cfa7b33a44a20a51a5c4d" --execution-profile "real" --challenge "10eb21927053592f210643a8c1ff6fb2583468c981186d60ed62594b743cf70e" --repo-root "/var/folders/zg/pwnp530s7m5731gmlbhqyh_r0000gn/T/gov-index-31IYCR" --json
+status: 1
+elapsed_ms: 31970
+snapshot_root: /var/folders/zg/pwnp530s7m5731gmlbhqyh_r0000gn/T/gov-index-31IYCR
+used_snapshot: true
+
+--- stdout ---
+
+
+--- stderr ---
+1:10:26 PM [vite] Pre-transform error: Failed to load url /src/main.ts (resolved id: /private/var/folders/zg/pwnp530s7m5731gmlbhqyh_r0000gn/T/gov-index-31IYCR/src/main.ts). Does the file exist?
+1:10:27 PM [vite] Pre-transform error: No matching HTML proxy module found from /private/var/folders/zg/pwnp530s7m5731gmlbhqyh_r0000gn/T/gov-index-31IYCR/tests/benchmark.html?html-proxy&index=0.js
+1:10:27 PM [vite] Internal server error: No matching HTML proxy module found from /private/var/folders/zg/pwnp530s7m5731gmlbhqyh_r0000gn/T/gov-index-31IYCR/tests/benchmark.html?html-proxy&index=0.js
+      at LoadPluginContext.handler (file:///Users/mikkokotila/dev/sequencer/node_modules/vite/dist/node/chunks/dep-Dm0c1Wj2.js:36176:19)
+      at EnvironmentPluginContainer.load (file:///Users/mikkokotila/dev/sequencer/node_modules/vite/dist/node/chunks/dep-Dm0c1Wj2.js:42424:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at async loadAndTransform (file:///Users/mikkokotila/dev/sequencer/node_modules/vite/dist/node/chunks/dep-Dm0c1Wj2.js:35779:22)
+      at async viteTransformMiddleware (file:///Users/mikkokotila/dev/sequencer/node_modules/vite/dist/node/chunks/dep-Dm0c1Wj2.js:37369:24)
+oracle-harness error: page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#run-btn')[22m
+[2m    - locator resolved to <button id="run-btn">RUN STRESS TEST</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    57 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+

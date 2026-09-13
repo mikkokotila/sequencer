@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import ts from 'typescript';
+import { validateBenchmarkEvidence } from './benchmark-evidence.mjs';
 
 const root = process.cwd();
 
@@ -153,6 +154,36 @@ async function assertNoDeltaModeReferences() {
   );
 }
 
+
+function assertBenchmarkEvidence() {
+  const reference = {
+    schemaVersion: 1, timer: 'shared-worker-handshake', quantizationUpperBoundMs: 0.2,
+    sampleRate: 48000, frames: 128,
+    workload: { voices: 16, effects: ['compressor','pultec-eq','transformer','mixer','reverb','delay'],
+      processors: ['compressor-processor','saturation-processor','freeverb-processor','delay-processor','transformer-processor'] },
+    samples: Array.from({ length: 4000 }, (_, i) => {
+      const startedAt = 1000 + i * 128 / 48, endedAt = startedAt + 0.3;
+      return { frame: i * 128, frames: 128, startedAt, endedAt, wallStart: Math.floor(startedAt), wallEnd: Math.floor(endedAt), durationUpperBoundMs: 0.5, counts: [1,2,1,1,1], error: null };
+    }),
+  };
+  record(validateBenchmarkEvidence(reference).ok, 'Benchmark raw evidence positive control', 'Full product chain, real quantum and ten seconds of clock evidence.');
+  const mutations = [
+    ['legacy no-op PASS label', () => ({ passed: true, p99UpperBoundMs: 0 })],
+    ['inflated block budget', v => { v.frames = 256; v.budgetMs = 100; return v; }],
+    ['missing product processor', v => { v.samples[0].counts[1] = 1; return v; }],
+    ['false p99 claim', v => { v.p99UpperBoundMs = 0; for (const s of v.samples) { s.endedAt = s.startedAt + 4; s.wallEnd = Math.floor(s.endedAt); s.durationUpperBoundMs = 4.2; } return v; }],
+    ['insufficient duration', v => { v.samples = v.samples.slice(0, 50); return v; }],
+    ['discontinuous rendering', v => { v.samples.splice(10, 1); return v; }],
+    ['frozen shared clock', v => { for (const s of v.samples) { s.startedAt = s.endedAt = 0; s.durationUpperBoundMs = 0.2; } return v; }],
+    ['clock failure packet', v => { v.samples[12].error = 'Clock stopped'; return v; }],
+    ['missing effect workload', v => { v.workload.effects.pop(); return v; }],
+  ];
+  for (const [name, mutate] of mutations) {
+    const verdict = validateBenchmarkEvidence(mutate(structuredClone(reference)));
+    record(!verdict.ok, `Benchmark rejects ${name}`, verdict.failures.join('; '));
+  }
+}
+
 async function main() {
   for (const relPath of sourceGateScripts) {
     const text = await fs.readFile(path.join(root, relPath), 'utf8');
@@ -184,6 +215,7 @@ async function main() {
   assertPathDeterminism('docs/qc/scripts/contract-gates.mjs');
   assertPathDeterminism('docs/qc/scripts/architecture-gates.mjs');
   await assertNoDeltaModeReferences();
+  assertBenchmarkEvidence();
 
   for (const pass of passes) {
     console.log(`PASS | ${pass.name} | ${pass.detail}`);

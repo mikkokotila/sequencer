@@ -1,0 +1,4 @@
+{"cycles":100,"documents":1,"nodes":4454,"jsEventListeners":580,"heap":3985568}
+{"cycles":200,"documents":1,"nodes":4454,"jsEventListeners":580,"heap":3993076}
+{"cycles":300,"documents":1,"nodes":4454,"jsEventListeners":580,"heap":4020268}
+{"cycles":300,"operations":1800,"snapshots":[{"cycles":100,"documents":1,"nodes":4454,"jsEventListeners":580,"heap":3985568},{"cycles":200,"documents":1,"nodes":4454,"jsEventListeners":580,"heap":3993076},{"cycles":300,"documents":1,"nodes":4454,"jsEventListeners":580,"heap":4020268}],"errors":[],"status":"PASS"}

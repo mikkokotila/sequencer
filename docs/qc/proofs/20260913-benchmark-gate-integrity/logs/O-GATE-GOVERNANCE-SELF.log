@@ -1,0 +1,33 @@
+command: npm run gate:governance-self
+status: 0
+elapsed_ms: 2339
+
+--- stdout ---
+
+> sequencer@1.0.0 gate:governance-self
+> node docs/qc/scripts/governance-self-tests.mjs
+
+PASS | contract-gates.mjs imports typescript | AST parser import present.
+PASS | contract-gates.mjs avoids rg/grep shell scans | No spawnSync rg/grep calls found.
+PASS | architecture-gates.mjs imports typescript | AST parser import present.
+PASS | architecture-gates.mjs avoids rg/grep shell scans | No spawnSync rg/grep calls found.
+PASS | audio-gates.mjs avoids benchmark source-text scans | No benchmark source-text scan tokens found.
+PASS | oracle-harness.mjs avoids benchmark source-text scans | No benchmark source-text scan tokens found.
+PASS | contract-gates.mjs is PATH-deterministic | status=0
+PASS | architecture-gates.mjs is PATH-deterministic | status=0
+PASS | Delta mode references removed | No delta-mode command or obligation tokens found.
+PASS | Benchmark raw evidence positive control | Full product chain, real quantum and ten seconds of clock evidence.
+PASS | Benchmark rejects legacy no-op PASS label | Missing raw product DSP samples
+PASS | Benchmark rejects inflated block budget | Benchmark must use actual 128-frame rendering at 48kHz
+PASS | Benchmark rejects missing product processor | Invalid, incomplete or discontinuous raw processing samples; Product DSP p99 upper bound exceeds the real quantum budget
+PASS | Benchmark rejects false p99 claim | Product DSP p99 upper bound exceeds the real quantum budget
+PASS | Benchmark rejects insufficient duration | Less than ten seconds of measured product processing
+PASS | Benchmark rejects discontinuous rendering | Invalid, incomplete or discontinuous raw processing samples; Product DSP p99 upper bound exceeds the real quantum budget
+PASS | Benchmark rejects frozen shared clock | Independent wall-clock duration disagrees with shared-clock duration; Less than ten seconds of measured product processing; Render throughput is outside the real-time workload bounds
+PASS | Benchmark rejects clock failure packet | Invalid, incomplete or discontinuous raw processing samples; Product DSP p99 upper bound exceeds the real quantum budget
+PASS | Benchmark rejects missing effect workload | Not all product effects were enabled
+
+governance-self-tests: all 19 checks passed.
+
+
+--- stderr ---

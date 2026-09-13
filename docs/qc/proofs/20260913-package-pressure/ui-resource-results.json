@@ -1,0 +1,29 @@
+{
+  "cycles": 300,
+  "operations": 1200,
+  "snapshots": [
+    {
+      "cycles": 100,
+      "documents": 1,
+      "nodes": 4016,
+      "jsEventListeners": 537,
+      "heap": 3388392
+    },
+    {
+      "cycles": 200,
+      "documents": 1,
+      "nodes": 4016,
+      "jsEventListeners": 537,
+      "heap": 3388952
+    },
+    {
+      "cycles": 300,
+      "documents": 1,
+      "nodes": 4016,
+      "jsEventListeners": 537,
+      "heap": 3400752
+    }
+  ],
+  "errors": [],
+  "status": "PASS"
+}

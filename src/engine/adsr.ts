@@ -13,12 +13,8 @@ import { TOTAL_TRACKS } from '../config';
 //  Types
 // ═══════════════════════════════════════════
 
-export interface AdsrParams {
-  attack: number; // seconds (0.001–2.0)
-  decay: number; // seconds (0.001–2.0)
-  sustain: number; // level (0–1)
-  release: number; // seconds (0.001–3.0)
-}
+import type { AdsrParams } from '../types';
+export type { AdsrParams } from '../types';
 
 // ═══════════════════════════════════════════
 //  Per-track state

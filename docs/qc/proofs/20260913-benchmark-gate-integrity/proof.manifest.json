@@ -1,0 +1,46 @@
+{
+  "task_id": "20260913-benchmark-gate-integrity",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-GATE-GOVERNANCE-SELF",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-benchmark-gate-integrity/logs/O-GATE-GOVERNANCE-SELF.log"
+    },
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-benchmark-gate-integrity/logs/O-CI.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-benchmark-gate-integrity/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [
+    {
+      "path": "docs/contracts/commit.md",
+      "status": "PASS"
+    },
+    {
+      "path": "docs/contracts/quality-gates.md",
+      "status": "PASS"
+    }
+  ],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "Headed Chromium development probe executed all six shipped DSP processor instances with 16 sample voices and every effect enabled for ten seconds. Independent raw validation accepted normal p99 upper bound 0.682ms and rejected injected compressor work at 15.722ms/17.6% render coverage. Final benchmark implementation is attested in its separate product slice."
+  },
+  "artifacts": [
+    "verdict.json",
+    "normal-probe.json",
+    "overload-probe.json",
+    "audit-before.json",
+    "audit-after.json"
+  ]
+}

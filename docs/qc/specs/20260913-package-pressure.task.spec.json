@@ -1,0 +1,13 @@
+{
+  "task_id":"20260913-package-pressure",
+  "task_type":"qc",
+  "execution_profile":"real",
+  "capability":{
+    "summary":"Comprehensive read-only package QC of merged main cd2564c after PR39: deterministic browser state stress, persistence/import/export/recovery, MIDI voice lifecycle, audio quality, production compatibility, long-running sync, and historical governance evidence. Compiler PASS attests audit packaging only; product and historical verdicts are independently recorded without waivers.",
+    "in_scope":["docs/qc/proofs/20260913-package-pressure.md","docs/qc/proofs/20260913-package-pressure/**","docs/qc/specs/20260913-package-pressure.task.spec.json","docs/qc/runs/**","logs/compiler.log"],
+    "out_of_scope":["src/**","server/**","e2e/**","tests/**","docs/contracts/**","docs/qc/compiler/**","docs/qc/scripts/**","package.json","package-lock.json","AGENTS.md"],
+    "controls":[]
+  },
+  "proof":{"fixtures":["5000 deterministic model-checked edits","Synthetic WAV and MIDI events","Isolated browser databases and injected storage/network/decode failures","Dense multitrack audio with controlled CPU stalls"],"seed":"20260913","oracles":[]},
+  "guardrails":{"allow_fixme":false,"allow_skip":false,"allow_contract_edits":false,"require_debt_reduction":false}
+}

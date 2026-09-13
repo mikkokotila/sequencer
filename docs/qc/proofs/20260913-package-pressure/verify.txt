@@ -1,0 +1,143 @@
+
+> sequencer@1.0.0 verify
+> npm run ci && npm run e2e && npm run gate:commit-range
+
+
+> sequencer@1.0.0 ci
+> npm run typecheck && npm run lint && npm run format:check && npm run circular
+
+
+> sequencer@1.0.0 typecheck
+> tsc --noEmit
+
+
+> sequencer@1.0.0 lint
+> eslint src/
+
+
+> sequencer@1.0.0 format:check
+> prettier --check 'src/**/*.ts'
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> sequencer@1.0.0 circular
+> madge --circular --extensions ts src/
+
+- Finding files
+Processed 40 files (541ms) (6 warnings)
+
+✔ No circular dependency found!
+
+
+> sequencer@1.0.0 e2e
+> npx playwright test
+
+[2m[WebServer] [22m(node:52249) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m(node:52299) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 84 tests using 1 worker
+
+(node:52304) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52304) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › e2e/output-clock.spec.ts:3:1 › device clock uses latency fallback for missing, stale, or invalid timestamps (524ms)
+  ✓   2 [chromium] › e2e/production.spec.ts:21:1 › production build initializes every worklet and plays a decoded sample (1.4s)
+  ✓   3 [chromium] › e2e/sample-library.spec.ts:9:1 › sample read failures, permission errors, and disconnects never terminate the server (35ms)
+  ✓   4 [chromium] › e2e/sample-library.spec.ts:68:1 › sample access denial gives actionable feedback and permits retry (981ms)
+  ✓   5 [chromium] › e2e/sequencer.spec.ts:92:3 › App Initialization › renders all track sections (150ms)
+  ✓   6 [chromium] › e2e/sequencer.spec.ts:99:3 › App Initialization › renders song pane with 12 phrase slots (141ms)
+  ✓   7 [chromium] › e2e/sequencer.spec.ts:105:3 › App Initialization › renders transport bar with all controls (157ms)
+  ✓   8 [chromium] › e2e/sequencer.spec.ts:118:3 › App Initialization › renders extension icons (149ms)
+  ✓   9 [chromium] › e2e/sequencer.spec.ts:124:3 › App Initialization › renders engine icon with divider (150ms)
+  ✓  10 [chromium] › e2e/sequencer.spec.ts:130:3 › App Initialization › song name shows Untitled by default (159ms)
+  ✓  11 [chromium] › e2e/sequencer.spec.ts:136:3 › App Initialization › BPM defaults to 120 (150ms)
+  ✓  12 [chromium] › e2e/sequencer.spec.ts:148:3 › Drum Grid › clicking a drum cell toggles it on (187ms)
+  ✓  13 [chromium] › e2e/sequencer.spec.ts:156:3 › Drum Grid › clicking an active drum cell toggles it off (208ms)
+  ✓  14 [chromium] › e2e/sequencer.spec.ts:165:3 › Drum Grid › default kick pattern has four-on-the-floor (158ms)
+  ✓  15 [chromium] › e2e/sequencer.spec.ts:180:3 › Melody Grid › clicking a melody cell toggles it on (182ms)
+  ✓  16 [chromium] › e2e/sequencer.spec.ts:189:3 › Melody Grid › clicking an active melody cell toggles it off (227ms)
+  ✓  17 [chromium] › e2e/sequencer.spec.ts:206:3 › Vocal Grid › clicking a vocal cell toggles it on (184ms)
+  ✓  18 [chromium] › e2e/sequencer.spec.ts:219:3 › Track Controls › mute button toggles muted state (204ms)
+  ✓  19 [chromium] › e2e/sequencer.spec.ts:229:3 › Track Controls › CLR button clears all cells in track (193ms)
+  ✓  20 [chromium] › e2e/sequencer.spec.ts:241:3 › Track Controls › FILL replicates pattern across all bars (272ms)
+  ✓  21 [chromium] › e2e/sequencer.spec.ts:260:3 › Track Controls › LOAD button opens sample browser (236ms)
+  ✓  22 [chromium] › e2e/sequencer.spec.ts:267:3 › Track Controls › Export Loops produces a ZIP of 24-bit WAVs, one per non-empty phrase (372ms)
+  ✓  23 [chromium] › e2e/sequencer.spec.ts:345:3 › Track Controls › Export Loops surfaces an error state when render throws (330ms)
+  ✓  24 [chromium] › e2e/sequencer.spec.ts:361:3 › Track Controls › preview failure surfaces error state on the preview button (395ms)
+  ✓  25 [chromium] › e2e/sequencer.spec.ts:381:3 › Track Controls › Load failure surfaces error state on the LOAD button, browser stays open (642ms)
+  ✓  26 [chromium] › e2e/sequencer.spec.ts:403:3 › Track Controls › selecting a different row clears the LOAD-failure state (779ms)
+  ✓  27 [chromium] › e2e/sequencer.spec.ts:420:3 › Track Controls › a slow LOAD failure does not clobber the LOAD button after the user moves on (1.3s)
+  ✓  28 [chromium] › e2e/sequencer.spec.ts:445:3 › Track Controls › a slow failing preview does not clobber a newer in-flight preview (1.2s)
+  ✓  29 [chromium] › e2e/sequencer.spec.ts:470:3 › Track Controls › a stale preview-failure for index i does not clobber a newer success for the same i (906ms)
+  ✓  30 [chromium] › e2e/sequencer.spec.ts:530:3 › Melody Track Controls › octave buttons change octave value (262ms)
+  ✓  31 [chromium] › e2e/sequencer.spec.ts:546:3 › Melody Track Controls › harmony toggle cycles through modes (241ms)
+  ✓  32 [chromium] › e2e/sequencer.spec.ts:573:3 › BPM Control › BPM number input updates value (166ms)
+  ✓  33 [chromium] › e2e/sequencer.spec.ts:581:3 › BPM Control › BPM clamps to range 40-220 (169ms)
+  ✓  34 [chromium] › e2e/sequencer.spec.ts:595:3 › Song Management › song name is visible (153ms)
+  ✓  35 [chromium] › e2e/sequencer.spec.ts:600:3 › Song Management › double-click song name enables editing (208ms)
+  ✓  36 [chromium] › e2e/sequencer.spec.ts:606:3 › Song Management › new song resets patterns and extensions deterministically (3.1s)
+  ✓  37 [chromium] › e2e/sequencer.spec.ts:648:3 › Sample Browser › opens and closes (271ms)
+  ✓  38 [chromium] › e2e/sequencer.spec.ts:659:3 › Sample Browser › search filters items (470ms)
+  ✓  39 [chromium] › e2e/sequencer.spec.ts:680:3 › Phrase Pane › clicking phrase slot switches active phrase (219ms)
+  ✓  40 [chromium] › e2e/sequencer.spec.ts:690:3 › Phrase Pane › phrase 1 has content indicator if default pattern exists (160ms)
+  ✓  41 [chromium] › e2e/sequencer.spec.ts:697:3 › Phrase Pane › fill-with-prev button copies previous phrase (250ms)
+  ✓  42 [chromium] › e2e/sequencer.spec.ts:716:3 › Extension Panels › clicking extension icon opens side panel (228ms)
+  ✓  43 [chromium] › e2e/sequencer.spec.ts:724:3 › Extension Panels › clicking same icon closes panel (1.1s)
+  ✓  44 [chromium] › e2e/sequencer.spec.ts:733:3 › Extension Panels › extension panel has on/off toggle (227ms)
+  ✓  45 [chromium] › e2e/sequencer.spec.ts:739:3 › Extension Panels › toggling extension on/off changes state (1.1s)
+  ✓  46 [chromium] › e2e/sequencer.spec.ts:750:3 › Extension Panels › compressor model selector switches between FET/OPTO/VCA (1.2s)
+  ✓  47 [chromium] › e2e/sequencer.spec.ts:785:3 › Extension Panels › transformer extension opens and has controls (1.1s)
+  ✓  48 [chromium] › e2e/sequencer.spec.ts:794:3 › Extension Panels › close button closes panel (1.1s)
+  ✓  49 [chromium] › e2e/sequencer.spec.ts:802:3 › Extension Panels › app shifts when panel opens (230ms)
+  ✓  50 [chromium] › e2e/sequencer.spec.ts:814:3 › Engine Control Panel › clicking engine icon opens full-screen panel (580ms)
+  ✓  51 [chromium] › e2e/sequencer.spec.ts:820:3 › Engine Control Panel › closing engine panel restores app view (1.2s)
+  ✓  52 [chromium] › e2e/sequencer.spec.ts:833:3 › Engine Control Panel › Escape closes engine panel (606ms)
+  ✓  53 [chromium] › e2e/sequencer.spec.ts:841:3 › Engine Control Panel › engine panel has all control sections (237ms)
+  ✓  54 [chromium] › e2e/sequencer.spec.ts:855:3 › Keyboard Shortcuts › Space toggles play/stop (184ms)
+  ✓  55 [chromium] › e2e/sequencer.spec.ts:866:3 › Keyboard Shortcuts › Escape closes browser modal (279ms)
+  ✓  56 [chromium] › e2e/sequencer.spec.ts:880:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles (5.7s)
+  ✓  57 [chromium] › e2e/sequencer.spec.ts:950:3 › Persistence › pattern survives page reload (1.2s)
+  ✓  58 [chromium] › e2e/sequencer.spec.ts:978:3 › Grid Alignment › bar dividers are visible (163ms)
+  ✓  59 [chromium] › e2e/sequencer.spec.ts:984:3 › Grid Alignment › drum and melody grids are vertically aligned (177ms)
+  ✓  60 [chromium] › e2e/sequencer.spec.ts:999:3 › MIDI Controls › MIDI button visible on all 3 melody tracks (159ms)
+  ✓  61 [chromium] › e2e/sequencer.spec.ts:1005:3 › MIDI Controls › MIDI button not on drum tracks (160ms)
+  ✓  62 [chromium] › e2e/sequencer.spec.ts:1011:3 › MIDI Controls › clicking MIDI button opens midi browser (288ms)
+  ✓  63 [chromium] › e2e/sequencer.spec.ts:1018:3 › MIDI Controls › Escape closes midi browser (298ms)
+  ✓  64 [chromium] › e2e/sequencer.spec.ts:1027:3 › MIDI Controls › close button closes midi browser (301ms)
+  ✓  65 [chromium] › e2e/sequencer.spec.ts:1036:3 › MIDI Controls › midi browser shows status element (183ms)
+  ✓  66 [chromium] › e2e/sequencer.spec.ts:1049:3 › ADSR Controls › ADSR button visible on all 9 tracks (165ms)
+  ✓  67 [chromium] › e2e/sequencer.spec.ts:1055:3 › ADSR Controls › clicking ADSR button opens popup (225ms)
+  ✓  68 [chromium] › e2e/sequencer.spec.ts:1062:3 › ADSR Controls › ADSR popup has canvas visualization (209ms)
+  ✓  69 [chromium] › e2e/sequencer.spec.ts:1069:3 › ADSR Controls › ADSR popup has 4 sliders (201ms)
+  ✓  70 [chromium] › e2e/sequencer.spec.ts:1077:3 › ADSR Controls › Escape closes ADSR popup (209ms)
+  ✓  71 [chromium] › e2e/sequencer.spec.ts:1086:3 › ADSR Controls › close button closes ADSR popup (225ms)
+  ✓  72 [chromium] › e2e/sequencer.spec.ts:1095:3 › ADSR Controls › ADSR envelope actually modulates audio when enabled (140ms)
+  ✓  73 [chromium] › e2e/sequencer.spec.ts:1188:3 › Audio Engine Timing › exactly one AudioContext is constructed, including during initialization (483ms)
+  ✓  74 [chromium] › e2e/sequencer.spec.ts:1203:3 › Audio Engine Timing › src.start times are scheduled in the future (single AudioContext) (3.3s)
+  ✓  75 [chromium] › e2e/sequencer.spec.ts:1257:3 › Audio Engine Timing › ADSR-enabled triggers do not leak GainNodes across play/stop cycles (10.8s)
+  ✓  76 [chromium] › e2e/sequencer.spec.ts:1348:3 › Transport/UI Synchronisation › playhead paints at device output time, including output latency (2.8s)
+  ✓  77 [chromium] › e2e/sequencer.spec.ts:1414:3 › Transport/UI Synchronisation › switching the viewed phrase mid-playback does not freeze a lit column (2.7s)
+  ✓  78 [chromium] › e2e/sequencer.spec.ts:1438:3 › Transport/UI Synchronisation › song pane marks the playing phrase while the transport runs (1.4s)
+  ✓  79 [chromium] › e2e/sync-pressure.spec.ts:219:3 › phrase markers follow device playback through boundaries at 40 BPM (26.0s)
+  ✓  80 [chromium] › e2e/sync-pressure.spec.ts:219:3 › phrase markers follow device playback through boundaries at 120 BPM (17.6s)
+  ✓  81 [chromium] › e2e/sync-pressure.spec.ts:219:3 › phrase markers follow device playback through boundaries at 220 BPM (14.7s)
+  ✓  82 [chromium] › e2e/sync-pressure.spec.ts:249:1 › dense polyphony and 180ms main-thread stalls preserve real sample alignment and recover to the current audible step (14.7s)
+  ✓  83 [chromium] › e2e/sync-pressure.spec.ts:293:1 › rapid restarts and tempo edits retain one transport and clear all pending visuals (5.1s)
+  ✓  84 [chromium] › e2e/sync-pressure.spec.ts:322:1 › stop cancels all tracks together when its loop crosses an audio block (5.4s)
+
+  84 passed (2.4m)
+
+> sequencer@1.0.0 gate:commit-range
+> node docs/qc/scripts/commit-range-gates.mjs
+
+PASS | 4a52cd314477a3411f14f035835184ae38f2f97c | non-product commit; governance attestation trailers not required
+PASS | 4ffe45970933d57b29f18faebca5af9a019ac98f | non-product commit; governance attestation trailers not required
+PASS | b801e6a4e52a9bb51771ae89f98cdc4e69b04ac0 | governance trailers + PASS attestation verified (docs/qc/proofs/20260912-sync-runtime-fixes/verdict.json)
+PASS | 5bbfbbf3a2fb7a2c2e18b4cc6a76c731fe58ce68 | governance trailers + PASS attestation verified (docs/qc/proofs/20260912-sync-observer-window/verdict.json)
+PASS | cd2564ccb172832a47b0c180ced32fbf3927256d | non-product commit; governance attestation trailers not required
+
+commit-range-gates: all 5 commit(s) passed in range HEAD~1..HEAD.

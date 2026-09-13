@@ -1,0 +1,34 @@
+e2e-gate	Run npm run e2e	﻿2026-09-13T10:24:30.2983510Z ##[group]Run npm run e2e
+e2e-gate	Run npm run e2e	2026-09-13T10:24:30.2983793Z ^[[36;1mnpm run e2e^[[0m
+e2e-gate	Run npm run e2e	2026-09-13T10:24:30.3005230Z shell: /usr/bin/bash -e {0}
+e2e-gate	Run npm run e2e	2026-09-13T10:24:30.3005505Z env:
+e2e-gate	Run npm run e2e	2026-09-13T10:24:30.3005755Z   PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
+e2e-gate	Run npm run e2e	2026-09-13T10:24:30.3006062Z ##[endgroup]
+e2e-gate	Run npm run e2e	2026-09-13T10:24:30.3966074Z 
+e2e-gate	Run npm run e2e	2026-09-13T10:24:30.3966903Z > sequencer@1.0.0 e2e
+e2e-gate	Run npm run e2e	2026-09-13T10:24:30.3967433Z > npx playwright test
+e2e-gate	Run npm run e2e	2026-09-13T10:24:30.3967681Z 
+e2e-gate	Run npm run e2e	2026-09-13T10:24:33.6762693Z 
+e2e-gate	Run npm run e2e	2026-09-13T10:24:33.6763613Z Running 118 tests using 1 worker
+e2e-gate	Run npm run e2e	2026-09-13T10:25:42.3182284Z ·······F········································································
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6791841Z ······································
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6798743Z 
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6807916Z   1) [chromium] › e2e/benchmark-pressure.spec.ts:4:1 › real shipped compressor overload fails the independently calculated quantum budget 
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6808586Z 
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6808987Z     TypeError: Cannot read properties of null (reading 'sampleCount')
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6809542Z 
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6810174Z       24 |   const result = await page.evaluate(() => ({ injected: (window as any).__overloadInjection, evidence: (window as any).__benchmarkEvidence }));
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6811198Z       25 |   expect(result.injected).toBe(1);
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6811960Z     > 26 |   expect(result.evidence.sampleCount).toBeGreaterThanOrEqual(50);
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6812641Z          |                          ^
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6813561Z       27 |   expect(result.evidence.samples.every((s: any) => !s.error && JSON.stringify(s.counts) === '[1,2,1,1,1]')).toBe(true);
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6814593Z       28 |   const independent = validateBenchmarkEvidence({ ...result.evidence, passed: true, p99UpperBoundMs: 0 });
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6815159Z       29 |   expect(independent.ok).toBe(false);
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6815642Z         at /home/runner/work/sequencer/sequencer/e2e/benchmark-pressure.spec.ts:26:26
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6815957Z 
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6816690Z     Error Context: test-results/benchmark-pressure-real-sh-e4796-y-calculated-quantum-budget-chromium/error-context.md
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6817339Z 
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6817478Z   1 failed
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6818219Z     [chromium] › e2e/benchmark-pressure.spec.ts:4:1 › real shipped compressor overload fails the independently calculated quantum budget 
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.6818781Z   117 passed (3.3m)
+e2e-gate	Run npm run e2e	2026-09-13T10:27:48.7072406Z ##[error]Process completed with exit code 1.

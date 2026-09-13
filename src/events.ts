@@ -15,6 +15,7 @@ export interface EventMap {
     time: number;
     source: 'drum' | 'melody' | 'vocal';
   };
+  'engine:start': Record<string, never>;
   'engine:stop': Record<string, never>;
 
   // Transport → UI: state changed, re-render
@@ -28,6 +29,11 @@ export interface EventMap {
   'ui:setStep': { type: string; track: number; step: number; note?: number; value: boolean };
   'ui:loadSample': { type: string; track: number; buffer: ArrayBuffer; name: string };
   'ui:setBpm': { bpm: number };
+
+  'engine:settingsChanged': Record<string, never>;
+  'engine:settingsRestored': Record<string, never>;
+  'persistence:beforeLoad': Record<string, never>;
+  'persistence:status': { message: string; conflict: boolean };
 
   // Persistence lifecycle
   'persistence:songCreated': Record<string, never>;

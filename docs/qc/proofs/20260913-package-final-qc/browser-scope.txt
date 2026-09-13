@@ -1,0 +1,1 @@
+User narrowed scope to Chrome only at 2026-09-13 10:31 UTC. The Firefox run was interrupted; its resulting closed-target error is cancellation evidence, not a product QC verdict. Any WebKit result emitted while the interrupted script unwound is outside the requested assurance. Current acceptance uses the Chrome-only compatibility script and Chrome/Chromium regression suite.

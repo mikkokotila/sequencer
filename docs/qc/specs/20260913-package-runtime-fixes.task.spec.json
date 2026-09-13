@@ -1,0 +1,74 @@
+{
+  "task_id": "20260913-package-runtime-fixes",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Fix F01\u2013F12 and mobile toolbar clipping identified by comprehensive package QC, in existing PR #41 as explicitly requested by the user. This authorization overrides default GA-only product scope and fresh-branch routing. Implement portable validated sample imports, atomic latest-load commits, transactional revision-checked saves and visible recovery, complete sound-state persistence/reset, owned MIDI voice lifecycle, keyboard focus protection and startup retry. Preserve original failing captures and historical missing-proof findings.",
+    "in_scope": [
+      "src/transport/**",
+      "src/engine/midi.ts",
+      "src/engine/adsr.ts",
+      "src/engine/master-controls.ts",
+      "src/engine/extensions/mixer.ts",
+      "src/ui/**",
+      "src/main.ts",
+      "src/events.ts",
+      "src/types.ts",
+      "index.html",
+      "e2e/**",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**",
+      "package.json",
+      "package-lock.json",
+      "src/engine/worklets/**"
+    ],
+    "controls": [
+      {
+        "id": "song_integrity",
+        "description": "Imports commit validated complete songs; concurrent loads and edits cannot silently overwrite newer work. Sound state and audio survive persistence.",
+        "test": "Browser file roundtrip with audible sample; malformed file matrix; delayed file read and decode; abort-after-request-success; two-tab conflict/copy and deletion regressions."
+      },
+      {
+        "id": "voice_ownership",
+        "description": "Repeated MIDI pitches, old ended callbacks, release tails and voice stealing keep every source owned and stoppable.",
+        "test": "Real MIDI event path into native AudioBufferSourceNodes; bounded voice counts and zero live sources after device removal, observed across advancing audio clock."
+      },
+      {
+        "id": "controls_and_recovery",
+        "description": "Envelope/master/engine controls save and reset consistently; modal buttons preserve native Space; failed startup retries safely.",
+        "test": "Browser reload/reset, modal/contenteditable focus, denied IndexedDB and failed addModule followed by fresh-document retry, mobile bounding-box checks."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "synthetic PCM WAV and portable JSON",
+      "isolated shared IndexedDB tabs",
+      "injected abort, denied storage, rejected worklet registration",
+      "synthetic MIDI input with native audio sources"
+    ],
+    "seed": "20260913-package-runtime-fixes",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding",
+      "persistence_roundtrip"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

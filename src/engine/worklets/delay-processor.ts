@@ -47,6 +47,21 @@ class DelayProcessor extends AudioWorkletProcessor {
     this.buffer = new Float32Array(this.bufferLength);
     this.writeIndex = 0;
     this.filterState = 0;
+    this.port.onmessage = (event: MessageEvent<unknown>) => {
+      const message = event.data;
+      if (
+        !message ||
+        typeof message !== 'object' ||
+        !('type' in message) ||
+        message.type !== 'reset' ||
+        !('generation' in message)
+      )
+        return;
+      this.buffer.fill(0);
+      this.writeIndex = 0;
+      this.filterState = 0;
+      this.port.postMessage({ type: 'reset', generation: message.generation });
+    };
   }
 
   private readInterpolated(delaySamples: number): number {

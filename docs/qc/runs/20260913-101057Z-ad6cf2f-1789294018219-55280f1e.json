@@ -1,0 +1,157 @@
+{
+  "run_id": "1789294018219-55280f1e",
+  "task_id": "20260913-audio-pressure-fixes",
+  "task_type": "bugfix",
+  "spec_path": "docs/qc/specs/20260913-audio-pressure-fixes.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-09-13T10:06:58.218Z",
+  "finished_at_utc": "2026-09-13T10:10:57.280Z",
+  "head_sha": "ad6cf2f",
+  "tree_sha": "420d4d1d466be38c611e7417c11b7cc1622cad11",
+  "subject_sha": "c1805d62ca03de367efdfb6229cc816efbcee4045a6cfa7b33a44a20a51a5c4d",
+  "verdict": "BLOCKED",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E",
+      "label": "E2E",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-E2E.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E-DELTA",
+      "label": "E2E delta coverage",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-E2E-DELTA.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-CONTRACTS-FULL",
+      "label": "Contract static gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-GATE-CONTRACTS-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-ARCH-FULL",
+      "label": "Architecture gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-GATE-ARCH-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-AUDIO-GATES",
+      "label": "Audio browser gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/logs/O-AUDIO-GATES.log",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "off_transparent",
+      "label": "off_transparent",
+      "status": "BLOCKED",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/oracles/off_transparent.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "on_audible",
+      "label": "on_audible",
+      "status": "BLOCKED",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/oracles/on_audible.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "low_end_continuity",
+      "label": "low_end_continuity",
+      "status": "BLOCKED",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/oracles/low_end_continuity.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "clip_guard",
+      "label": "clip_guard",
+      "status": "BLOCKED",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/oracles/clip_guard.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "default_safety",
+      "label": "default_safety",
+      "status": "BLOCKED",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/oracles/default_safety.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "control_binding",
+      "label": "control_binding",
+      "status": "BLOCKED",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/oracles/control_binding.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "persistence_roundtrip",
+      "label": "persistence_roundtrip",
+      "status": "BLOCKED",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/oracles/persistence_roundtrip.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "benchmark_worklet_budget",
+      "label": "benchmark_worklet_budget",
+      "status": "BLOCKED",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-audio-pressure-fixes/oracles/benchmark_worklet_budget.json",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "BLOCKED",
+      "code": "GOV-PROOF-010",
+      "message": "Oracle harness failed (exit=1)."
+    }
+  ]
+}

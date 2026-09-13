@@ -1,0 +1,79 @@
+{
+  "task_id": "20260913-package-pressure",
+  "task_type": "qc",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260913-package-pressure.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-13T08:42:32.420Z",
+  "finished_at_utc": "2026-09-13T08:42:36.968Z",
+  "head_sha": "8cc4183",
+  "tree_sha": "dde20fd21c62a585894e0f474c7136d4425d2bb7",
+  "subject_sha": "0000000000000000000000000000000000000000000000000000000000000000",
+  "subject_files": [],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260913-package-pressure/REPRODUCE.md",
+    "docs/qc/proofs/20260913-package-pressure/edit-model-results.json",
+    "docs/qc/proofs/20260913-package-pressure/pressure.mjs",
+    "docs/qc/proofs/20260913-package-pressure/proof.manifest.json",
+    "docs/qc/runs/20260913-083738Z-cd2564c.md"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=2, oracles=0, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=2, oracles=0, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4160,
+        "log_file": "docs/qc/proofs/20260913-package-pressure/logs/O-CI.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 265,
+        "log_file": "docs/qc/proofs/20260913-package-pressure/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": null,
+    "oracles": [],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

@@ -1,3 +1,4 @@
+import { createAuxLifecycle, type AuxLifecycle } from './aux-lifecycle';
 /**
  * Tape Delay — delay with per-channel aux sends.
  *
@@ -62,10 +63,11 @@ export function createDelay(): Extension {
 
   let nodes: DelayNodes | null = null;
   let enabled = false;
+  let lifecycle: AuxLifecycle | null = null;
   let sendGains: GainNode[] = [];
 
   function applyState(): void {
-    if (!nodes) return;
+    if (!nodes || !enabled || (lifecycle && !lifecycle.ready)) return;
     setWorkletParam(nodes.delay, 'delayTime', state.time);
     setWorkletParam(nodes.delay, 'feedback', Math.min(state.feedback, 0.95));
     setWorkletParam(nodes.delay, 'tone', state.tone);
@@ -116,20 +118,20 @@ export function createDelay(): Extension {
       nodes = { sendBus, delay, wetGain, ctx };
       applyState();
 
-      host.onStop(() => {
-        if (!nodes) return;
-        const now = nodes.ctx.currentTime;
-        // Ramp down feedback and wet to stop repeats
-        setWorkletParam(nodes.delay, 'feedback', 0);
-        nodes.wetGain.gain.setValueAtTime(nodes.wetGain.gain.value, now);
-        nodes.wetGain.gain.linearRampToValueAtTime(0, now + 0.15);
-        setTimeout(() => {
-          if (!nodes) return;
-          setWorkletParam(nodes.delay, 'feedback', Math.min(state.feedback, 0.95));
-          nodes.wetGain.gain.cancelScheduledValues(0);
-          nodes.wetGain.gain.value = state.mix;
-        }, 300);
-      });
+      lifecycle = createAuxLifecycle(
+        ctx,
+        wetGain,
+        delay,
+        () => enabled,
+        applyState,
+        () => {
+          if (nodes) setWorkletParam(nodes.delay, 'feedback', 0);
+        },
+        0.15,
+      );
+      lifecycle.update();
+      for (const send of sendGains) send.gain.value = 0;
+      host.onStop(lifecycle.stop);
 
       // Delay is an aux-send effect — it taps from channelPans, not the serial chain.
       return null;
@@ -275,22 +277,19 @@ export function createDelay(): Extension {
 
     setState(s: ExtensionState): void {
       state = { ...state, ...(s as Partial<DelayState>) };
-      applyState();
+      if (enabled) lifecycle?.update();
     },
 
     setEnabled(on: boolean): void {
       enabled = on;
       if (!nodes) return;
-      if (on) {
-        applyState();
-      } else {
-        nodes.wetGain.gain.value = 0;
-        setWorkletParam(nodes.delay, 'feedback', 0);
-        for (const sg of sendGains) sg.gain.value = 0;
-      }
+      lifecycle?.update();
+      if (!on) for (const send of sendGains) send.gain.value = 0;
     },
 
     destroy(): void {
+      lifecycle?.dispose();
+      lifecycle = null;
       sendGains.forEach((sg) => {
         try {
           sg.disconnect();

@@ -1,0 +1,47 @@
+{
+  "task_id": "20260913-benchmark-gate-integrity",
+  "task_type": "governance-change",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Fix F13 benchmark gate trust and F14 vulnerable development tooling in existing PR #41 as the user explicitly requested. Independently validate real shipped-DSP raw timing and workload evidence, reject false PASS labels and timing proxies, support source-frozen Vite oracle snapshots, and update eight advisory-affected packages. Align local verification and shared CI with supported Node 22. Preserve original failing audit and missing historical attestations.",
+    "in_scope": [
+      "docs/qc/scripts/**",
+      "docs/qc/compiler/obligation-rules.json",
+      "docs/contracts/quality-gates.md",
+      ".github/actions/setup-node-ci/action.yml",
+      "package.json",
+      "package-lock.json",
+      "docs/qc/specs/**",
+      "docs/qc/proofs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "tests/**",
+      "e2e/**",
+      "vite.config.ts",
+      "playwright.config.ts",
+      "server/**"
+    ],
+    "controls": []
+  },
+  "proof": {
+    "fixtures": [
+      "Raw headed Chromium product-DSP timing packets and a two-million-sine-iteration compressor mutant",
+      "Nine invalid benchmark evidence mutations",
+      "npm advisory before/after reports"
+    ],
+    "seed": "20260913-benchmark-gate-integrity",
+    "oracles": [
+      "off_transparent",
+      "on_audible"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": true,
+    "require_debt_reduction": false
+  }
+}

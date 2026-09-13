@@ -1,0 +1,191 @@
+
+> sequencer@1.0.0 e2e
+> npx playwright test --grep Transport Sync|Transport/UI Synchronisation --repeat-each=5 --workers=1 --reporter=line
+
+[WebServer] (node:20158) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:20193) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 20 tests using 1 worker
+
+(node:20197) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:20197) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/20] [chromium] › e2e/sequencer.spec.ts:879:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles
+  1) [chromium] › e2e/sequencer.spec.ts:879:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 4
+    Received:    3
+
+      71 |   const a = log.filter((e) => e.track === trackA);
+      72 |   const b = log.filter((e) => e.track === trackB);
+    > 73 |   expect(a.length).toBeGreaterThanOrEqual(4);
+         |                    ^
+      74 |   expect(a.length).toBe(b.length);
+      75 |   for (let i = 0; i < a.length; i++) {
+      76 |     const ea = a[i];
+        at assertInterTrackSync (<repository>/e2e/sequencer.spec.ts:73:20)
+        at <repository>/e2e/sequencer.spec.ts:903:5
+
+    Error Context: test-results/sequencer-Transport-Sync-r-9b02f-ated-edit-stop-start-cycles-chromium/error-context.md
+
+
+(node:20225) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:20225) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[2/20] [chromium] › e2e/sequencer.spec.ts:1359:3 › Transport/UI Synchronisation › playhead paints at the audio time of the step, not at lookahead time
+[3/20] [chromium] › e2e/sequencer.spec.ts:1423:3 › Transport/UI Synchronisation › switching the viewed phrase mid-playback does not freeze a lit column
+[4/20] [chromium] › e2e/sequencer.spec.ts:1447:3 › Transport/UI Synchronisation › song pane marks the playing phrase while the transport runs
+(node:20260) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:20260) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[5/20] [chromium] › e2e/sequencer.spec.ts:879:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles
+  2) [chromium] › e2e/sequencer.spec.ts:879:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 4
+    Received:    3
+
+      71 |   const a = log.filter((e) => e.track === trackA);
+      72 |   const b = log.filter((e) => e.track === trackB);
+    > 73 |   expect(a.length).toBeGreaterThanOrEqual(4);
+         |                    ^
+      74 |   expect(a.length).toBe(b.length);
+      75 |   for (let i = 0; i < a.length; i++) {
+      76 |     const ea = a[i];
+        at assertInterTrackSync (<repository>/e2e/sequencer.spec.ts:73:20)
+        at <repository>/e2e/sequencer.spec.ts:903:5
+
+    Error Context: test-results/sequencer-Transport-Sync-r-9b02f-ated-edit-stop-start-cycles-chromium-repeat1/error-context.md
+
+
+(node:20276) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:20276) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[6/20] [chromium] › e2e/sequencer.spec.ts:1359:3 › Transport/UI Synchronisation › playhead paints at the audio time of the step, not at lookahead time
+[7/20] [chromium] › e2e/sequencer.spec.ts:1423:3 › Transport/UI Synchronisation › switching the viewed phrase mid-playback does not freeze a lit column
+[8/20] [chromium] › e2e/sequencer.spec.ts:1447:3 › Transport/UI Synchronisation › song pane marks the playing phrase while the transport runs
+(node:20306) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:20306) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[9/20] [chromium] › e2e/sequencer.spec.ts:879:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles
+  3) [chromium] › e2e/sequencer.spec.ts:879:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 4
+    Received:    3
+
+      71 |   const a = log.filter((e) => e.track === trackA);
+      72 |   const b = log.filter((e) => e.track === trackB);
+    > 73 |   expect(a.length).toBeGreaterThanOrEqual(4);
+         |                    ^
+      74 |   expect(a.length).toBe(b.length);
+      75 |   for (let i = 0; i < a.length; i++) {
+      76 |     const ea = a[i];
+        at assertInterTrackSync (<repository>/e2e/sequencer.spec.ts:73:20)
+        at <repository>/e2e/sequencer.spec.ts:903:5
+
+    Error Context: test-results/sequencer-Transport-Sync-r-9b02f-ated-edit-stop-start-cycles-chromium-repeat2/error-context.md
+
+
+(node:20317) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:20317) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[10/20] [chromium] › e2e/sequencer.spec.ts:1359:3 › Transport/UI Synchronisation › playhead paints at the audio time of the step, not at lookahead time
+[11/20] [chromium] › e2e/sequencer.spec.ts:1423:3 › Transport/UI Synchronisation › switching the viewed phrase mid-playback does not freeze a lit column
+[12/20] [chromium] › e2e/sequencer.spec.ts:1447:3 › Transport/UI Synchronisation › song pane marks the playing phrase while the transport runs
+(node:20421) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:20421) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[13/20] [chromium] › e2e/sequencer.spec.ts:879:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles
+[14/20] [chromium] › e2e/sequencer.spec.ts:1359:3 › Transport/UI Synchronisation › playhead paints at the audio time of the step, not at lookahead time
+[15/20] [chromium] › e2e/sequencer.spec.ts:1423:3 › Transport/UI Synchronisation › switching the viewed phrase mid-playback does not freeze a lit column
+[16/20] [chromium] › e2e/sequencer.spec.ts:1447:3 › Transport/UI Synchronisation › song pane marks the playing phrase while the transport runs
+(node:20469) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:20469) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[17/20] [chromium] › e2e/sequencer.spec.ts:879:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles
+  4) [chromium] › e2e/sequencer.spec.ts:879:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 4
+    Received:    3
+
+      71 |   const a = log.filter((e) => e.track === trackA);
+      72 |   const b = log.filter((e) => e.track === trackB);
+    > 73 |   expect(a.length).toBeGreaterThanOrEqual(4);
+         |                    ^
+      74 |   expect(a.length).toBe(b.length);
+      75 |   for (let i = 0; i < a.length; i++) {
+      76 |     const ea = a[i];
+        at assertInterTrackSync (<repository>/e2e/sequencer.spec.ts:73:20)
+        at <repository>/e2e/sequencer.spec.ts:903:5
+
+    Error Context: test-results/sequencer-Transport-Sync-r-9b02f-ated-edit-stop-start-cycles-chromium-repeat4/error-context.md
+
+
+(node:20488) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:20488) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[18/20] [chromium] › e2e/sequencer.spec.ts:1359:3 › Transport/UI Synchronisation › playhead paints at the audio time of the step, not at lookahead time
+[19/20] [chromium] › e2e/sequencer.spec.ts:1423:3 › Transport/UI Synchronisation › switching the viewed phrase mid-playback does not freeze a lit column
+[20/20] [chromium] › e2e/sequencer.spec.ts:1447:3 › Transport/UI Synchronisation › song pane marks the playing phrase while the transport runs
+  4 failed
+    [chromium] › e2e/sequencer.spec.ts:879:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles 
+    [chromium] › e2e/sequencer.spec.ts:879:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles 
+    [chromium] › e2e/sequencer.spec.ts:879:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles 
+    [chromium] › e2e/sequencer.spec.ts:879:3 › Transport Sync › remains in sync after repeated edit + stop/start cycles 
+  16 passed (1.1m)

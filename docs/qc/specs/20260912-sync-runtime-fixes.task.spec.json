@@ -1,0 +1,81 @@
+{
+  "task_id": "20260912-sync-runtime-fixes",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Implement the application's synchronization, production initialization and sample-read fixes identified in PR #39. The user explicitly authorized product fixes in that same PR on September 12, overriding the repository's default GA-only scope and fresh-branch routing for this task. Incorporates the previously published PR #38 fixes, replaces dual-context/lookahead visual timing with one native audio clock and buffered scheduling, uses device output timestamps with stale-frame coalescing, compiles worklet assets and includes the sample manifest in production, and contains library read failures without process termination. Preserves historical findings and does not fabricate missing attestations.",
+    "in_scope": [
+      "src/engine/scheduler.ts",
+      "src/engine/output-clock.ts",
+      "src/engine/audio.ts",
+      "src/engine/worklet-loader.ts",
+      "src/events.ts",
+      "src/main.ts",
+      "src/ui/playhead.ts",
+      "src/ui/browser.ts",
+      "e2e/**",
+      "playwright.config.ts",
+      "vite.config.ts",
+      "server/**",
+      "README.md",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "docs/qc/baseline.md",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "src/engine/worklets/**",
+      "src/engine/extensions/**",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**",
+      "package.json",
+      "package-lock.json"
+    ],
+    "controls": [
+      {
+        "id": "output_position",
+        "description": "Playhead and phrase marker represent the latest step reaching estimated device output, with no queued phrase leaking through view changes.",
+        "test": "Browser observes independent output timestamps and rendered marker/grid state at 40, 120 and 220 BPM including skips and wrap."
+      },
+      {
+        "id": "buffered_timing",
+        "description": "Nine real tracks, including dense polyphony, stay sample-aligned under 180ms stalls and CPU throttling. Stop uses a shared 25ms cancellation deadline; rapid restart cannot overlap it or leak visuals.",
+        "test": "AudioWorklet captures onsets independently of scheduling events; no late starts and <=1 sample skew. Inject a 12ms interruption within stop cancellation and require equal counts/times on every track. The regression failed before the shared deadline fix."
+      },
+      {
+        "id": "production_boot",
+        "description": "Production build boots all five compiled worklets and loads/plays a sample via the bundled manifest.",
+        "test": "Build and preview browser test; seven extension/engine buttons, exactly one AudioContext and advancing playhead."
+      },
+      {
+        "id": "library_read_errors",
+        "description": "Permission/read failures give actionable errors and preserve the server and transport.",
+        "test": "Real HTTP server tests EPERM, failed stream, missing file and valid retry; browser verifies permission feedback."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "deterministic nine-track 8ms pulses",
+      "generated PCM WAV",
+      "temporary sample library with injected EPERM and stream failure"
+    ],
+    "seed": "sync-runtime-20260912-v1",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

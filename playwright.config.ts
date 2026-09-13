@@ -4,6 +4,8 @@ export default defineConfig({
   testDir: './e2e',
   timeout: 30000,
   retries: 0,
+  // Audio timing probes must not compete with separate browser test workers.
+  workers: 1,
   use: {
     baseURL: 'http://localhost:5174',
     headless: true,

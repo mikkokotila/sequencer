@@ -1,0 +1,68 @@
+[WebServer] (node:29839) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:29867) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:29871) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29871) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › e2e/sync-pressure.spec.ts:202:1 › dense polyphony and 180ms main-thread stalls preserve real sample alignment and recover to the current audible step (14.9s)
+(node:30009) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30009) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chromium] › e2e/sync-pressure.spec.ts:202:1 › dense polyphony and 180ms main-thread stalls preserve real sample alignment and recover to the current audible step (14.7s)
+(node:30128) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30128) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [chromium] › e2e/sync-pressure.spec.ts:202:1 › dense polyphony and 180ms main-thread stalls preserve real sample alignment and recover to the current audible step (14.9s)
+(node:30186) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30186) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  4 [chromium] › e2e/sync-pressure.spec.ts:202:1 › dense polyphony and 180ms main-thread stalls preserve real sample alignment and recover to the current audible step (14.7s)
+(node:30282) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30282) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  5 [chromium] › e2e/sync-pressure.spec.ts:202:1 › dense polyphony and 180ms main-thread stalls preserve real sample alignment and recover to the current audible step (14.7s)
+(node:30340) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30340) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  6 [chromium] › e2e/sync-pressure.spec.ts:202:1 › dense polyphony and 180ms main-thread stalls preserve real sample alignment and recover to the current audible step (14.8s)
+
+
+  1) [chromium] › e2e/sync-pressure.spec.ts:202:1 › dense polyphony and 180ms main-thread stalls preserve real sample alignment and recover to the current audible step
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 54
+    Received: 55
+
+      238 |   for (const frame of result.frames) {
+      239 |     expect(frame.marker).toBe(frame.expectedPhrase);
+    > 240 |     expect(frame.step).toBe(frame.expectedStep);
+          |                        ^
+      241 |   }
+      242 |   expect(result.alive).toBe(0);
+      243 |   expect(result.lit).toBe(0);
+        at <repository>/e2e/sync-pressure.spec.ts:240:24
+
+    attachment #1: observations (application/json) ─────────────────────────────────────────────────
+    test-results/sync-pressure-dense-polyph-58cba-to-the-current-audible-step-chromium-repeat5/attachments/observations-dc9fd3a493e1efc70ea7e61f5ca34bc3a6d40aa8.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: pressure-observations (application/json) ────────────────────────────────────────
+    test-results/sync-pressure-dense-polyph-58cba-to-the-current-audible-step-chromium-repeat5/attachments/pressure-observations-d7090977ed0d62f623e816652d288842790c0f5e.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/sync-pressure-dense-polyph-58cba-to-the-current-audible-step-chromium-repeat5/error-context.md
+
+  1 failed
+    [chromium] › e2e/sync-pressure.spec.ts:202:1 › dense polyphony and 180ms main-thread stalls preserve real sample alignment and recover to the current audible step
+  5 passed (1.6m)

@@ -1,0 +1,80 @@
+[
+  {
+    "scenario": "40-bpm-boundaries",
+    "verdict": "FAIL",
+    "checks": {
+      "no_missed_source_deadline_over_1ms": "PASS",
+      "source_event_sequence_and_track_coverage": "PASS",
+      "inter_track_onsets_within_one_sample": "PASS",
+      "visual_p99_within_30ms_of_render_clock": "PASS",
+      "median_visual_within_30ms_of_estimated_output": "FAIL",
+      "phrase_marker_within_30ms_of_next_phrase": "FAIL",
+      "stop_cleanup": "PASS"
+    }
+  },
+  {
+    "scenario": "120-bpm-boundaries",
+    "verdict": "FAIL",
+    "checks": {
+      "no_missed_source_deadline_over_1ms": "PASS",
+      "source_event_sequence_and_track_coverage": "PASS",
+      "inter_track_onsets_within_one_sample": "PASS",
+      "visual_p99_within_30ms_of_render_clock": "PASS",
+      "median_visual_within_30ms_of_estimated_output": "FAIL",
+      "phrase_marker_within_30ms_of_next_phrase": "FAIL",
+      "stop_cleanup": "PASS"
+    }
+  },
+  {
+    "scenario": "220-bpm-dense",
+    "verdict": "FAIL",
+    "checks": {
+      "no_missed_source_deadline_over_1ms": "PASS",
+      "source_event_sequence_and_track_coverage": "PASS",
+      "inter_track_onsets_within_one_sample": "PASS",
+      "visual_p99_within_30ms_of_render_clock": "PASS",
+      "median_visual_within_30ms_of_estimated_output": "FAIL",
+      "phrase_marker_within_30ms_of_next_phrase": "FAIL",
+      "stop_cleanup": "PASS"
+    }
+  },
+  {
+    "scenario": "220-bpm-cpu4x-edits",
+    "verdict": "FAIL",
+    "checks": {
+      "no_missed_source_deadline_over_1ms": "FAIL",
+      "source_event_sequence_and_track_coverage": "PASS",
+      "inter_track_onsets_within_one_sample": "PASS",
+      "visual_p99_within_30ms_of_render_clock": "FAIL",
+      "median_visual_within_30ms_of_estimated_output": "FAIL",
+      "phrase_marker_within_30ms_of_next_phrase": "FAIL",
+      "stop_cleanup": "PASS"
+    }
+  },
+  {
+    "scenario": "220-bpm-180ms-stalls",
+    "verdict": "FAIL",
+    "checks": {
+      "no_missed_source_deadline_over_1ms": "FAIL",
+      "source_event_sequence_and_track_coverage": "PASS",
+      "inter_track_onsets_within_one_sample": "FAIL",
+      "visual_p99_within_30ms_of_render_clock": "FAIL",
+      "median_visual_within_30ms_of_estimated_output": "FAIL",
+      "phrase_marker_within_30ms_of_next_phrase": "FAIL",
+      "stop_cleanup": "PASS"
+    }
+  },
+  {
+    "scenario": "tempo-sweep-restarts",
+    "verdict": "FAIL",
+    "checks": {
+      "no_missed_source_deadline_over_1ms": "PASS",
+      "source_event_sequence_and_track_coverage": "PASS",
+      "inter_track_onsets_within_one_sample": "PASS",
+      "visual_p99_within_30ms_of_render_clock": "PASS",
+      "median_visual_within_30ms_of_estimated_output": "FAIL",
+      "phrase_marker_within_30ms_of_next_phrase": "FAIL",
+      "stop_cleanup": "PASS"
+    }
+  }
+]

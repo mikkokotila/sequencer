@@ -1,0 +1,566 @@
+[
+  {
+    "name": "40-bpm-boundaries",
+    "bpm": 40,
+    "duration": 50000,
+    "errors": [],
+    "steps": 134,
+    "sources": 1206,
+    "lateSources": 0,
+    "scheduleLeadMs": {
+      "n": 1206,
+      "min": 43.00453514738933,
+      "median": 68.65079365079374,
+      "p95": 97.59637188208714,
+      "p99": 99.76190476190538,
+      "max": 99.93197278911659
+    },
+    "visualErrorMs": {
+      "n": 134,
+      "min": -7.981859410435277,
+      "median": 1.1451247165545908,
+      "p95": 9.27437641723472,
+      "p99": 9.387755102039819,
+      "max": 9.410430838997286
+    },
+    "estimatedOutputLeadMs": {
+      "n": 134,
+      "min": 83.87963943194165,
+      "median": 94.15308614396167,
+      "p95": 102.55062587417996,
+      "p99": 102.6723015753781,
+      "max": 102.71635603291251
+    },
+    "unmatchedVisuals": 0,
+    "sequenceErrors": 0,
+    "missingTracks": 0,
+    "scheduleSkewMs": 0,
+    "onsetErrorMs": {
+      "n": 134,
+      "min": -2.220446049250313e-13,
+      "median": 0.011337868464522671,
+      "p95": 0.01133786848228624,
+      "p99": 0.01133786848228624,
+      "max": 0.01133786848228624
+    },
+    "onsetTrackSkewMs": {
+      "n": 134,
+      "min": 0.0,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+    },
+    "boundaries": [
+      {
+        "phrase": 1,
+        "time": 24.471519274376416,
+        "markerAt": 24.11392290249433,
+        "leadMs": 357.5963718820851
+      },
+      {
+        "phrase": 3,
+        "time": 48.47151927437642,
+        "markerAt": 48.117551020408165,
+        "leadMs": 353.9682539682545
+      }
+    ],
+    "aliveAfterStop": 0,
+    "litAfterStop": 0,
+    "markedAfterStop": 0,
+    "contexts": [
+      {
+        "state": "suspended",
+        "sampleRate": 44100,
+        "baseLatency": 0.005804988662131519,
+        "outputLatency": 0
+      },
+      {
+        "state": "running",
+        "sampleRate": 44100,
+        "baseLatency": 0.005804988662131519,
+        "outputLatency": 0.096
+      }
+    ],
+    "unpairedOnsets": 0,
+    "postStopVisuals": 0,
+    "observedTrack0Onsets": 134
+  },
+  {
+    "name": "120-bpm-boundaries",
+    "bpm": 120,
+    "duration": 26000,
+    "errors": [],
+    "steps": 209,
+    "sources": 1881,
+    "lateSources": 0,
+    "scheduleLeadMs": {
+      "n": 1881,
+      "min": 42.233560090704,
+      "median": 73.97959183673386,
+      "p95": 97.61904761904638,
+      "p99": 99.88662131519277,
+      "max": 99.96598639455812
+    },
+    "visualErrorMs": {
+      "n": 208,
+      "min": -7.891156462585092,
+      "median": 0.3287981858974831,
+      "p95": 8.866213151925706,
+      "p99": 9.274376417231167,
+      "max": 182.9931972788259
+    },
+    "estimatedOutputLeadMs": {
+      "n": 208,
+      "min": -87.80920861669372,
+      "median": 95.26991839118881,
+      "p95": 103.6824943072263,
+      "p99": 104.08897734810907,
+      "max": 104.63381857026289
+    },
+    "unmatchedVisuals": 0,
+    "sequenceErrors": 0,
+    "missingTracks": 0,
+    "scheduleSkewMs": 0,
+    "onsetErrorMs": {
+      "n": 208,
+      "min": -8.526512829121202e-11,
+      "median": 0.011337868393468398,
+      "p95": 0.011337868480953972,
+      "p99": 0.01133786848228624,
+      "max": 0.011337868489391667
+    },
+    "onsetTrackSkewMs": {
+      "n": 208,
+      "min": 0.0,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+    },
+    "boundaries": [
+      {
+        "phrase": 1,
+        "time": 8.48312925170068,
+        "markerAt": 8.376598639455782,
+        "leadMs": 106.53061224489768
+      },
+      {
+        "phrase": 3,
+        "time": 16.483129251700767,
+        "markerAt": 16.375873015873015,
+        "leadMs": 107.25623582775157
+      },
+      {
+        "phrase": 0,
+        "time": 24.48312925170068,
+        "markerAt": 24.37514739229025,
+        "leadMs": 107.98185941043315
+      }
+    ],
+    "aliveAfterStop": 0,
+    "litAfterStop": 0,
+    "markedAfterStop": 0,
+    "contexts": [
+      {
+        "state": "suspended",
+        "sampleRate": 44100,
+        "baseLatency": 0.005804988662131519,
+        "outputLatency": 0
+      },
+      {
+        "state": "running",
+        "sampleRate": 44100,
+        "baseLatency": 0.005804988662131519,
+        "outputLatency": 0.096
+      }
+    ],
+    "unpairedOnsets": 0,
+    "postStopVisuals": 0,
+    "observedTrack0Onsets": 208
+  },
+  {
+    "name": "220-bpm-dense",
+    "bpm": 220,
+    "duration": 26000,
+    "poly": true,
+    "errors": [],
+    "steps": 382,
+    "sources": 5730,
+    "lateSources": 0,
+    "scheduleLeadMs": {
+      "n": 5730,
+      "min": 42.135642135640694,
+      "median": 72.23871366728596,
+      "p95": 97.20676149260399,
+      "p99": 99.88662131531001,
+      "max": 101.24098124102154
+    },
+    "visualErrorMs": {
+      "n": 381,
+      "min": -7.932385075257287,
+      "median": 0.406101834613537,
+      "p95": 8.371469800009024,
+      "p99": 9.229024943280706,
+      "max": 13.510616367726769
+    },
+    "estimatedOutputLeadMs": {
+      "n": 381,
+      "min": 83.89337228248195,
+      "median": 95.57558976338676,
+      "p95": 103.3410231238463,
+      "p99": 104.93337374930877,
+      "max": 105.70299504066938
+    },
+    "unmatchedVisuals": 0,
+    "sequenceErrors": 0,
+    "missingTracks": 0,
+    "scheduleSkewMs": 0,
+    "onsetErrorMs": {
+      "n": 381,
+      "min": -1.2079226507921703e-10,
+      "median": 0.010307153132771418,
+      "p95": 0.02061430627975369,
+      "p99": 0.020614306324162612,
+      "max": 0.020614306328603504
+    },
+    "onsetTrackSkewMs": {
+      "n": 381,
+      "min": 0.0,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+    },
+    "boundaries": [
+      {
+        "phrase": 1,
+        "time": 4.864180581323464,
+        "markerAt": 4.806530612244898,
+        "leadMs": 57.64996907856634
+      },
+      {
+        "phrase": 3,
+        "time": 9.227816944959828,
+        "markerAt": 9.177687074829931,
+        "leadMs": 50.129870129897114
+      },
+      {
+        "phrase": 0,
+        "time": 13.591453308596215,
+        "markerAt": 13.543038548752834,
+        "leadMs": 48.414759843380395
+      },
+      {
+        "phrase": 1,
+        "time": 17.955089672232607,
+        "markerAt": 17.908390022675736,
+        "leadMs": 46.69964955687078
+      },
+      {
+        "phrase": 3,
+        "time": 22.318726035868945,
+        "markerAt": 22.256326530612245,
+        "leadMs": 62.39950525669968
+      }
+    ],
+    "aliveAfterStop": 0,
+    "litAfterStop": 0,
+    "markedAfterStop": 0,
+    "contexts": [
+      {
+        "state": "suspended",
+        "sampleRate": 44100,
+        "baseLatency": 0.005804988662131519,
+        "outputLatency": 0
+      },
+      {
+        "state": "running",
+        "sampleRate": 44100,
+        "baseLatency": 0.005804988662131519,
+        "outputLatency": 0.096
+      }
+    ],
+    "unpairedOnsets": 0,
+    "postStopVisuals": 0,
+    "observedTrack0Onsets": 381
+  },
+  {
+    "name": "220-bpm-cpu4x-edits",
+    "bpm": 220,
+    "duration": 18000,
+    "cpu": 4,
+    "edit": true,
+    "stall": 40,
+    "errors": [],
+    "steps": 266,
+    "sources": 2394,
+    "lateSources": 9,
+    "scheduleLeadMs": {
+      "n": 2394,
+      "min": -1.9459905174095127,
+      "median": 71.12141826432428,
+      "p95": 96.84601113175972,
+      "p99": 99.33415790562438,
+      "max": 101.24098124100023
+    },
+    "visualErrorMs": {
+      "n": 265,
+      "min": -7.802514945383976,
+      "median": 3.0344258915677713,
+      "p95": 39.11152339720658,
+      "p99": 48.49309420731629,
+      "max": 52.75200989484041
+    },
+    "estimatedOutputLeadMs": {
+      "n": 265,
+      "min": 40.584145973198815,
+      "median": 92.56487755106946,
+      "p95": 102.36318118786869,
+      "p99": 104.61093923549036,
+      "max": 105.13175409518993
+    },
+    "unmatchedVisuals": 0,
+    "sequenceErrors": 0,
+    "missingTracks": 0,
+    "scheduleSkewMs": 0,
+    "onsetErrorMs": {
+      "n": 265,
+      "min": -2.8818800247361054,
+      "median": 0.010307153146982273,
+      "p95": 0.020614306298405438,
+      "p99": 0.020614306328603504,
+      "max": 1.9459905174095127
+    },
+    "onsetTrackSkewMs": {
+      "n": 265,
+      "min": 0.0,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+    },
+    "boundaries": [
+      {
+        "phrase": 1,
+        "time": 4.9686703772418195,
+        "markerAt": 4.916825396825397,
+        "leadMs": 51.844980416422715
+      },
+      {
+        "phrase": 3,
+        "time": 9.332306740878241,
+        "markerAt": 9.276371882086167,
+        "leadMs": 55.93485879207449
+      },
+      {
+        "phrase": 0,
+        "time": 13.695943104514583,
+        "markerAt": 13.68235827664399,
+        "leadMs": 13.58482787059323
+      },
+      {
+        "phrase": 1,
+        "time": 18.059579468150936,
+        "markerAt": 18.04190476190476,
+        "leadMs": 17.67470624617573
+      }
+    ],
+    "aliveAfterStop": 0,
+    "litAfterStop": 0,
+    "markedAfterStop": 0,
+    "contexts": [
+      {
+        "state": "suspended",
+        "sampleRate": 44100,
+        "baseLatency": 0.005804988662131519,
+        "outputLatency": 0
+      },
+      {
+        "state": "running",
+        "sampleRate": 44100,
+        "baseLatency": 0.005804988662131519,
+        "outputLatency": 0.096
+      }
+    ],
+    "unpairedOnsets": 0,
+    "postStopVisuals": 0,
+    "observedTrack0Onsets": 265
+  },
+  {
+    "name": "220-bpm-180ms-stalls",
+    "bpm": 220,
+    "duration": 15000,
+    "stall": 180,
+    "errors": [],
+    "steps": 224,
+    "sources": 2016,
+    "lateSources": 396,
+    "scheduleLeadMs": {
+      "n": 2016,
+      "min": -114.70006184291437,
+      "median": 64.67326324472289,
+      "p95": 95.75757575759658,
+      "p99": 97.91795506113132,
+      "max": 99.63306534740646
+    },
+    "visualErrorMs": {
+      "n": 222,
+      "min": -7.9323850752466285,
+      "median": 5.178313749553354,
+      "p95": 154.0321583178308,
+      "p99": 177.12224283651068,
+      "max": 178.30138115847484
+    },
+    "estimatedOutputLeadMs": {
+      "n": 222,
+      "min": -80.68090271237426,
+      "median": 90.31967492449944,
+      "p95": 102.33612509339629,
+      "p99": 104.48149437875554,
+      "max": 105.21437370161468
+    },
+    "unmatchedVisuals": 0,
+    "sequenceErrors": 0,
+    "missingTracks": 0,
+    "scheduleSkewMs": 0,
+    "onsetErrorMs": {
+      "n": 199,
+      "min": -30.91527520111015,
+      "median": 0.010307153111455136,
+      "p95": 14.131106988226172,
+      "p99": 23.473510616184967,
+      "max": 24.561945990488443
+    },
+    "onsetTrackSkewMs": {
+      "n": 199,
+      "min": 0.0,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.0,
+      "max": 2.902494331065597
+    },
+    "boundaries": [
+      {
+        "phrase": 1,
+        "time": 4.82935064935066,
+        "markerAt": 4.771700680272109,
+        "leadMs": 57.649969078551244
+      },
+      {
+        "phrase": 3,
+        "time": 9.192987012987047,
+        "markerAt": 9.142857142857142,
+        "leadMs": 50.12987012990422
+      },
+      {
+        "phrase": 0,
+        "time": 13.5566233766236,
+        "markerAt": 13.56045351473923,
+        "leadMs": -3.830138115629822
+      }
+    ],
+    "aliveAfterStop": 0,
+    "litAfterStop": 0,
+    "markedAfterStop": 0,
+    "contexts": [
+      {
+        "state": "suspended",
+        "sampleRate": 44100,
+        "baseLatency": 0.005804988662131519,
+        "outputLatency": 0
+      },
+      {
+        "state": "running",
+        "sampleRate": 44100,
+        "baseLatency": 0.005804988662131519,
+        "outputLatency": 0.096
+      }
+    ],
+    "unpairedOnsets": 0,
+    "postStopVisuals": 0,
+    "observedTrack0Onsets": 199
+  },
+  {
+    "name": "tempo-sweep-restarts",
+    "bpm": 120,
+    "duration": 15000,
+    "cycles": true,
+    "errors": [],
+    "steps": 165,
+    "sources": 1485,
+    "lateSources": 0,
+    "scheduleLeadMs": {
+      "n": 1485,
+      "min": 41.95011337868593,
+      "median": 73.71022686090356,
+      "p95": 97.0975056689376,
+      "p99": 99.98969284683534,
+      "max": 104.74531275924815
+    },
+    "visualErrorMs": {
+      "n": 142,
+      "min": -7.956349206351021,
+      "median": 0.0028344671201274707,
+      "p95": 7.843319976400309,
+      "p99": 9.13555666168353,
+      "max": 13.097726895638928
+    },
+    "estimatedOutputLeadMs": {
+      "n": 142,
+      "min": 84.57826176649341,
+      "median": 95.25611561049674,
+      "p95": 102.8735804869445,
+      "p99": 105.57036055614245,
+      "max": 105.66406344437951
+    },
+    "unmatchedVisuals": 0,
+    "sequenceErrors": 0,
+    "missingTracks": 0,
+    "scheduleSkewMs": 0,
+    "onsetErrorMs": {
+      "n": 141,
+      "min": -3.552713678800501e-12,
+      "median": 0.008594000775019595,
+      "p95": 0.019910403180389835,
+      "p99": 0.0215367729854421,
+      "max": 0.022365110432076563
+    },
+    "onsetTrackSkewMs": {
+      "n": 141,
+      "min": 0.0,
+      "median": 0.0,
+      "p95": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+    },
+    "boundaries": [
+      {
+        "phrase": 1,
+        "time": 8.00984126984127,
+        "markerAt": 7.9354195011337865,
+        "leadMs": 74.4217687074844
+      }
+    ],
+    "aliveAfterStop": 0,
+    "litAfterStop": 0,
+    "markedAfterStop": 0,
+    "contexts": [
+      {
+        "state": "suspended",
+        "sampleRate": 44100,
+        "baseLatency": 0.005804988662131519,
+        "outputLatency": 0
+      },
+      {
+        "state": "running",
+        "sampleRate": 44100,
+        "baseLatency": 0.005804988662131519,
+        "outputLatency": 0.096
+      }
+    ],
+    "unpairedOnsets": 0,
+    "postStopVisuals": 0,
+    "observedTrack0Onsets": 141
+  }
+]

@@ -1,0 +1,22 @@
+[WebServer] (node:22836) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:22857) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:22862) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22862) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › e2e/output-clock.spec.ts:3:1 › device clock uses latency fallback for missing, stale, or invalid timestamps (410ms)
+  ✓  2 [chromium] › e2e/sample-library.spec.ts:9:1 › sample read failures, permission errors, and disconnects never terminate the server (41ms)
+  ✓  3 [chromium] › e2e/sample-library.spec.ts:68:1 › sample access denial gives actionable feedback and permits retry (1.5s)
+  ✓  4 [chromium] › e2e/sync-pressure.spec.ts:169:3 › phrase markers follow device playback through boundaries at 40 BPM (26.1s)
+  ✓  5 [chromium] › e2e/sync-pressure.spec.ts:169:3 › phrase markers follow device playback through boundaries at 120 BPM (17.7s)
+  ✓  6 [chromium] › e2e/sync-pressure.spec.ts:169:3 › phrase markers follow device playback through boundaries at 220 BPM (14.7s)
+  ✓  7 [chromium] › e2e/sync-pressure.spec.ts:202:1 › dense polyphony and 180ms main-thread stalls preserve real sample alignment and recover to the current audible step (14.4s)
+  ✓  8 [chromium] › e2e/sync-pressure.spec.ts:247:1 › rapid restarts and tempo edits retain one transport and clear all pending visuals (5.1s)
+  ✓  9 [chromium] › e2e/sync-pressure.spec.ts:276:1 › stop cancels all tracks together when its loop crosses an audio block (5.4s)
+
+  9 passed (1.5m)

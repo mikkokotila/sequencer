@@ -48,7 +48,10 @@
       "e2e/**",
       "index.html",
       "sequencer.html",
-      "README.md"
+      "README.md",
+      "vite.config.ts",
+      "playwright.config.ts",
+      "server/**"
     ],
     "audio_dsp": [
       "src/engine/audio.ts",

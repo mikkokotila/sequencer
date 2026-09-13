@@ -1,0 +1,247 @@
+{
+  "task_id": "20260912-sync-runtime-fixes",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260912-sync-runtime-fixes.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-12T10:50:18.658Z",
+  "finished_at_utc": "2026-09-12T10:53:06.535Z",
+  "head_sha": "4ffe459",
+  "tree_sha": "e999d2ea49d4a7e0525258c4805e8601ad4488f4",
+  "subject_sha": "4f38ac284512bba3cce7500d72db268c9f83409ed874ecb7366f9add8db009ff",
+  "subject_files": [
+    "README.md",
+    "docs/qc/baseline.md",
+    "e2e/output-clock.spec.ts",
+    "e2e/production.spec.ts",
+    "e2e/sample-library.spec.ts",
+    "e2e/sequencer.spec.ts",
+    "e2e/sync-pressure.spec.ts",
+    "playwright.config.ts",
+    "server/sample-library.mjs",
+    "src/engine/audio.ts",
+    "src/engine/output-clock.ts",
+    "src/engine/scheduler.ts",
+    "src/engine/worklet-loader.ts",
+    "src/events.ts",
+    "src/main.ts",
+    "src/ui/browser.ts",
+    "src/ui/playhead.ts",
+    "vite.config.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "README.md",
+    "docs/qc/baseline.md",
+    "docs/qc/proofs/20260821-playhead-sync-integrity.md",
+    "docs/qc/proofs/20260821-playhead-sync-integrity/proof.manifest.json",
+    "docs/qc/proofs/20260821-playhead-sync-integrity/verdict.json",
+    "docs/qc/proofs/20260912-sync-runtime-fixes.md",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/REPRODUCE.md",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/eight-repeats.txt",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/focused-tests.txt",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/historical-attestations.txt",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/proof.manifest.json",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/real-library-result.json",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/stop-boundary-before.txt",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/stress/eight-repeat-summary.json",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/stress/final-summary.json",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/stress/stop-boundary-before.json",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/stress/sync-pressure-dense-polyph-58cba-to-the-current-audible-step-chromium.json",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/stress/sync-pressure-phrase-marke-5b8af-hrough-boundaries-at-40-BPM-chromium.json",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/stress/sync-pressure-phrase-marke-bb356-rough-boundaries-at-120-BPM-chromium.json",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/stress/sync-pressure-phrase-marke-cf83d-rough-boundaries-at-220-BPM-chromium.json",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/stress/sync-pressure-rapid-restar-f017b-d-clear-all-pending-visuals-chromium.json",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/stress/sync-pressure-stop-cancels-ba26c-loop-crosses-an-audio-block-chromium-repeat2.json",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/stress/sync-pressure-stop-cancels-ba26c-loop-crosses-an-audio-block-chromium.json",
+    "docs/qc/proofs/20260912-sync-runtime-fixes/verdict.json",
+    "docs/qc/runs/20260821-191232Z-df835b3-1787339484255-ed99210b.json",
+    "docs/qc/runs/20260821-191232Z-df835b3-1787339484255-ed99210b.md",
+    "docs/qc/runs/20260821-191359Z-df835b3-1787339574686-8b367f54.json",
+    "docs/qc/runs/20260821-191359Z-df835b3-1787339574686-8b367f54.md",
+    "docs/qc/runs/20260821-191400Z-df835b3.md",
+    "docs/qc/runs/20260821-191758Z-df835b3-1787339814461-03f09605.json",
+    "docs/qc/runs/20260821-191758Z-df835b3-1787339814461-03f09605.md",
+    "docs/qc/runs/20260821-191920Z-df835b3-1787339896380-16970e1e.json",
+    "docs/qc/runs/20260821-191920Z-df835b3-1787339896380-16970e1e.md",
+    "docs/qc/runs/20260821-192030Z-df835b3-1787339966274-f71b7e19.json",
+    "docs/qc/runs/20260821-192030Z-df835b3-1787339966274-f71b7e19.md",
+    "docs/qc/specs/20260821-playhead-sync-integrity.task.spec.json",
+    "docs/qc/specs/20260912-sync-runtime-fixes.task.spec.json",
+    "e2e/output-clock.spec.ts",
+    "e2e/production.spec.ts",
+    "e2e/sample-library.spec.ts",
+    "e2e/sequencer.spec.ts",
+    "e2e/sync-pressure.spec.ts",
+    "playwright.config.ts",
+    "server/sample-library.mjs",
+    "src/engine/audio.ts",
+    "src/engine/output-clock.ts",
+    "src/engine/scheduler.ts",
+    "src/engine/worklet-loader.ts",
+    "src/events.ts",
+    "src/main.ts",
+    "src/ui/browser.ts",
+    "src/ui/playhead.ts",
+    "vite.config.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=7, oracles=6, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=7, oracles=6, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 3990,
+        "log_file": "docs/qc/proofs/20260912-sync-runtime-fixes/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 146663,
+        "log_file": "docs/qc/proofs/20260912-sync-runtime-fixes/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 196,
+        "log_file": "docs/qc/proofs/20260912-sync-runtime-fixes/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 374,
+        "log_file": "docs/qc/proofs/20260912-sync-runtime-fixes/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 389,
+        "log_file": "docs/qc/proofs/20260912-sync-runtime-fixes/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 271,
+        "log_file": "docs/qc/proofs/20260912-sync-runtime-fixes/logs/O-COMMIT-RANGE.log"
+      },
+      {
+        "id": "O-AUDIO-GATES",
+        "label": "Audio browser gates",
+        "command": "npm run audio:gates",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 13693,
+        "log_file": "docs/qc/proofs/20260912-sync-runtime-fixes/logs/O-AUDIO-GATES.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260912-sync-runtime-fixes/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260912-sync-runtime-fixes/raw/off_transparent.json",
+        "raw_sha256": "d0ec8fa9c8b9965faa2daf5e227778b42c8be3a983e643f6f2fe3e951447fcac"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260912-sync-runtime-fixes/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260912-sync-runtime-fixes/raw/on_audible.json",
+        "raw_sha256": "eee14256b1d60681e45e3953766b394613bc767e665bb362f2cf15c5b3facf4d"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260912-sync-runtime-fixes/oracles/low_end_continuity.json",
+        "raw_artifact": "docs/qc/proofs/20260912-sync-runtime-fixes/raw/low_end_continuity.json",
+        "raw_sha256": "56fb19e122e055be095769ca2d0f8d64521e2e2a3b613c8c10a73dbd171d9634"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260912-sync-runtime-fixes/oracles/clip_guard.json",
+        "raw_artifact": "docs/qc/proofs/20260912-sync-runtime-fixes/raw/clip_guard.json",
+        "raw_sha256": "aa9ca6c49142a8b1bf546d348001c6ef1434460772e9d6b8c401cc020d483d4b"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260912-sync-runtime-fixes/oracles/default_safety.json",
+        "raw_artifact": "docs/qc/proofs/20260912-sync-runtime-fixes/raw/default_safety.json",
+        "raw_sha256": "abad533e697aed7ede78429fca82e415a9a9608e2381dcb551670e01131deb1f"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260912-sync-runtime-fixes/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260912-sync-runtime-fixes/raw/control_binding.json",
+        "raw_sha256": "d25b3f13e55432fbc5b24b0a2b4c1bedaa6ffcb30dce541c7ab35c1296c50e0d"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

@@ -1,0 +1,34 @@
+{
+  "run_id": "1789135853846-2a19ea8a",
+  "task_id": "20260911-sync-pressure-audit",
+  "task_type": "qc",
+  "spec_path": "docs/qc/specs/20260911-sync-pressure-audit.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-09-11T14:10:53.845Z",
+  "finished_at_utc": "2026-09-11T14:10:58.621Z",
+  "head_sha": "0003e3f",
+  "tree_sha": "b98e3129e0202bc7ab9396648699ca1f0ebd253c",
+  "subject_sha": "0000000000000000000000000000000000000000000000000000000000000000",
+  "verdict": "PASS",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260911-sync-pressure-audit/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260911-sync-pressure-audit/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": []
+}

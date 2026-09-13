@@ -38,6 +38,9 @@ let finalOutput: AudioNode | null = null;
 // Persistent preview gain — reused for all sample previews (avoids node accumulation)
 let previewGain: GainNode | null = null;
 const sequencerVoices = new Set<AudioBufferSourceNode>();
+// Give start/stop commands one shared future deadline so a render quantum or a
+// brief main-thread interruption cannot split tracks during the submission loop.
+export const SEQUENCER_LEAD_SECONDS = 0.025;
 
 function trackSequencerVoice(src: AudioBufferSourceNode): void {
   sequencerVoices.add(src);
@@ -191,15 +194,15 @@ export function playSample(
 }
 
 /**
- * Stop any queued or currently playing sequencer voices immediately.
- * This is used by transport stop to prevent overlap from lookahead-scheduled notes.
+ * Cancel queued/current voices at one shared near-future deadline.
+ * A restart uses the same lead, so it cannot overlap this cancellation.
  */
 export function stopSequencerVoicesNow(): void {
   if (!audioCtx) return;
-  const now = audioCtx.currentTime;
+  const stopAt = audioCtx.currentTime + SEQUENCER_LEAD_SECONDS;
   for (const src of sequencerVoices) {
     try {
-      src.stop(now);
+      src.stop(stopAt);
     } catch {
       // already ended/stopped
     }
@@ -249,6 +252,16 @@ export async function loadAudioFile(file: File): Promise<LoadedSample> {
 export async function fetchAndDecode(url: string): Promise<LoadedSample> {
   initAudio();
   const resp = await fetch(url);
+  if (!resp.ok) {
+    if (resp.status === 403) {
+      throw new Error(
+        'Sample library access denied. Allow access to its folder or move the library to an accessible location.',
+      );
+    }
+    if (resp.status === 404)
+      throw new Error('Sample not found. Check the sample library location.');
+    throw new Error(`Sample request failed (${resp.status}). Try loading it again.`);
+  }
   const ab = await resp.arrayBuffer();
   const buffer = await audioCtx!.decodeAudioData(ab.slice(0));
   const name = url.split('/').pop() ?? 'sample';

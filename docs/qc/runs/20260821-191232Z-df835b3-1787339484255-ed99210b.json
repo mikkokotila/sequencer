@@ -1,0 +1,103 @@
+{
+  "run_id": "1787339484255-ed99210b",
+  "task_id": "20260821-playhead-sync-integrity",
+  "task_type": "bugfix",
+  "spec_path": "docs/qc/specs/20260821-playhead-sync-integrity.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-08-21T19:11:24.254Z",
+  "finished_at_utc": "2026-08-21T19:12:32.171Z",
+  "head_sha": "df835b3",
+  "tree_sha": "91c9e774e807c3c3d501805a81d8d163cff90f49",
+  "subject_sha": "829986636ee17fa58fe3ed3387bfc67d723a4b6c7b1b3dfdfd4143c6a0bc1157",
+  "verdict": "BLOCKED",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E",
+      "label": "E2E",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-E2E.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E-DELTA",
+      "label": "E2E delta coverage",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-E2E-DELTA.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-CONTRACTS-FULL",
+      "label": "Contract static gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-GATE-CONTRACTS-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-ARCH-FULL",
+      "label": "Architecture gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-GATE-ARCH-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "off_transparent",
+      "label": "off_transparent",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/oracles/off_transparent.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "on_audible",
+      "label": "on_audible",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/oracles/on_audible.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "control_binding",
+      "label": "control_binding",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260821-playhead-sync-integrity/oracles/control_binding.json",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "BLOCKED",
+      "code": "GOV-PROOF-001",
+      "message": "Missing proof manifest: docs/qc/proofs/20260821-playhead-sync-integrity/proof.manifest.json"
+    }
+  ]
+}

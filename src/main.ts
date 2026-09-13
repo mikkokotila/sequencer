@@ -2,14 +2,19 @@
  * Entry point — initializes all modules and wires them together.
  */
 
-import * as Tone from 'tone';
-import { initAudio, loadWorklets, getAudioContext } from './engine/audio';
+import { initAudio, loadWorklets } from './engine/audio';
 import { openDB, dbGet, saveSong, loadSong, scheduleSave } from './transport/persistence';
 import { loadManifest, wireBrowserEvents } from './ui/browser';
 import { buildUI, refreshUI, refreshSongName, updateSongPane } from './ui/build';
 import { setupPainting, setOnSave, setOnSongPaneUpdate } from './ui/painting';
 import { initExtensions } from './engine/extensions/registry';
-import { togglePlay, syncBpm, stopPlayback, bindTransport } from './engine/scheduler';
+import {
+  togglePlay,
+  syncBpm,
+  stopPlayback,
+  bindTransport,
+  setOnPhraseChange,
+} from './engine/scheduler';
 import { on } from './events';
 import { initPlayhead } from './ui/playhead';
 import { genId } from './ui/helpers';
@@ -62,17 +67,13 @@ async function init(): Promise<void> {
     createDelay(),
   );
 
-  // 2. Init the AudioContext and bind Tone.js to it BEFORE building the UI.
-  // buildUI() wires playBtn.onclick = togglePlay; if the user clicks Play
-  // during the async init below, togglePlay → Tone.start() / getTransport()
-  // would lazy-create Tone's default Context and reintroduce the dual-context
-  // timing bug. Binding here guarantees every Tone access uses our ctx.
+  // 2. The engine owns the only AudioContext; the scheduler uses its clock.
   initAudio();
-  const ctx = getAudioContext();
-  if (ctx) Tone.setContext(ctx);
 
   // 3. Build the UI
   buildUI();
+  const playButton = document.getElementById('play-btn') as HTMLButtonElement | null;
+  if (playButton) playButton.disabled = true;
 
   // 3b. Build MIDI browser overlay + ADSR popup
   buildMidiBrowserDOM();
@@ -83,6 +84,10 @@ async function init(): Promise<void> {
   setOnSave(scheduleSave);
   setOnSongPaneUpdate(updateSongPane);
   setOnBpmChange(syncBpm);
+  // The scheduler owns which phrase is playing; without this the song pane's
+  // `.playing-phrase` marker never lights up at all — start, stop and
+  // auto-advance all route through this one callback.
+  setOnPhraseChange(updateSongPane);
 
   // 4b. Wire persistence lifecycle events
   on('persistence:songCreated', () => {
@@ -141,7 +146,7 @@ async function init(): Promise<void> {
   });
 
   // 8b. Load worklets, init engine processing + extensions + playhead.
-  // (Audio context + Tone binding already happened at step 2.)
+  // (The engine AudioContext was created at step 2.)
   await loadWorklets();
   initEngineProcessing();
   initExtensions();
@@ -177,6 +182,9 @@ async function init(): Promise<void> {
       togglePlay();
     }
   });
+
+  if (playButton) playButton.disabled = false;
+  document.documentElement.dataset.ready = 'true';
 
   // Save on visibility change (tab close/switch)
   document.addEventListener('visibilitychange', () => {

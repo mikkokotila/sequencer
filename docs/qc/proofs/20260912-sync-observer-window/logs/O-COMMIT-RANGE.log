@@ -1,0 +1,15 @@
+command: npm run gate:commit-range
+status: 0
+elapsed_ms: 316
+
+--- stdout ---
+
+> sequencer@1.0.0 gate:commit-range
+> node docs/qc/scripts/commit-range-gates.mjs
+
+PASS | b801e6a4e52a9bb51771ae89f98cdc4e69b04ac0 | governance trailers + PASS attestation verified (docs/qc/proofs/20260912-sync-runtime-fixes/verdict.json)
+
+commit-range-gates: all 1 commit(s) passed in range HEAD~1..HEAD.
+
+
+--- stderr ---

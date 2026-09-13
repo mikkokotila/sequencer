@@ -1,0 +1,80 @@
+import { test, expect } from '@playwright/test';
+import { execFileSync } from 'node:child_process';
+import { preview, type PreviewServer } from 'vite';
+
+let server: PreviewServer;
+test.beforeAll(async () => {
+  execFileSync('npm', ['run', 'build'], { cwd: process.cwd(), stdio: 'pipe' });
+  server = await preview({
+    root: process.cwd(),
+    logLevel: 'error',
+    preview: { host: '127.0.0.1', port: 5177, strictPort: true },
+  });
+});
+test.afterAll(async () => {
+  if (server) {
+    server.httpServer.closeAllConnections();
+    await new Promise<void>((resolve) => server.httpServer.close(() => resolve()));
+  }
+});
+
+test('production build initializes every worklet and plays a decoded sample', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.addInitScript(() => {
+    const w = window as unknown as { __contexts: AudioContext[]; __starts: number[] };
+    w.__contexts = [];
+    w.__starts = [];
+    const Original = window.AudioContext;
+    window.AudioContext = class extends Original {
+      constructor(...args: ConstructorParameters<typeof AudioContext>) {
+        super(...args);
+        w.__contexts.push(this);
+      }
+    };
+    const original = AudioBufferSourceNode.prototype.start;
+    AudioBufferSourceNode.prototype.start = function (...args) {
+      w.__starts.push(args[0] ?? 0);
+      return original.apply(this, args);
+    };
+  });
+  const samples = 4410;
+  const wav = Buffer.alloc(44 + samples * 2);
+  wav.write('RIFF');
+  wav.writeUInt32LE(wav.length - 8, 4);
+  wav.write('WAVEfmt ', 8);
+  wav.writeUInt32LE(16, 16);
+  wav.writeUInt16LE(1, 20);
+  wav.writeUInt16LE(1, 22);
+  wav.writeUInt32LE(44100, 24);
+  wav.writeUInt32LE(88200, 28);
+  wav.writeUInt16LE(2, 32);
+  wav.writeUInt16LE(16, 34);
+  wav.write('data', 36);
+  wav.writeUInt32LE(samples * 2, 40);
+  for (let i = 0; i < samples; i++)
+    wav.writeInt16LE(Math.round(Math.sin((i * 2 * Math.PI * 220) / 44100) * 1000), 44 + i * 2);
+  await page.route('**/*.wav', (route) =>
+    route.fulfill({ status: 200, contentType: 'audio/wav', body: wav }),
+  );
+  await page.goto('http://127.0.0.1:5177/');
+  await page.waitForSelector('html[data-ready="true"]');
+  await expect(page.locator('.ext-icon-btn')).toHaveCount(7);
+  await page.locator('.melody-track[data-type="drum"][data-track="0"] .sample-btn').click();
+  await page.locator('.browser-item').first().click();
+  await page.locator('#browser-load').click();
+  await expect(page.locator('#browser-overlay')).not.toHaveClass(/open/);
+  await page.locator('#play-btn').click();
+  await expect(page.locator('.playing').first()).toBeVisible();
+  await page.waitForFunction(
+    () => (window as unknown as { __starts: number[] }).__starts.length >= 2,
+  );
+  await page.locator('#stop-btn').click();
+  await expect(page.locator('.playing')).toHaveCount(0);
+  expect(
+    await page.evaluate(
+      () => (window as unknown as { __contexts: AudioContext[] }).__contexts.length,
+    ),
+  ).toBe(1);
+  expect(errors).toEqual([]);
+});

@@ -1,0 +1,158 @@
+{
+  "task_id": "20260912-sync-observer-window",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260912-sync-observer-window.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-12T11:04:52.312Z",
+  "finished_at_utc": "2026-09-12T11:07:27.307Z",
+  "head_sha": "b801e6a",
+  "tree_sha": "035ae470136bbc79896ca9f5a5c94d970809ff74",
+  "subject_sha": "45a93bc5b6cd0052a15064136c91bf41e5bd7e3e17953869185c9ee439592777",
+  "subject_files": [
+    "e2e/sync-pressure.spec.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260912-sync-observer-window.md",
+    "docs/qc/proofs/20260912-sync-observer-window/ci-failure.txt",
+    "docs/qc/proofs/20260912-sync-observer-window/local-reproduction.txt",
+    "docs/qc/proofs/20260912-sync-observer-window/observer-race-before.json",
+    "docs/qc/proofs/20260912-sync-observer-window/proof.manifest.json",
+    "docs/qc/proofs/20260912-sync-observer-window/repeat-1.json",
+    "docs/qc/proofs/20260912-sync-observer-window/repeat-2.json",
+    "docs/qc/proofs/20260912-sync-observer-window/repeat-3.json",
+    "docs/qc/proofs/20260912-sync-observer-window/repeat-4.json",
+    "docs/qc/proofs/20260912-sync-observer-window/repeat-5.json",
+    "docs/qc/proofs/20260912-sync-observer-window/repeat-6.json",
+    "docs/qc/proofs/20260912-sync-observer-window/repeat-summary.json",
+    "docs/qc/proofs/20260912-sync-observer-window/repeats.txt",
+    "docs/qc/proofs/20260912-sync-observer-window/verdict.json",
+    "docs/qc/runs/20260912-110422Z-UNSET-1789211062077-ae11a67e.json",
+    "docs/qc/runs/20260912-110422Z-UNSET-1789211062077-ae11a67e.md",
+    "docs/qc/specs/20260912-sync-observer-window.task.spec.json",
+    "e2e/sync-pressure.spec.ts",
+    "logs/compiler.log"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=2, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=2, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4442,
+        "log_file": "docs/qc/proofs/20260912-sync-observer-window/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 147038,
+        "log_file": "docs/qc/proofs/20260912-sync-observer-window/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 178,
+        "log_file": "docs/qc/proofs/20260912-sync-observer-window/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 345,
+        "log_file": "docs/qc/proofs/20260912-sync-observer-window/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 379,
+        "log_file": "docs/qc/proofs/20260912-sync-observer-window/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 316,
+        "log_file": "docs/qc/proofs/20260912-sync-observer-window/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260912-sync-observer-window/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260912-sync-observer-window/raw/off_transparent.json",
+        "raw_sha256": "0da2b120ccb4e46ea4310a1c1820a48e763421a66ab1eb389bf4ff1015b1b29a"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260912-sync-observer-window/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260912-sync-observer-window/raw/on_audible.json",
+        "raw_sha256": "7b47fb577b40d5d42af721240645b53bb7f58b891d0fe6f3d36d262f5bd5f2c9"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

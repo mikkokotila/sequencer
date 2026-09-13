@@ -1,14 +1,14 @@
 /**
  * AudioWorklet loader — registers worklet processors with the AudioContext.
- * Uses Vite's ?url imports to resolve worklet module paths.
+ * Uses Vite's worker build pipeline to compile TypeScript into JavaScript modules.
  */
 
 // Vite resolves these to URLs at build time
-import compressorUrl from './worklets/compressor-processor.ts?url';
-import saturationUrl from './worklets/saturation-processor.ts?url';
-import freeverbUrl from './worklets/freeverb-processor.ts?url';
-import delayUrl from './worklets/delay-processor.ts?url';
-import transformerUrl from './worklets/transformer-processor.ts?url';
+import compressorUrl from './worklets/compressor-processor.ts?worker&url';
+import saturationUrl from './worklets/saturation-processor.ts?worker&url';
+import freeverbUrl from './worklets/freeverb-processor.ts?worker&url';
+import delayUrl from './worklets/delay-processor.ts?worker&url';
+import transformerUrl from './worklets/transformer-processor.ts?worker&url';
 
 const loaded = new Set<string>();
 

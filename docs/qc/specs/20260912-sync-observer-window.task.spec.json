@@ -1,0 +1,54 @@
+{
+  "task_id": "20260912-sync-observer-window",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Correct the synchronization probe clock-sampling race exposed by PR #39 CI and reproduced locally. Bracket the application render callback with independent device-clock readings, account for the existing 1ms visual timestamp precision budget, and require the shown phrase/step to be current within that measured interval. Preserve one-sample audio alignment, zero late starts, stop cleanup and stale-frame rejection. Runtime source is unchanged. Keep this regression repair in the same PR as explicitly requested.",
+    "in_scope": [
+      "e2e/sync-pressure.spec.ts",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "src/**",
+      "server/**",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**",
+      "package.json",
+      "package-lock.json"
+    ],
+    "controls": [
+      {
+        "id": "frame_acceptance",
+        "default": {
+          "clock_precision_ms": 1,
+          "max_observer_ms": 30
+        },
+        "range": "Measured before/after render interval, with 1ms rounding allowance on each edge",
+        "off_semantics": "Reject a frame older than the last scheduled step before the interval, a future frame beyond the interval, mismatched phrase markers, or observer work exceeding 30ms.",
+        "on_semantics": "Accept the latest scheduled phrase/step at an instant within the measured rendering interval. Audio onset and deadline constraints remain unchanged.",
+        "test": "Six repeated dense polyphony/180ms stall runs, phrase boundaries at 40/120/220 BPM, complete browser suite, and preserved failing point-sample observations."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "Captured 53.44 microsecond timestamp-rounding disagreement",
+      "Dense 15-voice steps, 180ms stalls and 4x CPU throttling"
+    ],
+    "seed": "observer-window-20260912",
+    "oracles": [
+      "off_transparent",
+      "on_audible"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

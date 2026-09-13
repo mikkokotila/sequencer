@@ -1,0 +1,45 @@
+e2e-gate	Run npm run e2e	﻿2026-09-12T10:54:20.7564570Z ##[group]Run npm run e2e
+e2e-gate	Run npm run e2e	2026-09-12T10:54:20.7564882Z ^[[36;1mnpm run e2e^[[0m
+e2e-gate	Run npm run e2e	2026-09-12T10:54:20.7601120Z shell: /usr/bin/bash -e {0}
+e2e-gate	Run npm run e2e	2026-09-12T10:54:20.7601421Z env:
+e2e-gate	Run npm run e2e	2026-09-12T10:54:20.7601672Z   PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
+e2e-gate	Run npm run e2e	2026-09-12T10:54:20.7601995Z ##[endgroup]
+e2e-gate	Run npm run e2e	2026-09-12T10:54:20.8768198Z
+e2e-gate	Run npm run e2e	2026-09-12T10:54:20.8769130Z > sequencer@1.0.0 e2e
+e2e-gate	Run npm run e2e	2026-09-12T10:54:20.8769734Z > npx playwright test
+e2e-gate	Run npm run e2e	2026-09-12T10:54:20.8770023Z
+e2e-gate	Run npm run e2e	2026-09-12T10:54:24.0849046Z
+e2e-gate	Run npm run e2e	2026-09-12T10:54:24.0849764Z Running 84 tests using 1 worker
+e2e-gate	Run npm run e2e	2026-09-12T10:56:33.5305205Z ················································································
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2107330Z ·F··
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2114942Z
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2126256Z   1) [chromium] › e2e/sync-pressure.spec.ts:202:1 › dense polyphony and 180ms main-thread stalls preserve real sample alignment and recover to the current audible step
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2127341Z
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2128305Z     Error: ^[[2mexpect(^[[22m^[[31mreceived^[[39m^[[2m).^[[22mtoBe^[[2m(^[[22m^[[32mexpected^[[39m^[[2m) // Object.is equality^[[22m
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2129385Z
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2129629Z     Expected: ^[[32m2^[[39m
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2130134Z     Received: ^[[31m0^[[39m
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2130379Z
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2130861Z       237 |   // After a blocked frame, obsolete steps must not be replayed onto the UI.
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2131682Z       238 |   for (const frame of result.frames) {
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2132381Z     > 239 |     expect(frame.marker).toBe(frame.expectedPhrase);
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2133009Z           |                          ^
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2133383Z       240 |     expect(frame.step).toBe(frame.expectedStep);
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2133721Z       241 |   }
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2133981Z       242 |   expect(result.alive).toBe(0);
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2134471Z         at /home/runner/work/sequencer/sequencer/e2e/sync-pressure.spec.ts:239:26
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2134806Z
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2135264Z     attachment #1: observations (application/json) ─────────────────────────────────────────────────
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2136410Z     test-results/sync-pressure-dense-polyph-58cba-to-the-current-audible-step-chromium/attachments/observations-71f44c1d9bbc8344de3a14eb93aeed01ca80a374.json
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2137791Z     ────────────────────────────────────────────────────────────────────────────────────────────────
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2138096Z
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2138546Z     attachment #2: pressure-observations (application/json) ────────────────────────────────────────
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2140096Z     test-results/sync-pressure-dense-polyph-58cba-to-the-current-audible-step-chromium/attachments/pressure-observations-8736d589874f605c5d02378f4e4427560d6e0abc.json
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2141222Z     ────────────────────────────────────────────────────────────────────────────────────────────────
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2141504Z
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2141981Z     Error Context: test-results/sync-pressure-dense-polyph-58cba-to-the-current-audible-step-chromium/error-context.md
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2142511Z
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2142607Z   1 failed
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2143431Z     [chromium] › e2e/sync-pressure.spec.ts:202:1 › dense polyphony and 180ms main-thread stalls preserve real sample alignment and recover to the current audible step
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2144143Z   83 passed (2.7m)
+e2e-gate	Run npm run e2e	2026-09-12T10:57:02.2454246Z ##[error]Process completed with exit code 1.

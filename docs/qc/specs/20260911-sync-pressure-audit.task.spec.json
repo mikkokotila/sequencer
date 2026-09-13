@@ -1,0 +1,13 @@
+{
+ "task_id":"20260911-sync-pressure-audit",
+ "task_type":"qc",
+ "execution_profile":"real",
+ "capability":{
+  "summary":"Record a read-only runtime synchronization audit of published sync branch b450673, repository freshness and unpublished work, with reproducible browser stress evidence. Audit branch starts at latest main df835b3; its compiler attestation validates evidence packaging, not product correctness.",
+  "in_scope":["docs/qc/proofs/20260911-sync-pressure-audit.md","docs/qc/proofs/20260911-sync-pressure-audit/**","docs/qc/specs/20260911-sync-pressure-audit.task.spec.json","docs/qc/runs/**","logs/compiler.log"],
+  "out_of_scope":["src/**","e2e/**","tests/**","docs/contracts/**","docs/qc/scripts/**"],
+  "controls":[]
+ },
+ "proof":{"fixtures":["deterministic 8ms pulse buffers on all nine tracks; populated phrases 0,1,3"],"seed":"sync-pressure-20260911-v1","oracles":[]},
+ "guardrails":{"allow_fixme":false,"allow_skip":false,"allow_contract_edits":false,"require_debt_reduction":false}
+}

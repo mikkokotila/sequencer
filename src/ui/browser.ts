@@ -4,6 +4,7 @@
  */
 
 import type { TrackType, BrowserItem } from '../types';
+import manifestUrl from '../../samples.json?url';
 import {
   sampleManifest,
   setSampleManifest,
@@ -58,7 +59,7 @@ type RawManifest = Record<string, unknown>;
 
 export async function loadManifest(): Promise<void> {
   try {
-    const r = await fetch('samples.json');
+    const r = await fetch(manifestUrl);
     const raw: RawManifest = (await r.json()) as RawManifest;
     setSampleManifest(raw as ReturnType<typeof _getSampleManifest>);
   } catch {

@@ -1,0 +1,182 @@
+{
+  "task_id": "20260913-local-sample-library",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260913-local-sample-library.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-13T11:33:10.965Z",
+  "finished_at_utc": "2026-09-13T11:36:31.119Z",
+  "head_sha": "fde4a65",
+  "tree_sha": "6ba6caf4ff6c063f8102df108cac7ea0a745fa5c",
+  "subject_sha": "6d406e387bc193dfed472e217a04976955600dd13906618217b5c8bf363f4fe3",
+  "subject_files": [
+    ".gitignore",
+    "README.md",
+    "e2e/sample-library.spec.ts",
+    "samples.json",
+    "server/sample-library.mjs",
+    "src/ui/browser.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    ".gitignore",
+    "README.md",
+    "docs/qc/proofs/20260913-local-sample-library.md",
+    "docs/qc/proofs/20260913-local-sample-library/proof.manifest.json",
+    "docs/qc/proofs/20260913-local-sample-library/verdict.json",
+    "docs/qc/runs/20260913-112631Z-d3cd6a1-1789298585645-511d6773.json",
+    "docs/qc/runs/20260913-112631Z-d3cd6a1-1789298585645-511d6773.md",
+    "docs/qc/runs/20260913-112938Z-d3cd6a1-1789298969818-f6eda0fa.json",
+    "docs/qc/runs/20260913-112938Z-d3cd6a1-1789298969818-f6eda0fa.md",
+    "docs/qc/specs/20260913-local-sample-library.task.spec.json",
+    "e2e/sample-library.spec.ts",
+    "samples.json",
+    "server/sample-library.mjs",
+    "src/ui/browser.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=7, oracles=4, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=7, oracles=4, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 4906,
+        "log_file": "docs/qc/proofs/20260913-local-sample-library/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 176759,
+        "log_file": "docs/qc/proofs/20260913-local-sample-library/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 282,
+        "log_file": "docs/qc/proofs/20260913-local-sample-library/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 426,
+        "log_file": "docs/qc/proofs/20260913-local-sample-library/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 450,
+        "log_file": "docs/qc/proofs/20260913-local-sample-library/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 336,
+        "log_file": "docs/qc/proofs/20260913-local-sample-library/logs/O-COMMIT-RANGE.log"
+      },
+      {
+        "id": "O-GATE-GOVERNANCE-SELF",
+        "label": "Governance self-tests",
+        "command": "npm run gate:governance-self",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 2224,
+        "log_file": "docs/qc/proofs/20260913-local-sample-library/logs/O-GATE-GOVERNANCE-SELF.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-local-sample-library/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260913-local-sample-library/raw/off_transparent.json",
+        "raw_sha256": "a9d49a9861c538ebe248798931be16a33985f62bc87c43f22da6c68dedc48f9c"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-local-sample-library/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260913-local-sample-library/raw/on_audible.json",
+        "raw_sha256": "8663f5b050c6b86a3431011e7ba0cd03bb6c73e06029b91f878e31a80d0cf22b"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-local-sample-library/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260913-local-sample-library/raw/control_binding.json",
+        "raw_sha256": "e9ba647ae12e565b28028f82927fb855656f62b361ddb17655d073639681e277"
+      },
+      {
+        "oracle_id": "benchmark_worklet_budget",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260913-local-sample-library/oracles/benchmark_worklet_budget.json",
+        "raw_artifact": "docs/qc/proofs/20260913-local-sample-library/raw/benchmark_worklet_budget.json",
+        "raw_sha256": "ab23ebe0da29e6d8dff28f63b1383245bbd89e14e380bd295c9651b291d8d40e"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

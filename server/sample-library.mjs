@@ -2,7 +2,7 @@ import { open, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { pipeline } from 'node:stream';
 
-/** Restrict serving to the two configured sample libraries, including their root symlinks. */
+/** Restrict serving to the package-local drum and synth libraries, including their root symlinks. */
 export function sampleLibraryMiddleware(root, openFile = open) {
   return (req, res, next) => {
     const respond = (status, message) => {
@@ -21,13 +21,13 @@ export function sampleLibraryMiddleware(root, openFile = open) {
         respond(400, 'Invalid sample path.');
         return;
       }
-      if (!/^\/(?:DRUMS|SYNTHS)\//i.test(filename)) return next();
-      const match = /^\/(DRUMS|SYNTHS)\/(.+)$/.exec(filename);
+      if (!/^\/samples(?:\/|$)/i.test(filename)) return next();
+      const match = /^\/samples\/(drums|synths)\/(.+)$/.exec(filename);
       if (!match || !/\.wav$/i.test(filename) || filename.includes('\0')) {
         respond(404, 'Sample not found.');
         return;
       }
-      const library = path.resolve(root, match[1]);
+      const library = path.resolve(root, 'samples', match[1]);
       const file = path.resolve(library, match[2]);
       if (!file.startsWith(library + path.sep)) {
         respond(403, 'Sample path is outside the library.');
@@ -82,7 +82,7 @@ export function sampleLibraryPlugin() {
   return {
     name: 'sample-library',
     configResolved(config) {
-      root = process.env.SEQUENCER_SAMPLE_ROOT || config.root;
+      root = config.root;
     },
     configureServer(server) {
       server.middlewares.use(sampleLibraryMiddleware(root));

@@ -77,7 +77,7 @@ function _getSampleManifest(): typeof sampleManifest {
 // ═══════════════════════════════════════════
 
 function prettySynthName(filename: string): string {
-  let n = filename.replace(/\.wav$/i, '');
+  let n = (filename.split('/').pop() ?? filename).replace(/\.wav$/i, '');
   n = n.replace(/\s*C1$/i, '');
   return n;
 }
@@ -239,7 +239,12 @@ export function openBrowser(type: TrackType, idx: number): void {
         browserItems.push({
           name: prettySynthName(f),
           displayName: prettySynthName(f),
-          url: synths.basePath + '/' + encodeURIComponent(group) + '/' + encodeURIComponent(f),
+          url:
+            synths.basePath +
+            '/' +
+            encodeURIComponent(group) +
+            '/' +
+            f.split('/').map(encodeURIComponent).join('/'),
           group,
         });
       }

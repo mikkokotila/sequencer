@@ -1,6 +1,8 @@
-# Audio sample libraries (too large for git)
-DRUMS/
-SYNTHS/
+# Local audio assets (keep licensed sample files out of Git)
+/samples/
+# Ignore legacy library links left in existing checkouts.
+/DRUMS
+/SYNTHS
 
 # OS files
 .DS_Store

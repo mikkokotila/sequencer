@@ -195,9 +195,13 @@ Benchmark obligations use one profile only: `execution_profile: "real"` in task 
 
 ### `real` profile
 
-1. Must use real worklet `process()` timing evidence.
+1. Must time the shipped product processors and intervening effect graph. Timing an observer's own passthrough or converting `currentFrame` into a duration is invalid.
+   - Chromium runs on the isolated benchmark route. A dedicated worker publishes a high-resolution clock; the worklet reads a start timestamp before product processing and requests an acknowledged timestamp after the DSP span. Stale starts and the end handshake only increase the measured interval.
+   - Add a 0.1ms precision allowance at each boundary; report an upper bound. Missing, frozen, inconsistent or unresponsive clocks fail closed.
+   - Independent gates validate raw packets, recompute p99 and duration, require all six processor instances (including both saturation stages), and require at least 90% real-time render coverage. Native sample generation precedes the timed DSP span.
+   - A regression injecting heavy work into the shipped compressor must exceed the real block budget and fail.
 2. Must collect at least 50 process samples.
-3. Pass condition: p99 process() duration < block budget (`bufferSize / sampleRate * 1000 ms`).
+3. Pass condition: p99 process() duration < block budget (`actualRenderQuantum / sampleRate * 1000 ms`).
 4. At 128 samples / 48kHz, budget is 2.67ms. p99 must be under that.
 5. Structural integrity is mandatory:
    - worklet chain present

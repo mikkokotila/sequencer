@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { validateBenchmarkEvidence } from './benchmark-evidence.mjs';
 /**
  * Oracle harness v2
  * - Compiler-invoked machine harness
@@ -374,6 +375,7 @@ async function runBenchmarkProbe(page, repoRoot) {
 
   const server = await createServer({
     root: repoRoot,
+    cacheDir: path.join(repoRoot, '.vite-oracle-cache'),
     logLevel: 'error',
     clearScreen: false,
     server: {
@@ -447,6 +449,7 @@ async function runBenchmarkProbe(page, repoRoot) {
       const sampleCount = sampleMatch ? Number(sampleMatch[1]) : 0;
 
       return {
+        evidence: window.__benchmarkEvidence ?? null,
         gate_text: gateText,
         gate_class: gateClass,
         p99_text: p99Text,
@@ -456,7 +459,7 @@ async function runBenchmarkProbe(page, repoRoot) {
         random_calls: Number(window.__oracleStats?.randomCalls || 0),
         has_audio_worklet_runtime: Number(window.__oracleStats?.workletConstructs || 0) > 0,
         terminal_gate_state:
-          /^PASS\\b/.test(gateText) || /^FAIL\\s+—/.test(gateText) || /\\bFAIL\\b/.test(gateClass),
+          /\b(pass|fail)\b/.test(gateClass),
       };
     });
   } finally {
@@ -747,8 +750,9 @@ async function run() {
       }
 
       if (oracleId === 'benchmark_worklet_budget') {
-        const p99 = parseFiniteNumber(benchmarkMetrics.p99_text);
-        const budget = parseFiniteNumber(benchmarkMetrics.budget_text);
+        const rawEvidence = validateBenchmarkEvidence(benchmarkMetrics.evidence);
+        const p99 = rawEvidence.p99 ?? null;
+        const budget = rawEvidence.budget ?? null;
         const gateShowsFail = /\bFAIL\b/i.test(benchmarkMetrics.gate_text || '');
         const structuralOk =
           benchmarkMetrics.has_audio_worklet_runtime &&
@@ -756,6 +760,7 @@ async function run() {
           benchmarkMetrics.random_calls === 0 &&
           benchmarkMetrics.terminal_gate_state;
         const pass =
+          rawEvidence.ok &&
           !gateShowsFail &&
           structuralOk &&
           p99 !== null &&
@@ -780,6 +785,7 @@ async function run() {
               derived: {
                 p99,
                 budget,
+                independent: rawEvidence,
                 structural_ok: structuralOk ? 1 : 0,
                 gate_fail: gateShowsFail ? 1 : 0,
                 pass,

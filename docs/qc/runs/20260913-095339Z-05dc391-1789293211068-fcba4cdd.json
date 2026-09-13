@@ -1,0 +1,43 @@
+{
+  "run_id": "1789293211068-fcba4cdd",
+  "task_id": "20260913-benchmark-gate-integrity",
+  "task_type": "governance-change",
+  "spec_path": "docs/qc/specs/20260913-benchmark-gate-integrity.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-09-13T09:53:31.067Z",
+  "finished_at_utc": "2026-09-13T09:53:39.056Z",
+  "head_sha": "05dc391",
+  "tree_sha": "f4010eeb8ebe83f2c5723f094fb0b903ea61d3c2",
+  "subject_sha": "ed21efe59acfb569fbe01d8a84f6da912433ab79bd310fd438a52ae390f3065e",
+  "verdict": "PASS",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-GATE-GOVERNANCE-SELF",
+      "label": "Governance self-tests",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-benchmark-gate-integrity/logs/O-GATE-GOVERNANCE-SELF.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-benchmark-gate-integrity/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-benchmark-gate-integrity/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": []
+}

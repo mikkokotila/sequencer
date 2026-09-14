@@ -143,3 +143,7 @@ samples.json                   Sample browser manifest
 - **Prettier** — formatting
 - **Playwright** — E2E testing
 - **Husky + lint-staged** — pre-commit hooks
+
+### S2400 drum projects (experimental)
+
+Use **Download song → Export S2400 drums** for a native project ZIP with drum patterns and samples on A1–A5. Synths, effects and Song-mode chains are excluded. Generated projects still require S2400 hardware playback verification. [Scope, SD-card instructions and public API](docs/s2400-export.md).

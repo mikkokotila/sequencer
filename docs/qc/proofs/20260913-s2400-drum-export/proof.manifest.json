@@ -1,0 +1,51 @@
+{
+  "task_id": "20260913-s2400-drum-export",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-s2400-drum-export/logs/O-CI.log"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-s2400-drum-export/logs/O-E2E.log"
+    },
+    {
+      "id": "O-E2E-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-s2400-drum-export/logs/O-E2E-DELTA.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-s2400-drum-export/logs/O-GATE-CONTRACTS-FULL.log"
+    },
+    {
+      "id": "O-GATE-ARCH-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-s2400-drum-export/logs/O-GATE-ARCH-FULL.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260913-s2400-drum-export/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "Nine Chrome S2400 regressions pass, plus production WAV/MP3/S2400 downloads. Local development GUI tested with the real LE FEU RESTE song in an isolated Chrome context: 12 patterns, 5 pads, 983 triggers, ZIP downloaded without page errors. Independent Python ZIP/WAV/native-record inspection passes. Actual user browser inspected read-only; screenshot of the export dialog visually inspected. Physical S2400 load/playback is NOT VERIFIED."
+  },
+  "artifacts": [
+    "verdict.json"
+  ]
+}

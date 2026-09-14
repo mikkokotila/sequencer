@@ -1,0 +1,63 @@
+{
+  "task_id": "20260913-s2400-drum-export",
+  "task_type": "feature",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Export the five dedicated drum tracks as a native S2400 project ZIP through a shared GUI/API. Preserve phrase steps, tempo, pad indices, sample channels, track levels and mutes; exclude synths, vocal/sample track, effects and Song-mode chains. Generated hardware playback is explicitly experimental pending device testing. Explicit user feature authorization overrides the repository default GA-only scope.",
+    "in_scope": [
+      "src/**",
+      "e2e/s2400*",
+      "e2e/production.spec.ts",
+      "README.md",
+      "docs/s2400-export.md",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "samples/**",
+      "samples.json",
+      "server/**",
+      "package.json",
+      "package-lock.json",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**"
+    ],
+    "controls": [
+      {
+        "id": "s2400_export",
+        "description": "Experimental S2400 project download with progress, cancellation, and actionable validation failures.",
+        "test": "Independent ZIP CRC, native record/event and WAV readers; Chrome GUI and production download; dense phrases, snapshot isolation, invalid inputs, cancellation and retry."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "Project002 first-trigger/end-frame known bytes (no private files committed)",
+      "Independent ZIP CRC, native record/event and PCM16 readers",
+      "Two phrases, sparse pad assignments, mutes, stereo resampling and exact final step",
+      "All 3840 hits in twelve dense drum phrases",
+      "Concurrent state/buffer edits and live playback",
+      "Cancellation and failure recovery",
+      "Built production GUI ZIP download"
+    ],
+    "seed": "20260913-s2400-drum-export",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding",
+      "benchmark_worklet_budget"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

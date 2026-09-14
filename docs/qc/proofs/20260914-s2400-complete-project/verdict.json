@@ -1,0 +1,190 @@
+{
+  "task_id": "20260914-s2400-complete-project",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260914-s2400-complete-project.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-14T07:27:27.658Z",
+  "finished_at_utc": "2026-09-14T07:31:12.241Z",
+  "head_sha": "2d1c142",
+  "tree_sha": "0874c0cefd25372d07769f58e5f9a0aefcca4a39",
+  "subject_sha": "7aac99532cfd4a2d7d663450970e35e7cef00a397c732c647aa14cdab34c7b71",
+  "subject_files": [
+    "docs/s2400-export.md",
+    "e2e/production.spec.ts",
+    "e2e/s2400-export.spec.ts",
+    "e2e/s2400-files.ts",
+    "src/transport/s2400-encoder.worker.ts",
+    "src/transport/s2400-format.ts",
+    "src/transport/s2400.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260914-s2400-complete-project.md",
+    "docs/qc/proofs/20260914-s2400-complete-project/proof.manifest.json",
+    "docs/qc/specs/20260914-s2400-complete-project.task.spec.json",
+    "docs/s2400-export.md",
+    "e2e/production.spec.ts",
+    "e2e/s2400-export.spec.ts",
+    "e2e/s2400-files.ts",
+    "src/transport/s2400-encoder.worker.ts",
+    "src/transport/s2400-format.ts",
+    "src/transport/s2400.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=7, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=7, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 6100,
+        "log_file": "docs/qc/proofs/20260914-s2400-complete-project/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 201042,
+        "log_file": "docs/qc/proofs/20260914-s2400-complete-project/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 320,
+        "log_file": "docs/qc/proofs/20260914-s2400-complete-project/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 516,
+        "log_file": "docs/qc/proofs/20260914-s2400-complete-project/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 493,
+        "log_file": "docs/qc/proofs/20260914-s2400-complete-project/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 392,
+        "log_file": "docs/qc/proofs/20260914-s2400-complete-project/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-s2400-complete-project/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260914-s2400-complete-project/raw/off_transparent.json",
+        "raw_sha256": "07c862b5997202cba41a03453db1c859b12908db4ef687aefbef6b7d846ca7b3"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-s2400-complete-project/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260914-s2400-complete-project/raw/on_audible.json",
+        "raw_sha256": "430d606942ad4223e3996c3f6b797bd04e683c49c2733528208fbf6db0449fd6"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-s2400-complete-project/oracles/low_end_continuity.json",
+        "raw_artifact": "docs/qc/proofs/20260914-s2400-complete-project/raw/low_end_continuity.json",
+        "raw_sha256": "ba4e9b7d08cd7608601e19774b31d52cd072fa21493b641b4f85cfde21bb7deb"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-s2400-complete-project/oracles/clip_guard.json",
+        "raw_artifact": "docs/qc/proofs/20260914-s2400-complete-project/raw/clip_guard.json",
+        "raw_sha256": "10cb69186d4f63cf6833e84720c217ac60357fb91696ade17a9259bbf4ab1998"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-s2400-complete-project/oracles/default_safety.json",
+        "raw_artifact": "docs/qc/proofs/20260914-s2400-complete-project/raw/default_safety.json",
+        "raw_sha256": "7777ecad11ff9f6feffaff6ed426aa06fe73d66d6ecb7ef11a33ed66b9346a2f"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-s2400-complete-project/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260914-s2400-complete-project/raw/control_binding.json",
+        "raw_sha256": "5de77aa53185fcc97c2b9c9d3020eb66a6f412266c7712849d2fb3ab624087b7"
+      },
+      {
+        "oracle_id": "benchmark_worklet_budget",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-s2400-complete-project/oracles/benchmark_worklet_budget.json",
+        "raw_artifact": "docs/qc/proofs/20260914-s2400-complete-project/raw/benchmark_worklet_budget.json",
+        "raw_sha256": "85bcfbf917957de96d8dd45cd1f5cfd194f26bfef12ba5339e23c1fb6f37cf2d"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

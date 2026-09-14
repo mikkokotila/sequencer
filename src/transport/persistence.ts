@@ -6,6 +6,8 @@ import type { ExtensionState, Phrase, SampleData, SongData } from '../types';
 import { DRUMS_CFG, MEL_CFG, STEPS } from '../config';
 import {
   phrases,
+  sections,
+  variationLocks,
   makeEmptyPhrase,
   octaves,
   harmonies,
@@ -34,6 +36,7 @@ import {
   mutedArr,
   drumBuf,
   melBuf,
+  vocalBuf,
   setVocalBuf,
   drumSampleData,
   melSampleData,
@@ -43,6 +46,7 @@ import {
 import { SEQ_EXTENSIONS, resetAllExtensions } from '../engine/extensions/store';
 import { getAudioContext } from '../engine/audio';
 import { emit } from '../events';
+import { configureHistory, checkpoint, resetHistory } from './history';
 
 // ═══════════════════════════════════════════
 //  Helpers
@@ -69,6 +73,8 @@ export function collectSongData(name: string): SongData {
     name: name || 'Untitled',
     bpm,
     phraseCount: phrases.length,
+    sections: sections.map((section) => ({ ...section })),
+    variationLocks: [...variationLocks],
     phrases: phrases.map((p: Phrase) => ({
       drumPat: p.drumPat.map((r) => [...r]),
       melPat: p.melPat.map((t) => t.map((s) => [...s])),
@@ -187,6 +193,7 @@ async function writeSnapshot(data: SongData, generation: number): Promise<void> 
 }
 
 export function saveSong(): Promise<void> {
+  checkpoint();
   if (!currentSongId) return Promise.resolve();
   const data = collectSongData(currentSongName);
   const generation = stateGeneration;
@@ -196,6 +203,7 @@ export function saveSong(): Promise<void> {
 }
 
 export function scheduleSave(): void {
+  checkpoint();
   if (saveTimer) clearTimeout(saveTimer);
   setSaveTimer(
     setTimeout(() => {
@@ -203,6 +211,81 @@ export function scheduleSave(): void {
     }, 500),
   );
 }
+
+/** Install state after the load/undo boundary resets extensions; reuse decoded samples. */
+function installDocument(song: SongData, buffers: (AudioBuffer | null)[]): void {
+  setBpm(song.bpm);
+  sections.splice(0, sections.length, ...(song.sections ?? []).map((section) => ({ ...section })));
+  variationLocks.splice(
+    0,
+    variationLocks.length,
+    ...(song.variationLocks ?? Array<boolean>(9).fill(false)),
+  );
+  while (phrases.length < song.phrases.length) phrases.push(makeEmptyPhrase());
+  phrases.splice(song.phrases.length);
+  for (let i = 0; i < phrases.length; i++) {
+    const target = phrases[i]!;
+    const source = song.phrases[i]!;
+    target.drumPat.forEach((row, t) => row.splice(0, STEPS, ...source.drumPat[t]!));
+    target.melPat.forEach((track, t) =>
+      track.forEach((step, j) => step.splice(0, 12, ...source.melPat[t]![j]!)),
+    );
+    target.vocalPat.splice(0, STEPS, ...source.vocalPat);
+  }
+  setCurrentPhrase(song.currentPhrase);
+  const active = phrases[song.currentPhrase]!;
+  setDrumPat(active.drumPat);
+  setMelPat(active.melPat);
+  setVocalPat(active.vocalPat);
+  octaves.splice(0, octaves.length, ...song.octaves);
+  harmonies.splice(0, harmonies.length, ...song.harmonies);
+  setDrumNames([...song.drumNames]);
+  setMelNames([...song.melNames]);
+  setVocalName(song.vocalName);
+  mutedArr.splice(0, mutedArr.length, ...song.mutedArr);
+  drumSampleData.splice(0, drumSampleData.length, ...song.drumSampleData);
+  melSampleData.splice(0, melSampleData.length, ...song.melSampleData);
+  setVocalSampleData(song.vocalSampleData);
+  drumBuf.splice(0, drumBuf.length, ...buffers.slice(0, DRUMS_CFG.length));
+  melBuf.splice(
+    0,
+    melBuf.length,
+    ...buffers.slice(DRUMS_CFG.length, DRUMS_CFG.length + MEL_CFG.length),
+  );
+  setVocalBuf(buffers[buffers.length - 1] ?? null);
+  for (const ext of SEQ_EXTENSIONS) {
+    const state = song.extensions[ext.id];
+    if (!state) continue;
+    ext.setState(structuredClone(state));
+    ext._enabled = !!state._enabled;
+    ext.setEnabled?.(ext._enabled);
+  }
+  const sound = song.sound!;
+  sound.adsr.forEach((params, i) => {
+    setTrackAdsr(i, params);
+    setAdsrEnabled(i, params.enabled);
+  });
+  const master = getMasterGain();
+  if (master) master.gain.value = sound.masterGain;
+  setEngineSettings(sound.engine);
+  setCurrentSongId(song.id || null);
+  setCurrentSongName(song.name);
+}
+
+configureHistory({
+  capture: () => ({
+    song: collectSongData(currentSongName),
+    buffers: [...drumBuf, ...melBuf, vocalBuf],
+  }),
+  equal: (a, b) => unchanged({ ...a.song, currentPhrase: 0 }, { ...b.song, currentPhrase: 0 }),
+  restore: (snapshot) => {
+    emit('editor:beforeRestore', {});
+    resetAllExtensions();
+    installDocument(snapshot.song, snapshot.buffers);
+    emit('editor:documentChanged', {});
+  },
+  save: scheduleSave,
+});
 
 /** Decode everything off to the side. An older operation never partially mutates live state. */
 async function applySong(song: SongData, generation: number, persisted: boolean): Promise<boolean> {
@@ -226,57 +309,9 @@ async function applySong(song: SongData, generation: number, persisted: boolean)
   if (saveTimer) clearTimeout(saveTimer);
   stateGeneration++;
   emit('persistence:beforeLoad', {});
-  setBpm(song.bpm);
-  while (phrases.length < song.phrases.length) phrases.push(makeEmptyPhrase());
-  phrases.splice(song.phrases.length);
-  for (let i = 0; i < phrases.length; i++) {
-    const target = phrases[i]!;
-    const source = song.phrases[i]!;
-    target.drumPat.forEach((row, t) => row.splice(0, STEPS, ...source.drumPat[t]!));
-    target.melPat.forEach((track, t) =>
-      track.forEach((step, j) => step.splice(0, 12, ...source.melPat[t]![j]!)),
-    );
-    target.vocalPat.splice(0, STEPS, ...source.vocalPat);
-  }
-  setCurrentPhrase(song.currentPhrase);
-  const active = phrases[song.currentPhrase]!;
-  setDrumPat(active.drumPat);
-  setMelPat(active.melPat);
-  setVocalPat(active.vocalPat);
-  octaves.splice(0, octaves.length, ...song.octaves);
-  harmonies.splice(0, harmonies.length, ...song.harmonies);
-  setDrumNames(song.drumNames);
-  setMelNames(song.melNames);
-  setVocalName(song.vocalName);
-  mutedArr.splice(0, mutedArr.length, ...song.mutedArr);
-  drumSampleData.splice(0, drumSampleData.length, ...song.drumSampleData);
-  melSampleData.splice(0, melSampleData.length, ...song.melSampleData);
-  setVocalSampleData(song.vocalSampleData);
-  drumBuf.splice(0, drumBuf.length, ...buffers.slice(0, DRUMS_CFG.length));
-  melBuf.splice(
-    0,
-    melBuf.length,
-    ...buffers.slice(DRUMS_CFG.length, DRUMS_CFG.length + MEL_CFG.length),
-  );
-  setVocalBuf(buffers[buffers.length - 1] ?? null);
   resetAllExtensions();
-  for (const ext of SEQ_EXTENSIONS) {
-    const state = song.extensions[ext.id];
-    if (!state) continue;
-    ext.setState(state);
-    ext._enabled = !!state._enabled;
-    ext.setEnabled?.(ext._enabled);
-  }
-  const sound = song.sound!;
-  sound.adsr.forEach((params, i) => {
-    setTrackAdsr(i, params);
-    setAdsrEnabled(i, params.enabled);
-  });
-  const master = getMasterGain();
-  if (master) master.gain.value = sound.masterGain;
-  setEngineSettings(sound.engine);
-  setCurrentSongId(song.id || null);
-  setCurrentSongName(song.name);
+  installDocument(song, buffers);
+  resetHistory();
   baseline = persisted ? collectSongData(song.name) : null;
   if (persisted) revisions.set(song.id, song.revision ?? 0);
   emit('persistence:status', { message: '', conflict: false });
@@ -343,6 +378,8 @@ export async function saveSongCopy(): Promise<void> {
   setCurrentSongId(genId());
   setCurrentSongName(`${currentSongName} (copy)`);
   baseline = null;
+  // A recovery copy is a new document; undo must never restore the original song ID.
+  resetHistory();
   await saveSong();
   emit('persistence:songSwitched', {});
 }

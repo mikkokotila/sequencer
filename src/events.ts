@@ -6,6 +6,16 @@
 // ── Event type map ──
 
 export interface EventMap {
+  'editor:historyChanged': {
+    canUndo: boolean;
+    canRedo: boolean;
+    undoLabel: string;
+    redoLabel: string;
+    revision: number;
+  };
+  'editor:documentChanged': Record<string, never>;
+  'editor:beforeRestore': Record<string, never>;
+
   // Engine → UI: playback position
   'engine:step': { step: number; phrase: number; time: number };
   'engine:trigger': {

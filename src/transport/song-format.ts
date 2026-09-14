@@ -1,5 +1,5 @@
 /** Validate untrusted songs completely before touching live state. */
-import type { ExtensionState, Phrase, SampleData, SongData } from '../types';
+import type { ExtensionState, Phrase, SampleData, SongData, SongSection } from '../types';
 import {
   STEPS,
   DEFAULT_PHRASES,
@@ -71,7 +71,7 @@ function map<T>(
   const items = array(value, length, field);
   return Array.from({ length }, (_, i) => fn(items[i], i));
 }
-function phrase(value: unknown): Phrase {
+export function normalizePhrase(value: unknown): Phrase {
   const p = value === undefined ? {} : record(value, 'phrase');
   return {
     drumPat: map(p.drumPat, DRUMS_CFG.length, 'drum tracks', (t) =>
@@ -82,6 +82,32 @@ function phrase(value: unknown): Phrase {
     ),
     vocalPat: map(p.vocalPat, STEPS, 'vocal steps', (v) => boolean(v, 'step')),
   };
+}
+
+export function normalizeSections(value: unknown, phraseCount: number): SongSection[] {
+  const ids = new Set<string>();
+  const sections = array(value, phraseCount, 'sections')
+    .map((item) => {
+      const section = record(item, 'section');
+      const id = string(section.id, '', 'section id').trim();
+      const name = string(section.name, '', 'section name').trim();
+      if (!id || ids.has(id) || !name || name.length > 32)
+        throw new Error('Sections need unique IDs and names of 1–32 characters.');
+      ids.add(id);
+      const start = number(section.start, -1, 0, phraseCount - 1, 'section start', true);
+      const length = number(section.length, 0, 1, phraseCount, 'section length', true);
+      if (start < 0 || length < 1 || start + length > phraseCount)
+        throw new Error('Section extends outside the song.');
+      return { id, name, start, length };
+    })
+    .sort((a, b) => a.start - b.start);
+  if (
+    sections.some(
+      (section, i) => i > 0 && section.start < sections[i - 1]!.start + sections[i - 1]!.length,
+    )
+  )
+    throw new Error('Sections cannot overlap.');
+  return sections;
 }
 
 const EXTENSION_RANGES: Record<string, Record<string, readonly number[]>> = {
@@ -188,14 +214,21 @@ export function normalizeSong(value: unknown, requirePatterns = false): SongData
   if (!PHRASE_COUNTS.includes(phraseCount)) throw new Error('Choose 12, 24, 36, or 48 phrases.');
   const phrases =
     input.phrases === undefined
-      ? [phrase(input), ...Array.from({ length: phraseCount - 1 }, () => phrase(undefined))]
-      : map(input.phrases, phraseCount, 'phrases', (v) => phrase(v));
+      ? [
+          normalizePhrase(input),
+          ...Array.from({ length: phraseCount - 1 }, () => normalizePhrase(undefined)),
+        ]
+      : map(input.phrases, phraseCount, 'phrases', (v) => normalizePhrase(v));
   return {
     id: string(input.id, '', 'song id'),
     name: string(input.name, 'Untitled', 'song name'),
     bpm: number(input.bpm, 120, 40, 220, 'BPM'),
     phrases,
     phraseCount,
+    sections: normalizeSections(input.sections, phraseCount),
+    variationLocks: map(input.variationLocks, TOTAL_TRACKS, 'variation locks', (v, i) =>
+      v === undefined ? i === 0 || i === 7 : boolean(v, 'variation lock'),
+    ),
     currentPhrase: number(input.currentPhrase, 0, 0, phraseCount - 1, 'current phrase', true),
     octaves: map(input.octaves, MEL_CFG.length, 'octaves', (v) =>
       number(v, 3, 1, 7, 'octave', true),

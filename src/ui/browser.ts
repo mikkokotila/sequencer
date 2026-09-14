@@ -4,6 +4,7 @@
  */
 
 import type { TrackType, BrowserItem } from '../types';
+import { on } from '../events';
 import manifestUrl from '../../samples.json?url';
 import {
   sampleManifest,
@@ -36,6 +37,23 @@ let browserPreviewBuf: AudioBuffer | null = null;
 let browserPreviewBufIdx = -1;
 let previewingIdx = -1;
 let prevPreviewSource: AudioBufferSourceNode | null = null;
+
+// Async loads must not reappear after undo or a song switch.
+let sampleGeneration = 0;
+const sampleRequests = new Map<string, number>();
+function beginSampleRequest(type: TrackType | '', track: number): () => boolean {
+  const generation = sampleGeneration;
+  const key = `${type}:${track}`;
+  const request = (sampleRequests.get(key) ?? 0) + 1;
+  sampleRequests.set(key, request);
+  return () => generation === sampleGeneration && sampleRequests.get(key) === request;
+}
+function invalidateSampleRequests(): void {
+  sampleGeneration++;
+  closeBrowser();
+}
+on('persistence:beforeLoad', invalidateSampleRequests);
+on('editor:beforeRestore', invalidateSampleRequests);
 
 // ═══════════════════════════════════════════
 //  Callbacks (set by main/build)
@@ -98,8 +116,10 @@ function loadSampleFallback(type: TrackType, idx: number): void {
     const target = e.target as HTMLInputElement;
     const file = target.files?.[0];
     if (!file) return;
+    const isCurrent = beginSampleRequest(type, idx);
     try {
       const res = await loadAudioFile(file);
+      if (!isCurrent()) return;
       if (type === 'drum') {
         drumBuf[idx] = res.buffer;
         drumSampleData[idx] = { name: res.name, data: res.data };
@@ -135,9 +155,11 @@ export function setupDragDrop(elem: HTMLElement, type: TrackType, idx: number): 
     elem.classList.remove('drag-over');
     const file = e.dataTransfer?.files[0];
     if (!file) return;
+    const isCurrent = beginSampleRequest(type, idx);
     void (async () => {
       try {
         const res = await loadAudioFile(file);
+        if (!isCurrent()) return;
         if (type === 'drum') {
           drumBuf[idx] = res.buffer;
           drumSampleData[idx] = { name: res.name, data: res.data };
@@ -509,6 +531,7 @@ export async function confirmBrowserLoad(): Promise<void> {
   const startedAtSelected = browserSelected;
   const startedAtType = browserType;
   const startedAtIdx = browserIdx;
+  const isCurrent = beginSampleRequest(startedAtType, startedAtIdx);
   const loadBtn = document.getElementById('browser-load') as HTMLButtonElement | null;
   // Clear any prior failure state so a retry starts clean
   if (loadBtn) {
@@ -519,7 +542,7 @@ export async function confirmBrowserLoad(): Promise<void> {
     const { buffer, data } = await fetchAndDecode(item.url);
     // If the user moved on (different row, closed overlay, started another
     // load) drop this result rather than applying it to the wrong slot.
-    if (lastLoadToken !== myToken || browserSelected !== startedAtSelected) return;
+    if (!isCurrent() || lastLoadToken !== myToken || browserSelected !== startedAtSelected) return;
     const fname = item.name + '.wav';
     if (startedAtType === 'drum') {
       drumBuf[startedAtIdx] = buffer;
@@ -539,7 +562,7 @@ export async function confirmBrowserLoad(): Promise<void> {
     // Only surface the failure if this invocation is still the current one
     // for the still-selected row. Otherwise the user has moved on (selected
     // another row, closed the overlay) and a stale error would clobber that.
-    if (lastLoadToken !== myToken || browserSelected !== startedAtSelected) return;
+    if (!isCurrent() || lastLoadToken !== myToken || browserSelected !== startedAtSelected) return;
     if (loadBtn) {
       loadBtn.classList.add('load-error');
       loadBtn.title = `Load failed: ${e instanceof Error ? e.message : String(e)}`;

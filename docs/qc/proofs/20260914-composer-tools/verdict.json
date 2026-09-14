@@ -1,0 +1,218 @@
+{
+  "task_id": "20260914-composer-tools",
+  "task_type": "feature",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260914-composer-tools.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-14T11:57:15.467Z",
+  "finished_at_utc": "2026-09-14T12:02:17.958Z",
+  "head_sha": "7a0385a",
+  "tree_sha": "ee054b0499b001d9668e2078a15d4dea193a62d6",
+  "subject_sha": "f3f11d6efd59e555dda548438f51af41cec0a9e0579bbc72c5509116c965706e",
+  "subject_files": [
+    "README.md",
+    "e2e/composer-tools.spec.ts",
+    "index.html",
+    "src/events.ts",
+    "src/main.ts",
+    "src/transport/composer.ts",
+    "src/transport/history.ts",
+    "src/transport/patterns.ts",
+    "src/transport/persistence.ts",
+    "src/transport/render-song.ts",
+    "src/transport/song-format.ts",
+    "src/types.ts",
+    "src/ui/browser.ts",
+    "src/ui/build.ts",
+    "src/ui/composer-tools.ts",
+    "src/ui/painting.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "README.md",
+    "docs/qc/proofs/20260914-composer-tools.md",
+    "docs/qc/proofs/20260914-composer-tools/initial-governance-failure.txt",
+    "docs/qc/proofs/20260914-composer-tools/initial-persistence-check.json",
+    "docs/qc/proofs/20260914-composer-tools/proof.manifest.json",
+    "docs/qc/specs/20260914-composer-tools.task.spec.json",
+    "e2e/composer-tools.spec.ts",
+    "index.html",
+    "logs/compiler.log",
+    "src/events.ts",
+    "src/main.ts",
+    "src/transport/composer.ts",
+    "src/transport/history.ts",
+    "src/transport/patterns.ts",
+    "src/transport/persistence.ts",
+    "src/transport/render-song.ts",
+    "src/transport/song-format.ts",
+    "src/types.ts",
+    "src/ui/browser.ts",
+    "src/ui/build.ts",
+    "src/ui/composer-tools.ts",
+    "src/ui/painting.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=8, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=8, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 5847,
+        "log_file": "docs/qc/proofs/20260914-composer-tools/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 278189,
+        "log_file": "docs/qc/proofs/20260914-composer-tools/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 398,
+        "log_file": "docs/qc/proofs/20260914-composer-tools/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 702,
+        "log_file": "docs/qc/proofs/20260914-composer-tools/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 479,
+        "log_file": "docs/qc/proofs/20260914-composer-tools/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 478,
+        "log_file": "docs/qc/proofs/20260914-composer-tools/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-composer-tools/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260914-composer-tools/raw/off_transparent.json",
+        "raw_sha256": "bd2b115f377e28ab852d27213051088dfbb14dcb99b2ed2f1f194a91dc8b9241"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-composer-tools/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260914-composer-tools/raw/on_audible.json",
+        "raw_sha256": "d04f403c86f8fd551a24da44b9f6dd858360540e1b3db2313f77ca3461462636"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-composer-tools/oracles/low_end_continuity.json",
+        "raw_artifact": "docs/qc/proofs/20260914-composer-tools/raw/low_end_continuity.json",
+        "raw_sha256": "856eb53239933378c30e55b79c9f14be429a93083d4b23972cfe33943b44facc"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-composer-tools/oracles/clip_guard.json",
+        "raw_artifact": "docs/qc/proofs/20260914-composer-tools/raw/clip_guard.json",
+        "raw_sha256": "ec52b85ace23559d74596fa1bdc8d4831a9023170ac38de6cdb83bc580c0e778"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-composer-tools/oracles/default_safety.json",
+        "raw_artifact": "docs/qc/proofs/20260914-composer-tools/raw/default_safety.json",
+        "raw_sha256": "fc7382f6edf7e224084a5a5f5ca8a44faf269cbb42d0b188a7f7eecf2da23c8e"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-composer-tools/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260914-composer-tools/raw/control_binding.json",
+        "raw_sha256": "7e3c5f4c34554a9547c5821e8b7c906889a2bf0c8b571669d9d9c7048ee17123"
+      },
+      {
+        "oracle_id": "benchmark_worklet_budget",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-composer-tools/oracles/benchmark_worklet_budget.json",
+        "raw_artifact": "docs/qc/proofs/20260914-composer-tools/raw/benchmark_worklet_budget.json",
+        "raw_sha256": "fbd524b0fb39f88b657a8d8f0d2a736d77890e100e357206d7a149b5f495c3e1"
+      },
+      {
+        "oracle_id": "persistence_roundtrip",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-composer-tools/oracles/persistence_roundtrip.json",
+        "raw_artifact": "docs/qc/proofs/20260914-composer-tools/raw/persistence_roundtrip.json",
+        "raw_sha256": "9f27ad9a8ded97fe2629013a5c5e4553acd9cf03d8eef09cccb9775dc3515ffb"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

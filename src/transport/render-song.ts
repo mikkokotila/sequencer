@@ -23,9 +23,12 @@ import { createReverb } from '../engine/extensions/reverb';
 import { createDelay } from '../engine/extensions/delay';
 import { phrases, octaves, harmonies, isPhraseEmpty } from './patterns';
 import { bpm, currentSongName, drumBuf, melBuf, vocalBuf, mutedArr } from './song';
-import type { Extension, ExtensionHost } from '../types';
+import type { Extension, ExtensionHost, Phrase } from '../types';
+import { normalizePhrase } from './song-format';
 
 export interface RenderOptions {
+  /** Audition a supplied phrase sequence without mutating or saving the live song. */
+  phraseOverride?: readonly Phrase[];
   signal?: AbortSignal;
   onProgress?: (fraction: number) => void;
 }
@@ -58,10 +61,14 @@ export function checkExportAbort(signal?: AbortSignal): void {
   if (signal?.aborted) throw new DOMException('Export cancelled.', 'AbortError');
 }
 
-function captureSong() {
+function captureSong(override?: readonly Phrase[]) {
   if (!getAudioContext()) throw new Error('The audio engine is not ready.');
   const stepDuration = 60 / bpm / 4;
-  const active = phrases.filter((_, i) => !isPhraseEmpty(i));
+  if (override && (override.length < 1 || override.length > 48))
+    throw new Error('Preview requires 1–48 phrases.');
+  const active = override
+    ? override.map(normalizePhrase)
+    : phrases.filter((_, i) => !isPhraseEmpty(i));
   if (!active.length) throw new Error('Add notes to the song before exporting.');
   const envelopes = Array.from({ length: TOTAL_TRACKS }, (_, i) => ({
     ...getTrackAdsr(i),
@@ -145,7 +152,7 @@ function captureSong() {
 export async function renderSongToBuffer(options: RenderOptions = {}): Promise<RenderedSong> {
   checkExportAbort(options.signal);
   // No await before capturing: UI edits and song switches cannot change an export in flight.
-  const song = captureSong();
+  const song = captureSong(options.phraseOverride);
   const ctx = new OfflineAudioContext(2, song.length + PRE_ROLL_FRAMES, SAMPLE_RATE);
   const nodes: AudioNode[] = [];
   const extensions: Extension[] = [];

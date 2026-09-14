@@ -1,0 +1,54 @@
+{
+  "task_id": "20260914-note-length-preservation",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-note-length-preservation/logs/O-CI.log"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-note-length-preservation/logs/O-E2E.log"
+    },
+    {
+      "id": "O-E2E-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-note-length-preservation/logs/O-E2E-DELTA.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-note-length-preservation/logs/O-GATE-CONTRACTS-FULL.log"
+    },
+    {
+      "id": "O-GATE-ARCH-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-note-length-preservation/logs/O-GATE-ARCH-FULL.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-note-length-preservation/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "Real Chrome tests cover note length through GUI/API, save/reload/export/import, mobile control visibility, invalid inputs, legacy songs, live schedule timing and audible loop/song tails. In-app GUI LE FEU RESTE at 130 BPM was imported and reloaded; 909 Air, Mini Motor Bass, Omni Horizon and Voyetra Main Lead each show two-step note length. Original 65 BPM song is preserved. WAV and MP3 re-exported through the app API."
+  },
+  "artifacts": [
+    "verdict.json",
+    "audio-equivalence.json",
+    "conversion-check.json",
+    "render-check.json"
+  ]
+}

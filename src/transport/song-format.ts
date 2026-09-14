@@ -233,6 +233,7 @@ export function normalizeSong(value: unknown, requirePatterns = false): SongData
           decay: number(a.decay, 0.1, 0.001, 2, 'decay'),
           sustain: number(a.sustain, 1, 0, 1, 'sustain'),
           release: number(a.release, 0.1, 0.001, 3, 'release'),
+          gateSteps: number(a.gateSteps, 1, 1, 64, 'note length', true),
         };
       }),
     },

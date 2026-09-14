@@ -122,6 +122,8 @@ export interface LoadedSample {
 }
 
 export interface AdsrParams {
+  /** Sequenced note length in sixteenth-note steps; legacy callers default to one. */
+  gateSteps?: number;
   attack: number;
   decay: number;
   sustain: number;

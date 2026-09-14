@@ -9,7 +9,8 @@ import {
   STEPS,
   BARS,
   SPB,
-  NUM_PHRASES,
+  MAX_PHRASES,
+  PHRASE_COUNTS,
   DRUMS_CFG,
   MEL_CFG,
   VOCAL_CFG,
@@ -18,6 +19,8 @@ import {
   HARMONY_LABELS,
 } from '../config';
 import {
+  phrases,
+  setPhraseCount,
   drumPat,
   melPat,
   vocalPat,
@@ -168,8 +171,11 @@ export function updateExtIcons(): void {
 // ═══════════════════════════════════════════
 
 export function updateSongPane(): void {
-  const slots = document.querySelectorAll('.phrase-slot');
+  const count = document.getElementById('phrase-count') as HTMLSelectElement | null;
+  if (count) count.value = String(phrases.length);
+  const slots = document.querySelectorAll<HTMLElement>('.phrase-slot');
   slots.forEach((slot, i) => {
+    slot.hidden = i >= phrases.length;
     slot.classList.toggle('active', i === currentPhrase);
     slot.classList.toggle('has-content', !isPhraseEmpty(i));
     slot.classList.toggle('playing-phrase', isPlaying() && i === getPlayingPhrase());
@@ -605,6 +611,11 @@ export function buildUI(): void {
     });
     wrapper.appendChild(labels);
 
+    // Keep note names outside the horizontal scroll region.
+    const scroll = el('div', 'melody-grid-scroll');
+    scroll.tabIndex = 0;
+    scroll.setAttribute('role', 'region');
+    scroll.setAttribute('aria-label', `Melody track ${ti + 1} note grid`);
     const grid = el('div', 'melody-grid');
     melCells[ti] = [];
     for (let s = 0; s < STEPS; s++) melCells[ti][s] = [];
@@ -632,7 +643,8 @@ export function buildUI(): void {
       }
       grid.appendChild(row);
     });
-    wrapper.appendChild(grid);
+    scroll.appendChild(grid);
+    wrapper.appendChild(scroll);
     panel.appendChild(wrapper);
     setupDragDrop(panel, 'melody', ti);
     melSec.appendChild(panel);
@@ -717,7 +729,39 @@ export function buildUI(): void {
   // ── Song Pane (phrases) ──
   const songPane = el('div', '');
   songPane.id = 'song-pane';
-  for (let i = 0; i < NUM_PHRASES; i++) {
+  const phraseControls = el('div', 'phrase-controls');
+  const countLabel = el('label', '');
+  countLabel.textContent = 'PHRASES';
+  countLabel.htmlFor = 'phrase-count';
+  const countSelect = el('select', '');
+  countSelect.id = 'phrase-count';
+  countSelect.setAttribute('aria-label', 'Song phrases');
+  for (const count of PHRASE_COUNTS) {
+    const option = el('option', '');
+    option.value = String(count);
+    option.textContent = String(count);
+    countSelect.appendChild(option);
+  }
+  const countError = el('span', 'phrase-count-error');
+  countError.setAttribute('role', 'alert');
+  const clearCountError = () => {
+    countError.textContent = '';
+  };
+  on('transport:songLoaded', clearCountError);
+  on('transport:phraseCountChanged', clearCountError);
+  countSelect.addEventListener('change', () => {
+    try {
+      setPhraseCount(Number(countSelect.value));
+      countError.textContent = '';
+    } catch (error) {
+      countSelect.value = String(phrases.length);
+      countError.textContent = error instanceof Error ? error.message : 'Could not resize song.';
+    }
+  });
+  phraseControls.append(countLabel, countSelect, countError);
+  songPane.appendChild(phraseControls);
+  const phraseGrid = el('div', 'phrase-grid');
+  for (let i = 0; i < MAX_PHRASES; i++) {
     const slot = el('div', 'phrase-slot' + (i === 0 ? ' active' : ''));
     slot.dataset.phrase = String(i);
     const num = el('span', 'phrase-num');
@@ -750,9 +794,14 @@ export function buildUI(): void {
       });
       slot.appendChild(fb);
     }
-    songPane.appendChild(slot);
+    phraseGrid.appendChild(slot);
   }
+  songPane.appendChild(phraseGrid);
   document.body.appendChild(songPane);
+  updateSongPane();
+  new ResizeObserver(() => {
+    document.documentElement.style.setProperty('--song-pane-height', `${songPane.offsetHeight}px`);
+  }).observe(songPane);
 
   // Escape also closes engine panel
   document.addEventListener('keydown', (e: KeyboardEvent) => {

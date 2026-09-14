@@ -161,17 +161,18 @@ test('missing samples, empty percussion, invalid tempo/audio/level and oversize 
   expect(errors[4]).toContain('60 seconds'); expect(errors[5]).toContain('Add drum steps');
 });
 
-test('all 12 dense phrases retain all 3840 hits and deterministic bytes', async ({ page }) => {
+test('all 48 dense phrases retain all 15360 hits and deterministic bytes', async ({ page }) => {
   await fixture(page);
   await page.evaluate(async () => {
     const song = await import('/src/transport/song.ts'); const p = await import('/src/transport/patterns.ts');
+    p.setPhraseCount(48);
     song.drumBuf.fill(song.drumBuf[0]!); song.mutedArr.fill(false);
     p.phrases.forEach(phrase => phrase.drumPat.forEach(row => row.fill(true)));
   });
   const one = await exportFiles(page), two = await exportFiles(page);
   expect(Buffer.from(one.bytes).equals(Buffer.from(two.bytes))).toBe(true);
   const project = records([...one.files].find(([name]) => name.endsWith('.S24'))![1]);
-  const patterns = blocks(project, 16); expect(patterns).toHaveLength(12);
+  const patterns = blocks(project, 16); expect(patterns).toHaveLength(48);
   patterns.forEach(pattern => {
     const hits = events(pattern); expect(hits).toHaveLength(320);
     expect(hits.at(-1)!.tick).toBe(1512); expect(hits.at(-1)!.track).toBe(4);

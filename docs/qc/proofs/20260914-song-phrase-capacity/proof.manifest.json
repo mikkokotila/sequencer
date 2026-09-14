@@ -1,0 +1,54 @@
+{
+  "task_id": "20260914-song-phrase-capacity",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-CI.log"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-E2E.log"
+    },
+    {
+      "id": "O-E2E-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-E2E-DELTA.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-GATE-CONTRACTS-FULL.log"
+    },
+    {
+      "id": "O-GATE-ARCH-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-GATE-ARCH-FULL.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "Targeted Chrome tests verify frozen note labels, all song capacities and twelve-column layouts, persistence, shrink protection, legacy and JSON compatibility, row-boundary/wrap timing and full 48-phrase audio rendering. Additional production import/export, conflict and loop checks are captured by the full E2E gate. Narrow and desktop screenshots inspected. Physical S2400 playback remains unverified."
+  },
+  "artifacts": [
+    "verdict.json",
+    "narrow.png",
+    "desktop.png",
+    "clock-boundary-failure.json"
+  ]
+}

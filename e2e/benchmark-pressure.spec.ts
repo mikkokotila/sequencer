@@ -34,3 +34,34 @@ test('real shipped compressor overload fails the independently calculated quantu
   expect(lowerBounds.every(Number.isFinite)).toBe(true);
   expect(lowerBounds[Math.floor(lowerBounds.length * 0.99)]).toBeGreaterThan(independent.budget);
 });
+
+test('a pause after the clock acknowledgement does not invalidate the measured DSP span', async ({ page }) => {
+  await page.addInitScript(() => {
+    const original = AudioWorklet.prototype.addModule;
+    AudioWorklet.prototype.addModule = async function(url, ...options) {
+      if (!String(url).startsWith('blob:')) return original.call(this, url, ...options);
+      let source = await (await fetch(url)).text();
+      if (!source.includes('class GraphMeasurement')) return original.call(this, url, ...options);
+      const boundary = 'const endedAt = Number(Atomics.load(ticks, 1)) / 1000;';
+      if (!source.includes(boundary)) throw new Error('Measurement acknowledgement boundary not found');
+      source = source.replace(boundary, boundary + `
+        if (!globalThis.__qcPostAckPause) {
+          const pauseStart = Date.now();
+          while (Date.now() - pauseStart < 6) { /* Simulate descheduling after the measured span. */ }
+          globalThis.__qcPostAckPause = Date.now() - pauseStart;
+        }
+      `);
+      source = source.replace('error: timerError', 'error: timerError, injectedPauseMs: globalThis.__qcPostAckPause');
+      const blob = URL.createObjectURL(new Blob([source], { type: 'application/javascript' }));
+      try { return await original.call(this, blob, ...options); } finally { URL.revokeObjectURL(blob); }
+    };
+  });
+  await page.goto('/tests/benchmark.html');
+  await page.locator('#run-btn').click();
+  await expect(page.locator('#run-btn')).toBeEnabled({ timeout: 25000 });
+  const result = await page.evaluate(() => (window as any).__benchmarkEvidence);
+  expect(result.samples.some((sample: any) => sample.injectedPauseMs >= 6)).toBe(true);
+  expect(result.measurementError).toBeNull();
+  expect(validateBenchmarkEvidence(result).ok).toBe(true);
+  await expect(page.locator('#gate')).toHaveClass(/pass/);
+});

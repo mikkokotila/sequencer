@@ -21,6 +21,7 @@ export interface EventMap {
   // Transport → UI: state changed, re-render
   'transport:patternChanged': { type: string; track: number; step: number };
   'transport:phraseChanged': { phrase: number };
+  'transport:phraseCountChanged': { count: number; previous: number };
   'transport:songLoaded': Record<string, never>;
   'transport:songNameChanged': { name: string };
   'transport:save': Record<string, never>;

@@ -31,6 +31,7 @@ export interface SongData {
   name: string;
   bpm: number;
   phrases: Phrase[];
+  phraseCount?: number;
   currentPhrase: number;
   octaves: number[];
   harmonies: number[];

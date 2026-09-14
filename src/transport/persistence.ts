@@ -3,9 +3,10 @@
  */
 
 import type { ExtensionState, Phrase, SampleData, SongData } from '../types';
-import { DRUMS_CFG, MEL_CFG, STEPS, NUM_PHRASES } from '../config';
+import { DRUMS_CFG, MEL_CFG, STEPS } from '../config';
 import {
   phrases,
+  makeEmptyPhrase,
   octaves,
   harmonies,
   currentPhrase,
@@ -67,6 +68,7 @@ export function collectSongData(name: string): SongData {
     id: currentSongId || genId(),
     name: name || 'Untitled',
     bpm,
+    phraseCount: phrases.length,
     phrases: phrases.map((p: Phrase) => ({
       drumPat: p.drumPat.map((r) => [...r]),
       melPat: p.melPat.map((t) => t.map((s) => [...s])),
@@ -225,7 +227,9 @@ async function applySong(song: SongData, generation: number, persisted: boolean)
   stateGeneration++;
   emit('persistence:beforeLoad', {});
   setBpm(song.bpm);
-  for (let i = 0; i < NUM_PHRASES; i++) {
+  while (phrases.length < song.phrases.length) phrases.push(makeEmptyPhrase());
+  phrases.splice(song.phrases.length);
+  for (let i = 0; i < phrases.length; i++) {
     const target = phrases[i]!;
     const source = song.phrases[i]!;
     target.drumPat.forEach((row, t) => row.splice(0, STEPS, ...source.drumPat[t]!));
@@ -276,6 +280,7 @@ async function applySong(song: SongData, generation: number, persisted: boolean)
   baseline = persisted ? collectSongData(song.name) : null;
   if (persisted) revisions.set(song.id, song.revision ?? 0);
   emit('persistence:status', { message: '', conflict: false });
+  emit('transport:songLoaded', {});
   return true;
 }
 
@@ -391,7 +396,7 @@ export async function exportLoopsZip(): Promise<void> {
   type Entry = import('./zip').ZipEntry;
 
   const entries: Entry[] = [];
-  for (let p = 0; p < NUM_PHRASES; p++) {
+  for (let p = 0; p < phrases.length; p++) {
     if (isPhraseEmpty(p)) continue;
     const buf = await renderPhraseToBuffer(p);
     if (!buf) continue;

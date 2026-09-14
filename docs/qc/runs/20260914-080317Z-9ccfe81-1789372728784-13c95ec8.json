@@ -1,0 +1,148 @@
+{
+  "run_id": "1789372728784-13c95ec8",
+  "task_id": "20260914-song-phrase-capacity",
+  "task_type": "feature",
+  "spec_path": "docs/qc/specs/20260914-song-phrase-capacity.task.spec.json",
+  "execution_profile": "real",
+  "started_at_utc": "2026-09-14T07:58:48.783Z",
+  "finished_at_utc": "2026-09-14T08:03:17.279Z",
+  "head_sha": "9ccfe81",
+  "tree_sha": "5b3e19f0f39dd2fb911e8e8180fa2b6942428321",
+  "subject_sha": "84fbeabc0ccf21fb754187c5ec3d323c57369ebdb81f27fc3963d055d98fae4e",
+  "verdict": "FAIL",
+  "matrix": [
+    {
+      "kind": "command",
+      "id": "O-CI",
+      "label": "CI",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-CI.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E",
+      "label": "E2E",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-E2E.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-E2E-DELTA",
+      "label": "E2E delta coverage",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-E2E-DELTA.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-CONTRACTS-FULL",
+      "label": "Contract static gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-GATE-CONTRACTS-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-GATE-ARCH-FULL",
+      "label": "Architecture gates",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-GATE-ARCH-FULL.log",
+      "failure_items": []
+    },
+    {
+      "kind": "command",
+      "id": "O-COMMIT-RANGE",
+      "label": "Commit range governance attestation",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-COMMIT-RANGE.log",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "off_transparent",
+      "label": "off_transparent",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/oracles/off_transparent.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "on_audible",
+      "label": "on_audible",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/oracles/on_audible.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "low_end_continuity",
+      "label": "low_end_continuity",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/oracles/low_end_continuity.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "clip_guard",
+      "label": "clip_guard",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/oracles/clip_guard.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "default_safety",
+      "label": "default_safety",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/oracles/default_safety.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "control_binding",
+      "label": "control_binding",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/oracles/control_binding.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "benchmark_worklet_budget",
+      "label": "benchmark_worklet_budget",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/oracles/benchmark_worklet_budget.json",
+      "failure_items": []
+    },
+    {
+      "kind": "oracle",
+      "id": "persistence_roundtrip",
+      "label": "persistence_roundtrip",
+      "status": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-song-phrase-capacity/oracles/persistence_roundtrip.json",
+      "failure_items": []
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "FAIL",
+      "code": "GOV-BIND-005",
+      "message": "Missing persistence oracle declarations: persistence_roundtrip"
+    }
+  ]
+}

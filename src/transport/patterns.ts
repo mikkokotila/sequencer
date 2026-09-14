@@ -6,7 +6,7 @@
  */
 
 import type { Phrase } from '../types';
-import { DRUMS_CFG, MEL_CFG, STEPS, NUM_PHRASES } from '../config';
+import { DRUMS_CFG, MEL_CFG, STEPS, DEFAULT_PHRASES, PHRASE_COUNTS } from '../config';
 import { emit } from '../events';
 
 // ═══════════════════════════════════════════
@@ -22,7 +22,7 @@ export function makeEmptyPhrase(): Phrase {
   };
 }
 
-export const phrases: Phrase[] = Array.from({ length: NUM_PHRASES }, () => makeEmptyPhrase());
+export const phrases: Phrase[] = Array.from({ length: DEFAULT_PHRASES }, () => makeEmptyPhrase());
 
 export let currentPhrase = 0;
 export let playingPhrase = 0;
@@ -69,6 +69,26 @@ export function switchToPhrase(idx: number): void {
   melPat = phrase.melPat;
   vocalPat = phrase.vocalPat;
   emit('transport:phraseChanged', { phrase: idx });
+}
+
+/** Resize without discarding notes. Both GUI and programmatic callers use this operation. */
+export function setPhraseCount(count: number): void {
+  if (!PHRASE_COUNTS.includes(count)) {
+    throw new Error('Choose 12, 24, 36, or 48 phrases.');
+  }
+  const previous = phrases.length;
+  if (count === previous) return;
+  for (let i = count; i < previous; i++) {
+    if (!isPhraseEmpty(i)) {
+      throw new Error(
+        `Phrase ${i + 1} contains notes. Clear phrases beyond ${count} before reducing the song length.`,
+      );
+    }
+  }
+  while (phrases.length < count) phrases.push(makeEmptyPhrase());
+  phrases.splice(count);
+  if (currentPhrase >= count) switchToPhrase(count - 1);
+  emit('transport:phraseCountChanged', { count, previous });
 }
 
 /** Copy the previous phrase's data into `phrases[idx]`. */
@@ -188,8 +208,8 @@ export function isPhraseEmpty(idx: number): boolean {
 
 /** Find the next non-empty phrase starting after `fromIdx`, wrapping around. */
 export function findNextPhrase(fromIdx: number): number {
-  for (let i = 1; i <= NUM_PHRASES; i++) {
-    const idx = (fromIdx + i) % NUM_PHRASES;
+  for (let i = 1; i <= phrases.length; i++) {
+    const idx = (fromIdx + i) % phrases.length;
     if (!isPhraseEmpty(idx)) return idx;
   }
   return fromIdx;
@@ -197,7 +217,7 @@ export function findNextPhrase(fromIdx: number): number {
 
 /** Find the first non-empty phrase (0-based). Returns 0 if all empty. */
 export function findFirstNonEmpty(): number {
-  for (let i = 0; i < NUM_PHRASES; i++) {
+  for (let i = 0; i < phrases.length; i++) {
     if (!isPhraseEmpty(i)) return i;
   }
   return 0;

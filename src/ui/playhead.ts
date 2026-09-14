@@ -5,11 +5,59 @@
 
 import { on } from '../events';
 import { DRUMS_CFG, MEL_CFG, VOCAL_CFG } from '../config';
-import { currentPhrase } from '../transport/patterns';
+import { currentPhrase, switchToPhrase } from '../transport/patterns';
 import { drumCells, melCells, vocalCells } from '../state';
 import { updateDrumCell, updateMelCell, updateVocalCell } from './cells';
+import { refreshUI, updateSongPane } from './build';
+import { clearSelection, finishPaintingGesture } from './painting';
+import { getPlayingPhrase, isPlaying } from '../engine/scheduler';
 
 let prevVisualStep = -1;
+let followPlayhead = false;
+let followControl: HTMLInputElement | undefined;
+const FOLLOW_KEY = 'sequencer.follow-playhead';
+
+export function isFollowingPlayhead(): boolean {
+  return followPlayhead;
+}
+function followPhrase(phrase: number): void {
+  if (!followPlayhead || phrase < 0 || phrase === currentPhrase) return;
+  // A held stroke must never spill into a phrase the user did not start editing.
+  finishPaintingGesture();
+  clearSelection();
+  switchToPhrase(phrase);
+  refreshUI();
+  updateSongPane();
+}
+export function setFollowPlayhead(enabled: boolean): void {
+  if (typeof enabled !== 'boolean') throw new Error('Follow Playhead must be true or false.');
+  followPlayhead = enabled;
+  if (followControl) followControl.checked = enabled;
+  try {
+    localStorage.setItem(FOLLOW_KEY, String(enabled));
+  } catch {
+    /* Session preference still works. */
+  }
+  if (isPlaying()) followPhrase(getPlayingPhrase());
+}
+function createFollowControl(): void {
+  const label = document.createElement('label');
+  label.className = 'composer-follow';
+  label.title =
+    'Show the phrase currently reaching the audio output. Off keeps your editing view in place.';
+  followControl = document.createElement('input');
+  followControl.type = 'checkbox';
+  followControl.setAttribute('aria-label', 'Follow playhead');
+  try {
+    followPlayhead = localStorage.getItem(FOLLOW_KEY) === 'true';
+  } catch {
+    /* Default off. */
+  }
+  followControl.checked = followPlayhead;
+  followControl.onchange = () => setFollowPlayhead(followControl!.checked);
+  label.append(followControl, document.createTextNode('Follow playhead'));
+  document.querySelector('.phrase-controls')?.append(label);
+}
 
 /** Highlight the current step (only when viewing the playing phrase). */
 function highlightStep(step: number, phrase: number): void {
@@ -127,8 +175,10 @@ function injectPlayheadCSS(): void {
 /** Subscribe to engine events. Call once at init. */
 export function initPlayhead(): void {
   injectPlayheadCSS();
+  createFollowControl();
 
   on('engine:step', ({ step, phrase }) => {
+    followPhrase(phrase);
     highlightStep(step, phrase);
   });
 

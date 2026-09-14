@@ -26,6 +26,7 @@ import { on } from './events';
 import { beginHistoryGesture, endHistoryGesture } from './transport/history';
 import { initPlayhead } from './ui/playhead';
 import { initComposerTools } from './ui/composer-tools';
+import { initTheoryControls } from './ui/theory-controls';
 import { genId } from './ui/helpers';
 import { SEQ_EXTENSIONS, activeExtensionId } from './engine/extensions/store';
 import {
@@ -42,6 +43,7 @@ import {
   phrases,
   octaves,
   harmonies,
+  theory,
   isPhraseEmpty,
   findNextPhrase,
   findFirstNonEmpty,
@@ -83,6 +85,7 @@ async function init(): Promise<void> {
   // 3. Build the UI
   buildUI();
   initComposerTools();
+  initTheoryControls();
   document.getElementById('app')?.setAttribute('inert', '');
   const playButton = document.getElementById('play-btn') as HTMLButtonElement | null;
   if (playButton) playButton.disabled = true;
@@ -203,6 +206,7 @@ async function init(): Promise<void> {
     mutedArr,
     getVocalBuf: () => vocalBuf,
     getBpm: () => bpm,
+    getTheory: () => theory,
     isPhraseEmpty,
     findNextPhrase,
     findFirstNonEmpty,

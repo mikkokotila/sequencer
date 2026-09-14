@@ -28,6 +28,7 @@ import {
   octaves,
   harmonies,
   switchToPhrase,
+  clearMelTrack,
 } from '../transport/patterns';
 import {
   bpm,
@@ -63,6 +64,13 @@ import { openMidiBrowser, closeMidiBrowser, isMidiBrowserOpen } from './midi-bro
 import { openAdsrPopup, closeAdsrPopup, isAdsrPopupOpen } from './adsr-popup';
 import { on } from '../events';
 import {
+  createPitchViewControl,
+  refreshPitchLabels,
+  refreshPitchIndicators,
+  resetPitchViews,
+} from './pitch-view';
+import { melodyNotes, midiBase } from '../transport/notes';
+import {
   scheduleSave,
   saveSong,
   savePatternFile,
@@ -85,9 +93,21 @@ function toggleMute(gi: number, btn: HTMLElement): void {
 
 function changeOctave(ti: number, d: number): void {
   const cur = octaves[ti] ?? 3;
-  octaves[ti] = Math.max(1, Math.min(7, cur + d));
+  const next = Math.max(1, Math.min(7, cur + d));
+  if (
+    phrases.some((phrase) =>
+      Array.from({ length: STEPS }, (_, step) => melodyNotes(phrase, ti, step)).some((notes) =>
+        notes.some((note) => note + midiBase(next) < 0 || note + midiBase(next) > 127),
+      ),
+    )
+  ) {
+    reportPersistenceError(new Error('These notes would exceed the MIDI pitch range.'));
+    return;
+  }
+  octaves[ti] = next;
   const ov = document.querySelector(`.melody-track[data-track="${ti}"] .oct-val`);
   if (ov) ov.textContent = String(octaves[ti]);
+  refreshPitchLabels();
   scheduleSave();
 }
 
@@ -99,6 +119,7 @@ function clearTrack(type: TrackType, idx: number): void {
       for (let s = 0; s < STEPS; s++) updateDrumCell(idx, s);
     }
   } else if (type === 'melody') {
+    clearMelTrack(idx);
     const track = melPat[idx];
     if (track) {
       for (let s = 0; s < STEPS; s++) {
@@ -187,6 +208,8 @@ export function updateSongPane(): void {
 // ═══════════════════════════════════════════
 
 export function refreshUI(): void {
+  refreshPitchLabels();
+  refreshPitchIndicators();
   // Update all cells
   for (let t = 0; t < DRUMS_CFG.length; t++) for (let s = 0; s < STEPS; s++) updateDrumCell(t, s);
   for (let t = 0; t < MEL_CFG.length; t++)
@@ -593,6 +616,7 @@ export function buildUI(): void {
     ou.onclick = () => changeOctave(ti, 1);
     oc.appendChild(ou);
     header.appendChild(oc);
+    header.appendChild(createPitchViewControl(ti));
 
     // MIDI connect button
     const midiBtn = el('button', 'midi-btn');
@@ -828,6 +852,8 @@ export function buildUI(): void {
     btn.title = binding ? `MIDI: ${binding.inputName} (click to manage)` : 'Connect MIDI Input';
   }
 
+  on('ui:pitchViewChanged', refreshUI);
+  on('persistence:beforeLoad', resetPitchViews);
   on('midi:connected', (data) => updateMidiBtn(data.trackIndex));
   on('midi:disconnected', (data) => updateMidiBtn(data.trackIndex));
 }

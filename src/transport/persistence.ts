@@ -8,6 +8,7 @@ import {
   phrases,
   sections,
   variationLocks,
+  theory,
   makeEmptyPhrase,
   octaves,
   harmonies,
@@ -75,10 +76,12 @@ export function collectSongData(name: string): SongData {
     phraseCount: phrases.length,
     sections: sections.map((section) => ({ ...section })),
     variationLocks: [...variationLocks],
+    theory: { ...theory, progression: [...theory.progression] },
     phrases: phrases.map((p: Phrase) => ({
       drumPat: p.drumPat.map((r) => [...r]),
       melPat: p.melPat.map((t) => t.map((s) => [...s])),
       vocalPat: [...p.vocalPat],
+      ...(p.melExtra ? { melExtra: structuredClone(p.melExtra) } : {}),
     })),
     currentPhrase,
     octaves: [...octaves],
@@ -215,6 +218,7 @@ export function scheduleSave(): void {
 /** Install state after the load/undo boundary resets extensions; reuse decoded samples. */
 function installDocument(song: SongData, buffers: (AudioBuffer | null)[]): void {
   setBpm(song.bpm);
+  Object.assign(theory, song.theory, { progression: [...song.theory!.progression] });
   sections.splice(0, sections.length, ...(song.sections ?? []).map((section) => ({ ...section })));
   variationLocks.splice(
     0,
@@ -231,6 +235,8 @@ function installDocument(song: SongData, buffers: (AudioBuffer | null)[]): void 
       track.forEach((step, j) => step.splice(0, 12, ...source.melPat[t]![j]!)),
     );
     target.vocalPat.splice(0, STEPS, ...source.vocalPat);
+    if (source.melExtra) target.melExtra = structuredClone(source.melExtra);
+    else delete target.melExtra;
   }
   setCurrentPhrase(song.currentPhrase);
   const active = phrases[song.currentPhrase]!;

@@ -6,6 +6,7 @@ import {
   switchToPhrase,
   sections,
   variationLocks,
+  harmonies,
 } from '../transport/patterns';
 import { drumNames, melNames, vocalName, bpm } from '../transport/song';
 import { undo, redo, getHistoryState } from '../transport/history';
@@ -17,6 +18,7 @@ import {
   transposeRegion,
   repeatRegion,
   previewVariation,
+  previewMusicalVariation,
   applyVariation,
   setVariationLock,
   nameSection,
@@ -33,6 +35,8 @@ import {
 import { getAudioContext } from '../engine/audio';
 import { stopPlayback } from '../engine/scheduler';
 import { renderSongToBuffer } from '../transport/render-song';
+import { DEFAULT_ROLES, type VoiceRole } from '../transport/musical-generator';
+import { phraseHasNotes } from '../transport/notes';
 
 type Mode = 'edit' | 'sections' | 'vary';
 let from = 0,
@@ -59,6 +63,11 @@ let summary: HTMLElement;
 let previewPanel: HTMLElement | undefined;
 let previewApply: HTMLButtonElement | undefined;
 let mode: Mode = 'edit';
+let composeSynths = false;
+let ideaSeed = 1;
+let chordSize: 3 | 4 = 3;
+const voiceRoles: VoiceRole[] = [...DEFAULT_ROLES];
+let lastStyle: VariationKind = 'driving';
 let initialized = false;
 
 function node<K extends keyof HTMLElementTagNameMap>(
@@ -101,7 +110,9 @@ function region(): EditRegion {
     to,
     startStep: startBar * 16,
     endStep: endBar * 16 + 15,
-    tracks: [...selectedTracks],
+    tracks: [...selectedTracks].filter(
+      (track) => mode !== 'vary' || !composeSynths || (track >= 5 && track < 8),
+    ),
   };
 }
 function group(parent: HTMLElement, name: string): HTMLElement {
@@ -205,7 +216,8 @@ function selectionControls(parent: HTMLElement, includeTracks: boolean): void {
     );
     const all = button('All tracks', () => {
       selectedTracks.clear();
-      for (let i = 0; i < 9; i++) selectedTracks.add(i);
+      for (let i = 0; i < 9; i++)
+        if (!composeSynths || mode !== 'vary' || (i >= 5 && i < 8)) selectedTracks.add(i);
       clearPreview();
       buildContent();
     });
@@ -217,6 +229,7 @@ function selectionControls(parent: HTMLElement, includeTracks: boolean): void {
     tracks.append(all, none);
     const list = node('div', '', 'composer-tracks');
     trackNames().forEach((name, track) => {
+      if (mode === 'vary' && composeSynths && (track < 5 || track > 7)) return;
       const row = node('div', '', 'composer-track');
       const label = node('label', name || `Track ${track + 1}`);
       const chosen = node('input');
@@ -409,6 +422,7 @@ async function auditionPreview(variant: boolean, phraseIndex: number): Promise<v
   try {
     const rendered = await renderSongToBuffer({
       phraseOverride: [sourcePhrase],
+      ...(variant && captured.harmonyOverride ? { harmonyOverride: captured.harmonyOverride } : {}),
       signal: controller.signal,
     });
     if (controller.signal.aborted || preview !== captured || !dialog.open) return;
@@ -437,7 +451,10 @@ async function auditionPreview(variant: boolean, phraseIndex: number): Promise<v
 }
 function showPreview(kind: VariationKind): void {
   clearPreview();
-  preview = previewVariation(region(), kind);
+  lastStyle = kind;
+  preview = composeSynths
+    ? previewMusicalVariation(region(), kind, { seed: ideaSeed, roles: voiceRoles, chordSize })
+    : previewVariation(region(), kind);
   const captured = preview;
   const panel = previewPanel!;
   panel.append(
@@ -494,7 +511,10 @@ function showPreview(kind: VariationKind): void {
     clearPreview();
     status.textContent = 'Variation applied. Undo restores the original.';
   });
-  previewApply.disabled = !captured.added && !captured.removed;
+  previewApply.disabled =
+    !captured.added &&
+    !captured.removed &&
+    !captured.harmonyOverride?.some((value, i) => value !== harmonies[i]);
   panel.append(
     previewApply,
     button('Discard variation', () => {
@@ -504,7 +524,84 @@ function showPreview(kind: VariationKind): void {
   );
 }
 function variationControls(): void {
+  const tabs = group(content, 'Variation tools');
+  tabs.append(
+    button('Rhythm variations', () => {
+      clearPreview();
+      composeSynths = false;
+      buildContent();
+    }),
+    button('Compose synths', () => {
+      clearPreview();
+      composeSynths = true;
+      buildContent();
+    }),
+  );
+  tabs
+    .querySelectorAll('button')
+    .forEach((element, i) =>
+      element.setAttribute('aria-pressed', String(i === (composeSynths ? 1 : 0))),
+    );
   selectionControls(content, true);
+  if (composeSynths) {
+    const voices = group(content, 'Musical roles');
+    voiceRoles.forEach((role, track) => {
+      const label = node('label', trackNames()[track + 5], 'composer-field');
+      const field = node('select');
+      field.setAttribute('aria-label', `Role for ${trackNames()[track + 5]}`);
+      for (const [value, name] of [
+        ['bass', 'Bass line'],
+        ['melody', 'Melody'],
+        ['chords', 'Chords'],
+        ['arpeggio', 'Arpeggio'],
+      ] as const) {
+        if (track === 0 && value === 'chords') continue;
+        const option = node('option', name);
+        option.value = value;
+        field.append(option);
+      }
+      field.value = role;
+      field.onchange = () => {
+        voiceRoles[track] = field.value as VoiceRole;
+        clearPreview();
+      };
+      label.append(field);
+      voices.append(label);
+    });
+    const idea = input(voices, 'Idea', String(ideaSeed), 'number');
+    idea.min = '1';
+    idea.max = '2147483647';
+    idea.onchange = () => {
+      ideaSeed = idea.valueAsNumber;
+      clearPreview();
+    };
+    select(
+      voices,
+      'Chord voices',
+      [
+        { value: 3, label: 'Triads' },
+        { value: 4, label: 'Sevenths' },
+      ],
+      chordSize,
+      (value) => {
+        chordSize = value as 3 | 4;
+      },
+    );
+    voices.append(
+      button('New idea', () => {
+        ideaSeed = Number.isInteger(ideaSeed) ? (ideaSeed % 2147483647) + 1 : 1;
+        idea.value = String(ideaSeed);
+        showPreview(lastStyle);
+      }),
+    );
+    voices.append(
+      node(
+        'p',
+        'Each bar follows Song Harmony. Parts repeat a motif with restrained answers. Apply replaces selected notes and turns HARM off for each generated track across the song. Note lengths use each track’s envelope.',
+        'composer-help',
+      ),
+    );
+  }
   const variations = group(content, 'Choose a variation');
   const descriptions: [VariationKind, string, string][] = [
     ['sparse', 'Sparse', 'Keep alternating note events; preserve the first hit.'],
@@ -513,11 +610,27 @@ function variationControls(): void {
     ['answer', 'Answer', 'Keep the first half; echo it two steps late in the second half.'],
   ];
   for (const [kind, title, description] of descriptions)
-    variations.append(button(title, () => showPreview(kind), description));
+    variations.append(
+      button(
+        title,
+        () => showPreview(kind),
+        composeSynths
+          ? {
+              sparse: 'Space between bass anchors, melody notes, chord stabs or arpeggio tones.',
+              driving:
+                'Steady bass and arpeggio pulses, energetic motifs and repeated chord stabs.',
+              syncopated: 'Offbeat accents with bass anchors and chord-aware melodic motion.',
+              answer: 'Short calls and delayed responses across alternating bars.',
+            }[kind]
+          : description,
+      ),
+    );
   variations.append(
     node(
       'p',
-      'Only selected, unprotected tracks change. Existing pitches are reused. Audition uses the current samples and effects; Apply commits the notes.',
+      composeSynths
+        ? 'Only selected, unprotected synths change. Generate parts from the song key, mode and progression, then hear the full mix before applying.'
+        : 'Only selected, unprotected tracks change. Existing pitches are reused. Audition uses the current samples and effects; Apply commits the notes.',
       'composer-help',
     ),
   );
@@ -571,12 +684,7 @@ function refreshToolbar(): void {
   redoButton.title = history.canRedo
     ? `Redo: ${history.redoLabel} (⌘/Ctrl+Shift+Z)`
     : 'Redo (⌘/Ctrl+Shift+Z)';
-  const playable = phrases.filter(
-    (phrase) =>
-      phrase.drumPat.some((row) => row.some(Boolean)) ||
-      phrase.melPat.some((track) => track.some((notes) => notes.some(Boolean))) ||
-      phrase.vocalPat.some(Boolean),
-  ).length;
+  const playable = phrases.filter(phraseHasNotes).length;
   summary.textContent = `${explicitRange ? `Selected ${from + 1}–${to + 1} · ` : ''}${playable * 4} bars · ${duration((playable * 16 * 60) / bpm)}`;
   sectionStrip.replaceChildren();
   for (const section of sections) {

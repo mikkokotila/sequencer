@@ -19,7 +19,7 @@ import {
   setVocalBuf,
   setVocalSampleData,
 } from '../transport/song';
-import { drumPat, melPat, vocalPat } from '../transport/patterns';
+import { drumPat, melPat, vocalPat, phrases, currentPhrase } from '../transport/patterns';
 import { isPlaying } from '../engine/scheduler';
 import { fetchAndDecode, playPreviewSample, loadAudioFile } from '../engine/audio';
 import { el, truncName } from './helpers';
@@ -398,7 +398,10 @@ function trackHasContent(type: TrackType | '', idx: number): boolean {
   }
   if (type === 'melody') {
     const track = melPat[idx];
-    return track ? track.some((s) => s.some((n) => n)) : false;
+    return !!(
+      track?.some((s) => s.some(Boolean)) ||
+      phrases[currentPhrase]?.melExtra?.[idx]?.some((s) => s.length)
+    );
   }
   return vocalPat.some((v) => v);
 }

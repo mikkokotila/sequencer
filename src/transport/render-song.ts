@@ -21,14 +21,17 @@ import { createCompressor } from '../engine/extensions/compressor';
 import { createTransformer } from '../engine/extensions/transformer';
 import { createReverb } from '../engine/extensions/reverb';
 import { createDelay } from '../engine/extensions/delay';
-import { phrases, octaves, harmonies, isPhraseEmpty } from './patterns';
+import { phrases, octaves, harmonies, theory, isPhraseEmpty } from './patterns';
 import { bpm, currentSongName, drumBuf, melBuf, vocalBuf, mutedArr } from './song';
 import type { Extension, ExtensionHost, Phrase } from '../types';
 import { normalizePhrase } from './song-format';
+import { melodyNotes, phraseHasNotes } from './notes';
+import { snapToScale } from './theory';
 
 export interface RenderOptions {
   /** Audition a supplied phrase sequence without mutating or saving the live song. */
   phraseOverride?: readonly Phrase[];
+  harmonyOverride?: readonly number[];
   signal?: AbortSignal;
   onProgress?: (fraction: number) => void;
 }
@@ -61,7 +64,14 @@ export function checkExportAbort(signal?: AbortSignal): void {
   if (signal?.aborted) throw new DOMException('Export cancelled.', 'AbortError');
 }
 
-function captureSong(override?: readonly Phrase[]) {
+function captureSong(override?: readonly Phrase[], harmonyOverride?: readonly number[]) {
+  if (
+    harmonyOverride &&
+    (harmonyOverride.length !== 3 ||
+      harmonyOverride.some((n) => !Number.isInteger(n) || n < 0 || n > 3))
+  )
+    throw new Error('Invalid preview harmony settings.');
+  const harmonySettings = harmonyOverride ?? harmonies;
   if (!getAudioContext()) throw new Error('The audio engine is not ready.');
   const stepDuration = 60 / bpm / 4;
   if (override && (override.length < 1 || override.length > 48))
@@ -93,22 +103,24 @@ function captureSong(override?: readonly Phrase[]) {
         if (phrase.drumPat[t]?.[s]) add(drumBuf[t], t, time);
       }
       for (let t = 0; t < MEL_CFG.length; t++) {
-        const notes = phrase.melPat[t]?.[s] ?? [];
-        const activeNotes = notes.flatMap((on, n) => (on ? [n] : []));
+        const activeNotes = melodyNotes(phrase, t, s);
         for (const n of activeNotes) {
           const pitch = ((octaves[t] ?? 3) - 1) * 12 + n;
           const track = DRUMS_CFG.length + t;
           add(melBuf[t], track, time, 2 ** (pitch / 12));
-          if (activeNotes.length === 1 && !MEL_CFG[t]?.mono && (harmonies[t] ?? 0) > 0) {
-            const harmony = HARMONY_SEMITONES[harmonies[t]!];
-            if (harmony !== undefined) add(melBuf[t], track, time, 2 ** ((pitch + harmony) / 12));
+          if (activeNotes.length === 1 && !MEL_CFG[t]?.mono && (harmonySettings[t] ?? 0) > 0) {
+            const harmony = HARMONY_SEMITONES[harmonySettings[t]!];
+            if (harmony !== undefined) {
+              const target = theory.locked ? snapToScale(pitch + harmony, theory) : pitch + harmony;
+              add(melBuf[t], track, time, 2 ** (target / 12));
+            }
           }
         }
       }
       if (phrase.vocalPat[s]) add(vocalBuf, TOTAL_TRACKS - 1, time);
     }
   });
-  if (!voices.length)
+  if (!voices.length && (!override || active.some(phraseHasNotes)))
     throw new Error('Load samples and unmute a track with notes before exporting.');
   const extensions = SEQ_EXTENSIONS.map((ext) => ({
     id: ext.id,
@@ -152,7 +164,7 @@ function captureSong(override?: readonly Phrase[]) {
 export async function renderSongToBuffer(options: RenderOptions = {}): Promise<RenderedSong> {
   checkExportAbort(options.signal);
   // No await before capturing: UI edits and song switches cannot change an export in flight.
-  const song = captureSong(options.phraseOverride);
+  const song = captureSong(options.phraseOverride, options.harmonyOverride);
   const ctx = new OfflineAudioContext(2, song.length + PRE_ROLL_FRAMES, SAMPLE_RATE);
   const nodes: AudioNode[] = [];
   const extensions: Extension[] = [];

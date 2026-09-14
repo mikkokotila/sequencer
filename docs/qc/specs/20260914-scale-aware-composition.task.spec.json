@@ -1,0 +1,76 @@
+{
+  "task_id": "20260914-scale-aware-composition",
+  "task_type": "feature",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "User explicitly requests song-level key/mode, instrument-aware synth generation with isolated audition and Scale Lock nearest-note snapping (ties down), plus optional Follow Playhead default off. Product request overrides default GA-only scope.",
+    "in_scope": [
+      "src/**",
+      "index.html",
+      "e2e/**",
+      "README.md",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "samples/**",
+      "samples.json",
+      "server/**",
+      "package.json",
+      "package-lock.json",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**"
+    ],
+    "controls": [
+      {
+        "id": "theory",
+        "description": "Song-level root, mode and shared chord progression, portable and undoable.",
+        "test": "Theory arithmetic, progression compatibility, persistence and invalid-input atomicity."
+      },
+      {
+        "id": "synth_generation",
+        "description": "Deterministic bass, melody, chords and arpeggio generators with sparse/driving/syncopated/answer styles, protection and isolated preview.",
+        "test": "Pitch/chord/rhythm invariants, musical repetition/cadence, reproducibility, role limits, audition/apply/undo and stale previews."
+      },
+      {
+        "id": "scale_lock",
+        "description": "Manual edits and MIDI snap to the closest allowed pitch; ties choose the lower pitch.",
+        "test": "Every root/mode, editing and octave-boundary cases; sound/export agreement and old-song compatibility."
+      },
+      {
+        "id": "follow_playhead",
+        "description": "Optional view preference follows the audible phrase, default off, without changing notes or scheduling.",
+        "test": "Device-time boundaries, start/stop, manual navigation, editing gestures and persistence of preference."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "Chrome desktop and 390px viewport",
+      "All 12 roots and modal scales",
+      "Legacy songs and scale-constrained synth phrases",
+      "Role-aware motif/progression generation",
+      "Audible phrase boundaries, latency, restart and held painting gestures"
+    ],
+    "seed": "20260914-scale-aware-composition",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding",
+      "benchmark_worklet_budget",
+      "persistence_roundtrip"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

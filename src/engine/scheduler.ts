@@ -13,8 +13,10 @@ import {
   SEQUENCER_LEAD_SECONDS,
 } from './audio';
 import { getOutputTime } from './output-clock';
-import type { Phrase } from '../types';
+import type { Phrase, SongTheory } from '../types';
 import { emit } from '../events';
+import { melodyNotes } from '../transport/notes';
+import { snapToScale } from '../transport/theory';
 
 export interface TransportSource {
   readonly phrases: Phrase[];
@@ -25,6 +27,7 @@ export interface TransportSource {
   readonly mutedArr: boolean[];
   getVocalBuf(): AudioBuffer | null;
   getBpm(): number;
+  getTheory?(): SongTheory;
   isPhraseEmpty(idx: number): boolean;
   findNextPhrase(from: number): number;
   findFirstNonEmpty(): number;
@@ -122,10 +125,7 @@ function scheduleStep(time: number, s: number, stepPhrase: number, stepDur: numb
     const stepPat = trackPat?.[s];
     if (!stepPat) continue;
 
-    const activeNotes: number[] = [];
-    for (let n = 0; n < 12; n++) {
-      if (stepPat[n]) activeNotes.push(n);
-    }
+    const activeNotes = melodyNotes(phrase, t, s);
 
     for (const n of activeNotes) {
       const oct = transport.octaves[t];
@@ -146,7 +146,9 @@ function scheduleStep(time: number, s: number, stepPhrase: number, stepDur: numb
         if (harmIdx !== undefined && harmIdx > 0) {
           const semitones = HARMONY_SEMITONES[harmIdx];
           if (semitones !== undefined) {
-            const harmRate = Math.pow(2, ((oct - 1) * 12 + n + semitones) / 12);
+            const key = transport.getTheory?.();
+            const harmony = key?.locked ? snapToScale(n + semitones, key) : n + semitones;
+            const harmRate = Math.pow(2, ((oct - 1) * 12 + harmony) / 12);
             playSample(buf, time, harmRate, dest, trackIdx, stepDur);
           }
         }

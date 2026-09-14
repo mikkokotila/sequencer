@@ -13,10 +13,13 @@ import {
   melPat,
   vocalPat,
   harmonies,
-  setMelodyCell as setMelodyCellData,
+  setMelStep,
+  getMelNotes,
+  hasMelNote,
 } from '../transport/patterns';
 import { drumCells, melCells, vocalCells } from '../state';
 import { displayToSemitone } from './helpers';
+import { getPitchView, ensurePitchVisible } from './pitch-view';
 
 // ═══════════════════════════════════════════
 //  Cell visual updates (class-only, no inline style)
@@ -31,10 +34,10 @@ export function updateDrumCell(t: number, s: number): void {
 
 /** Set melody cell active/inactive state via CSS class. */
 export function updateMelCell(t: number, s: number, dr: number): void {
-  const semi = displayToSemitone(dr);
+  const semi = getPitchView(t) + displayToSemitone(dr);
   const c = melCells[t]?.[s]?.[dr];
   if (!c) return;
-  c.classList.toggle('active', !!melPat[t]?.[s]?.[semi]);
+  c.classList.toggle('active', hasMelNote(t, s, semi));
 }
 
 /** Set vocal cell active/inactive state via CSS class. */
@@ -58,14 +61,11 @@ export function setMelodyCellUI(t: number, s: number, dr: number, val: boolean):
   if (!cfg) return;
 
   // Delegate all data mutation (mono enforcement + step write) to patterns.ts
-  setMelodyCellData(t, s, dr, val);
+  const pitch = setMelStep(t, s, getPitchView(t) + displayToSemitone(dr), val);
+  if (val) ensurePitchVisible(t, pitch);
 
   // Visual update: mono mode may have cleared other rows, so refresh all 12
-  if (cfg.mono && val) {
-    for (let d = 0; d < 12; d++) updateMelCell(t, s, d);
-  } else {
-    updateMelCell(t, s, dr);
-  }
+  for (let d = 0; d < 12; d++) updateMelCell(t, s, d);
 
   if (!cfg.mono) updateHarmonyDim(t);
 }
@@ -79,12 +79,7 @@ export function checkMultiNote(t: number): boolean {
   const trackPat = melPat[t];
   if (!trackPat) return false;
   for (let s = 0; s < STEPS; s++) {
-    const stepNotes = trackPat[s];
-    if (!stepNotes) continue;
-    let c = 0;
-    for (let n = 0; n < 12; n++) {
-      if (stepNotes[n]) c++;
-    }
+    const c = getMelNotes(t, s).length;
     if (c > 1) return true;
   }
   return false;

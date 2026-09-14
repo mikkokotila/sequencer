@@ -8,6 +8,8 @@
 
 import { MEL_CFG, DRUMS_CFG } from '../config';
 import { melBuf } from '../transport/song';
+import { theory } from '../transport/patterns';
+import { snapToScale } from '../transport/theory';
 import { getAudioContext, getTrackGains } from './audio';
 import { applyEnvelope, triggerRelease, getTrackAdsr, isAdsrEnabled } from './adsr';
 import { emit } from '../events';
@@ -251,7 +253,8 @@ function handleNoteOn(trackIndex: number, note: number, velocity: number): void 
   }
 
   // Calculate playback rate from MIDI note number
-  const rate = Math.pow(2, (note - MIDI_ROOT_NOTE) / 12);
+  const playedNote = theory.locked ? snapToScale(note, theory, 0, 127) : note;
+  const rate = Math.pow(2, (playedNote - MIDI_ROOT_NOTE) / 12);
 
   // Create per-note velocity gain
   const velocityGain = ctx.createGain();

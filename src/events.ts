@@ -36,6 +36,8 @@ export interface EventMap {
   'transport:songNameChanged': { name: string };
   'transport:save': Record<string, never>;
 
+  'ui:pitchViewChanged': { track: number };
+
   // UI → Transport: user actions
   'ui:setStep': { type: string; track: number; step: number; note?: number; value: boolean };
   'ui:loadSample': { type: string; track: number; buffer: ArrayBuffer; name: string };

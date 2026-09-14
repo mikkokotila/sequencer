@@ -214,7 +214,7 @@ test('bulk bounds and mono violations reject atomically; nudge, repeat and trans
     h.undo();
     const errors = [];
     for (const action of [
-      () => c.transposeRegion(region, 11),
+      () => c.transposeRegion(region, 12),
       () => c.clearRegion({ ...region, to: 48 }),
       () => c.pasteRegion(c.copyRegion(region), 35),
       () => c.previewVariation(region, 'invalid' as any),

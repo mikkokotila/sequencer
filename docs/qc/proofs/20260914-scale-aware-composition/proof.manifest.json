@@ -1,0 +1,51 @@
+{
+  "task_id": "20260914-scale-aware-composition",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-scale-aware-composition/logs/O-CI.log"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-scale-aware-composition/logs/O-E2E.log"
+    },
+    {
+      "id": "O-E2E-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-scale-aware-composition/logs/O-E2E-DELTA.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-scale-aware-composition/logs/O-GATE-CONTRACTS-FULL.log"
+    },
+    {
+      "id": "O-GATE-ARCH-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-scale-aware-composition/logs/O-GATE-ARCH-FULL.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-scale-aware-composition/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "23 new Chrome tests plus 24 existing composer and frozen-label regressions pass (47 total focused). Coverage: every root/mode and musical role/style; nearest pitch/downward ties across octaves; mono limits; GUI painting, fit/paste/transpose, save/load/JSON and undo; protected/stale/forged previews; isolated original/candidate audition; matching preview/Apply PCM; live/phrase/full export pitches; colliding MIDI-key note ownership; actual audible phrase following and held-gesture boundaries. Separate installed Google Chrome session at 1440px and 390px: generated desktop/Harmony/Compose screenshots, inspected layout, no page errors. In-app browser could not be controlled because the Mac was locked; isolated sessions did not modify the user song."
+  },
+  "artifacts": [
+    "verdict.json"
+  ]
+}

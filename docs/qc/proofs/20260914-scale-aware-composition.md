@@ -1,0 +1,19 @@
+# Scale-aware synth composition and phrase following
+
+The explicit product request overrides the default GA-only scope. Branch starts at f2e2195, origin/main after merged PR #48. All work is in one new feature PR. Arrange Song is outside this slice.
+
+- Song root, nine modes, Scale Lock and a shared 1–16-bar degree progression are undoable and portable. Presets, editable degrees, mode-specific suggestions and actual chord names are exposed in the GUI/API.
+- All three synth channels generate bass, melody, chords or arpeggios (mono excludes chords). Four styles use reproducible ideas, repeated motifs, chord anchors, passing scale tones and close inversions. One progression coordinates separately generated tracks. Preview does not mutate live state, auditions current samples/envelopes/effects, rejects stale/forged payloads, and applies once with undo. HARM is explicitly turned off for generated tracks across the song; the UI states this, audition uses the override, undo restores it.
+- Scale Lock snaps new/moved notes and MIDI; exact ties descend. Changing key/lock preserves existing notes until the explicit Fit action. Adjacent-octave notes retain true pitch in a sparse optional field, preserving legacy boolean grids. Twelve-row pitch views can move across octaves; out-of-view counts reveal hidden notes. MIDI remains bounded to 0–127, and original key ownership prevents colliding quantized keys from losing note-off.
+- Live scheduler, phrase WAV and full-song audio enumerate identical pitches and quantize derived harmonies when locked. JSON becomes version 2 only with extended pitches; base-only songs remain version 1. Old applications reject version 2 instead of silently losing notes. Sample library and song data are not committed or replaced.
+- Follow Playhead is an independent persistent browser preference, default off. It follows engine events at audible output time, ends held painting before switching phrases, and leaves notes/history untouched.
+
+## Verification
+
+23 new tests and 24 existing composer/frozen-label tests pass in Chrome (47 focused). Tests include all 12 roots × 9 modes × 4 roles × 4 styles, scale-distance/tie checks, motifs and inversions, malformed inputs, mono/MIDI bounds, extended-pitch copy/nudge/repeat/sections, undo/redo, saved/portable data, protected and stale previews, silent-original audition, live/phrase/full-render rates, matching generated-preview/Apply PCM (<1e-6 peak difference with nonzero audio), MIDI collisions and real audible phrase following. Existing transpose-invalid-input fixture now uses 12 semitones because crossing the old one-octave edge is newly valid; dedicated tests verify actual MIDI-bound overflow is still rejected atomically.
+
+Initial focused failures were test-fixture defects (nearest-note oracle truncated its upper candidate range, Answer wrongly required notes on deliberate rests, event emission used a read-only test hook) and a new dialog sharing the old status selector. Corrected oracle range/rest assertion, imported the event API, and gave Harmony its own status class. A missing import was found by typecheck and fixed before the successful run. No thresholds, contracts or governance policies changed.
+
+Separate installed Chrome screenshots at 1440px and 390px were visually inspected: transport theory controls, Harmony and Compose synths dialogs fit and remain usable. No page errors. The Mac was locked, so user-profile in-app verification was unavailable; isolated browser contexts leave the existing song untouched.
+
+Compiler-owned full regression, static/architecture/contract/commit-range gates and eight audio oracles are authoritative in this task's generated manifest, logs and verdict. Production build is checked separately. Generation constrains harmony but does not guarantee subjective musical quality; each track retains its existing envelope-based note lengths.

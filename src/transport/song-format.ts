@@ -14,6 +14,9 @@ import {
   HARMONY_SEMITONES,
 } from '../config';
 
+import { normalizeTheory } from './theory';
+import { MIN_RELATIVE_PITCH, MAX_RELATIVE_PITCH, midiBase } from './notes';
+
 export const MAX_SONG_FILE_BYTES = 128 * 1024 * 1024;
 const MAX_SAMPLE_BYTES = 64 * 1024 * 1024;
 
@@ -73,7 +76,7 @@ function map<T>(
 }
 export function normalizePhrase(value: unknown): Phrase {
   const p = value === undefined ? {} : record(value, 'phrase');
-  return {
+  const phrase: Phrase = {
     drumPat: map(p.drumPat, DRUMS_CFG.length, 'drum tracks', (t) =>
       map(t, STEPS, 'drum steps', (v) => boolean(v, 'step')),
     ),
@@ -82,6 +85,20 @@ export function normalizePhrase(value: unknown): Phrase {
     ),
     vocalPat: map(p.vocalPat, STEPS, 'vocal steps', (v) => boolean(v, 'step')),
   };
+  if (p.melExtra !== undefined) {
+    const extra = map(p.melExtra, MEL_CFG.length, 'extra melody tracks', (t) =>
+      map(t, STEPS, 'extra melody steps', (raw) => {
+        const notes = array(raw, 128, 'extra notes').map((v) =>
+          number(v, 0, MIN_RELATIVE_PITCH, MAX_RELATIVE_PITCH, 'extra pitch', true),
+        );
+        if (notes.some((n) => n >= 0 && n < 12) || new Set(notes).size !== notes.length)
+          throw new Error('Extra notes must be unique pitches outside the base octave.');
+        return notes.sort((a, b) => a - b);
+      }),
+    );
+    if (extra.some((t) => t.some((s) => s.length))) phrase.melExtra = extra;
+  }
+  return phrase;
 }
 
 export function normalizeSections(value: unknown, phraseCount: number): SongSection[] {
@@ -162,7 +179,7 @@ function extensions(value: unknown): Record<string, ExtensionState> {
 
 export function normalizeSong(value: unknown, requirePatterns = false): SongData {
   const input = record(value, 'song');
-  if (input.formatVersion !== undefined && input.formatVersion !== 1)
+  if (input.formatVersion !== undefined && input.formatVersion !== 1 && input.formatVersion !== 2)
     throw new Error('Unsupported song file version.');
   if (
     requirePatterns &&
@@ -219,12 +236,13 @@ export function normalizeSong(value: unknown, requirePatterns = false): SongData
           ...Array.from({ length: phraseCount - 1 }, () => normalizePhrase(undefined)),
         ]
       : map(input.phrases, phraseCount, 'phrases', (v) => normalizePhrase(v));
-  return {
+  const normalized: SongData = {
     id: string(input.id, '', 'song id'),
     name: string(input.name, 'Untitled', 'song name'),
     bpm: number(input.bpm, 120, 40, 220, 'BPM'),
     phrases,
     phraseCount,
+    theory: normalizeTheory(input.theory),
     sections: normalizeSections(input.sections, phraseCount),
     variationLocks: map(input.variationLocks, TOTAL_TRACKS, 'variation locks', (v, i) =>
       v === undefined ? i === 0 || i === 7 : boolean(v, 'variation lock'),
@@ -271,12 +289,25 @@ export function normalizeSong(value: unknown, requirePatterns = false): SongData
       }),
     },
   };
+  for (const phrase of normalized.phrases)
+    phrase.melExtra?.forEach((track, t) => {
+      const base = midiBase(normalized.octaves[t]!);
+      if (track.some((notes) => notes.some((note) => note + base < 0 || note + base > 127)))
+        throw new Error('Extra notes exceed the track MIDI range.');
+    });
+  return normalized;
 }
 
 /** Self-contained JSON; binary encoding is explicit and versioned. */
 export function encodeSongFile(song: SongData): string {
   return JSON.stringify(
-    { ...song, id: undefined, revision: undefined, updatedAt: undefined, formatVersion: 1 },
+    {
+      ...song,
+      id: undefined,
+      revision: undefined,
+      updatedAt: undefined,
+      formatVersion: song.phrases.some((phrase) => phrase.melExtra) ? 2 : 1,
+    },
     (_key, value: unknown) => {
       if (
         value &&

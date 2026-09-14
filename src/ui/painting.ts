@@ -9,6 +9,10 @@ import {
   melPat,
   vocalPat,
   replicateTrack as replicateTrackData,
+  getMelNotes,
+  resolveMelodyPitch,
+  currentPhrase,
+  phrases,
 } from '../transport/patterns';
 import {
   melCells,
@@ -25,6 +29,8 @@ import {
 } from '../state';
 import type { PaintType } from '../state';
 import { displayToSemitone } from './helpers';
+import { getPitchView } from './pitch-view';
+import { setMelodyNotes } from '../transport/notes';
 import { updateDrumCell, updateMelCell, updateVocalCell, setMelodyCellUI } from './cells';
 
 // ── Callbacks (wired by main.ts) ──
@@ -78,21 +84,14 @@ function repeatSelection(t: number): void {
   const hi = Math.max(selection.start, selection.end);
   if (lo < 0 || lo === hi) return;
   const len = hi - lo + 1;
-  const pat: boolean[][] = [];
-  for (let s = lo; s <= hi; s++) {
-    const stepData = melPat[t]?.[s];
-    pat.push(stepData ? [...stepData] : (Array(12).fill(false) as boolean[]));
-  }
-  for (let s = hi + 1; s < STEPS; s++) {
-    const pi = (s - hi - 1) % len;
-    const source = pat[pi];
-    const target = melPat[t]?.[s];
-    if (source && target) {
-      for (let n = 0; n < 12; n++) {
-        target[n] = source[n] ?? false;
-      }
-    }
-  }
+  const pat = Array.from({ length: len }, (_, i) => getMelNotes(t, lo + i));
+  for (let s = hi + 1; s < STEPS; s++)
+    setMelodyNotes(
+      phrases[currentPhrase]!,
+      t,
+      s,
+      pat[(s - hi - 1) % len]!.map((note) => resolveMelodyPitch(t, note)),
+    );
   for (let s = hi + 1; s < STEPS; s++) {
     for (let d = 0; d < 12; d++) updateMelCell(t, s, d);
   }
@@ -163,12 +162,13 @@ export function setupPainting(): void {
       }
     } else if (type === 'melody') {
       const dr = Number(cell.dataset.note ?? 0);
-      const semi = displayToSemitone(dr);
+      const raw = getPitchView(t) + displayToSemitone(dr);
+      const semi = getMelNotes(t, s).includes(raw) ? raw : resolveMelodyPitch(t, raw);
       const trackPat = melPat[t];
       const stepPat = trackPat?.[s];
       if (stepPat) {
-        setPaintVal(!(stepPat[semi] ?? false));
-        setMelodyCellUI(t, s, dr, paintVal);
+        setPaintVal(!getMelNotes(t, s).includes(semi));
+        setMelodyCellUI(t, s, 11 - (semi - getPitchView(t)), paintVal);
       }
     } else {
       const current = vocalPat[s] ?? false;
@@ -204,10 +204,11 @@ export function setupPainting(): void {
       }
     } else if (paintType === 'melody') {
       const dr = Number(cell.dataset.note ?? 0);
-      const semi = displayToSemitone(dr);
+      const raw = getPitchView(t) + displayToSemitone(dr);
+      const semi = getMelNotes(t, s).includes(raw) ? raw : resolveMelodyPitch(t, raw);
       const stepPat = melPat[t]?.[s];
-      if (stepPat && stepPat[semi] !== paintVal) {
-        setMelodyCellUI(t, s, dr, paintVal);
+      if (stepPat && getMelNotes(t, s).includes(semi) !== paintVal) {
+        setMelodyCellUI(t, s, 11 - (semi - getPitchView(t)), paintVal);
       }
     } else {
       if (vocalPat[s] !== paintVal) {
@@ -217,22 +218,23 @@ export function setupPainting(): void {
     }
   });
 
-  const finishStroke = () => {
-    if (selecting) {
-      setSelecting(false);
-      if (selection.start > selection.end) {
-        setSelection({ ...selection, start: selection.end, end: selection.start });
-      }
-      updateRepButtons();
-      return;
+  document.addEventListener('mouseup', finishPaintingGesture);
+  window.addEventListener('blur', finishPaintingGesture);
+}
+
+export function finishPaintingGesture(): void {
+  if (selecting) {
+    setSelecting(false);
+    if (selection.start > selection.end) {
+      setSelection({ ...selection, start: selection.end, end: selection.start });
     }
-    if (painting) {
-      setPainting(false);
-      endHistoryGesture();
-      onSongPaneUpdate?.();
-      onSave?.();
-    }
-  };
-  document.addEventListener('mouseup', finishStroke);
-  window.addEventListener('blur', finishStroke);
+    updateRepButtons();
+    return;
+  }
+  if (painting) {
+    setPainting(false);
+    endHistoryGesture();
+    onSongPaneUpdate?.();
+    onSave?.();
+  }
 }

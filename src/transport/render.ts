@@ -9,6 +9,9 @@
  * strip only.
  */
 
+import { melodyNotes } from './notes';
+import { snapToScale } from './theory';
+import { theory } from './patterns';
 import { STEPS, DRUMS_CFG, MEL_CFG, HARMONY_SEMITONES, TOTAL_TRACKS } from '../config';
 import { getAudioContext, getChannelFaders, getChannelPans, getMasterGain } from '../engine/audio';
 import {
@@ -124,10 +127,7 @@ function scheduleStep(
     const stepPat = trackPat?.[step];
     if (!stepPat) continue;
 
-    const activeNotes: number[] = [];
-    for (let n = 0; n < 12; n++) {
-      if (stepPat[n]) activeNotes.push(n);
-    }
+    const activeNotes = melodyNotes(phrase, t, step);
 
     for (const n of activeNotes) {
       const oct = octaves[t];
@@ -140,7 +140,8 @@ function scheduleStep(
         if (harmIdx !== undefined && harmIdx > 0) {
           const semitones = HARMONY_SEMITONES[harmIdx];
           if (semitones !== undefined) {
-            const harmRate = Math.pow(2, ((oct - 1) * 12 + n + semitones) / 12);
+            const harmony = theory.locked ? snapToScale(n + semitones, theory) : n + semitones;
+            const harmRate = Math.pow(2, ((oct - 1) * 12 + harmony) / 12);
             scheduleSample(ctx, buf, time, harmRate, strip.trackGain, trackIdx, stepDur);
           }
         }
@@ -180,7 +181,8 @@ export async function renderPhraseToBuffer(phraseIdx: number): Promise<AudioBuff
       t < DRUMS_CFG.length
         ? phrase.drumPat[t]?.some(Boolean)
         : t < DRUMS_CFG.length + MEL_CFG.length
-          ? phrase.melPat[t - DRUMS_CFG.length]?.some((step) => step.some(Boolean))
+          ? phrase.melPat[t - DRUMS_CFG.length]?.some((step) => step.some(Boolean)) ||
+            phrase.melExtra?.[t - DRUMS_CFG.length]?.some((step) => step.length)
           : phrase.vocalPat.some(Boolean);
     if (!hasNotes) continue;
     const adsr = getTrackAdsr(t);

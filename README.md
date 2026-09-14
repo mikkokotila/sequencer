@@ -164,9 +164,9 @@ To correct a half-tempo arrangement without changing its sound, double BPM, plac
 
 The existing phrase pane now has **Undo**, **Redo**, **Edit**, **Sections**, and **Vary**. Shift-click two phrase slots to select a range, or choose the first/last phrase inside a dialog. The pane shows the playable bars and duration at the actual BPM.
 
-- **Edit:** select phrases, bars, and tracks; copy/cut/paste, clear, repeat the selected bars through each phrase's ending, nudge by one sixteenth note, or transpose synth notes by a semitone. Paste uses the copied track positions and replaces only its destination bars. Nudge wraps inside the selection; transpose rejects notes outside the one-octave grid instead of silently wrapping pitch.
+- **Edit:** select phrases, bars, and tracks; copy/cut/paste, clear, repeat the selected bars through each phrase's ending, nudge by one sixteenth note, or transpose synth notes by a semitone. Paste uses the copied track positions and replaces only its destination bars. Nudge wraps inside the selection; transpose crosses octave boundaries and rejects pitches beyond MIDI 0–127 atomically.
 - **Sections:** name phrase groups (Intro, Main, Break, etc.), select them from the section strip, duplicate or reorder them, and resize them. Extending repeats the section's material; shortening trims its ending. Structural edits move the notes with the labels and cannot discard material beyond the 48-phrase limit. Section times follow playback, which skips empty phrases.
-- **Vary:** select the tracks and bars to develop. Protect any tracks that must remain unchanged (kick and main lead are protected by default). **Sparse** keeps alternating events, **Driving** adds pulses two steps after existing events where free, **Syncopated** moves on-beat events to free offbeats, and **Answer** echoes the first half two steps late in the second half. These are deterministic transformations using existing pitches and samples.
+- **Vary → Rhythm variations:** select the tracks and bars to develop. Protect any tracks that must remain unchanged (kick and main lead are protected by default). **Sparse** keeps alternating events, **Driving** adds pulses two steps after existing events where free, **Syncopated** moves on-beat events to free offbeats, and **Answer** echoes the first half two steps late in the second half. These are deterministic transformations using existing pitches and samples.
 - Hear the original or variation for any selected phrase through the current mix and effects. Audition never writes notes or autosaves its candidate. **Apply variation** commits one undoable edit; **Discard variation**, closing the dialog, or Escape cancels it. A changed song invalidates a stale preview.
 - Undo/redo covers painting strokes, bulk edits, section metadata, tempo, names, samples, envelopes, and sound controls. A pointer drag is one edit. Use the buttons or Cmd/Ctrl+Z and Cmd/Ctrl+Shift+Z (Ctrl+Y also works); focused text fields retain native text undo. Restoring an edit stops playback and cancels pending sample loads. History lasts for this loaded session, keeps at most 50 edits, and limits additional retained sample audio to 128 MiB. Loading/importing another song, reloading, or saving a recovery copy resets history. Sections and protection settings persist in saved songs and portable JSON.
 
@@ -201,3 +201,38 @@ editDocument('My combined edit', () => { /* perform synchronous edits here */ })
 ```
 
 Track indices are 0–4 drums, 5 mono bass, 6–7 poly synths, and 8 the sample track. Bulk operations validate their complete selection before committing. Variation Apply checks the source document and recomputes the transformation so protected tracks cannot be changed through a modified preview object. The song renderer's optional `phraseOverride` accepts 1–48 phrases, preserves their empty positions for audition, and snapshots their notes/settings before asynchronous work begins.
+
+
+### Song key, Scale Lock and synth composition
+
+Set **Song root** and **Song mode** in the transport. All three synths share this harmony. Modes include major, natural minor, Dorian, Phrygian, Lydian, Mixolydian, Locrian, harmonic minor, and ascending melodic minor. **Harmony** sets a repeating progression of 1–16 scale degrees (one chord per bar); use a preset, enter degrees, or try **New progression** for mode-specific suggestions. Existing songs default to C major with Scale Lock off, retaining their original notes.
+
+**Vary → Compose synths** generates parts from empty or existing phrases. Select synth tracks and bars, choose each voice's role (**Bass**, **Melody**, **Chords**, **Arpeggio**), then choose **Sparse**, **Driving**, **Syncopated**, or **Answer**. The mono synth supports every role except chords. **New idea** changes the reproducible idea number. Triads or seventh chords share the same song progression; bass anchors, melodic motifs, passing tones, common tones and close chord inversions coordinate the voices. Ideas repeat with restrained phrase-end changes. The current samples, octave controls and track envelopes determine the sound and note length.
+
+Audition the original and candidate before applying. Protected/unselected tracks and notes outside the selected bars remain unchanged. Generated voices turn off HARM for each selected synth across the song (the dialog states this); audition previews that setting, Apply changes it, and Undo restores it. Changing song state invalidates the preview. Generation is deterministic, runs locally, and uses the same editing/rendering API as the GUI.
+
+**Scale Lock** snaps new or moved pitches to the nearest note in the chosen scale; equal distances always choose the lower pitch. It covers painting, MIDI input, paste, transpose and variation edits. Enabling it or changing key leaves existing notes intact. **Fit existing song notes to scale** converts all synth notes in one undoable edit. Derived HARM voices follow the scale while locked. Scale membership prevents outside notes; rhythm, voicing and sound choice still shape the musical result.
+
+Each synth keeps twelve visible rows. The pitch-view arrows browse adjacent octaves without transposing; arrow counts flag notes outside the view, and reset returns to the base octave. A snap across C/B reveals the actual adjacent note instead of wrapping it to the opposite end of the octave. Editing, playback, phrase WAVs, full-song WAV/MP3, save/load and JSON preserve these pitches. The legacy `melPat` boolean grid remains unchanged; signed semitones outside 0–11 use optional `melExtra[track][step]`. Portable JSON uses format version 2 only when extra pitches exist (version 1 otherwise), so older applications reject unsupported files instead of silently dropping notes.
+
+```ts
+import { setSongTheory, previewMusicalVariation, applyVariation } from './src/transport/composer';
+import { renderSongToBuffer } from './src/transport/render-song';
+
+setSongTheory({ root: 2, mode: 'dorian', locked: true, progression: [1, 4, 1, 7] });
+const candidate = previewMusicalVariation(
+  { from: 0, to: 3, startStep: 0, endStep: 63, tracks: [5, 6] },
+  'driving',
+  { seed: 17, roles: ['bass', 'chords', 'melody'], chordSize: 3 },
+);
+const audition = await renderSongToBuffer({
+  phraseOverride: candidate.result,
+  harmonyOverride: candidate.harmonyOverride,
+});
+// Play audition.buffer, then apply only if wanted.
+applyVariation(candidate);
+```
+
+Pitch APIs `setMelStep(track, step, signedSemitone, on)` and `getMelNotes(track, step)` in `transport/patterns.ts` accept/return pitches relative to the track's base C. Wrap direct note writes in `editDocument` for undo and autosave. MIDI note-on quantizes pitch while note-off retains ownership of the original key, including two keys that map to the same pitch.
+
+**Follow playhead** in the phrase pane defaults off. Enable it to keep the track view on the phrase currently reaching the audio output. It follows audible boundaries, ends held painting strokes before changing phrases, and preserves note history. It is a saved browser preference, independent of song files; `setFollowPlayhead(boolean)` and `isFollowingPlayhead()` are available from `ui/playhead.ts`.

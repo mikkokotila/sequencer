@@ -604,6 +604,21 @@
         }
 
 /* Song-building tools share the existing compact phrase pane. */
+.composer-follow { display:flex; align-items:center; gap:5px; white-space:nowrap; font-size:10px; color:#b2b2bb; margin-left:auto; }
+.composer-follow input { accent-color:#5cdcc8; }
+.pitch-view-control { display:flex; gap:4px; align-items:center; margin-left:6px; color:#a5a5b3; font-size:9px; }
+.pitch-view-control button { background:#242428; color:#b5b5c0; border:1px solid #3a3a42; border-radius:3px; padding:1px 5px; cursor:pointer; }
+.note-label.scale-root { color:#5cdcc8; }
+.note-label.outside-scale { color:#775b61; }
+.melody-cell.outside-scale:not(.active) { opacity:.55; }
+.song-theory-controls { display:flex; gap:7px; align-items:center; flex-wrap:wrap; margin-left:10px; }
+.song-theory-controls select,.theory-progression input,.theory-progression select { background:#242428; color:#c6c6d0; border:1px solid #42424a; border-radius:4px; padding:5px; font-size:10px; min-width:0; }
+.song-theory-controls label { display:flex; gap:4px; align-items:center; font-size:10px; white-space:nowrap; }
+.song-theory-controls input { accent-color:#5cdcc8; }
+.theory-progression { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0; }
+.theory-progression input { max-width:160px; }
+.theory-chords { font-size:13px; color:#b1e3d9; line-height:1.8; }
+.composer-button[aria-pressed=true] { border-color:#5cdcc8; color:#b1e3d9; }
 .composer-toolbar { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
 .composer-button { color:var(--text,#d1d1d6); background:#242428; border:1px solid #42424a; border-radius:4px; padding:6px 9px; font:inherit; font-size:10px; cursor:pointer; }
 .composer-button:hover:not(:disabled) { background:#35353d; border-color:#8ba4bd; }
@@ -633,7 +648,7 @@
 .composer-section-row { display:flex; align-items:end; gap:6px; flex-wrap:wrap; width:100%; padding:7px 0; border-bottom:1px solid #34343c; }
 .composer-preview { display:flex; gap:8px; flex-wrap:wrap; align-items:end; width:100%; }
 .composer-preview-summary { width:100%; margin:7px 0 0; font-size:12px; color:#b1e3d9; }
-.composer-status { min-height:18px; color:#dccb94; font-size:11px; line-height:1.5; margin-top:8px; }
+.composer-status, .theory-status { min-height:18px; color:#dccb94; font-size:11px; line-height:1.5; margin-top:8px; }
 @media (max-width:600px) {
  .phrase-controls { flex-wrap:wrap; }
  .composer-toolbar { width:100%; }

@@ -8,11 +8,18 @@ import {
   switchToPhrase,
   sections,
   variationLocks,
+  theory,
+  octaves,
+  harmonies,
   makeEmptyPhrase,
 } from './patterns';
 import { currentSongId, bpm } from './song';
 import { editDocument, getHistoryState } from './history';
 import { normalizeSections } from './song-format';
+import { normalizeTheory, snapToScale } from './theory';
+import { melodyNotes, setMelodyNotes, phraseHasNotes, midiBase } from './notes';
+import { generatePart, normalizeGeneration, type GenerationOptions } from './musical-generator';
+import type { SongTheory } from '../types';
 
 export interface EditRegion {
   from: number;
@@ -26,6 +33,7 @@ export interface PatternClip {
   data: boolean[][][];
   phraseCount: number;
   stepsPerPhrase: number;
+  extraNotes?: number[][][]; // sparse signed pitches, parallel to data
 }
 export type VariationKind = 'sparse' | 'driving' | 'syncopated' | 'answer';
 export interface VariationPreview {
@@ -38,6 +46,8 @@ export interface VariationPreview {
   protectedTracks: number[];
   base: string;
   revision: number;
+  generation?: GenerationOptions;
+  harmonyOverride?: number[];
 }
 function integer(value: number, min: number, max: number, label: string): void {
   if (!Number.isInteger(value) || value < min || value > max)
@@ -58,12 +68,38 @@ export function readTrack(phrase: Phrase, track: number): boolean[][] {
   if (track < 8) return phrase.melPat[track - 5]!.map((notes) => [...notes]);
   return phrase.vocalPat.map((hit) => [hit]);
 }
-function writeTrack(phrase: Phrase, track: number, steps: boolean[][]): void {
-  if (track < 5) phrase.drumPat[track] = steps.map((notes) => !!notes[0]);
-  else if (track < 8) phrase.melPat[track - 5] = steps.map((notes) => [...notes]);
-  else phrase.vocalPat = steps.map((notes) => !!notes[0]);
+function readEvents(phrase: Phrase, track: number): number[][] {
+  if (track >= 5 && track < 8)
+    return Array.from({ length: STEPS }, (_, step) => melodyNotes(phrase, track - 5, step));
+  return readTrack(phrase, track).map((notes) => (notes[0] ? [0] : []));
+}
+function writeEvents(phrase: Phrase, track: number, steps: number[][]): void {
+  if (track < 5) phrase.drumPat[track] = steps.map((notes) => notes.length > 0);
+  else if (track < 8)
+    steps.forEach((notes, step) => setMelodyNotes(phrase, track - 5, step, notes));
+  else phrase.vocalPat = steps.map((notes) => notes.length > 0);
+}
+function fitPitch(note: number, track: number): number {
+  const base = midiBase(octaves[track - 5]!);
+  if (!Number.isInteger(note) || note + base < 0 || note + base > 127)
+    throw new Error('This edit exceeds the MIDI pitch range.');
+  return theory.locked ? snapToScale(note, theory, -base, 127 - base) : note;
 }
 function applyPatterns(next: Phrase[]): void {
+  if (theory.locked)
+    next.forEach((phrase, p) => {
+      for (let track = 0; track < 3; track++)
+        for (let step = 0; step < STEPS; step++) {
+          const before = phrases[p] ? melodyNotes(phrases[p], track, step) : [];
+          const after = melodyNotes(phrase, track, step);
+          setMelodyNotes(
+            phrase,
+            track,
+            step,
+            after.map((note) => (before.includes(note) ? note : fitPitch(note, track + 5))),
+          );
+        }
+    });
   emit('editor:beforeRestore', {});
   phrases.splice(0, phrases.length, ...next);
   switchToPhrase(Math.min(currentPhrase, phrases.length - 1));
@@ -71,21 +107,29 @@ function applyPatterns(next: Phrase[]): void {
 function changeRegion(
   region: EditRegion,
   label: string,
-  transform: (steps: boolean[][], track: number) => boolean[][],
+  transform: (steps: number[][], track: number) => number[][],
 ): void {
   const selection = validateRegion(region);
   const next = structuredClone(phrases);
   for (let p = selection.from; p <= selection.to; p++)
     for (const track of selection.tracks) {
-      const steps = readTrack(next[p]!, track);
+      const steps = readEvents(next[p]!, track);
       const selected = steps.slice(selection.startStep, selection.endStep + 1);
-      steps.splice(selection.startStep, selected.length, ...transform(selected, track));
-      writeTrack(next[p]!, track, steps);
+      steps.splice(
+        selection.startStep,
+        selected.length,
+        ...transform(selected, track).map((notes) =>
+          track >= 5 && track < 8
+            ? [...new Set(notes.map((note) => fitPitch(note, track)))]
+            : notes,
+        ),
+      );
+      writeEvents(next[p]!, track, steps);
     }
   editDocument(label, () => applyPatterns(next));
 }
 export function clearRegion(region: EditRegion): void {
-  changeRegion(region, 'Clear selection', (steps) => steps.map((notes) => notes.map(() => false)));
+  changeRegion(region, 'Clear selection', (steps) => steps.map(() => []));
 }
 export function nudgeRegion(region: EditRegion, offset: number): void {
   integer(offset, -STEPS, STEPS, 'Step offset');
@@ -97,24 +141,14 @@ export function transposeRegion(region: EditRegion, semitones: number): void {
   integer(semitones, -11, 11, 'Semitone offset');
   changeRegion(region, 'Transpose selection', (steps, track) => {
     if (track < 5 || track > 7) return steps;
-    return steps.map((notes) => {
-      const next = Array<boolean>(12).fill(false);
-      notes.forEach((hit, note) => {
-        if (!hit) return;
-        const shifted = note + semitones;
-        if (shifted < 0 || shifted > 11)
-          throw new Error(
-            'Transpose exceeds this octave. Select other notes or change the track octave.',
-          );
-        next[shifted] = true;
-      });
-      return next;
-    });
+    return steps.map((notes) => [
+      ...new Set(notes.map((note) => fitPitch(note + semitones, track))),
+    ]);
   });
 }
 export function copyRegion(region: EditRegion): PatternClip {
   const selection = validateRegion(region);
-  return {
+  const clip: PatternClip = {
     tracks: selection.tracks,
     phraseCount: selection.to - selection.from + 1,
     stepsPerPhrase: selection.endStep - selection.startStep + 1,
@@ -126,6 +160,15 @@ export function copyRegion(region: EditRegion): PatternClip {
         ),
     ),
   };
+  const extra = selection.tracks.map((track) =>
+    phrases.slice(selection.from, selection.to + 1).flatMap((phrase) =>
+      readEvents(phrase, track)
+        .slice(selection.startStep, selection.endStep + 1)
+        .map((notes) => notes.filter((note) => note < 0 || note >= 12)),
+    ),
+  );
+  if (extra.some((track) => track.some((notes) => notes.length))) clip.extraNotes = extra;
+  return clip;
 }
 export function pasteRegion(clip: PatternClip, phrase: number, step = 0): void {
   integer(phrase, 0, phrases.length - 1, 'Paste phrase');
@@ -157,19 +200,41 @@ export function pasteRegion(clip: PatternClip, phrase: number, step = 0): void {
     )
       throw new Error('Invalid copied notes.');
   });
+  if (
+    clip.extraNotes &&
+    (clip.extraNotes.length !== clip.tracks.length ||
+      clip.extraNotes.some(
+        (rows, i) =>
+          !Array.isArray(rows) ||
+          rows.length !== clip.phraseCount * clip.stepsPerPhrase ||
+          rows.some(
+            (notes) =>
+              !Array.isArray(notes) ||
+              notes.some((note) => !Number.isInteger(note) || (note >= 0 && note < 12)) ||
+              ((clip.tracks[i]! < 5 || clip.tracks[i]! > 7) && notes.length),
+          ),
+      ))
+  )
+    throw new Error('Invalid copied extra notes.');
   const next = structuredClone(phrases);
   clip.tracks.forEach((track, i) => {
     for (let p = 0; p < clip.phraseCount; p++) {
       const target = next[phrase + p]!;
-      const steps = readTrack(target, track);
-      steps.splice(
-        step,
-        clip.stepsPerPhrase,
-        ...clip.data[i]!.slice(p * clip.stepsPerPhrase, (p + 1) * clip.stepsPerPhrase).map(
-          (notes) => [...notes],
-        ),
-      );
-      writeTrack(target, track, steps);
+      const steps = readEvents(target, track);
+      const pasted = clip.data[i]!.slice(
+        p * clip.stepsPerPhrase,
+        (p + 1) * clip.stepsPerPhrase,
+      ).map((notes, offset) => {
+        const extra = clip.extraNotes?.[i]?.[p * clip.stepsPerPhrase + offset] ?? [];
+        let pitches = [...notes.flatMap((hit, n) => (hit ? [n] : [])), ...extra];
+        if (track >= 5 && track < 8)
+          pitches = [...new Set(pitches.map((note) => fitPitch(note, track)))];
+        if (track === 5 && pitches.length > 1)
+          throw new Error('The copied notes exceed mono polyphony.');
+        return pitches;
+      });
+      steps.splice(step, clip.stepsPerPhrase, ...pasted);
+      writeEvents(target, track, steps);
     }
   });
   editDocument('Paste selection', () => applyPatterns(next));
@@ -181,11 +246,13 @@ export function repeatRegion(region: EditRegion): void {
   const next = structuredClone(phrases);
   for (let p = selection.from; p <= selection.to; p++)
     for (const track of selection.tracks) {
-      const steps = readTrack(next[p]!, track);
+      const steps = readEvents(next[p]!, track);
       const source = steps.slice(selection.startStep, selection.endStep + 1);
       for (let i = selection.endStep + 1; i < STEPS; i++)
-        steps[i] = [...source[(i - selection.endStep - 1) % source.length]!];
-      writeTrack(next[p]!, track, steps);
+        steps[i] = source[(i - selection.endStep - 1) % source.length]!.map((note) =>
+          track >= 5 && track < 8 ? fitPitch(note, track) : note,
+        );
+      writeEvents(next[p]!, track, steps);
     }
   editDocument('Repeat selection', () => applyPatterns(next));
 }
@@ -198,7 +265,7 @@ export function setVariationLock(track: number, locked: boolean): void {
   });
 }
 function fingerprint(): string {
-  return JSON.stringify({ id: currentSongId, phrases, variationLocks });
+  return JSON.stringify({ id: currentSongId, phrases, variationLocks, theory, octaves, harmonies });
 }
 export function previewVariation(region: EditRegion, kind: VariationKind): VariationPreview {
   const selection = validateRegion(region);
@@ -213,12 +280,12 @@ export function previewVariation(region: EditRegion, kind: VariationKind): Varia
     removed = 0;
   for (const phrase of result)
     for (const track of tracks) {
-      const steps = readTrack(phrase, track);
+      const steps = readEvents(phrase, track);
       const source = steps.slice(selection.startStep, selection.endStep + 1);
       const changed = source.map((notes) => [...notes]);
-      const hits = source.flatMap((notes, i) => (notes.some(Boolean) ? [i] : []));
+      const hits = source.flatMap((notes, i) => (notes.length ? [i] : []));
       if (!hits.length) continue;
-      const blank = () => source[0]!.map(() => false);
+      const blank = () => [] as number[];
       if (kind === 'sparse')
         hits.forEach((at, i) => {
           if (i % 2 === 1) changed[at] = blank();
@@ -226,8 +293,7 @@ export function previewVariation(region: EditRegion, kind: VariationKind): Varia
       if (kind === 'driving')
         for (const at of hits) {
           const target = at + 2;
-          if (target < source.length && !source[target]!.some(Boolean))
-            changed[target] = [...source[at]!];
+          if (target < source.length && !source[target]!.length) changed[target] = [...source[at]!];
         }
       if (kind === 'syncopated')
         for (const at of hits) {
@@ -235,7 +301,7 @@ export function previewVariation(region: EditRegion, kind: VariationKind): Varia
           if (
             (at + selection.startStep) % 4 === 0 &&
             target < source.length &&
-            !source[target]!.some(Boolean)
+            !source[target]!.length
           ) {
             changed[at] = blank();
             changed[target] = [...source[at]!];
@@ -247,14 +313,15 @@ export function previewVariation(region: EditRegion, kind: VariationKind): Varia
         for (let i = half; i < source.length; i++)
           changed[i] = [...source[(((i - half - 2) % half) + half) % half]!];
       }
-      source.forEach((notes, step) =>
-        notes.forEach((hit, note) => {
-          if (hit && !changed[step]![note]) removed++;
-          if (!hit && changed[step]![note]) added++;
-        }),
-      );
+      if (theory.locked && track >= 5 && track < 8)
+        for (let step = 0; step < changed.length; step++)
+          changed[step] = [...new Set(changed[step]!.map((note) => fitPitch(note, track)))];
+      source.forEach((notes, step) => {
+        removed += notes.filter((note) => !changed[step]!.includes(note)).length;
+        added += changed[step]!.filter((note) => !notes.includes(note)).length;
+      });
       steps.splice(selection.startStep, source.length, ...changed);
-      writeTrack(phrase, track, steps);
+      writeEvents(phrase, track, steps);
     }
   return {
     kind,
@@ -274,11 +341,14 @@ export function applyVariation(preview: VariationPreview): void {
       'The song changed after this preview. Create a fresh variation before applying.',
     );
   // Recompute from validated inputs: a caller cannot smuggle edits into a protected track.
-  const fresh = previewVariation(preview.region, preview.kind);
+  const fresh = preview.generation
+    ? previewMusicalVariation(preview.region, preview.kind, preview.generation)
+    : previewVariation(preview.region, preview.kind);
   editDocument(`Apply ${preview.kind} variation`, () => {
     const next = [...phrases];
     next.splice(preview.region.from, fresh.result.length, ...fresh.result);
     applyPatterns(next);
+    if (fresh.harmonyOverride) harmonies.splice(0, 3, ...fresh.harmonyOverride);
   });
 }
 
@@ -306,10 +376,7 @@ function sectionById(id: string): SongSection {
   return { ...section };
 }
 function fitPatterns(next: Phrase[], nextSections: SongSection[]): Phrase[] {
-  const hasNotes = (phrase: Phrase) =>
-    phrase.drumPat.some((row) => row.some(Boolean)) ||
-    phrase.melPat.some((track) => track.some((notes) => notes.some(Boolean))) ||
-    phrase.vocalPat.some(Boolean);
+  const hasNotes = phraseHasNotes;
   let needed = next.length;
   const sectionEnd = Math.max(0, ...nextSections.map((section) => section.start + section.length));
   while (needed > sectionEnd && !hasNotes(next[needed - 1]!)) needed--;
@@ -396,11 +463,85 @@ export function sectionDuration(section: Pick<SongSection, 'start' | 'length'>):
 } {
   const count = phrases
     .slice(section.start, section.start + section.length)
-    .filter(
-      (phrase) =>
-        phrase.drumPat.some((row) => row.some(Boolean)) ||
-        phrase.melPat.some((track) => track.some((notes) => notes.some(Boolean))) ||
-        phrase.vocalPat.some(Boolean),
-    ).length;
+    .filter(phraseHasNotes).length;
   return { bars: section.length * 4, seconds: (count * 16 * 60) / bpm };
+}
+
+export function setSongTheory(value: SongTheory): void {
+  const next = normalizeTheory(value);
+  editDocument('Set song key and mode', () => {
+    emit('editor:beforeRestore', {});
+    Object.assign(theory, next);
+  });
+}
+export function fitSongToScale(): void {
+  const next = structuredClone(phrases);
+  for (const phrase of next)
+    for (let track = 0; track < 3; track++)
+      for (let step = 0; step < STEPS; step++) {
+        const base = midiBase(octaves[track]!);
+        setMelodyNotes(
+          phrase,
+          track,
+          step,
+          melodyNotes(phrase, track, step).map((note) =>
+            snapToScale(note, theory, -base, 127 - base),
+          ),
+        );
+      }
+  editDocument('Fit song to scale', () => applyPatterns(next));
+}
+export function previewMusicalVariation(
+  region: EditRegion,
+  kind: VariationKind,
+  options: GenerationOptions,
+): VariationPreview {
+  const selection = validateRegion(region);
+  if (selection.tracks.some((track) => track < 5 || track > 7))
+    throw new Error('Musical generation is for synth channels.');
+  if (!['sparse', 'driving', 'syncopated', 'answer'].includes(kind))
+    throw new Error('Choose a musical style.');
+  const generation = normalizeGeneration(options);
+  const tracks = selection.tracks.filter((track) => !variationLocks[track]);
+  if (!tracks.length)
+    throw new Error('All selected synths are protected. Unprotect one to compose a part.');
+  const original = structuredClone(phrases.slice(selection.from, selection.to + 1));
+  const result = structuredClone(original);
+  const harmonyOverride = [...harmonies];
+  let added = 0,
+    removed = 0;
+  result.forEach((phrase, p) => {
+    for (const track of tracks) {
+      const t = track - 5;
+      const generated = generatePart(
+        theory,
+        generation.roles[t]!,
+        kind,
+        selection.from + p,
+        t,
+        generation,
+      );
+      harmonyOverride[t] = 0;
+      for (let step = selection.startStep; step <= selection.endStep; step++) {
+        const before = melodyNotes(phrase, t, step),
+          after = generated[step]!;
+        removed += before.filter((note) => !after.includes(note)).length;
+        added += after.filter((note) => !before.includes(note)).length;
+        setMelodyNotes(phrase, t, step, after);
+      }
+    }
+  });
+  return {
+    kind,
+    region: selection,
+    original,
+    result,
+    added,
+    removed,
+    protectedTracks: selection.tracks.filter((track) => variationLocks[track]),
+    base: fingerprint(),
+    revision: getHistoryState().revision,
+    generation,
+    harmonyOverride,
+  };
 }

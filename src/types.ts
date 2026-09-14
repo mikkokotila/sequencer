@@ -17,6 +17,7 @@ export interface Phrase {
   drumPat: boolean[][]; // [track][step]
   melPat: boolean[][][]; // [track][step][note]
   vocalPat: boolean[]; // [step]
+  melExtra?: number[][][]; // signed semitones outside 0–11, [track][step][pitch]
 }
 
 // Sample data for persistence
@@ -32,6 +33,23 @@ export interface SongSection {
   length: number;
 }
 
+export type ScaleMode =
+  | 'major'
+  | 'dorian'
+  | 'phrygian'
+  | 'lydian'
+  | 'mixolydian'
+  | 'minor'
+  | 'locrian'
+  | 'harmonicMinor'
+  | 'melodicMinor';
+export interface SongTheory {
+  root: number;
+  mode: ScaleMode;
+  locked: boolean;
+  progression: number[];
+}
+
 // Song persistence
 export interface SongData {
   id: string;
@@ -41,6 +59,7 @@ export interface SongData {
   phraseCount?: number;
   sections?: SongSection[];
   variationLocks?: boolean[];
+  theory?: SongTheory;
   currentPhrase: number;
   octaves: number[];
   harmonies: number[];

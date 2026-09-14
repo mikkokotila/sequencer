@@ -8,6 +8,8 @@
 import type { Phrase, SongSection } from '../types';
 import { DRUMS_CFG, MEL_CFG, STEPS, DEFAULT_PHRASES, PHRASE_COUNTS } from '../config';
 import { emit } from '../events';
+import { defaultTheory, snapToScale } from './theory';
+import { melodyNotes, setMelodyNotes, phraseHasNotes, midiBase } from './notes';
 
 // ═══════════════════════════════════════════
 //  PHRASES & PATTERNS
@@ -25,6 +27,7 @@ export function makeEmptyPhrase(): Phrase {
 export const phrases: Phrase[] = Array.from({ length: DEFAULT_PHRASES }, () => makeEmptyPhrase());
 
 export const sections: SongSection[] = [];
+export const theory = defaultTheory();
 export const variationLocks: boolean[] = Array.from({ length: 9 }, (_, i) => i === 0 || i === 7);
 
 export let currentPhrase = 0;
@@ -127,6 +130,17 @@ export function fillWithPrev(idx: number): void {
       }
     }
   }
+  if (prev.melExtra) target.melExtra = structuredClone(prev.melExtra);
+  else delete target.melExtra;
+  if (theory.locked)
+    for (let t = 0; t < 3; t++)
+      for (let s = 0; s < STEPS; s++)
+        setMelodyNotes(
+          target,
+          t,
+          s,
+          melodyNotes(target, t, s).map((note) => resolveMelodyPitch(t, note)),
+        );
   for (let s = 0; s < prev.vocalPat.length; s++) {
     target.vocalPat[s] = prev.vocalPat[s]!;
   }
@@ -145,13 +159,36 @@ export function setDrumStep(track: number, step: number, value: boolean): void {
 }
 
 /** Set a single melody note and emit. */
-export function setMelStep(track: number, step: number, note: number, value: boolean): void {
-  const trackArr = melPat[track];
-  if (!trackArr) return;
-  const stepArr = trackArr[step];
-  if (!stepArr) return;
-  stepArr[note] = value;
+export function resolveMelodyPitch(track: number, note: number): number {
+  const base = midiBase(octaves[track]!);
+  if (!Number.isInteger(note) || !Number.isInteger(base) || note + base < 0 || note + base > 127)
+    throw new Error('Pitch is outside the MIDI range.');
+  return theory.locked ? snapToScale(note, theory, -base, 127 - base) : note;
+}
+export function hasMelNote(track: number, step: number, note: number): boolean {
+  return note >= 0 && note < 12
+    ? !!melPat[track]?.[step]?.[note]
+    : !!phrases[currentPhrase]?.melExtra?.[track]?.[step]?.includes(note);
+}
+export function getMelNotes(track: number, step: number): number[] {
+  return melodyNotes(phrases[currentPhrase]!, track, step);
+}
+export function setMelStep(track: number, step: number, note: number, value: boolean): number {
+  if (
+    !MEL_CFG[track] ||
+    !Number.isInteger(step) ||
+    step < 0 ||
+    step >= STEPS ||
+    typeof value !== 'boolean'
+  )
+    throw new Error('Invalid melody edit.');
+  const resolved = resolveMelodyPitch(track, note);
+  const pitch = value ? resolved : note;
+  const notes = getMelNotes(track, step).filter((n) => n !== pitch);
+  const next = value ? (MEL_CFG[track].mono ? [pitch] : [...notes, pitch]) : notes;
+  setMelodyNotes(phrases[currentPhrase]!, track, step, next);
   emit('transport:patternChanged', { type: 'melody', track, step });
+  return pitch;
 }
 
 /** Set a single vocal step and emit. */
@@ -176,16 +213,6 @@ export function setMelodyCell(
   if (!cfg) return;
 
   const semi = 11 - displayRow;
-
-  if (cfg.mono && value) {
-    // Clear all notes in this step first (mono enforcement)
-    const stepArr = melPat[track]?.[step];
-    if (stepArr) {
-      for (let n = 0; n < stepArr.length; n++) {
-        stepArr[n] = false;
-      }
-    }
-  }
   setMelStep(track, step, semi, value);
 }
 
@@ -195,20 +222,8 @@ export function setMelodyCell(
 
 /** Check whether phrase at `idx` has any active steps. */
 export function isPhraseEmpty(idx: number): boolean {
-  const p: Phrase | undefined = phrases[idx];
-  if (!p) return true;
-
-  for (const row of p.drumPat) {
-    if (row.some(Boolean)) return false;
-  }
-  for (const track of p.melPat) {
-    for (const step of track) {
-      if (step.some(Boolean)) return false;
-    }
-  }
-  if (p.vocalPat.some(Boolean)) return false;
-
-  return true;
+  const p = phrases[idx];
+  return !p || !phraseHasNotes(p);
 }
 
 /** Find the next non-empty phrase starting after `fromIdx`, wrapping around. */
@@ -244,9 +259,7 @@ export function clearDrumTrack(track: number): void {
 export function clearMelTrack(track: number): void {
   const trackArr = melPat[track];
   if (!trackArr) return;
-  for (const step of trackArr) {
-    step.fill(false);
-  }
+  for (let step = 0; step < STEPS; step++) setMelodyNotes(phrases[currentPhrase]!, track, step, []);
   emit('transport:patternChanged', { type: 'melody', track, step: -1 });
 }
 
@@ -273,19 +286,15 @@ export function replicateTrack(type: 'drum' | 'melody' | 'vocal', track: number)
     }
     emit('transport:patternChanged', { type: 'drum', track, step: -1 });
   } else if (type === 'melody') {
-    const trackArr = melPat[track];
-    if (!trackArr) return;
-    for (let bar = 1; bar < 4; bar++) {
-      for (let s = 0; s < SPB; s++) {
-        const src = trackArr[s];
-        const dst = trackArr[bar * SPB + s];
-        if (src && dst) {
-          for (let n = 0; n < src.length; n++) {
-            dst[n] = src[n]!;
-          }
-        }
-      }
-    }
+    const phrase = phrases[currentPhrase]!;
+    for (let bar = 1; bar < 4; bar++)
+      for (let s = 0; s < SPB; s++)
+        setMelodyNotes(
+          phrase,
+          track,
+          bar * SPB + s,
+          melodyNotes(phrase, track, s).map((note) => resolveMelodyPitch(track, note)),
+        );
     emit('transport:patternChanged', { type: 'melody', track, step: -1 });
   } else {
     for (let bar = 1; bar < 4; bar++) {

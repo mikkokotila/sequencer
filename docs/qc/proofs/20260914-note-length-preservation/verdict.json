@@ -5,39 +5,24 @@
   "spec_path": "docs/qc/specs/20260914-note-length-preservation.task.spec.json",
   "policy_version": "2.0.0",
   "diagnostics_version": "1.0.0",
-  "started_at_utc": "2026-09-14T08:48:27.801Z",
-  "finished_at_utc": "2026-09-14T08:53:15.491Z",
-  "head_sha": "2d09ac9",
-  "tree_sha": "305e9497cf81360d677d03aa4b3b3805fce93058",
-  "subject_sha": "43232fb68be5f58e2d36f48a690261a4a45bc86990ca18d1c41fb1f2271427fb",
+  "started_at_utc": "2026-09-14T09:12:20.269Z",
+  "finished_at_utc": "2026-09-14T09:17:09.317Z",
+  "head_sha": "ee94378",
+  "tree_sha": "451ed7d81a0b177bc881b7a8ce0bda8ff66bb3b7",
+  "subject_sha": "912bd9410154749d7a8ac69b5836e95986e848615f6f2774fa3143061b5dfeea",
   "subject_files": [
-    "README.md",
-    "e2e/note-length.spec.ts",
-    "index.html",
-    "src/engine/adsr.ts",
-    "src/transport/render-song.ts",
-    "src/transport/render.ts",
-    "src/transport/song-format.ts",
-    "src/types.ts",
-    "src/ui/adsr-popup.ts"
+    "e2e/output-clock.spec.ts",
+    "e2e/sync-pressure.spec.ts"
   ],
   "simulated_files": [],
   "changed_files": [
-    "README.md",
     "docs/qc/proofs/20260914-note-length-preservation.md",
-    "docs/qc/proofs/20260914-note-length-preservation/audio-equivalence.json",
-    "docs/qc/proofs/20260914-note-length-preservation/conversion-check.json",
+    "docs/qc/proofs/20260914-note-length-preservation/ci-clock-failure.txt",
+    "docs/qc/proofs/20260914-note-length-preservation/clock-refresh-reproduction.txt",
     "docs/qc/proofs/20260914-note-length-preservation/proof.manifest.json",
-    "docs/qc/proofs/20260914-note-length-preservation/render-check.json",
     "docs/qc/specs/20260914-note-length-preservation.task.spec.json",
-    "e2e/note-length.spec.ts",
-    "index.html",
-    "src/engine/adsr.ts",
-    "src/transport/render-song.ts",
-    "src/transport/render.ts",
-    "src/transport/song-format.ts",
-    "src/types.ts",
-    "src/ui/adsr-popup.ts"
+    "e2e/output-clock.spec.ts",
+    "e2e/sync-pressure.spec.ts"
   ],
   "phases": [
     {
@@ -75,7 +60,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 6563,
+        "elapsed_ms": 6451,
         "log_file": "docs/qc/proofs/20260914-note-length-preservation/logs/O-CI.log"
       },
       {
@@ -85,7 +70,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 263108,
+        "elapsed_ms": 263715,
         "log_file": "docs/qc/proofs/20260914-note-length-preservation/logs/O-E2E.log"
       },
       {
@@ -95,7 +80,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 301,
+        "elapsed_ms": 302,
         "log_file": "docs/qc/proofs/20260914-note-length-preservation/logs/O-E2E-DELTA.log"
       },
       {
@@ -105,7 +90,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 459,
+        "elapsed_ms": 495,
         "log_file": "docs/qc/proofs/20260914-note-length-preservation/logs/O-GATE-CONTRACTS-FULL.log"
       },
       {
@@ -115,7 +100,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 459,
+        "elapsed_ms": 564,
         "log_file": "docs/qc/proofs/20260914-note-length-preservation/logs/O-GATE-ARCH-FULL.log"
       },
       {
@@ -125,7 +110,7 @@
         "blocking": true,
         "status": "PASS",
         "exit_code": 0,
-        "elapsed_ms": 471,
+        "elapsed_ms": 537,
         "log_file": "docs/qc/proofs/20260914-note-length-preservation/logs/O-COMMIT-RANGE.log"
       }
     ],
@@ -145,49 +130,49 @@
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260914-note-length-preservation/oracles/off_transparent.json",
         "raw_artifact": "docs/qc/proofs/20260914-note-length-preservation/raw/off_transparent.json",
-        "raw_sha256": "3615b0678373b23b2bd54a3c64ba26c6f312bdff91e4ab4d24fd297149f7640b"
+        "raw_sha256": "84bf3a3ce0fb7d1687c2fb7b4af42d51e661fa28eba518d822f949b3715a14bf"
       },
       {
         "oracle_id": "on_audible",
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260914-note-length-preservation/oracles/on_audible.json",
         "raw_artifact": "docs/qc/proofs/20260914-note-length-preservation/raw/on_audible.json",
-        "raw_sha256": "7024111593127780bbb2e76141075ff2f00f5cf8f45e60764ac8bacf979e7722"
+        "raw_sha256": "860191a65b22e970f86c9a0b348a7a79b31ae7c04f14fd200e3279f66e5b41a1"
       },
       {
         "oracle_id": "low_end_continuity",
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260914-note-length-preservation/oracles/low_end_continuity.json",
         "raw_artifact": "docs/qc/proofs/20260914-note-length-preservation/raw/low_end_continuity.json",
-        "raw_sha256": "e6a4c3cc608b76d1bcf99e1069fbfdb4d35a9713e6ca0c94780c39224893e843"
+        "raw_sha256": "43e431ae1871f1633c1222fd0c6b723a0aaf5e63e14f6ccbf191b7f78d861b6b"
       },
       {
         "oracle_id": "clip_guard",
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260914-note-length-preservation/oracles/clip_guard.json",
         "raw_artifact": "docs/qc/proofs/20260914-note-length-preservation/raw/clip_guard.json",
-        "raw_sha256": "233e82a30ccfb46c10895b8351007f4c4566995ad35c0d10a9a713d06b2853df"
+        "raw_sha256": "0231d3c103406c6dde1ec86417c9ac4f88bc57f81646385349b3d4351d1029ba"
       },
       {
         "oracle_id": "default_safety",
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260914-note-length-preservation/oracles/default_safety.json",
         "raw_artifact": "docs/qc/proofs/20260914-note-length-preservation/raw/default_safety.json",
-        "raw_sha256": "d468322514ddfb9ecc76982cab8c5e55a42fab81de3ad612be608511b950f100"
+        "raw_sha256": "9384ca3a678a0654764ea79276892d14af2405226476d9e59ba1772158f79db9"
       },
       {
         "oracle_id": "control_binding",
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260914-note-length-preservation/oracles/control_binding.json",
         "raw_artifact": "docs/qc/proofs/20260914-note-length-preservation/raw/control_binding.json",
-        "raw_sha256": "476b13b4165f03fb583b2e1c6321c53d8b8d050bc8e90a7baadb9fd2d71cfb8f"
+        "raw_sha256": "44a78014bc069e8c6049d92e00a4d36408b6d33a9325f1132c5c13d4875bae24"
       },
       {
         "oracle_id": "benchmark_worklet_budget",
         "status": "PASS",
         "artifact": "docs/qc/proofs/20260914-note-length-preservation/oracles/benchmark_worklet_budget.json",
         "raw_artifact": "docs/qc/proofs/20260914-note-length-preservation/raw/benchmark_worklet_budget.json",
-        "raw_sha256": "34908aad1c4259119b3652a80765da1936d87ee0eac33b69e47a4576a160f4ee"
+        "raw_sha256": "b1f23da219ef7a5cc65e63f4f134b41e3afb5c592003d1fa0d94f6f26af558f3"
       },
       {
         "oracle_id": "persistence_roundtrip",

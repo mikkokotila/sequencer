@@ -3,7 +3,7 @@
   "task_type": "bugfix",
   "execution_profile": "real",
   "capability": {
-    "summary": "Preserve note envelopes when correcting half-tempo songs. Explicit user instruction to complete the conversion authorizes product work despite the default GA-only scope. Expose sequenced note length in the GUI and API, persist it, and use it consistently in playback and exports.",
+    "summary": "Preserve note envelopes when correcting half-tempo songs. Explicit user instruction to complete the conversion authorizes product work despite the default GA-only scope. Expose sequenced note length in the GUI and API, persist it, and use it consistently in playback and exports. Also make sync-pressure frame observations consistent when native device timestamps refresh between reads, after a CI failure with this signature.",
     "in_scope": [
       "src/**",
       "index.html",
@@ -39,6 +39,11 @@
         "id": "export_tails",
         "description": "Offline allocation includes long final envelope tails in loop and full-song exports.",
         "test": "Audible final note more than one second past the last step in phrase and song buffers; full WAV/MP3 re-export of converted song."
+      },
+      {
+        "id": "consistent_clock_observation",
+        "description": "Frame observers and the application share one native device timestamp estimate for that callback. Wall time and render time still advance; audio alignment and visual thresholds remain unchanged.",
+        "test": "A forced device estimate refresh reproduces the stale-frame false failure before the fixture fix and passes afterward; a deliberately stale frame is still rejected. Existing CPU-throttled/180ms-stall sync tests remain enforced, and future timestamp fallback is verified."
       }
     ]
   },
@@ -50,7 +55,10 @@
       "Invalid lengths 0, negative, 65, fractions and non-finite values; legacy defaults",
       "Live playback note starts/stops; export snapshot during subsequent edits",
       "Phrase final-step note with 32-step gate",
-      "Full LE FEU RESTE with all nine unchanged sample files"
+      "Full LE FEU RESTE with all nine unchanged sample files",
+      "Device timestamp refresh between before/app/after frame reads",
+      "Deliberately stale frame negative control",
+      "Future device timestamp uses latency fallback"
     ],
     "seed": "20260914-note-length-preservation",
     "oracles": [

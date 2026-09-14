@@ -21,6 +21,11 @@ test('device clock uses latency fallback for missing, stale, or invalid timestam
     });
     const stale = read();
     context.getOutputTimestamp = () => ({
+      contextTime: 9.8,
+      performanceTime: performance.now() + 10,
+    });
+    const future = read();
+    context.getOutputTimestamp = () => ({
       contextTime: NaN,
       performanceTime: performance.now() - 10,
     });
@@ -30,10 +35,11 @@ test('device clock uses latency fallback for missing, stale, or invalid timestam
     };
     const missing = read();
     context.state = 'suspended';
-    return { valid, stale, invalid, missing, suspended: read() };
+    return { valid, stale, future, invalid, missing, suspended: read() };
   });
   expect(result.valid).toBeCloseTo(9.81, 2);
   expect(result.stale).toBeCloseTo(9.9, 5);
+  expect(result.future).toBeCloseTo(9.9, 5);
   expect(result.invalid).toBeCloseTo(9.9, 5);
   expect(result.missing).toBeCloseTo(9.9, 5);
   expect(result.suspended).toBe(0);

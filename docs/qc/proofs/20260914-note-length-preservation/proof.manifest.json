@@ -49,6 +49,8 @@
     "verdict.json",
     "audio-equivalence.json",
     "conversion-check.json",
-    "render-check.json"
+    "render-check.json",
+    "ci-clock-failure.txt",
+    "clock-refresh-reproduction.txt"
   ]
 }

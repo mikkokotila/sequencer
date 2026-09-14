@@ -15,7 +15,7 @@ import {
 import { getOutputTime } from './output-clock';
 import type { Phrase, SongTheory } from '../types';
 import { emit } from '../events';
-import { melodyNotes } from '../transport/notes';
+import { isHarmonyDisabled, melodyNotes } from '../transport/notes';
 import { snapToScale } from '../transport/theory';
 
 export interface TransportSource {
@@ -141,7 +141,7 @@ function scheduleStep(time: number, s: number, stepPhrase: number, stepDur: numb
       playSample(buf, time, rate, dest, trackIdx, stepDur);
 
       // Harmony interval for poly tracks with exactly 1 note
-      if (activeNotes.length === 1 && cfg && !cfg.mono) {
+      if (activeNotes.length === 1 && cfg && !cfg.mono && !isHarmonyDisabled(phrase, t, s)) {
         const harmIdx = transport.harmonies[t];
         if (harmIdx !== undefined && harmIdx > 0) {
           const semitones = HARMONY_SEMITONES[harmIdx];

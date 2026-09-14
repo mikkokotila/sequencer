@@ -25,7 +25,7 @@ import { phrases, octaves, harmonies, theory, isPhraseEmpty } from './patterns';
 import { bpm, currentSongName, drumBuf, melBuf, vocalBuf, mutedArr } from './song';
 import type { Extension, ExtensionHost, Phrase } from '../types';
 import { normalizePhrase } from './song-format';
-import { melodyNotes, phraseHasNotes } from './notes';
+import { isHarmonyDisabled, melodyNotes, phraseHasNotes } from './notes';
 import { snapToScale } from './theory';
 
 export interface RenderOptions {
@@ -108,7 +108,12 @@ function captureSong(override?: readonly Phrase[], harmonyOverride?: readonly nu
           const pitch = ((octaves[t] ?? 3) - 1) * 12 + n;
           const track = DRUMS_CFG.length + t;
           add(melBuf[t], track, time, 2 ** (pitch / 12));
-          if (activeNotes.length === 1 && !MEL_CFG[t]?.mono && (harmonySettings[t] ?? 0) > 0) {
+          if (
+            activeNotes.length === 1 &&
+            !MEL_CFG[t]?.mono &&
+            !isHarmonyDisabled(phrase, t, s) &&
+            (harmonySettings[t] ?? 0) > 0
+          ) {
             const harmony = HARMONY_SEMITONES[harmonySettings[t]!];
             if (harmony !== undefined) {
               const target = theory.locked ? snapToScale(pitch + harmony, theory) : pitch + harmony;

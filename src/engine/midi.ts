@@ -153,11 +153,10 @@ export function connectMidiToTrack(inputId: string, trackIndex: number): boolean
   return true;
 }
 
-/** Disconnect MIDI input from a melody track. */
-export function disconnectMidiFromTrack(trackIndex: number): void {
+/** Stop held/releasing voices while retaining the input device and its listener. */
+function silenceMidiTrack(trackIndex: number): void {
   const binding = trackBindings[trackIndex];
   if (!binding) return;
-
   // Stop all active voices
   for (const entry of binding.voices) {
     try {
@@ -168,6 +167,17 @@ export function disconnectMidiFromTrack(trackIndex: number): void {
   }
   binding.activeSources.clear();
   binding.voices.clear();
+}
+export function silenceAllMidi(): void {
+  for (let track = 0; track < trackBindings.length; track++) silenceMidiTrack(track);
+}
+
+/** Disconnect MIDI input from a melody track. */
+export function disconnectMidiFromTrack(trackIndex: number): void {
+  const binding = trackBindings[trackIndex];
+  if (!binding) return;
+
+  silenceMidiTrack(trackIndex);
 
   // Remove listener from MIDI input
   if (midiAccess) {

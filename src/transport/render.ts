@@ -9,7 +9,7 @@
  * strip only.
  */
 
-import { melodyNotes } from './notes';
+import { isHarmonyDisabled, melodyNotes } from './notes';
 import { snapToScale } from './theory';
 import { theory } from './patterns';
 import { STEPS, DRUMS_CFG, MEL_CFG, HARMONY_SEMITONES, TOTAL_TRACKS } from '../config';
@@ -135,7 +135,7 @@ function scheduleStep(
       const rate = Math.pow(2, ((oct - 1) * 12 + n) / 12);
       scheduleSample(ctx, buf, time, rate, strip.trackGain, trackIdx, stepDur);
 
-      if (activeNotes.length === 1 && cfg && !cfg.mono) {
+      if (activeNotes.length === 1 && cfg && !cfg.mono && !isHarmonyDisabled(phrase, t, step)) {
         const harmIdx = harmonies[t];
         if (harmIdx !== undefined && harmIdx > 0) {
           const semitones = HARMONY_SEMITONES[harmIdx];

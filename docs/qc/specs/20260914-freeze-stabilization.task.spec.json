@@ -1,0 +1,65 @@
+{
+  "task_id": "20260914-freeze-stabilization",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Explicit user request to fix the two reproduced freeze blockers overrides the default GA-only scope. Keep generation harmony changes within selected steps and retain MIDI bindings across ordinary edits, while safely stopping voices. No new product features.",
+    "in_scope": [
+      "src/**",
+      "index.html",
+      "e2e/**",
+      "README.md",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "samples/**",
+      "samples.json",
+      "server/**",
+      "package.json",
+      "package-lock.json",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**"
+    ],
+    "controls": [
+      {
+        "id": "scoped_harmony",
+        "description": "Generated voicings bypass automatic harmony only on their own steps; other steps and track settings retain their sound.",
+        "test": "Untouched phrase PCM equality, protected/partial selections, preview/apply, all render paths, clipboard/repeats/sections, persistence/history and version-safe imports."
+      },
+      {
+        "id": "midi_binding",
+        "description": "Ordinary edits and undo stop MIDI voices but preserve device bindings; load/unplug still disconnect.",
+        "test": "Held and releasing voices, repeated edits and late ended callbacks, GUI key change, future input, undo/redo, load and unplug."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "Chrome desktop with generated and manual steps sharing a HARM-enabled track",
+      "Isolated sample fixtures and real Web Audio rendering",
+      "Fake MIDI input driving real AudioBufferSourceNodes, held voices and release tails",
+      "Portable song formats 1, 2 and 3"
+    ],
+    "seed": "20260914-freeze-stabilization",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding",
+      "benchmark_worklet_budget",
+      "persistence_roundtrip"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

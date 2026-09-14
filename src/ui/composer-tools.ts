@@ -6,7 +6,6 @@ import {
   switchToPhrase,
   sections,
   variationLocks,
-  harmonies,
 } from '../transport/patterns';
 import { drumNames, melNames, vocalName, bpm } from '../transport/song';
 import { undo, redo, getHistoryState } from '../transport/history';
@@ -422,7 +421,6 @@ async function auditionPreview(variant: boolean, phraseIndex: number): Promise<v
   try {
     const rendered = await renderSongToBuffer({
       phraseOverride: [sourcePhrase],
-      ...(variant && captured.harmonyOverride ? { harmonyOverride: captured.harmonyOverride } : {}),
       signal: controller.signal,
     });
     if (controller.signal.aborted || preview !== captured || !dialog.open) return;
@@ -511,10 +509,7 @@ function showPreview(kind: VariationKind): void {
     clearPreview();
     status.textContent = 'Variation applied. Undo restores the original.';
   });
-  previewApply.disabled =
-    !captured.added &&
-    !captured.removed &&
-    !captured.harmonyOverride?.some((value, i) => value !== harmonies[i]);
+  previewApply.disabled = JSON.stringify(captured.original) === JSON.stringify(captured.result);
   panel.append(
     previewApply,
     button('Discard variation', () => {
@@ -597,7 +592,7 @@ function variationControls(): void {
     voices.append(
       node(
         'p',
-        'Each bar follows Song Harmony. Parts repeat a motif with restrained answers. Apply replaces selected notes and turns HARM off for each generated track across the song. Note lengths use each track’s envelope.',
+        'Each bar follows Song Harmony. Parts repeat a motif with restrained answers. Generated steps play their written notes. HARM and notes outside the selection stay unchanged. Note lengths use each track’s envelope.',
         'composer-help',
       ),
     );

@@ -15,7 +15,7 @@ import {
 } from '../config';
 
 import { normalizeTheory } from './theory';
-import { MIN_RELATIVE_PITCH, MAX_RELATIVE_PITCH, midiBase } from './notes';
+import { setHarmonyDisabled, MIN_RELATIVE_PITCH, MAX_RELATIVE_PITCH, midiBase } from './notes';
 
 export const MAX_SONG_FILE_BYTES = 128 * 1024 * 1024;
 const MAX_SAMPLE_BYTES = 64 * 1024 * 1024;
@@ -98,6 +98,14 @@ export function normalizePhrase(value: unknown): Phrase {
     );
     if (extra.some((t) => t.some((s) => s.length))) phrase.melExtra = extra;
   }
+  if (p.melHarmDisabled !== undefined) {
+    const disabled = map(p.melHarmDisabled, MEL_CFG.length, 'step harmony tracks', (t) =>
+      map(t, STEPS, 'step harmony steps', (v) => boolean(v, 'step harmony')),
+    );
+    for (let track = 0; track < MEL_CFG.length; track++)
+      for (let step = 0; step < STEPS; step++)
+        setHarmonyDisabled(phrase, track, step, disabled[track]![step]!);
+  }
   return phrase;
 }
 
@@ -179,7 +187,12 @@ function extensions(value: unknown): Record<string, ExtensionState> {
 
 export function normalizeSong(value: unknown, requirePatterns = false): SongData {
   const input = record(value, 'song');
-  if (input.formatVersion !== undefined && input.formatVersion !== 1 && input.formatVersion !== 2)
+  if (
+    input.formatVersion !== undefined &&
+    input.formatVersion !== 1 &&
+    input.formatVersion !== 2 &&
+    input.formatVersion !== 3
+  )
     throw new Error('Unsupported song file version.');
   if (
     requirePatterns &&
@@ -237,6 +250,7 @@ export function normalizeSong(value: unknown, requirePatterns = false): SongData
         ]
       : map(input.phrases, phraseCount, 'phrases', (v) => normalizePhrase(v));
   const normalized: SongData = {
+    formatVersion: songFormatVersion(phrases),
     id: string(input.id, '', 'song id'),
     name: string(input.name, 'Untitled', 'song name'),
     bpm: number(input.bpm, 120, 40, 220, 'BPM'),
@@ -298,6 +312,15 @@ export function normalizeSong(value: unknown, requirePatterns = false): SongData
   return normalized;
 }
 
+/** Version both saved records and portable files so older builds reject unsupported voicings. */
+export function songFormatVersion(phrases: readonly Phrase[]): 1 | 2 | 3 {
+  return phrases.some((phrase) => phrase.melHarmDisabled)
+    ? 3
+    : phrases.some((phrase) => phrase.melExtra)
+      ? 2
+      : 1;
+}
+
 /** Self-contained JSON; binary encoding is explicit and versioned. */
 export function encodeSongFile(song: SongData): string {
   return JSON.stringify(
@@ -306,7 +329,7 @@ export function encodeSongFile(song: SongData): string {
       id: undefined,
       revision: undefined,
       updatedAt: undefined,
-      formatVersion: song.phrases.some((phrase) => phrase.melExtra) ? 2 : 1,
+      formatVersion: songFormatVersion(song.phrases),
     },
     (_key, value: unknown) => {
       if (

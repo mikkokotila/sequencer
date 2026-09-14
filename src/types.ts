@@ -17,6 +17,7 @@ export interface Phrase {
   drumPat: boolean[][]; // [track][step]
   melPat: boolean[][][]; // [track][step][note]
   vocalPat: boolean[]; // [step]
+  melHarmDisabled?: boolean[][]; // complete written voicings: do not add automatic HARM
   melExtra?: number[][][]; // signed semitones outside 0–11, [track][step][pitch]
 }
 
@@ -52,6 +53,7 @@ export interface SongTheory {
 
 // Song persistence
 export interface SongData {
+  formatVersion?: 1 | 2 | 3;
   id: string;
   name: string;
   bpm: number;

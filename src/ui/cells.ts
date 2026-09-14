@@ -9,6 +9,8 @@
 
 import { MEL_CFG, STEPS, HARMONY_LABELS } from '../config';
 import {
+  currentPhrase,
+  phrases,
   drumPat,
   melPat,
   vocalPat,
@@ -19,6 +21,7 @@ import {
 } from '../transport/patterns';
 import { drumCells, melCells, vocalCells } from '../state';
 import { displayToSemitone } from './helpers';
+import { isHarmonyDisabled } from '../transport/notes';
 import { getPitchView, ensurePitchVisible } from './pitch-view';
 
 // ═══════════════════════════════════════════
@@ -88,7 +91,16 @@ export function checkMultiNote(t: number): boolean {
 /** Dim or un-dim the harmony toggle button based on multi-note status. */
 export function updateHarmonyDim(t: number): void {
   const b = document.querySelector(`.melody-track[data-track="${t}"] .harmony-toggle`);
-  if (b) b.classList.toggle('dimmed', checkMultiNote(t));
+  if (b) {
+    const written = Array.from({ length: STEPS }, (_, step) =>
+      isHarmonyDisabled(phrases[currentPhrase]!, t, step),
+    ).some(Boolean);
+    b.classList.toggle('dimmed', checkMultiNote(t) || written);
+    b.setAttribute(
+      'title',
+      'Automatic harmony applies to manual single-note steps. Generated steps play their written notes.',
+    );
+  }
 }
 
 /**

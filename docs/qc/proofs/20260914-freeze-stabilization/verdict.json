@@ -1,0 +1,217 @@
+{
+  "task_id": "20260914-freeze-stabilization",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260914-freeze-stabilization.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-14T13:26:04.225Z",
+  "finished_at_utc": "2026-09-14T13:31:32.055Z",
+  "head_sha": "f42cb86",
+  "tree_sha": "e297e069662942c97389f4b7fe54f499242921d5",
+  "subject_sha": "e7c1ff2d3bbbcb1a7b6d2bfe3054f95d219febc7ac671e37b0301841ea076f41",
+  "subject_files": [
+    "README.md",
+    "e2e/freeze-stabilization.spec.ts",
+    "e2e/theory-composition.spec.ts",
+    "src/engine/midi.ts",
+    "src/engine/scheduler.ts",
+    "src/main.ts",
+    "src/transport/composer.ts",
+    "src/transport/notes.ts",
+    "src/transport/patterns.ts",
+    "src/transport/persistence.ts",
+    "src/transport/render-song.ts",
+    "src/transport/render.ts",
+    "src/transport/song-format.ts",
+    "src/types.ts",
+    "src/ui/cells.ts",
+    "src/ui/composer-tools.ts",
+    "src/ui/painting.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "README.md",
+    "docs/qc/proofs/20260914-freeze-stabilization.md",
+    "docs/qc/proofs/20260914-freeze-stabilization/proof.manifest.json",
+    "docs/qc/specs/20260914-freeze-stabilization.task.spec.json",
+    "e2e/freeze-stabilization.spec.ts",
+    "e2e/theory-composition.spec.ts",
+    "src/engine/midi.ts",
+    "src/engine/scheduler.ts",
+    "src/main.ts",
+    "src/transport/composer.ts",
+    "src/transport/notes.ts",
+    "src/transport/patterns.ts",
+    "src/transport/persistence.ts",
+    "src/transport/render-song.ts",
+    "src/transport/render.ts",
+    "src/transport/song-format.ts",
+    "src/types.ts",
+    "src/ui/cells.ts",
+    "src/ui/composer-tools.ts",
+    "src/ui/painting.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=8, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=8, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 6187,
+        "log_file": "docs/qc/proofs/20260914-freeze-stabilization/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 303449,
+        "log_file": "docs/qc/proofs/20260914-freeze-stabilization/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 353,
+        "log_file": "docs/qc/proofs/20260914-freeze-stabilization/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 460,
+        "log_file": "docs/qc/proofs/20260914-freeze-stabilization/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 478,
+        "log_file": "docs/qc/proofs/20260914-freeze-stabilization/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 495,
+        "log_file": "docs/qc/proofs/20260914-freeze-stabilization/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-freeze-stabilization/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260914-freeze-stabilization/raw/off_transparent.json",
+        "raw_sha256": "d0dd109b3b7c0d7e2a9e4faa18821d1bbdfd0cc763032371749ed04e12556813"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-freeze-stabilization/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260914-freeze-stabilization/raw/on_audible.json",
+        "raw_sha256": "5c327a0f07317d0bef860195fe28488a91ff079c0efe3dc280b7d52acde08a20"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-freeze-stabilization/oracles/low_end_continuity.json",
+        "raw_artifact": "docs/qc/proofs/20260914-freeze-stabilization/raw/low_end_continuity.json",
+        "raw_sha256": "02de8dd2993fdc42476b0f9969bb43ebbd2944dcf9c6fd91121829a230a6e904"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-freeze-stabilization/oracles/clip_guard.json",
+        "raw_artifact": "docs/qc/proofs/20260914-freeze-stabilization/raw/clip_guard.json",
+        "raw_sha256": "beb1f9327a45f8747ed5d21e6a7ac9a54ea8ee83e4618242efdc8bc42e3a9f49"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-freeze-stabilization/oracles/default_safety.json",
+        "raw_artifact": "docs/qc/proofs/20260914-freeze-stabilization/raw/default_safety.json",
+        "raw_sha256": "953ad37817fdd35b5b08d29e4070ad3b0cef9649fe8e2bcd52206dbf47a7b0ab"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-freeze-stabilization/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260914-freeze-stabilization/raw/control_binding.json",
+        "raw_sha256": "ae8fb695a38735875acb274df8d4bc9cab70766fed68ff74d915745cd4e81966"
+      },
+      {
+        "oracle_id": "benchmark_worklet_budget",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-freeze-stabilization/oracles/benchmark_worklet_budget.json",
+        "raw_artifact": "docs/qc/proofs/20260914-freeze-stabilization/raw/benchmark_worklet_budget.json",
+        "raw_sha256": "6bec35e9784f684ece3451d8260bc8a6ec2183087ca9b7c245bd7cd09df1660b"
+      },
+      {
+        "oracle_id": "persistence_roundtrip",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-freeze-stabilization/oracles/persistence_roundtrip.json",
+        "raw_artifact": "docs/qc/proofs/20260914-freeze-stabilization/raw/persistence_roundtrip.json",
+        "raw_sha256": "9f27ad9a8ded97fe2629013a5c5e4553acd9cf03d8eef09cccb9775dc3515ffb"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

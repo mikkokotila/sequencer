@@ -1,0 +1,51 @@
+{
+  "task_id": "20260914-freeze-stabilization",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-freeze-stabilization/logs/O-CI.log"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-freeze-stabilization/logs/O-E2E.log"
+    },
+    {
+      "id": "O-E2E-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-freeze-stabilization/logs/O-E2E-DELTA.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-freeze-stabilization/logs/O-GATE-CONTRACTS-FULL.log"
+    },
+    {
+      "id": "O-GATE-ARCH-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-freeze-stabilization/logs/O-GATE-ARCH-FULL.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-freeze-stabilization/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "All 56 focused Chromium tests and all 12 new regressions in installed Google Chrome pass. Isolated Chrome/Chromium browser regressions exercise generation with pre-existing HARM, unchanged unselected PCM, live/phrase/full-render voice rates, portable GUI import and saved reload, undo/redo, clipboard and repeat/section operations, plus real AudioBufferSourceNode lifetime tests with a simulated MIDI device. The simulated MIDI input drives the production MIDI handler, not mocked audio. No hardware S2400 or physical MIDI-device acceptance is claimed. Existing user-profile song remains untouched."
+  },
+  "artifacts": [
+    "verdict.json"
+  ]
+}

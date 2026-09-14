@@ -11,6 +11,30 @@ export function melodyNotes(phrase: Phrase, track: number, step: number): number
   const notes = phrase.melPat[track]?.[step]?.flatMap((hit, note) => (hit ? [note] : [])) ?? [];
   return [...notes, ...(phrase.melExtra?.[track]?.[step] ?? [])].sort((a, b) => a - b);
 }
+export function isHarmonyDisabled(phrase: Phrase, track: number, step: number): boolean {
+  return !!phrase.melHarmDisabled?.[track]?.[step];
+}
+/** Complete written voicings bypass automatic harmony only on their own steps. */
+export function setHarmonyDisabled(
+  phrase: Phrase,
+  track: number,
+  step: number,
+  disabled: boolean,
+): void {
+  if (
+    !phrase.melPat[track]?.[step] ||
+    typeof disabled !== 'boolean' ||
+    (disabled && MEL_CFG[track]?.mono)
+  )
+    throw new Error('Invalid step harmony setting.');
+  const enabled = disabled && melodyNotes(phrase, track, step).length > 0;
+  if (enabled && !phrase.melHarmDisabled)
+    phrase.melHarmDisabled = MEL_CFG.map(() => Array<boolean>(STEPS).fill(false));
+  if (phrase.melHarmDisabled) {
+    phrase.melHarmDisabled[track]![step] = enabled;
+    if (!phrase.melHarmDisabled.some((row) => row.some(Boolean))) delete phrase.melHarmDisabled;
+  }
+}
 export function setMelodyNotes(
   phrase: Phrase,
   track: number,
@@ -28,6 +52,8 @@ export function setMelodyNotes(
     throw new Error('Pitch is outside the supported range.');
   row.fill(false);
   for (const note of unique) if (note >= 0 && note < 12) row[note] = true;
+  if (!unique.length && isHarmonyDisabled(phrase, track, step))
+    setHarmonyDisabled(phrase, track, step, false);
   const extra = unique.filter((note) => note < 0 || note >= 12);
   if (extra.length && !phrase.melExtra)
     phrase.melExtra = MEL_CFG.map(() => Array.from({ length: STEPS }, () => []));

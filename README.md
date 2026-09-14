@@ -1,6 +1,6 @@
 # Sequencer
 
-Browser-based step sequencer with sample playback, melodic pitch control, per-track ADSR envelopes, MIDI input, 12-phrase song structure, and a professional audio engine featuring three-model compression (FET/Opto/VCA), Freeverb, interpolated delay, and Pultec EQ — all running on AudioWorklet processors with 4x oversampled nonlinear stages.
+Browser-based step sequencer with sample playback, melodic pitch control, per-track ADSR envelopes, MIDI input, 12–48 phrase song structure (36 by default), and a professional audio engine featuring three-model compression (FET/Opto/VCA), Freeverb, interpolated delay, and Pultec EQ — all running on AudioWorklet processors with 4x oversampled nonlinear stages.
 
 ## Run locally
 
@@ -147,3 +147,9 @@ samples.json                   Sample browser manifest
 ### S2400 drum projects (experimental)
 
 Use **Download song → Export S2400 drums** for a native project ZIP with drum patterns and samples on A1–A5. Synths, effects and Song-mode chains are excluded. Generated projects still require S2400 hardware playback verification. [Scope, SD-card instructions and public API](docs/s2400-export.md).
+
+### Song length
+
+Choose 12, 24, 36, or 48 phrases in the song pane, with 12 slots per row. New songs default to 36; older songs gain 36 available slots without changing their notes or tempo. The selection is saved with each song and travels with JSON exports. Reducing the count requires all removed phrases to be empty and stops playback. Each phrase is four bars; at 130 BPM, 36 filled phrases last about 4:26 and 48 last about 5:54. Empty phrases remain skipped during playback and audio export.
+
+Programmatic callers use `setPhraseCount(count)` from `src/transport/patterns.ts`, the same operation as the GUI. Song JSON accepts `phraseCount` with the same four choices; more phrase data than the declared count is rejected. WAV/MP3 exports retain the existing 10-minute limit including effect tails.

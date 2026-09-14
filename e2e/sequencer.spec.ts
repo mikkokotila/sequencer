@@ -96,10 +96,10 @@ test.describe('App Initialization', () => {
     expect(tracks).toBe(9);
   });
 
-  test('renders song pane with 12 phrase slots', async ({ page }) => {
+  test('renders song pane with 36 visible phrase slots by default', async ({ page }) => {
     await waitForApp(page);
-    const slots = await page.locator('.phrase-slot').count();
-    expect(slots).toBe(12);
+    const slots = await page.locator('.phrase-slot:visible').count();
+    expect(slots).toBe(36);
   });
 
   test('renders transport bar with all controls', async ({ page }) => {
@@ -699,7 +699,7 @@ test.describe('Phrase Pane', () => {
     // Switch to phrase 2
     await page.locator('.phrase-slot').nth(1).click();
 
-    // It should have a fill button (phrases 2-12 have it)
+    // It should have a fill button (phrases after the first have it)
     const fillBtn = page.locator('.phrase-slot').nth(1).locator('.phrase-fill-btn');
     if (await fillBtn.isVisible()) {
       await fillBtn.click();

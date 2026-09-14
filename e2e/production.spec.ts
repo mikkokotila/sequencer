@@ -101,3 +101,34 @@ test('production build initializes worklets, plays samples, and downloads WAV, M
   await page.locator('#song-export-close').click();
   expect(errors).toEqual([]);
 });
+
+test('production GUI preserves phrase 48 through JSON export/import and freezes its note labels', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto('http://127.0.0.1:5177/');
+  await page.waitForSelector('html[data-ready="true"]');
+  await expect(page.getByRole('combobox', { name: 'Song phrases' })).toHaveValue('36');
+  await page.getByRole('combobox', { name: 'Song phrases' }).selectOption('48');
+  await page.locator('.phrase-slot[data-phrase="47"]').click();
+  const scroll = page.getByRole('region', { name: 'Melody track 3 note grid', exact: true });
+  await scroll.evaluate(el => el.scrollIntoView({ block: 'center' }));
+  const labels = page.locator('.note-labels').nth(2);
+  const before = await labels.boundingBox();
+  await scroll.evaluate(el => { el.scrollLeft = el.scrollWidth; });
+  expect((await labels.boundingBox())!.x).toBe(before!.x);
+  await page.locator('.melody-cell[data-track="2"][data-step="63"][data-note="0"]').click();
+  const downloading = page.waitForEvent('download');
+  await page.locator('#save-btn').click();
+  const file = await downloading;
+  const json = JSON.parse(await readFile((await file.path())!, 'utf8'));
+  expect(json.phraseCount).toBe(48);
+  expect(json.phrases).toHaveLength(48);
+  expect(json.phrases[47].melPat[2][63][11]).toBe(true);
+  await page.locator('#song-new').click();
+  await expect(page.getByRole('combobox', { name: 'Song phrases' })).toHaveValue('36');
+  const choosing = page.waitForEvent('filechooser');
+  await page.locator('#load-btn').click();
+  await (await choosing).setFiles((await file.path())!);
+  await expect(page.getByRole('combobox', { name: 'Song phrases' })).toHaveValue('48');
+  await expect(page.locator('.phrase-slot.active')).toHaveAttribute('data-phrase', '47');
+  await expect(page.locator('.melody-cell[data-track="2"][data-step="63"][data-note="0"]')).toHaveClass(/active/);
+});

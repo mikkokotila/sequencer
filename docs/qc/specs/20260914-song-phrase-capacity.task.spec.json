@@ -1,0 +1,83 @@
+{
+  "task_id": "20260914-song-phrase-capacity",
+  "task_type": "feature",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Add per-song choice of 12, 24, 36, or 48 phrases (36 default), twelve slots per row, and freeze melody note labels while their cells scroll. Explicit user instructions authorize product work despite the default GA-only scope. Also correct the benchmark clock-boundary false failure discovered by the required release checks, preserving all performance thresholds.",
+    "in_scope": [
+      "src/**",
+      "index.html",
+      "e2e/**",
+      "README.md",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log",
+      "tests/benchmark-measurement.js"
+    ],
+    "out_of_scope": [
+      "samples/**",
+      "samples.json",
+      "server/**",
+      "package.json",
+      "package-lock.json",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**"
+    ],
+    "controls": [
+      {
+        "id": "frozen_note_names",
+        "description": "Note labels stay fixed, aligned and unobscured while note cells scroll; late-step editing and keyboard scrolling remain available.",
+        "test": "Chrome tests exercise all three melody tracks at 390px and 600px widths, horizontal midpoint/end positions, row alignment, label hit targets, the final B note and keyboard scrolling; resizing to desktop verifies alignment and absence of overflow."
+      },
+      {
+        "id": "song_capacity",
+        "description": "New songs default to 36 phrases; all supported sizes persist and render in twelve-slot rows. Shrinking cannot discard any note. Legacy and malformed file handling remain safe.",
+        "test": "Chrome GUI sizing/reload/new-song tests, all-track shrink protection, JSON round trips, production GUI import/export, final-phrase editing and two-tab conflict recovery."
+      },
+      {
+        "id": "late_phrase_playback_exports",
+        "description": "Playback and exports retain all selected phrases through slot 48 at the stored tempo.",
+        "test": "Real-time row-boundary and wrap timing; full 48-phrase 130 BPM audio render; loop ZIP with phrase 48; independent S2400 reader checks all 48 dense patterns and 15360 hits."
+      },
+      {
+        "id": "benchmark_clock_boundaries",
+        "description": "The wall-clock lower bound and acknowledged high-resolution upper bound enclose the same DSP span, without rejecting pauses after that span or weakening the quantum budget.",
+        "test": "A six-millisecond post-acknowledgement pause reproduces the old failure and must pass independent validation after the fix. Injected real compressor overload must still fail the unchanged budget."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "All three melody tracks at 390px and 600px viewport widths",
+      "12 note rows at horizontal midpoint and end",
+      "Step 64 B-note edit with stored semitone verification",
+      "Keyboard scrolling and resize to 1280px desktop",
+      "Legacy twelve-phrase 65 BPM song",
+      "12/24/36/48 phrase JSON, invalid counts and overflowing arrays",
+      "Phrase 48 on every track family with shrink protection",
+      "Two tabs with conflicting count and late-phrase edits",
+      "48 phrases at 130 BPM, final audio hit and phrase-48 loop ZIP",
+      "48 dense S2400 patterns with 15360 events and complete sample inventory",
+      "Injected post-acknowledgement pause and true shipped-compressor overload"
+    ],
+    "seed": "20260914-song-phrase-capacity",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding",
+      "benchmark_worklet_budget",
+      "persistence_roundtrip"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

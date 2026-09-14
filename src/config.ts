@@ -3,7 +3,9 @@ import type { DrumTrackConfig, MelodyTrackConfig, TrackColorConfig } from './typ
 export const STEPS = 64;
 export const BARS = 4;
 export const SPB = 16; // steps per bar
-export const NUM_PHRASES = 12;
+export const PHRASE_COUNTS: readonly number[] = [12, 24, 36, 48];
+export const DEFAULT_PHRASES = 36;
+export const MAX_PHRASES = 48;
 
 export const DRUMS_CFG: readonly DrumTrackConfig[] = [
   {

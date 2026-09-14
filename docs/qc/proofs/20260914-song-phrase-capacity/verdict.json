@@ -1,0 +1,227 @@
+{
+  "task_id": "20260914-song-phrase-capacity",
+  "task_type": "feature",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260914-song-phrase-capacity.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-14T08:11:22.229Z",
+  "finished_at_utc": "2026-09-14T08:16:02.867Z",
+  "head_sha": "9ccfe81",
+  "tree_sha": "0542982869cc7231230b1de15ce2119d52e721c7",
+  "subject_sha": "2d5874fbde525c7eedc598365645b0fe6527d75e57446f5a505d5e5b8ce67d84",
+  "subject_files": [
+    "README.md",
+    "e2e/benchmark-pressure.spec.ts",
+    "e2e/frozen-note-labels.spec.ts",
+    "e2e/phrase-capacity.spec.ts",
+    "e2e/production.spec.ts",
+    "e2e/s2400-export.spec.ts",
+    "e2e/s2400-files.ts",
+    "e2e/sequencer.spec.ts",
+    "index.html",
+    "src/config.ts",
+    "src/events.ts",
+    "src/main.ts",
+    "src/transport/patterns.ts",
+    "src/transport/persistence.ts",
+    "src/transport/song-format.ts",
+    "src/types.ts",
+    "src/ui/build.ts",
+    "tests/benchmark-measurement.js"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "README.md",
+    "docs/qc/proofs/20260914-song-phrase-capacity.md",
+    "docs/qc/proofs/20260914-song-phrase-capacity/clock-boundary-failure.json",
+    "docs/qc/proofs/20260914-song-phrase-capacity/desktop.png",
+    "docs/qc/proofs/20260914-song-phrase-capacity/narrow.png",
+    "docs/qc/proofs/20260914-song-phrase-capacity/proof.manifest.json",
+    "docs/qc/runs/20260914-080317Z-9ccfe81-1789372728784-13c95ec8.json",
+    "docs/qc/runs/20260914-080317Z-9ccfe81-1789372728784-13c95ec8.md",
+    "docs/qc/runs/20260914-080814Z-9ccfe81-1789373024628-d8ddaf74.json",
+    "docs/qc/runs/20260914-080814Z-9ccfe81-1789373024628-d8ddaf74.md",
+    "docs/qc/specs/20260914-song-phrase-capacity.task.spec.json",
+    "e2e/benchmark-pressure.spec.ts",
+    "e2e/frozen-note-labels.spec.ts",
+    "e2e/phrase-capacity.spec.ts",
+    "e2e/production.spec.ts",
+    "e2e/s2400-export.spec.ts",
+    "e2e/s2400-files.ts",
+    "e2e/sequencer.spec.ts",
+    "index.html",
+    "logs/compiler.log",
+    "src/config.ts",
+    "src/events.ts",
+    "src/main.ts",
+    "src/transport/patterns.ts",
+    "src/transport/persistence.ts",
+    "src/transport/song-format.ts",
+    "src/types.ts",
+    "src/ui/build.ts",
+    "tests/benchmark-measurement.js"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=8, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=8, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 5549,
+        "log_file": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 257789,
+        "log_file": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 277,
+        "log_file": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 456,
+        "log_file": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 452,
+        "log_file": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 500,
+        "log_file": "docs/qc/proofs/20260914-song-phrase-capacity/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-song-phrase-capacity/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260914-song-phrase-capacity/raw/off_transparent.json",
+        "raw_sha256": "edf78c87c7307635b812690a8c8d5857ee8fe73302a94c7165c763b60697098c"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-song-phrase-capacity/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260914-song-phrase-capacity/raw/on_audible.json",
+        "raw_sha256": "1bb7dfed0ebc0b64036ce639c69321c2ff7319cc6f2ffb723cc2743b3f22eebf"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-song-phrase-capacity/oracles/low_end_continuity.json",
+        "raw_artifact": "docs/qc/proofs/20260914-song-phrase-capacity/raw/low_end_continuity.json",
+        "raw_sha256": "cd21d6fff06a7348d820aaabb4fa5e7e0adbfab9973ba135985625a4c4f9128d"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-song-phrase-capacity/oracles/clip_guard.json",
+        "raw_artifact": "docs/qc/proofs/20260914-song-phrase-capacity/raw/clip_guard.json",
+        "raw_sha256": "2615ac94f8f7317333715182526931c4a13a4ee949a7e9d01ec24aee32897e33"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-song-phrase-capacity/oracles/default_safety.json",
+        "raw_artifact": "docs/qc/proofs/20260914-song-phrase-capacity/raw/default_safety.json",
+        "raw_sha256": "169a73a3c77c23abea8667952f3561415f0070339d8ef5cddffe1d47372451c6"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-song-phrase-capacity/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260914-song-phrase-capacity/raw/control_binding.json",
+        "raw_sha256": "14ec522368a67ea3a33fa1ee52ebe4ec42c99785fed17f5def6d3920c4fca909"
+      },
+      {
+        "oracle_id": "benchmark_worklet_budget",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-song-phrase-capacity/oracles/benchmark_worklet_budget.json",
+        "raw_artifact": "docs/qc/proofs/20260914-song-phrase-capacity/raw/benchmark_worklet_budget.json",
+        "raw_sha256": "d24b05af676acfb94018e137a78ea4b21ca81ec4701aadc0abff3358a61dcffa"
+      },
+      {
+        "oracle_id": "persistence_roundtrip",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-song-phrase-capacity/oracles/persistence_roundtrip.json",
+        "raw_artifact": "docs/qc/proofs/20260914-song-phrase-capacity/raw/persistence_roundtrip.json",
+        "raw_sha256": "9f27ad9a8ded97fe2629013a5c5e4553acd9cf03d8eef09cccb9775dc3515ffb"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

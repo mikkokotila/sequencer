@@ -99,6 +99,18 @@ async function init(): Promise<void> {
   setOnPhraseChange(updateSongPane);
 
   on('engine:settingsChanged', scheduleSave);
+  on('transport:phraseCountChanged', ({ count, previous }) => {
+    // A shrink may remove a manually queued empty phrase. Clear that queue atomically.
+    if (count < previous) stopPlayback();
+    refreshUI();
+    updateSongPane();
+    scheduleSave();
+  });
+  on('transport:songLoaded', () => {
+    refreshUI();
+    refreshSongName();
+    updateSongPane();
+  });
   on('persistence:beforeLoad', () => {
     stopPlayback();
     disconnectAllMidi();

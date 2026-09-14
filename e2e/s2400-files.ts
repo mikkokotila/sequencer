@@ -1,5 +1,6 @@
 // Independent readers: these never import the production serializers.
 import { expect } from '@playwright/test';
+import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { crc32 } from 'node:zlib';
 
@@ -58,11 +59,11 @@ export function events(rs: Record[]) {
   const result: { tick: number; track: number; parameters: number[] }[] = [];
   for (let offset = 0; offset < bytes.length;) {
     const word = bytes.readUInt32LE(offset);
-    expect(word % 2).toBe(1);
-    expect((word >>> 7) & 15).toBe(8);
+    assert.equal(word % 2, 1);
+    assert.equal((word >>> 7) & 15, 8);
     const count = (word >>> 11) & 31;
     const parameters = Array.from({ length: count }, (_, i) => bytes.readUInt32LE(offset + 4 + i * 4));
-    parameters.forEach(parameter => expect(parameter & 255).toBe(8));
+    parameters.forEach(parameter => assert.equal(parameter & 255, 8));
     result.push({ tick: word >>> 16, track: (word >>> 1) & 63, parameters });
     offset += (count + 1) * 4;
   }

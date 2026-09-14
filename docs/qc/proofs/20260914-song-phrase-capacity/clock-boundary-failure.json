@@ -1,0 +1,63 @@
+{
+  "source": "compiler-owned benchmark run before clock-boundary fix",
+  "raw_sha256": "13b977e570af8cd4626523125db7e3eb5947c45098d045996b759255210b0c65",
+  "first_invalid_sample_index": 3113,
+  "sample_excerpt": [
+    {
+      "type": "sample",
+      "frame": 471296,
+      "frames": 128,
+      "startedAt": 10264.129,
+      "endedAt": 10269.481,
+      "wallStart": 1789373292099,
+      "wallEnd": 1789373292104,
+      "durationUpperBoundMs": 5.551999999998952,
+      "counts": [
+        1,
+        2,
+        1,
+        1,
+        1
+      ],
+      "error": null
+    },
+    {
+      "type": "sample",
+      "frame": 471424,
+      "frames": 128,
+      "startedAt": 10269.569,
+      "endedAt": 10270.45,
+      "wallStart": 1789373292104,
+      "wallEnd": 1789373292107,
+      "durationUpperBoundMs": 1.0810000000012223,
+      "counts": [
+        1,
+        2,
+        1,
+        1,
+        1
+      ],
+      "error": "Inconsistent worklet clock evidence"
+    },
+    {
+      "type": "sample",
+      "frame": 471552,
+      "frames": 128,
+      "startedAt": 10272.405,
+      "endedAt": 10272.815,
+      "wallStart": 1789373292107,
+      "wallEnd": 1789373292107,
+      "durationUpperBoundMs": 0.6099999999998544,
+      "counts": [
+        1,
+        2,
+        1,
+        1,
+        1
+      ],
+      "error": "Inconsistent worklet clock evidence"
+    }
+  ],
+  "measurement_error": "Inconsistent worklet clock evidence",
+  "diagnosis": "The wall-clock endpoint was sampled after acknowledgement, so a post-span scheduling delay could make its lower bound exceed the acknowledged upper bound."
+}

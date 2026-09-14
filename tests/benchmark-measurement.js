@@ -48,13 +48,15 @@ class GraphMeasurement extends AudioWorkletProcessor {
       // The worker acknowledges only AFTER receiving this end-of-span request.
       // Include the handshake overhead and 0.1ms precision allowance at EACH
       // boundary: the result is an upper bound, never an underestimated duration.
+      // This wall-clock lower bound must end BEFORE requesting the upper-bound
+      // timestamp. Descheduling after acknowledgement is outside the DSP span.
+      const wallEnd = Date.now();
       Atomics.store(control, 0, ++request);
       const deadline = Date.now() + 20;
       while (Atomics.load(control, 1) !== request) {
         if (Date.now() > deadline) { timerError = 'Measurement clock stopped responding'; break; }
       }
       const endedAt = Number(Atomics.load(ticks, 1)) / 1000;
-      const wallEnd = Date.now();
       const upper = endedAt - startedAt + 0.2;
       if (endedAt < startedAt || upper < wallEnd - wallStart - 1) timerError = 'Inconsistent worklet clock evidence';
       this.port.postMessage({ type: 'sample', frame: currentFrame, frames, startedAt, endedAt,

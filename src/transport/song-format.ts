@@ -2,7 +2,9 @@
 import type { ExtensionState, Phrase, SampleData, SongData } from '../types';
 import {
   STEPS,
-  NUM_PHRASES,
+  DEFAULT_PHRASES,
+  MAX_PHRASES,
+  PHRASE_COUNTS,
   TOTAL_TRACKS,
   DRUMS_CFG,
   MEL_CFG,
@@ -173,16 +175,28 @@ export function normalizeSong(value: unknown, requirePatterns = false): SongData
   }
   const sound = input.sound === undefined ? {} : record(input.sound, 'sound settings');
   const engine = sound.engine === undefined ? {} : record(sound.engine, 'engine settings');
+  const storedPhrases = array(input.phrases, MAX_PHRASES, 'phrases');
+  const inferredCount = Math.max(DEFAULT_PHRASES, Math.ceil(storedPhrases.length / 12) * 12);
+  const phraseCount = number(
+    input.phraseCount,
+    inferredCount,
+    12,
+    MAX_PHRASES,
+    'phrase count',
+    true,
+  );
+  if (!PHRASE_COUNTS.includes(phraseCount)) throw new Error('Choose 12, 24, 36, or 48 phrases.');
   const phrases =
     input.phrases === undefined
-      ? [phrase(input), ...Array.from({ length: NUM_PHRASES - 1 }, () => phrase(undefined))]
-      : map(input.phrases, NUM_PHRASES, 'phrases', (v) => phrase(v));
+      ? [phrase(input), ...Array.from({ length: phraseCount - 1 }, () => phrase(undefined))]
+      : map(input.phrases, phraseCount, 'phrases', (v) => phrase(v));
   return {
     id: string(input.id, '', 'song id'),
     name: string(input.name, 'Untitled', 'song name'),
     bpm: number(input.bpm, 120, 40, 220, 'BPM'),
     phrases,
-    currentPhrase: number(input.currentPhrase, 0, 0, NUM_PHRASES - 1, 'current phrase', true),
+    phraseCount,
+    currentPhrase: number(input.currentPhrase, 0, 0, phraseCount - 1, 'current phrase', true),
     octaves: map(input.octaves, MEL_CFG.length, 'octaves', (v) =>
       number(v, 3, 1, 7, 'octave', true),
     ),

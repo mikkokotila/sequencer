@@ -30,7 +30,7 @@ import {
 import type { PaintType } from '../state';
 import { displayToSemitone } from './helpers';
 import { getPitchView } from './pitch-view';
-import { setMelodyNotes } from '../transport/notes';
+import { setMelodyNotes, isHarmonyDisabled, setHarmonyDisabled } from '../transport/notes';
 import { updateDrumCell, updateMelCell, updateVocalCell, setMelodyCellUI } from './cells';
 
 // ── Callbacks (wired by main.ts) ──
@@ -85,13 +85,18 @@ function repeatSelection(t: number): void {
   if (lo < 0 || lo === hi) return;
   const len = hi - lo + 1;
   const pat = Array.from({ length: len }, (_, i) => getMelNotes(t, lo + i));
-  for (let s = hi + 1; s < STEPS; s++)
+  const flags = Array.from({ length: len }, (_, i) =>
+    isHarmonyDisabled(phrases[currentPhrase]!, t, lo + i),
+  );
+  for (let s = hi + 1; s < STEPS; s++) {
     setMelodyNotes(
       phrases[currentPhrase]!,
       t,
       s,
       pat[(s - hi - 1) % len]!.map((note) => resolveMelodyPitch(t, note)),
     );
+    setHarmonyDisabled(phrases[currentPhrase]!, t, s, flags[(s - hi - 1) % len]!);
+  }
   for (let s = hi + 1; s < STEPS; s++) {
     for (let d = 0; d < 12; d++) updateMelCell(t, s, d);
   }

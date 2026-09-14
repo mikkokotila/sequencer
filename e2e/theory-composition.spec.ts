@@ -700,7 +700,7 @@ test('Scale Lock MIDI preserves ownership when two keys quantize to the same pit
   expect(result).toMatchObject({ remaining: 1, ended: 0, afterKeyChange: 0 });
 });
 
-test('generated preview PCM equals Apply, including harmony override; undo restores harmonies', async ({
+test('generated preview PCM equals Apply with scoped harmony; track settings remain unchanged', async ({
   page,
 }) => {
   await ready(page);
@@ -721,7 +721,6 @@ test('generated preview PCM equals Apply, including harmony override; undo resto
     });
     const a = await renderer.renderSongToBuffer({
       phraseOverride: preview.result,
-      harmonyOverride: preview.harmonyOverride,
     });
     const isolated = p.isPhraseEmpty(0) && p.harmonies.join() === '2,3,1';
     c.applyVariation(preview);
@@ -751,7 +750,7 @@ test('generated preview PCM equals Apply, including harmony override; undo resto
   expect(result).toMatchObject({
     isolated: true,
     frames: true,
-    appliedHarmony: [0, 0, 0],
+    appliedHarmony: [2, 3, 1],
     restoredHarmony: [2, 3, 1],
     empty: true,
   });

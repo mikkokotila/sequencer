@@ -9,7 +9,14 @@ import type { Phrase, SongSection } from '../types';
 import { DRUMS_CFG, MEL_CFG, STEPS, DEFAULT_PHRASES, PHRASE_COUNTS } from '../config';
 import { emit } from '../events';
 import { defaultTheory, snapToScale } from './theory';
-import { melodyNotes, setMelodyNotes, phraseHasNotes, midiBase } from './notes';
+import {
+  melodyNotes,
+  setMelodyNotes,
+  phraseHasNotes,
+  midiBase,
+  isHarmonyDisabled,
+  setHarmonyDisabled,
+} from './notes';
 
 // ═══════════════════════════════════════════
 //  PHRASES & PATTERNS
@@ -130,6 +137,8 @@ export function fillWithPrev(idx: number): void {
       }
     }
   }
+  if (prev.melHarmDisabled) target.melHarmDisabled = structuredClone(prev.melHarmDisabled);
+  else delete target.melHarmDisabled;
   if (prev.melExtra) target.melExtra = structuredClone(prev.melExtra);
   else delete target.melExtra;
   if (theory.locked)
@@ -288,13 +297,15 @@ export function replicateTrack(type: 'drum' | 'melody' | 'vocal', track: number)
   } else if (type === 'melody') {
     const phrase = phrases[currentPhrase]!;
     for (let bar = 1; bar < 4; bar++)
-      for (let s = 0; s < SPB; s++)
+      for (let s = 0; s < SPB; s++) {
         setMelodyNotes(
           phrase,
           track,
           bar * SPB + s,
           melodyNotes(phrase, track, s).map((note) => resolveMelodyPitch(track, note)),
         );
+        setHarmonyDisabled(phrase, track, bar * SPB + s, isHarmonyDisabled(phrase, track, s));
+      }
     emit('transport:patternChanged', { type: 'melody', track, step: -1 });
   } else {
     for (let bar = 1; bar < 4; bar++) {

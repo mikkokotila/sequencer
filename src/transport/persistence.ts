@@ -59,7 +59,12 @@ function genId(): string {
 
 export { openDB, dbPut, dbGet, dbGetAll, dbDelete } from './database';
 import { dbPut, dbGet, dbGetAll, transactionResult } from './database';
-import { normalizeSong, encodeSongFile, MAX_SONG_FILE_BYTES } from './song-format';
+import {
+  normalizeSong,
+  encodeSongFile,
+  songFormatVersion,
+  MAX_SONG_FILE_BYTES,
+} from './song-format';
 import { getMasterGain } from '../engine/audio';
 import { getTrackAdsr, isAdsrEnabled, setTrackAdsr, setAdsrEnabled } from '../engine/adsr';
 import { getEngineSettings, setEngineSettings } from '../engine/master-controls';
@@ -70,6 +75,7 @@ import { getEngineSettings, setEngineSettings } from '../engine/master-controls'
 
 export function collectSongData(name: string): SongData {
   return {
+    formatVersion: songFormatVersion(phrases),
     id: currentSongId || genId(),
     name: name || 'Untitled',
     bpm,
@@ -81,6 +87,7 @@ export function collectSongData(name: string): SongData {
       drumPat: p.drumPat.map((r) => [...r]),
       melPat: p.melPat.map((t) => t.map((s) => [...s])),
       vocalPat: [...p.vocalPat],
+      ...(p.melHarmDisabled ? { melHarmDisabled: structuredClone(p.melHarmDisabled) } : {}),
       ...(p.melExtra ? { melExtra: structuredClone(p.melExtra) } : {}),
     })),
     currentPhrase,
@@ -235,6 +242,8 @@ function installDocument(song: SongData, buffers: (AudioBuffer | null)[]): void 
       track.forEach((step, j) => step.splice(0, 12, ...source.melPat[t]![j]!)),
     );
     target.vocalPat.splice(0, STEPS, ...source.vocalPat);
+    if (source.melHarmDisabled) target.melHarmDisabled = structuredClone(source.melHarmDisabled);
+    else delete target.melHarmDisabled;
     if (source.melExtra) target.melExtra = structuredClone(source.melExtra);
     else delete target.melExtra;
   }

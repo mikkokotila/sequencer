@@ -49,7 +49,7 @@ import {
   findFirstNonEmpty,
 } from './transport/patterns';
 import { initEngineProcessing, close as closeEnginePanel } from './ui/engine-panel';
-import { initMidi, disconnectAllMidi } from './engine/midi';
+import { initMidi, disconnectAllMidi, silenceAllMidi } from './engine/midi';
 import { buildMidiBrowserDOM, wireMidiBrowserEvents } from './ui/midi-browser';
 import { buildAdsrPopupDOM, updateAdsrBtnState, closeAdsrPopup } from './ui/adsr-popup';
 import { initPersistenceStatus, showStartupError } from './ui/persistence-status';
@@ -107,7 +107,7 @@ async function init(): Promise<void> {
   on('engine:settingsChanged', scheduleSave);
   on('editor:beforeRestore', () => {
     stopPlayback();
-    disconnectAllMidi();
+    silenceAllMidi();
     closeAdsrPopup();
     closeEnginePanel();
     if (activeExtensionId) toggleExtension(activeExtensionId);

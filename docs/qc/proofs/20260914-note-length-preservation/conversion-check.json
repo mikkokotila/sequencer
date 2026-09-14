@@ -1,0 +1,75 @@
+{
+  "source": "../le-feu-reste.sequencer.json",
+  "sourceSha256": "607cede1daccac2330e883b6e2200c49af6a9b3d579a20573e2bcb8e97b6a06b",
+  "bpm": 130,
+  "occupiedPhrases": 24,
+  "phraseCapacity": 36,
+  "musicalBars": 96,
+  "arrangementSeconds": 177.23076923076923,
+  "eventCount": 1924,
+  "exactNoteOnsetAndPitchMatch": true,
+  "allSampleBytesUnchanged": true,
+  "allSoundSettingsUnchanged": false,
+  "samples": [
+    {
+      "name": "BD 909 Clean 01.wav",
+      "sha256": "1231de587fec39f25c6f63dfbcd4553cf83b2722e59f16d63ddc67e261163c9f"
+    },
+    {
+      "name": "SD DMX Clean 01.wav",
+      "sha256": "07eb3967ac724e6567a1d06eecb4fba8e71a36ba614ff9b7ce3f40f928a14037"
+    },
+    {
+      "name": "CH 707 Clean.wav",
+      "sha256": "4dea4d9bf6f70da33b52489927870ef677e0a02b4c3040299425dc6b99760b44"
+    },
+    {
+      "name": "OH 909 Clean.wav",
+      "sha256": "c509c7ad2e3d5d3d184d6bccc6be5f466881abb5cd9c3c2c1672be8529f7e68a"
+    },
+    {
+      "name": "Crash 909 Short 01.wav",
+      "sha256": "ca37b5b6dda1cb17003da3c988933405746e997d06b91a0817087a8151c4d23f"
+    },
+    {
+      "name": "MadBass Mini C1.wav",
+      "sha256": "acbf65d428ad078204d89aca2f99641f5ab5f605fdff2edf9a781854972132dd"
+    },
+    {
+      "name": "Long Omni C1.wav",
+      "sha256": "ff9fbb4fd886a1978048bbeb2d7aa3e92cf2de1b4cf4daa5e79f722edbb8704a"
+    },
+    {
+      "name": "Sync Lite Voyetra C1.wav",
+      "sha256": "b1572f4e146185d33afb7c614166c6e69e100c59a8201a6c51400cdabee8cc93"
+    },
+    {
+      "name": "Clap 707 Clean.wav",
+      "sha256": "78b1b8d302d4e04827d1bd6cdb24fe6278acea0922933be144f1d2929c15abdf"
+    }
+  ],
+  "allSoundSettingsExceptGateStepsUnchanged": true,
+  "noteLengthSteps": [
+    1,
+    1,
+    1,
+    2,
+    1,
+    2,
+    2,
+    2,
+    1
+  ],
+  "envelopeTimingPreserved": true,
+  "guiVerification": {
+    "bpmAfterReload": 130,
+    "capacity": 36,
+    "enabledTrackNoteLengthsAfterReload": {
+      "909 Air": 2,
+      "Mini Motor Bass": 2,
+      "Omni Horizon": 2,
+      "Voyetra Main Lead": 2
+    },
+    "appliedByPortableSongImport": true
+  }
+}

@@ -1,0 +1,55 @@
+compiler-gate	compiler-gate check	﻿2026-09-14T08:58:41.3620322Z ##[group]Run xvfb-run -a npm run gov:check:ga -- \
+compiler-gate	compiler-gate check	2026-09-14T08:58:41.3620731Z ^[[36;1mxvfb-run -a npm run gov:check:ga -- \^[[0m
+compiler-gate	compiler-gate check	2026-09-14T08:58:41.3621121Z ^[[36;1m  --spec docs/qc/specs/compiler-gate.task.spec.json \^[[0m
+compiler-gate	compiler-gate check	2026-09-14T08:58:41.3623608Z ^[[36;1m  --simulate-files "README.md,docs/qc/proofs/20260914-note-length-preservation.md,docs/qc/proofs/20260914-note-length-preservation/audio-equivalence.json,docs/qc/proofs/20260914-note-length-preservation/conversion-check.json,docs/qc/proofs/20260914-note-length-preservation/proof.manifest.json,docs/qc/proofs/20260914-note-length-preservation/render-check.json,docs/qc/proofs/20260914-note-length-preservation/verdict.json,docs/qc/specs/20260914-note-length-preservation.task.spec.json,e2e/note-length.spec.ts,index.html,src/engine/adsr.ts,src/transport/render-song.ts,src/transport/render.ts,src/transport/song-format.ts,src/types.ts,src/ui/adsr-popup.ts" \^[[0m
+compiler-gate	compiler-gate check	2026-09-14T08:58:41.3625973Z ^[[36;1m  --no-write^[[0m
+compiler-gate	compiler-gate check	2026-09-14T08:58:41.3662366Z shell: /usr/bin/bash -e {0}
+compiler-gate	compiler-gate check	2026-09-14T08:58:41.3662667Z env:
+compiler-gate	compiler-gate check	2026-09-14T08:58:41.3662940Z   PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
+compiler-gate	compiler-gate check	2026-09-14T08:58:41.3663262Z ##[endgroup]
+compiler-gate	compiler-gate check	2026-09-14T08:58:41.5128226Z 
+compiler-gate	compiler-gate check	2026-09-14T08:58:41.5129088Z > sequencer@1.0.0 gov:check:ga
+compiler-gate	compiler-gate check	2026-09-14T08:58:41.5132999Z > GOV_ALLOW_GOVERNANCE_CHANGE=1 node docs/qc/scripts/governance-compiler.mjs check --spec docs/qc/specs/compiler-gate.task.spec.json --simulate-files README.md,docs/qc/proofs/20260914-note-length-preservation.md,docs/qc/proofs/20260914-note-length-preservation/audio-equivalence.json,docs/qc/proofs/20260914-note-length-preservation/conversion-check.json,docs/qc/proofs/20260914-note-length-preservation/proof.manifest.json,docs/qc/proofs/20260914-note-length-preservation/render-check.json,docs/qc/proofs/20260914-note-length-preservation/verdict.json,docs/qc/specs/20260914-note-length-preservation.task.spec.json,e2e/note-length.spec.ts,index.html,src/engine/adsr.ts,src/transport/render-song.ts,src/transport/render.ts,src/transport/song-format.ts,src/types.ts,src/ui/adsr-popup.ts --no-write
+compiler-gate	compiler-gate check	2026-09-14T08:58:41.5135886Z 
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9896245Z governance-compiler: phase summary
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9897302Z execution_profile: real
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9898904Z - parse: PASS | task.spec.json schema validated.
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9899651Z - bind: PASS | Diff-to-contract binding complete.
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9900412Z - synthesize: PASS | commands=6, oracles=0, manifest=required
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9901165Z - execute: FAIL | commands=6, oracles=0, diagnostics=1
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9901780Z - verify: FAIL | Final verdict: FAIL
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9902445Z - attest: FAIL | Attestation write skipped (--no-write).
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9903305Z - qc-audit: FAIL | Deterministic QC audit generated (no-write mode).
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9904239Z - audit: PASS | Appended 5 warning/error event(s) to logs/compiler.log.
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9904731Z 
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9904914Z command obligations
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9905770Z - PASS | O-CI | npm run ci | blocking=true | log=docs/qc/proofs/compiler-gate-ci/logs/O-CI.log | exit=0
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9907035Z - FAIL | O-E2E | npm run e2e | blocking=true | log=docs/qc/proofs/compiler-gate-ci/logs/O-E2E.log | exit=1
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9911926Z   failure: suite=command | test=command | message=·FFAIL-ITEM | e2e | chromium › sync-pressure.spec.ts › dense polyphony and 180ms main-thread stalls preserve real sample alignment and recover to the current audible step @ e2e/sync-pressure.spec.ts:249 | Error: {"step":2,"phrase":0,"time":8.929271284271298,"output":9.001640999999989,"windowStart":8.999541000000013,"windowEnd":9.002640999999988,"observationMs":1.099999999976717,"eligible":[{"track":0,"step":3,"phrase":0,"time":8.997453102453116,"source":"drum"}],"marker":0,"expectedStep":3,"expectedPhrase":0,"lit":42,"viewed":0} expect(received).toBe(expected) // Object.is equality Expected: true Received: false
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9914952Z - PASS | O-E2E-DELTA | npm run gate:e2e-delta | blocking=true | log=docs/qc/proofs/compiler-gate-ci/logs/O-E2E-DELTA.log | exit=0
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9916357Z - PASS | O-GATE-CONTRACTS-FULL | node docs/qc/scripts/contract-gates.mjs | blocking=true | log=docs/qc/proofs/compiler-gate-ci/logs/O-GATE-CONTRACTS-FULL.log | exit=0
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9917602Z - PASS | O-GATE-ARCH-FULL | node docs/qc/scripts/architecture-gates.mjs | blocking=true | log=docs/qc/proofs/compiler-gate-ci/logs/O-GATE-ARCH-FULL.log | exit=0
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9919252Z - PASS | O-COMMIT-RANGE | npm run gate:commit-range | blocking=true | log=docs/qc/proofs/compiler-gate-ci/logs/O-COMMIT-RANGE.log | exit=0
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9919809Z 
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9919923Z debt ratchet
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9920221Z - baseline_id=20260322-global-debt-baseline
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9920636Z - baseline_total=11 | current_total=0 | delta=-11
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9920983Z - require_debt_reduction=false
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9921155Z 
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9921241Z diagnostics
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9924655Z - FAIL | GOV-PROC-002 | O-E2E failed: npm run e2e | first_failure=·FFAIL-ITEM | e2e | chromium › sync-pressure.spec.ts › dense polyphony and 180ms main-thread stalls preserve real sample alignment and recover to the current audible step @ e2e/sync-pressure.spec.ts:249 | Error: {"step":2,"phrase":0,"time":8.929271284271298,"output":9.001640999999989,"windowStart":8.999541000000013,"windowEnd":9.002640999999988,"observationMs":1.099999999976717,"eligible":[{"track":0,"step":3,"phrase":0,"time":8.997453102453116,"source":"drum"}],"marker":0,"expectedStep":3,"expectedPhrase":0,"lit":42,"viewed":0} expect(received).toBe(expected) // Object.is equality Expected: true Received: false
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9927149Z   acceptable: RCP-PROC-FIX-GATE: Fix root cause in code/tests; rerun failed command obligation.
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9927820Z   reminder: Solve the real cause. Do not modify gates or assertions just to force PASS.
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9928707Z   escalate: If remediation reveals a real contract/runtime conflict, pause and request operator guidance.
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9930041Z   disallowed: Ignoring non-zero gate output || Removing failing gate from obligation rules in same task
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9931091Z   recheck: rerun npm run gov:check -- --spec <same-spec>
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9931552Z 
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9931755Z required remediation loop
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9932462Z 1. Read the highest-severity diagnostic and pick one acceptable recipe.
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9933295Z 2. Apply only root-cause remediation; do not bypass with direct commit.
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9934280Z 3. Re-run: npm run gov:check -- --spec <same-spec>
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9935415Z 4. If conflict is truly unresolvable in-task, request operator guidance with evidence.
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9936464Z 5. Repeat until final verdict is PASS, then run gov:commit.
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9937085Z 
+compiler-gate	compiler-gate check	2026-09-14T09:03:58.9937268Z final verdict: FAIL
+compiler-gate	compiler-gate check	2026-09-14T09:03:59.0085632Z ##[error]Process completed with exit code 1.

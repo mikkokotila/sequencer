@@ -3,7 +3,7 @@
  *
  * Each note gets a dedicated GainNode whose gain parameter is automated
  * through Attack → Decay → Sustain → Release phases. For scheduler notes,
- * release is auto-triggered at step end. For MIDI notes, release is
+ * release is auto-triggered at the configured note end. For MIDI notes, release is
  * triggered on note-off via triggerRelease().
  */
 
@@ -21,7 +21,7 @@ export type { AdsrParams } from '../types';
 // ═══════════════════════════════════════════
 
 function makeDefault(): AdsrParams {
-  return { attack: 0.005, decay: 0.1, sustain: 1.0, release: 0.1 };
+  return { attack: 0.005, decay: 0.1, sustain: 1.0, release: 0.1, gateSteps: 1 };
 }
 
 const trackAdsr: AdsrParams[] = Array.from({ length: TOTAL_TRACKS }, () => makeDefault());
@@ -56,6 +56,11 @@ export function getTrackAdsr(trackIndex: number): AdsrParams {
 export function setTrackAdsr(trackIndex: number, params: Partial<AdsrParams>): void {
   const p = trackAdsr[trackIndex];
   if (!p) return;
+  if (params.gateSteps !== undefined) {
+    if (!Number.isInteger(params.gateSteps) || params.gateSteps < 1 || params.gateSteps > 64)
+      throw new RangeError('Note length must be an integer from 1 to 64 steps.');
+    p.gateSteps = params.gateSteps;
+  }
   if (params.attack !== undefined) p.attack = Math.max(0.001, Math.min(2.0, params.attack));
   if (params.decay !== undefined) p.decay = Math.max(0.001, Math.min(2.0, params.decay));
   if (params.sustain !== undefined) p.sustain = Math.max(0, Math.min(1.0, params.sustain));
@@ -70,6 +75,7 @@ export function resetAllAdsr(): void {
     p.decay = d.decay;
     p.sustain = d.sustain;
     p.release = d.release;
+    p.gateSteps = d.gateSteps ?? 1;
   }
   trackAdsrEnabled.fill(false);
 }
@@ -78,10 +84,16 @@ export function resetAllAdsr(): void {
 //  Public API — audio
 // ═══════════════════════════════════════════
 
+/** Release offset shared by live notes, offline scheduling and export tail allocation. */
+export function getEnvelopeReleaseStart(adsr: AdsrParams, stepDuration: number): number {
+  const noteDuration = stepDuration * (adsr.gateSteps ?? 1);
+  return Math.min(Math.max(adsr.attack, noteDuration - adsr.release), noteDuration);
+}
+
 /**
  * Create an envelope GainNode for a note and schedule A/D/S automation.
  *
- * For scheduler notes: pass stepDuration to auto-schedule release at step end.
+ * For scheduler notes: pass stepDuration to auto-schedule release using the track note length.
  * For MIDI notes: omit stepDuration, call triggerRelease() on note-off.
  *
  * Connects: source → envelopeGain → dest
@@ -115,10 +127,7 @@ export function applyEnvelope(
 
   let stopAt = 0;
   if (stepDuration !== undefined) {
-    // Scheduler: auto-release at (or before) step end.
-    const stepEnd = startTime + stepDuration;
-    const rawReleaseStart = startTime + Math.max(adsr.attack, stepDuration - adsr.release);
-    const releaseStart = Math.min(rawReleaseStart, stepEnd);
+    const releaseStart = startTime + getEnvelopeReleaseStart(adsr, stepDuration);
     env.gain.setTargetAtTime(0.0001, releaseStart, Math.max(0.001, adsr.release / 3));
     // Caller will schedule source.stop() at this time (after calling start())
     stopAt = releaseStart + adsr.release * 4;

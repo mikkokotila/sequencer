@@ -1,0 +1,22 @@
+{
+  "originalWavSha256": "9ebfbbd9405b17543c4fc67bd8079086392154cb2db42780fbf58bf27854bf07",
+  "convertedWavSha256": "3b5a112398e7172493c314c014d0c0fde84a6432fc1869c804f7d0323a8f9df7",
+  "byteIdenticalWav": false,
+  "originalBytes": 47005754,
+  "convertedBytes": 47005754,
+  "maxPcmDelta": 1.0967254638671875e-05,
+  "rmsErrorDbfs": -125.08082660536985,
+  "signalToErrorDb": 106.11946435320624,
+  "changedSamples": 10366871,
+  "maxDeltaAtSeconds": 46.71179138321995,
+  "sameEngineComparison": {
+    "byteIdenticalWav": false,
+    "referenceSha256": "42c1aa0fd5bef7102884a8c0c67e8d424700e337a9411c2b658acd1e36a27da5",
+    "convertedSha256": "3b5a112398e7172493c314c014d0c0fde84a6432fc1869c804f7d0323a8f9df7",
+    "maxPcmDelta": 9.775161743164062e-06,
+    "rmsErrorDbfs": -124.87036546287926,
+    "signalToErrorDb": 105.9090031191418,
+    "sameFrameCount": true
+  },
+  "interpretation": "Same note onsets, envelope timing, samples and mix; full-song PCM agrees below -115 dBFS RMS. Separate full-mix renders are not byte-identical. Individual envelope PCM is bit-identical in regression tests."
+}

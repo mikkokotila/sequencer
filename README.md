@@ -153,3 +153,9 @@ Use **Download song → Export S2400 drums** for a native project ZIP with drum 
 Choose 12, 24, 36, or 48 phrases in the song pane, with 12 slots per row. New songs default to 36; older songs gain 36 available slots without changing their notes or tempo. The selection is saved with each song and travels with JSON exports. Reducing the count requires all removed phrases to be empty and stops playback. Each phrase is four bars; at 130 BPM, 36 filled phrases last about 4:26 and 48 last about 5:54. Empty phrases remain skipped during playback and audio export.
 
 Programmatic callers use `setPhraseCount(count)` from `src/transport/patterns.ts`, the same operation as the GUI. Song JSON accepts `phraseCount` with the same four choices; more phrase data than the declared count is rejected. WAV/MP3 exports retain the existing 10-minute limit including effect tails.
+
+### Sequenced note length
+
+Each track's ADSR popup includes **Note length** in sixteenth-note steps (1–64; default 1). It controls the envelope duration of sequenced notes; MIDI still uses note-off, and samples play naturally when ADSR is off. The same value is available through `setTrackAdsr(track, { gateSteps: 2 })` and is saved in `sound.adsr[].gateSteps`. Older songs default to one step. Live playback, phrase WAVs and full-song WAV/MP3 exports use this value. S2400 drum export remains dry and omits envelopes.
+
+To correct a half-tempo arrangement without changing its sound, double BPM, place each note at twice its original global step index (splitting phrases as needed), and double each enabled envelope's `gateSteps`. Sample audio, ADSR times, pitch and time-based effects stay unchanged.

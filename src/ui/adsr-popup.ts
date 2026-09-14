@@ -19,6 +19,7 @@ import { el } from './helpers';
 let popup: HTMLElement | null = null;
 let canvas: HTMLCanvasElement | null = null;
 let toggleBtn: HTMLButtonElement | null = null;
+let gateInput: HTMLInputElement | null = null;
 let activeTrackIndex = -1;
 let sliderEls: HTMLInputElement[] = [];
 let valueEls: HTMLElement[] = [];
@@ -137,6 +138,35 @@ export function buildAdsrPopupDOM(): void {
   }
 
   popup.appendChild(slidersContainer);
+
+  const noteLength = el('label', 'adsr-note-length');
+  noteLength.textContent = 'NOTE LENGTH';
+  gateInput = document.createElement('input');
+  gateInput.id = 'adsr-gate-steps';
+  gateInput.type = 'number';
+  gateInput.min = '1';
+  gateInput.max = '64';
+  gateInput.step = '1';
+  gateInput.value = '1';
+  gateInput.setAttribute('aria-label', 'Note length in sixteenth-note steps');
+  gateInput.title = 'Length of each sequenced note when the envelope is on. MIDI uses note-off.';
+  gateInput.oninput = () => {
+    if (!gateInput || activeTrackIndex < 0) return;
+    const value = gateInput.valueAsNumber;
+    if (Number.isInteger(value) && value >= 1 && value <= 64) {
+      setTrackAdsr(activeTrackIndex, { gateSteps: value });
+      emit('engine:settingsChanged', {});
+    }
+  };
+  gateInput.onchange = () => {
+    if (gateInput && activeTrackIndex >= 0)
+      gateInput.value = String(getTrackAdsr(activeTrackIndex).gateSteps ?? 1);
+  };
+  noteLength.appendChild(gateInput);
+  const unit = el('span', 'adsr-note-length-unit');
+  unit.textContent = '× 1/16';
+  noteLength.appendChild(unit);
+  popup.appendChild(noteLength);
   document.body.appendChild(popup);
 
   // Close on click outside
@@ -196,15 +226,15 @@ export function openAdsrPopup(trackIndex: number, anchorEl: HTMLElement): void {
   if (sliderEls[1]) sliderEls[1].value = String(adsr.decay);
   if (sliderEls[2]) sliderEls[2].value = String(adsr.sustain);
   if (sliderEls[3]) sliderEls[3].value = String(adsr.release);
+  if (gateInput) gateInput.value = String(adsr.gateSteps ?? 1);
 
   updateValues();
 
   // Position near anchor
   const rect = anchorEl.getBoundingClientRect();
-  popup.style.top = `${rect.bottom + 6}px`;
-  popup.style.left = `${Math.max(8, rect.left - 80)}px`;
-
   popup.classList.add('open');
+  popup.style.top = `${Math.max(8, Math.min(rect.bottom + 6, window.innerHeight - popup.offsetHeight - 8))}px`;
+  popup.style.left = `${Math.max(8, Math.min(rect.left - 80, window.innerWidth - popup.offsetWidth - 8))}px`;
   drawEnvelope();
 }
 

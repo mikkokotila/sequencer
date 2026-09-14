@@ -7,7 +7,12 @@ import {
   getMasterGain,
   getMasterTrim,
 } from '../engine/audio';
-import { applyEnvelope, getTrackAdsr, isAdsrEnabled } from '../engine/adsr';
+import {
+  applyEnvelope,
+  getTrackAdsr,
+  isAdsrEnabled,
+  getEnvelopeReleaseStart,
+} from '../engine/adsr';
 import { createEngineProcessing, getEngineSettings } from '../engine/master-controls';
 import { loadAllWorklets } from '../engine/worklet-loader';
 import { SEQ_EXTENSIONS } from '../engine/extensions/store';
@@ -68,7 +73,7 @@ function captureSong() {
     if (!buffer || mutedArr[track]) return;
     voices.push({ buffer, track, time, rate });
     const env = envelopes[track]!;
-    const releaseStart = Math.min(Math.max(env.attack, stepDuration - env.release), stepDuration);
+    const releaseStart = getEnvelopeReleaseStart(env, stepDuration);
     const duration = env.enabled
       ? Math.min(buffer.duration / rate, releaseStart + env.release * 4)
       : buffer.duration / rate;

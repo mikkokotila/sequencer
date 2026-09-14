@@ -11,7 +11,12 @@
 
 import { STEPS, DRUMS_CFG, MEL_CFG, HARMONY_SEMITONES, TOTAL_TRACKS } from '../config';
 import { getAudioContext, getChannelFaders, getChannelPans, getMasterGain } from '../engine/audio';
-import { applyEnvelope, isAdsrEnabled } from '../engine/adsr';
+import {
+  applyEnvelope,
+  isAdsrEnabled,
+  getTrackAdsr,
+  getEnvelopeReleaseStart,
+} from '../engine/adsr';
 import { phrases, isPhraseEmpty, octaves, harmonies } from './patterns';
 import { bpm, drumBuf, melBuf, vocalBuf, mutedArr } from './song';
 import type { Phrase } from '../types';
@@ -167,7 +172,21 @@ export async function renderPhraseToBuffer(phraseIdx: number): Promise<AudioBuff
   const sr = liveCtx.sampleRate;
   const stepDur = 60 / bpm / 4;
   const phraseDur = STEPS * stepDur;
-  const totalDur = phraseDur + TAIL_SECONDS;
+  // Long envelopes must survive beyond the final step of a loop bounce.
+  let tail = TAIL_SECONDS;
+  for (let t = 0; t < TOTAL_TRACKS; t++) {
+    if (mutedArr[t] || !isAdsrEnabled(t)) continue;
+    const hasNotes =
+      t < DRUMS_CFG.length
+        ? phrase.drumPat[t]?.some(Boolean)
+        : t < DRUMS_CFG.length + MEL_CFG.length
+          ? phrase.melPat[t - DRUMS_CFG.length]?.some((step) => step.some(Boolean))
+          : phrase.vocalPat.some(Boolean);
+    if (!hasNotes) continue;
+    const adsr = getTrackAdsr(t);
+    tail = Math.max(tail, getEnvelopeReleaseStart(adsr, stepDur) + adsr.release * 4);
+  }
+  const totalDur = phraseDur + tail;
   const lengthSamples = Math.ceil(totalDur * sr);
 
   const { ctx, strips } = buildGraph(sr, lengthSamples);

@@ -1,0 +1,189 @@
+{
+  "task_id": "20260914-note-length-preservation",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260914-note-length-preservation.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-14T09:12:20.269Z",
+  "finished_at_utc": "2026-09-14T09:17:09.317Z",
+  "head_sha": "ee94378",
+  "tree_sha": "451ed7d81a0b177bc881b7a8ce0bda8ff66bb3b7",
+  "subject_sha": "912bd9410154749d7a8ac69b5836e95986e848615f6f2774fa3143061b5dfeea",
+  "subject_files": [
+    "e2e/output-clock.spec.ts",
+    "e2e/sync-pressure.spec.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260914-note-length-preservation.md",
+    "docs/qc/proofs/20260914-note-length-preservation/ci-clock-failure.txt",
+    "docs/qc/proofs/20260914-note-length-preservation/clock-refresh-reproduction.txt",
+    "docs/qc/proofs/20260914-note-length-preservation/proof.manifest.json",
+    "docs/qc/specs/20260914-note-length-preservation.task.spec.json",
+    "e2e/output-clock.spec.ts",
+    "e2e/sync-pressure.spec.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=8, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=8, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 6451,
+        "log_file": "docs/qc/proofs/20260914-note-length-preservation/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 263715,
+        "log_file": "docs/qc/proofs/20260914-note-length-preservation/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 302,
+        "log_file": "docs/qc/proofs/20260914-note-length-preservation/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 495,
+        "log_file": "docs/qc/proofs/20260914-note-length-preservation/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 564,
+        "log_file": "docs/qc/proofs/20260914-note-length-preservation/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 537,
+        "log_file": "docs/qc/proofs/20260914-note-length-preservation/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-note-length-preservation/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260914-note-length-preservation/raw/off_transparent.json",
+        "raw_sha256": "84bf3a3ce0fb7d1687c2fb7b4af42d51e661fa28eba518d822f949b3715a14bf"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-note-length-preservation/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260914-note-length-preservation/raw/on_audible.json",
+        "raw_sha256": "860191a65b22e970f86c9a0b348a7a79b31ae7c04f14fd200e3279f66e5b41a1"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-note-length-preservation/oracles/low_end_continuity.json",
+        "raw_artifact": "docs/qc/proofs/20260914-note-length-preservation/raw/low_end_continuity.json",
+        "raw_sha256": "43e431ae1871f1633c1222fd0c6b723a0aaf5e63e14f6ccbf191b7f78d861b6b"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-note-length-preservation/oracles/clip_guard.json",
+        "raw_artifact": "docs/qc/proofs/20260914-note-length-preservation/raw/clip_guard.json",
+        "raw_sha256": "0231d3c103406c6dde1ec86417c9ac4f88bc57f81646385349b3d4351d1029ba"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-note-length-preservation/oracles/default_safety.json",
+        "raw_artifact": "docs/qc/proofs/20260914-note-length-preservation/raw/default_safety.json",
+        "raw_sha256": "9384ca3a678a0654764ea79276892d14af2405226476d9e59ba1772158f79db9"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-note-length-preservation/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260914-note-length-preservation/raw/control_binding.json",
+        "raw_sha256": "44a78014bc069e8c6049d92e00a4d36408b6d33a9325f1132c5c13d4875bae24"
+      },
+      {
+        "oracle_id": "benchmark_worklet_budget",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-note-length-preservation/oracles/benchmark_worklet_budget.json",
+        "raw_artifact": "docs/qc/proofs/20260914-note-length-preservation/raw/benchmark_worklet_budget.json",
+        "raw_sha256": "b1f23da219ef7a5cc65e63f4f134b41e3afb5c592003d1fa0d94f6f26af558f3"
+      },
+      {
+        "oracle_id": "persistence_roundtrip",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260914-note-length-preservation/oracles/persistence_roundtrip.json",
+        "raw_artifact": "docs/qc/proofs/20260914-note-length-preservation/raw/persistence_roundtrip.json",
+        "raw_sha256": "9f27ad9a8ded97fe2629013a5c5e4553acd9cf03d8eef09cccb9775dc3515ffb"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

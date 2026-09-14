@@ -1,0 +1,42 @@
+[WebServer] (node:33762) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:33786) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:33789) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:33789) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › e2e/sync-pressure.spec.ts:391:1 › device timestamp refreshes cannot turn a correct visual frame into a stale-frame failure (4.1s)
+FAIL-ITEM | e2e | chromium › sync-pressure.spec.ts › device timestamp refreshes cannot turn a correct visual frame into a stale-frame failure @ e2e/sync-pressure.spec.ts:391 | Error: {"step":0,"phrase":0,"time":0.025,"output":0.11153271656520891,"windowStart":0.10954672785539367,"windowEnd":0.11253271656520891,"observationMs":1.100000023841858,"eligible":[{"track":0,"step":1,"phrase":0,"time":0.09318181818181817,"source":"drum"}],"marker":0,"expectedStep":1,"expectedPhrase":0,"lit":42,"viewed":0} expect(received).toBe(expected) // Object.is equality Expected: true Received: false
+
+
+  1) [chromium] › e2e/sync-pressure.spec.ts:391:1 › device timestamp refreshes cannot turn a correct visual frame into a stale-frame failure 
+
+    Error: {"step":0,"phrase":0,"time":0.025,"output":0.11153271656520891,"windowStart":0.10954672785539367,"windowEnd":0.11253271656520891,"observationMs":1.100000023841858,"eligible":[{"track":0,"step":1,"phrase":0,"time":0.09318181818181817,"source":"drum"}],"marker":0,"expectedStep":1,"expectedPhrase":0,"lit":42,"viewed":0}
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      228 |     ),
+      229 |     detail,
+    > 230 |   ).toBe(true);
+          |     ^
+      231 | }
+      232 |
+      233 | for (const bpm of [40, 120, 220]) {
+        at assertCurrentFrame (/Users/mikkokotila/dev/sequencer/e2e/sync-pressure.spec.ts:230:5)
+        at /Users/mikkokotila/dev/sequencer/e2e/sync-pressure.spec.ts:397:38
+
+    attachment #1: observations (application/json) ─────────────────────────────────────────────────
+    test-results/sync-pressure-device-times-9ceb8--into-a-stale-frame-failure-chromium/attachments/observations-71dd6b7d01b459e9755af93833738592f48c86a7.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/sync-pressure-device-times-9ceb8--into-a-stale-frame-failure-chromium/error-context.md
+
+  1 failed
+    [chromium] › e2e/sync-pressure.spec.ts:391:1 › device timestamp refreshes cannot turn a correct visual frame into a stale-frame failure 

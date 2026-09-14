@@ -5,6 +5,8 @@ type Step = { step: number; phrase: number; time: number };
 type Probe = {
   contexts: AudioContext[];
   starts: { time: number; at: number }[];
+  clockReadsInFrame: number;
+  frameTimestamp?: AudioTimestamp;
   triggers: Step[];
   sampleClock?: () => { at: number; output: number };
   frameClock?: { at: number; output: number };
@@ -18,6 +20,7 @@ type Probe = {
     windowStart: number;
     windowEnd: number;
     observationMs: number;
+    clockReads: number;
     eligible: Step[];
     time: number;
     lit: number;
@@ -36,40 +39,65 @@ declare global {
   }
 }
 
-async function prepare(page: Page, bpm: number, dense = false) {
-  await page.addInitScript(() => {
-    const p: Probe = {
-      contexts: [],
-      starts: [],
-      triggers: [],
-      frames: [],
-      onsets: [],
-      alive: new Set(),
-    };
-    window.__pressure = p;
-    const requestFrame = window.requestAnimationFrame;
-    window.requestAnimationFrame = (callback) =>
-      requestFrame.call(window, (time) => {
-        // Capture the device clock BEFORE the application's render callback.
-        // A later observer sample alone can cross a step/phrase boundary.
-        p.frameClock = p.sampleClock?.();
-        callback(time);
-      });
-    const Original = window.AudioContext;
-    window.AudioContext = class extends Original {
-      constructor(...args: ConstructorParameters<typeof AudioContext>) {
-        super(...args);
-        p.contexts.push(this);
-      }
-    };
-    const original = AudioBufferSourceNode.prototype.start;
-    AudioBufferSourceNode.prototype.start = function (...args) {
-      p.starts.push({ time: args[0] ?? 0, at: this.context.currentTime });
-      p.alive.add(this);
-      this.addEventListener('ended', () => p.alive.delete(this), { once: true });
-      return original.apply(this, args);
-    };
-  });
+async function prepare(page: Page, bpm: number, dense = false, refreshClock = false) {
+  await page.addInitScript(
+    ({ refreshClock }) => {
+      const p: Probe = {
+        contexts: [],
+        clockReadsInFrame: 0,
+        starts: [],
+        triggers: [],
+        frames: [],
+        onsets: [],
+        alive: new Set(),
+      };
+      window.__pressure = p;
+      const requestFrame = window.requestAnimationFrame;
+      window.requestAnimationFrame = (callback) =>
+        requestFrame.call(window, (time) => {
+          // One native timestamp estimate per observation. A device can refine
+          // that estimate between reads, so before/app/after must share it.
+          // performance.now and the audio render head still advance normally.
+          p.clockReadsInFrame = 0;
+          const snapshot = p.sampleClock ? p.contexts[0]?.getOutputTimestamp() : undefined;
+          p.frameTimestamp = snapshot;
+          p.frameClock = p.sampleClock?.();
+          try {
+            callback(time);
+          } finally {
+            // The step observer runs in a microtask queued by the callback.
+            queueMicrotask(() => {
+              if (p.frameTimestamp === snapshot) p.frameTimestamp = undefined;
+            });
+          }
+        });
+      const Original = window.AudioContext;
+      window.AudioContext = class extends Original {
+        constructor(...args: ConstructorParameters<typeof AudioContext>) {
+          super(...args);
+          p.contexts.push(this);
+        }
+        getOutputTimestamp(): AudioTimestamp {
+          if (p.frameTimestamp) return p.frameTimestamp;
+          const stamp = super.getOutputTimestamp();
+          p.clockReadsInFrame++;
+          // Device timestamp estimates may refresh between successive reads.
+          // Exercise that discontinuity deterministically without changing audio.
+          if (refreshClock && p.sampleClock && p.clockReadsInFrame === 2)
+            return { ...stamp, contextTime: (stamp.contextTime ?? 0) - 0.08 };
+          return stamp;
+        }
+      };
+      const original = AudioBufferSourceNode.prototype.start;
+      AudioBufferSourceNode.prototype.start = function (...args) {
+        p.starts.push({ time: args[0] ?? 0, at: this.context.currentTime });
+        p.alive.add(this);
+        this.addEventListener('ended', () => p.alive.delete(this), { once: true });
+        return original.apply(this, args);
+      };
+    },
+    { refreshClock },
+  );
   await page.goto('/');
   await page.waitForSelector('html[data-ready="true"]');
   await page.evaluate(
@@ -86,8 +114,11 @@ async function prepare(page: Page, bpm: number, dense = false) {
       p.sampleClock = () => {
         const stamp = ctx.getOutputTimestamp();
         const at = performance.now();
-        const output = stamp.performanceTime
-          ? (stamp.contextTime ?? 0) + (at - stamp.performanceTime) / 1000
+        const age = (at - (stamp.performanceTime ?? 0)) / 1000;
+        const valid =
+          Number.isFinite(stamp.contextTime) && stamp.performanceTime && age >= 0 && age < 1;
+        const output = valid
+          ? (stamp.contextTime ?? 0) + age
           : ctx.currentTime - (ctx.outputLatency || 0) - (ctx.baseLatency || 0);
         // A device cannot play samples beyond the current render head.
         return { at, output: Math.max(0, Math.min(ctx.currentTime, output)) };
@@ -144,6 +175,7 @@ async function prepare(page: Page, bpm: number, dense = false) {
             windowStart,
             windowEnd,
             observationMs: after.at - before.at,
+            clockReads: p.clockReadsInFrame,
             eligible,
             marker: slots.findIndex((s) => s.classList.contains('playing-phrase')),
             expectedStep: expected?.step ?? -1,
@@ -203,6 +235,7 @@ async function finish(page: Page) {
 
 function assertCurrentFrame(frame: Probe['frames'][number]) {
   const detail = JSON.stringify(frame);
+  expect(frame.clockReads, detail).toBe(1);
   // Bound observer work; never turn a long stall into a permissive time window.
   expect(frame.observationMs, detail).toBeLessThanOrEqual(30);
   expect(frame.marker, detail).toBe(frame.phrase);
@@ -369,5 +402,27 @@ test('stop cancels all tracks together when its loop crosses an audio block', as
     for (let i = 0; i < track.length; i++)
       expect(Math.abs(track[i]!.time - first[i]!.time)).toBeLessThanOrEqual(1 / result.sampleRate);
   }
+  expect(result.alive).toBe(0);
+});
+
+test('device timestamp refreshes cannot turn a correct visual frame into a stale-frame failure', async ({
+  page,
+}) => {
+  await prepare(page, 220, false, true);
+  await page.locator('#play-btn').click();
+  await page.waitForTimeout(3000);
+  const result = await finish(page);
+  expect(result.frames.length).toBeGreaterThan(20);
+  for (const frame of result.frames) assertCurrentFrame(frame);
+  const unambiguous = result.frames.find((frame) => frame.eligible.length === 1)!;
+  expect(unambiguous).toBeDefined();
+  // The observation fix must still reject a genuinely stale step.
+  expect(() =>
+    assertCurrentFrame({
+      ...unambiguous,
+      step: (unambiguous.step + 63) % 64,
+      time: unambiguous.time - 60 / 220 / 4,
+    }),
+  ).toThrow();
   expect(result.alive).toBe(0);
 });

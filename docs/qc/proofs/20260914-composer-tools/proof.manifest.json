@@ -1,0 +1,53 @@
+{
+  "task_id": "20260914-composer-tools",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-composer-tools/logs/O-CI.log"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-composer-tools/logs/O-E2E.log"
+    },
+    {
+      "id": "O-E2E-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-composer-tools/logs/O-E2E-DELTA.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-composer-tools/logs/O-GATE-CONTRACTS-FULL.log"
+    },
+    {
+      "id": "O-GATE-ARCH-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-composer-tools/logs/O-GATE-ARCH-FULL.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260914-composer-tools/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "21 new Chrome tests cover the four editing features, actual sample/mix undo, isolated full-mix audition, stale preview/load cancellation, history memory bounds, recovery-copy boundaries, two-tab save conflicts, 48-phrase limits and 390px layouts. In-app LE FEU RESTE at 130 BPM: created a temporary section, undid it, previewed Driving with kick/lead protected, played the audition and discarded it; zero browser error logs. Desktop/mobile screenshots visually inspected; default CSS reset required explicit dialog centering. Existing song notes, samples and section labels preserved."
+  },
+  "artifacts": [
+    "verdict.json",
+    "initial-governance-failure.txt",
+    "initial-persistence-check.json"
+  ]
+}

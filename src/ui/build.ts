@@ -495,7 +495,8 @@ export function buildUI(): void {
     sb.onclick = () => openBrowser('drum', ti);
     header.appendChild(sb);
     const fill = el('button', 'fill-btn');
-    fill.textContent = 'FILL';
+    fill.textContent = 'REPEAT';
+    fill.title = 'Repeat the first bar across this phrase';
     fill.onclick = () => replicateTrackUI('drum', ti);
     header.appendChild(fill);
     const clr = el('button', 'clear-btn');
@@ -559,7 +560,8 @@ export function buildUI(): void {
     sb.onclick = () => openBrowser('melody', ti);
     header.appendChild(sb);
     const fill = el('button', 'fill-btn');
-    fill.textContent = 'FILL';
+    fill.textContent = 'REPEAT';
+    fill.title = 'Repeat the first bar across this phrase';
     fill.onclick = () => replicateTrackUI('melody', ti);
     header.appendChild(fill);
     const clr = el('button', 'clear-btn');
@@ -676,7 +678,8 @@ export function buildUI(): void {
   vsb.onclick = () => openBrowser('vocal', 0);
   vheader.appendChild(vsb);
   const vfill = el('button', 'fill-btn');
-  vfill.textContent = 'FILL';
+  vfill.textContent = 'REPEAT';
+  vfill.title = 'Repeat the first bar across this phrase';
   vfill.onclick = () => replicateTrackUI('vocal', 0);
   vheader.appendChild(vfill);
   const vclr = el('button', 'clear-btn');
@@ -789,6 +792,7 @@ export function buildUI(): void {
       fb.addEventListener('click', (e: MouseEvent) => {
         e.stopPropagation();
         fillWithPrev(i);
+        scheduleSave();
         refreshUI();
         updateSongPane();
       });

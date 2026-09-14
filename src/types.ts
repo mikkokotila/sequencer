@@ -25,6 +25,13 @@ export interface SampleData {
   data: ArrayBuffer;
 }
 
+export interface SongSection {
+  id: string;
+  name: string;
+  start: number;
+  length: number;
+}
+
 // Song persistence
 export interface SongData {
   id: string;
@@ -32,6 +39,8 @@ export interface SongData {
   bpm: number;
   phrases: Phrase[];
   phraseCount?: number;
+  sections?: SongSection[];
+  variationLocks?: boolean[];
   currentPhrase: number;
   octaves: number[];
   harmonies: number[];

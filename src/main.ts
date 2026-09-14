@@ -23,7 +23,9 @@ import {
   setOnPhraseChange,
 } from './engine/scheduler';
 import { on } from './events';
+import { beginHistoryGesture, endHistoryGesture } from './transport/history';
 import { initPlayhead } from './ui/playhead';
+import { initComposerTools } from './ui/composer-tools';
 import { genId } from './ui/helpers';
 import { SEQ_EXTENSIONS, activeExtensionId } from './engine/extensions/store';
 import {
@@ -80,6 +82,7 @@ async function init(): Promise<void> {
 
   // 3. Build the UI
   buildUI();
+  initComposerTools();
   document.getElementById('app')?.setAttribute('inert', '');
   const playButton = document.getElementById('play-btn') as HTMLButtonElement | null;
   if (playButton) playButton.disabled = true;
@@ -99,6 +102,39 @@ async function init(): Promise<void> {
   setOnPhraseChange(updateSongPane);
 
   on('engine:settingsChanged', scheduleSave);
+  on('editor:beforeRestore', () => {
+    stopPlayback();
+    disconnectAllMidi();
+    closeAdsrPopup();
+    closeEnginePanel();
+    if (activeExtensionId) toggleExtension(activeExtensionId);
+  });
+  on('editor:documentChanged', () => {
+    refreshUI();
+    refreshSongName();
+    updateSongPane();
+    for (let i = 0; i < TOTAL_TRACKS; i++) updateAdsrBtnState(i);
+  });
+  let sliderGesture = false;
+  document.addEventListener(
+    'pointerdown',
+    (event) => {
+      if (event.target instanceof Element && event.target.matches('input[type="range"]')) {
+        sliderGesture = true;
+        beginHistoryGesture('Adjust sound');
+      }
+    },
+    true,
+  );
+  const finishSlider = () => {
+    if (sliderGesture) {
+      sliderGesture = false;
+      endHistoryGesture();
+    }
+  };
+  document.addEventListener('pointerup', finishSlider);
+  document.addEventListener('pointercancel', finishSlider);
+  window.addEventListener('blur', finishSlider);
   on('transport:phraseCountChanged', ({ count, previous }) => {
     // A shrink may remove a manually queued empty phrase. Clear that queue atomically.
     if (count < previous) stopPlayback();

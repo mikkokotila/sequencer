@@ -1,0 +1,76 @@
+{
+  "task_id": "20260914-composer-tools",
+  "task_type": "feature",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "User explicitly authorizes product implementation: undo/redo, bulk pattern editing, named sections and controlled variations with audition/apply/discard in the existing design. This instruction overrides the default GA-only scope. Arrange Song follows this editing foundation in a later release.",
+    "in_scope": [
+      "src/**",
+      "index.html",
+      "e2e/**",
+      "README.md",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "samples/**",
+      "samples.json",
+      "server/**",
+      "package.json",
+      "package-lock.json",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**"
+    ],
+    "controls": [
+      {
+        "id": "history",
+        "description": "Bounded undo/redo with one entry per gesture or bulk action; notes, sound and section metadata; song loads reset history.",
+        "test": "Chrome GUI/API grouping, redo invalidation, sample and effect restoration, load boundaries, save conflicts."
+      },
+      {
+        "id": "bulk_editing",
+        "description": "Phrase/bar/track selections, copy/paste/clear/repeat/nudge/transpose through shared APIs.",
+        "test": "Cross-phrase, all-track operations, mono constraints, bounds and atomic rejection, one-step undo."
+      },
+      {
+        "id": "sections",
+        "description": "Named nonoverlapping phrase groups with duration, duplication, move and resize; JSON and database persistence.",
+        "test": "Legacy defaults, invalid metadata rejection, roundtrip, sections/notes remain aligned during edits."
+      },
+      {
+        "id": "variations",
+        "description": "Deterministic sparse/driving/syncopated/answer patterns on selected unlocked tracks; isolated full-mix preview and explicit apply/discard.",
+        "test": "Locked and unselected data unchanged, pitch/mono invariants, audition cancellation, stale preview rejection, no preview autosave, exact undo."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "Chrome desktop and 390px viewport",
+      "Legacy and 48-phrase songs",
+      "All nine track types with mono/polyphonic material",
+      "Real library song for GUI validation",
+      "Two-tab edits and slow asynchronous audition cancellation"
+    ],
+    "seed": "20260914-composer-tools",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding",
+      "benchmark_worklet_budget",
+      "persistence_roundtrip"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

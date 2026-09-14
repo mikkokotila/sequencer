@@ -3,6 +3,7 @@
  */
 
 import { STEPS, MEL_CFG } from '../config';
+import { beginHistoryGesture, endHistoryGesture, editDocument } from '../transport/history';
 import {
   drumPat,
   melPat,
@@ -69,6 +70,10 @@ export function clearSelection(): void {
 }
 
 export function replicateSelection(t: number): void {
+  editDocument('Repeat selected notes', () => repeatSelection(t));
+}
+
+function repeatSelection(t: number): void {
   const lo = Math.min(selection.start, selection.end);
   const hi = Math.max(selection.start, selection.end);
   if (lo < 0 || lo === hi) return;
@@ -144,6 +149,7 @@ export function setupPainting(): void {
     }
 
     if (selection.track >= 0) clearSelection();
+    beginHistoryGesture('Paint notes');
     setPainting(true);
     setPaintType(type);
 
@@ -211,7 +217,7 @@ export function setupPainting(): void {
     }
   });
 
-  document.addEventListener('mouseup', () => {
+  const finishStroke = () => {
     if (selecting) {
       setSelecting(false);
       if (selection.start > selection.end) {
@@ -222,8 +228,11 @@ export function setupPainting(): void {
     }
     if (painting) {
       setPainting(false);
+      endHistoryGesture();
       onSongPaneUpdate?.();
       onSave?.();
     }
-  });
+  };
+  document.addEventListener('mouseup', finishStroke);
+  window.addEventListener('blur', finishStroke);
 }

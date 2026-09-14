@@ -159,3 +159,45 @@ Programmatic callers use `setPhraseCount(count)` from `src/transport/patterns.ts
 Each track's ADSR popup includes **Note length** in sixteenth-note steps (1–64; default 1). It controls the envelope duration of sequenced notes; MIDI still uses note-off, and samples play naturally when ADSR is off. The same value is available through `setTrackAdsr(track, { gateSteps: 2 })` and is saved in `sound.adsr[].gateSteps`. Older songs default to one step. Live playback, phrase WAVs and full-song WAV/MP3 exports use this value. S2400 drum export remains dry and omits envelopes.
 
 To correct a half-tempo arrangement without changing its sound, double BPM, place each note at twice its original global step index (splitting phrases as needed), and double each enabled envelope's `gateSteps`. Sample audio, ADSR times, pitch and time-based effects stay unchanged.
+
+### Build a song from reusable phrases
+
+The existing phrase pane now has **Undo**, **Redo**, **Edit**, **Sections**, and **Vary**. Shift-click two phrase slots to select a range, or choose the first/last phrase inside a dialog. The pane shows the playable bars and duration at the actual BPM.
+
+- **Edit:** select phrases, bars, and tracks; copy/cut/paste, clear, repeat the selected bars through each phrase's ending, nudge by one sixteenth note, or transpose synth notes by a semitone. Paste uses the copied track positions and replaces only its destination bars. Nudge wraps inside the selection; transpose rejects notes outside the one-octave grid instead of silently wrapping pitch.
+- **Sections:** name phrase groups (Intro, Main, Break, etc.), select them from the section strip, duplicate or reorder them, and resize them. Extending repeats the section's material; shortening trims its ending. Structural edits move the notes with the labels and cannot discard material beyond the 48-phrase limit. Section times follow playback, which skips empty phrases.
+- **Vary:** select the tracks and bars to develop. Protect any tracks that must remain unchanged (kick and main lead are protected by default). **Sparse** keeps alternating events, **Driving** adds pulses two steps after existing events where free, **Syncopated** moves on-beat events to free offbeats, and **Answer** echoes the first half two steps late in the second half. These are deterministic transformations using existing pitches and samples.
+- Hear the original or variation for any selected phrase through the current mix and effects. Audition never writes notes or autosaves its candidate. **Apply variation** commits one undoable edit; **Discard variation**, closing the dialog, or Escape cancels it. A changed song invalidates a stale preview.
+- Undo/redo covers painting strokes, bulk edits, section metadata, tempo, names, samples, envelopes, and sound controls. A pointer drag is one edit. Use the buttons or Cmd/Ctrl+Z and Cmd/Ctrl+Shift+Z (Ctrl+Y also works); focused text fields retain native text undo. Restoring an edit stops playback and cancels pending sample loads. History lasts for this loaded session, keeps at most 50 edits, and limits additional retained sample audio to 128 MiB. Loading/importing another song, reloading, or saving a recovery copy resets history. Sections and protection settings persist in saved songs and portable JSON.
+
+The GUI uses the same operations available programmatically:
+
+```ts
+import {
+  previewVariation, applyVariation, copyRegion, pasteRegion,
+  nameSection, duplicateSection, moveSection, resizeSection,
+} from './src/transport/composer';
+import { undo, redo, editDocument } from './src/transport/history';
+import { renderSongToBuffer } from './src/transport/render-song';
+
+// Zero-based indices: develop hats and bass in the first two four-bar phrases.
+const region = { from: 0, to: 1, startStep: 0, endStep: 63, tracks: [2, 3, 5] };
+const candidate = previewVariation(region, 'driving');
+const audition = await renderSongToBuffer({ phraseOverride: candidate.result });
+// Play audition.buffer, then choose whether to apply:
+applyVariation(candidate);
+undo();
+redo();
+
+const clip = copyRegion(region);
+pasteRegion(clip, 4); // Paste into phrases 5–6, on the copied tracks.
+const intro = nameSection(0, 2, 'Intro');
+const copy = duplicateSection(intro.id);
+resizeSection(copy.id, 4);
+moveSection(copy.id, 0);
+
+// Group existing synchronous API mutations into one undoable, autosaved edit.
+editDocument('My combined edit', () => { /* perform synchronous edits here */ });
+```
+
+Track indices are 0–4 drums, 5 mono bass, 6–7 poly synths, and 8 the sample track. Bulk operations validate their complete selection before committing. Variation Apply checks the source document and recomputes the transformation so protected tracks cannot be changed through a modified preview object. The song renderer's optional `phraseOverride` accepts 1–48 phrases, preserves their empty positions for audition, and snapshots their notes/settings before asynchronous work begins.

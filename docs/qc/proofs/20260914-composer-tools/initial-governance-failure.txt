@@ -1,0 +1,61 @@
+
+> sequencer@1.0.0 gov:commit
+> node docs/qc/scripts/gov-commit.mjs --spec docs/qc/specs/20260914-composer-tools.task.spec.json -m feat(composer): add undoable edits, sections and variations
+
+governance-compiler: phase summary
+execution_profile: real
+- parse: PASS | task.spec.json schema validated.
+- bind: PASS | Diff-to-contract binding complete.
+- synthesize: PASS | commands=6, oracles=8, manifest=required
+- execute: FAIL | commands=6, oracles=8, diagnostics=2
+- verify: FAIL | Final verdict: FAIL
+- attest: FAIL | verdict.json written.
+- qc-audit: FAIL | Deterministic QC audit written: docs/qc/runs/20260914-115408Z-7a0385a-1789386541646-d596790e.json, docs/qc/runs/20260914-115408Z-7a0385a-1789386541646-d596790e.md
+- audit: PASS | Appended 6 warning/error event(s) to logs/compiler.log.
+
+command obligations
+- PASS | O-CI | npm run ci | blocking=true | log=docs/qc/proofs/20260914-composer-tools/logs/O-CI.log | exit=0
+- PASS | O-E2E | npm run e2e | blocking=true | log=docs/qc/proofs/20260914-composer-tools/logs/O-E2E.log | exit=0
+- PASS | O-E2E-DELTA | npm run gate:e2e-delta | blocking=true | log=docs/qc/proofs/20260914-composer-tools/logs/O-E2E-DELTA.log | exit=0
+- PASS | O-GATE-CONTRACTS-FULL | node docs/qc/scripts/contract-gates.mjs | blocking=true | log=docs/qc/proofs/20260914-composer-tools/logs/O-GATE-CONTRACTS-FULL.log | exit=0
+- PASS | O-GATE-ARCH-FULL | node docs/qc/scripts/architecture-gates.mjs | blocking=true | log=docs/qc/proofs/20260914-composer-tools/logs/O-GATE-ARCH-FULL.log | exit=0
+- PASS | O-COMMIT-RANGE | npm run gate:commit-range | blocking=true | log=docs/qc/proofs/20260914-composer-tools/logs/O-COMMIT-RANGE.log | exit=0
+
+debt ratchet
+- baseline_id=20260322-global-debt-baseline
+- baseline_total=11 | current_total=0 | delta=-11
+- require_debt_reduction=false
+
+oracle obligations
+- PASS | off_transparent | artifact=docs/qc/proofs/20260914-composer-tools/oracles/off_transparent.json
+- PASS | on_audible | artifact=docs/qc/proofs/20260914-composer-tools/oracles/on_audible.json
+- PASS | low_end_continuity | artifact=docs/qc/proofs/20260914-composer-tools/oracles/low_end_continuity.json
+- PASS | clip_guard | artifact=docs/qc/proofs/20260914-composer-tools/oracles/clip_guard.json
+- PASS | default_safety | artifact=docs/qc/proofs/20260914-composer-tools/oracles/default_safety.json
+- PASS | control_binding | artifact=docs/qc/proofs/20260914-composer-tools/oracles/control_binding.json
+- PASS | benchmark_worklet_budget | artifact=docs/qc/proofs/20260914-composer-tools/oracles/benchmark_worklet_budget.json
+- FAIL | persistence_roundtrip | artifact=docs/qc/proofs/20260914-composer-tools/oracles/persistence_roundtrip.json
+
+diagnostics
+- FAIL | GOV-CTRL-006 | persistence_roundtrip metric failed (state_hash_match == 1, got 0)
+  acceptable: RCP-CTRL-PERSISTENCE: Fix serialization/deserialization and prove roundtrip hash equality.
+  disallowed: Force-resetting controls on load || Ignoring non-default state mismatches
+  recheck: run persistence_roundtrip oracle with pre/post behavior hash
+- FAIL | GOV-CTRL-006 | persistence_roundtrip reported status FAIL
+  acceptable: RCP-CTRL-PERSISTENCE: Fix serialization/deserialization and prove roundtrip hash equality.
+  disallowed: Force-resetting controls on load || Ignoring non-default state mismatches
+  recheck: run persistence_roundtrip oracle with pre/post behavior hash
+
+required remediation loop
+1. Read the highest-severity diagnostic and pick one acceptable recipe.
+2. Apply only root-cause remediation; do not bypass with direct commit.
+3. Re-run: npm run gov:check -- --spec <same-spec>
+4. If conflict is truly unresolvable in-task, request operator guidance with evidence.
+5. Repeat until final verdict is PASS, then run gov:commit.
+
+attestation: docs/qc/proofs/20260914-composer-tools/verdict.json
+qc audit json: docs/qc/runs/20260914-115408Z-7a0385a-1789386541646-d596790e.json
+qc audit md: docs/qc/runs/20260914-115408Z-7a0385a-1789386541646-d596790e.md
+
+final verdict: FAIL
+FAIL | GOV-PROC-004 | Governance compiler did not return PASS. Commit blocked.

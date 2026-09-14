@@ -5,7 +5,7 @@
  * NO DOM types (no HTMLElement, no document).
  */
 
-import type { Phrase } from '../types';
+import type { Phrase, SongSection } from '../types';
 import { DRUMS_CFG, MEL_CFG, STEPS, DEFAULT_PHRASES, PHRASE_COUNTS } from '../config';
 import { emit } from '../events';
 
@@ -23,6 +23,9 @@ export function makeEmptyPhrase(): Phrase {
 }
 
 export const phrases: Phrase[] = Array.from({ length: DEFAULT_PHRASES }, () => makeEmptyPhrase());
+
+export const sections: SongSection[] = [];
+export const variationLocks: boolean[] = Array.from({ length: 9 }, (_, i) => i === 0 || i === 7);
 
 export let currentPhrase = 0;
 export let playingPhrase = 0;
@@ -85,6 +88,8 @@ export function setPhraseCount(count: number): void {
       );
     }
   }
+  if (sections.some((section) => section.start + section.length > count))
+    throw new Error('Resize or remove sections beyond the new phrase count first.');
   while (phrases.length < count) phrases.push(makeEmptyPhrase());
   phrases.splice(count);
   if (currentPhrase >= count) switchToPhrase(count - 1);

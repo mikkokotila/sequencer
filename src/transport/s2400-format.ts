@@ -234,3 +234,67 @@ export function buildS2400Project(
   r.u(59, 1);
   return r.finish();
 }
+
+/** Device-default MIDI track settings (manual pp. 86–88 and the supplied Project002 map). */
+export function buildS2400MidiMap(): Uint8Array {
+  const lines = [
+    '; S2400 MIDI TRACKS MAP',
+    '',
+    '[ports]',
+    'in-din=0',
+    'in-usb-b=0',
+    'in-usb-host=1',
+    'in-dsp-card=0',
+    'out-din=1',
+    'out-usb-b=1',
+    'out-usb-host=0',
+    'out-dsp-card=0',
+    '',
+  ];
+  const colors = ['RED', 'ORANGE', 'YELLOW', 'GREEN', 'CYAN', 'BLUE', 'PURPLE', 'VIOLET'];
+  for (let channel = 1; channel <= 16; channel++) {
+    // The device default leaves F2/channel 10 unconfigured for percussion.
+    if (channel === 10) continue;
+    const pad = ((channel - 1) % 8) + 1;
+    const name = `${channel <= 8 ? 'E' : 'F'}${pad}`;
+    const color = colors[channel <= 8 ? pad - 1 : (pad + 6) % 8]!;
+    lines.push(
+      `[${name}]`,
+      `name=${name}`,
+      `channel=${channel}`,
+      `color=${color}`,
+      'pad-mode=PITCHED',
+      'pad-channel=TRACK',
+      'pad-dynamic=0',
+      'pad-root-note=C',
+      'pad-scale=Chromatic',
+      'a-mode=OFF',
+      'b-mode=OFF',
+      'mute-mode=MUTE',
+      'solo-mode=SOLO',
+    );
+    for (const [control, number] of [
+      ['fader', 7],
+      ['top', 74],
+      ['bottom', 71],
+    ] as const) {
+      lines.push(
+        `${control}-mode=CC`,
+        `${control}-channel=TRACK`,
+        `${control}-number=${number}`,
+        `${control}-min=0`,
+        `${control}-max=127`,
+      );
+    }
+    lines.push(
+      'record=0',
+      `rec-group=${pad}`,
+      'swing-note=PATTERN',
+      'swing-amount=PATTERN',
+      'quant-time=DEFAULT',
+      'quant-shift=0',
+      '',
+    );
+  }
+  return new TextEncoder().encode(lines.join('\r\n') + '\r\n');
+}

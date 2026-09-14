@@ -1,5 +1,6 @@
 // Independent readers: these never import the production serializers.
 import { expect } from '@playwright/test';
+import { createHash } from 'node:crypto';
 import { crc32 } from 'node:zlib';
 
 export function readZip(bytes: Buffer): Map<string, Buffer> {
@@ -66,4 +67,29 @@ export function events(rs: Record[]) {
     offset += (count + 1) * 4;
   }
   return result;
+}
+
+/** Check the extracted project in isolation: three sidecars plus every KIT sample. */
+export function expectCompleteS2400Project(files: Map<string, Buffer>): void {
+  const projectPaths = [...files.keys()].filter(name => name.startsWith('PROJECTS/'));
+  const sequences = projectPaths.filter(name => name.endsWith('.S24'));
+  expect(sequences).toHaveLength(1);
+  const base = sequences[0]!.slice(0, -4);
+  const folder = base.slice(0, base.lastIndexOf('/') + 1);
+  const kitPath = `${base}.KIT`, mapPath = `${folder}MIDItracks.map`;
+  expect(files.has(kitPath)).toBe(true); expect(files.has(mapPath)).toBe(true);
+  const kit = records(files.get(kitPath)!);
+  const samples = blocks(kit, 2).map(track => `${folder}${blob(track, 10).toString('ascii').split('\0')[0]}.wav`);
+  expect(samples).toHaveLength(field(kit, 1));
+  expect(projectPaths.sort()).toEqual([sequences[0]!, kitPath, mapPath, ...samples].sort());
+  samples.forEach(name => {
+    const wav = files.get(name)!;
+    expect(wav.toString('ascii', 0, 4)).toBe('RIFF');
+    expect(wav.readUInt32LE(4) + 8).toBe(wav.length);
+    expect(wav.readUInt32LE(40)).toBeGreaterThan(0);
+  });
+  // Hardware-saved Project002 map, normalizing only line endings/trailing whitespace.
+  const normalized = files.get(mapPath)!.toString('ascii').replace(/\r\n/g, '\n').split('\n').map(line => line.trimEnd()).join('\n');
+  expect(createHash('sha256').update(normalized).digest('hex'))
+    .toBe('9991f5cea1cf92afa43308fc6e90bc9c1294e70f4124cf3fde5c99b7a7e6281d');
 }

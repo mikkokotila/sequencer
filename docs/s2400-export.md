@@ -1,6 +1,6 @@
 # S2400 drum export (experimental)
 
-The download dialog exports a ZIP containing `PROJECTS/<name>/<name>.S24`, the matching `.KIT`, and the used drum WAVs. Extract the ZIP and copy that project folder into `PROJECTS` on the SD card, without replacing an existing project. Eject the card, load the `.S24` on the S2400, then select the patterns individually. No MIDI map is required for internal sample-track playback.
+The download dialog exports a ZIP containing `PROJECTS/<name>/<name>.S24`, the matching `.KIT`, `MIDItracks.map`, and every drum WAV referenced by the kit. Extract the ZIP and copy that project folder into `PROJECTS` on the SD card, without replacing an existing project. Eject the card, load the `.S24` on the S2400, then select the patterns individually. The included MIDI map carries the device-default E/F track settings (F2/channel 10 is left unconfigured, as on the device); no external MIDI sequences are exported.
 
 ## Mapping and boundaries
 

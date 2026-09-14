@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
-import { readZip, records, field, blob, blocks, events } from './s2400-files';
+import { readZip, records, field, blob, blocks, events, expectCompleteS2400Project } from './s2400-files';
 
 async function fixture(page: Page) {
   await page.goto('/');
@@ -93,7 +93,7 @@ test('S2400 project preserves phrase order, final steps, pad gaps, mutes, levels
   expect(events(patterns[1]!)).toEqual([{ tick: 48, track: 4, parameters: [(4799 << 8) | 8] }]);
   // First trigger + end parameter exactly match the hardware-saved Project002 fixture.
   expect(blob(patterns[0]!, 23).subarray(0, 8).toString('hex')).toBe('010c000008cf1a00');
-  expect(result.files.size).toBe(6);
+  expect(result.files.size).toBe(7);
 });
 
 test('snapshot is isolated from callbacks, live playback, buffer mutation and phrase edits', async ({ page }) => {
@@ -229,4 +229,19 @@ test('GUI cancel during resampling produces no download and permits retry', asyn
   await page.locator('#export-s2400-btn').click(); await download;
   await expect(page.locator('#song-export-status')).toContainText('downloaded');
   expect(downloads).toBe(1);
+});
+
+test('project folder contains KIT, S24, the device MIDI map and every referenced drum sample', async ({ page }) => {
+  await fixture(page);
+  await page.evaluate(async () => {
+    const song = await import('/src/transport/song.ts');
+    const p = await import('/src/transport/patterns.ts');
+    song.drumBuf.fill(song.drumBuf[0]!);
+    for (let track = 0; track < 5; track++) p.phrases[track]!.drumPat[track]![63] = true;
+    song.setMuted(4, true);
+  });
+  const result = await exportFiles(page);
+  expectCompleteS2400Project(result.files);
+  expect(result.tracks).toBe(5);
+  expect(result.files.size).toBe(10); // Three project files, five samples, two outer documentation files.
 });

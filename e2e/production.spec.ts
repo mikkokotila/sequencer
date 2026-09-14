@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
-import { readZip, records, field, blocks, events } from './s2400-files';
+import { readZip, records, field, blocks, events, expectCompleteS2400Project } from './s2400-files';
 import { readFile } from 'node:fs/promises';
 import { preview, type PreviewServer } from 'vite';
 
@@ -90,6 +90,7 @@ test('production build initializes worklets, plays samples, and downloads WAV, M
     else if (format === 'mp3') expect(bytes[0]).toBe(0xff);
     else {
       const files = readZip(bytes);
+      expectCompleteS2400Project(files);
       const project = records([...files].find(([name]) => name.endsWith('.S24'))![1]);
       expect(field(project, 0)).toBe(0x30003);
       expect(events(blocks(project, 16)[0]!)).toHaveLength(4);

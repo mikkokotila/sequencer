@@ -172,6 +172,8 @@ export async function exportS2400Drums(options: S2400ExportOptions = {}): Promis
     'Unzip, then copy the project folder inside PROJECTS to the SD card PROJECTS directory.',
     'Use a new folder; do not replace an existing project. Eject the card before moving it to the S2400.',
     `Load ${snapshot.name}.S24 on the S2400. Select patterns individually; their names identify the source phrase.`,
+    'The project folder contains its .S24, .KIT, MIDItracks.map, and every referenced drum WAV.',
+    'MIDItracks.map contains device-default external MIDI track settings; no external MIDI sequences are exported.',
     'WAV samples are 48 kHz, 16-bit PCM. Stereo is preserved. Outputs route to 1/2; mono to output 1.',
     'Only drum tracks with steps are included. Pad numbers stay fixed at A1–A5, including gaps.',
     'Muted rows retain their notes and mute state. Unmute their pads to hear them.',

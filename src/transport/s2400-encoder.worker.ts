@@ -1,6 +1,7 @@
 import { buildStoreZip } from './zip';
 import {
   buildS2400Kit,
+  buildS2400MidiMap,
   buildS2400Project,
   type S2400Pattern,
   type S2400Track,
@@ -22,6 +23,7 @@ self.onmessage = (event: MessageEvent<Request>) => {
     const entries = [
       { name: `${prefix}${name}.KIT`, data: buildS2400Kit(tracks) },
       { name: `${prefix}${name}.S24`, data: buildS2400Project(tracks, patterns, tempo) },
+      { name: `${prefix}MIDItracks.map`, data: buildS2400MidiMap() },
       { name: 'README.txt', data: new TextEncoder().encode(readme) },
       { name: 'export.json', data: new TextEncoder().encode(manifest) },
     ];

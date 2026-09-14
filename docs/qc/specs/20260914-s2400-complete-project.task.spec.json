@@ -1,0 +1,61 @@
+{
+  "task_id": "20260914-s2400-complete-project",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Complete the S2400 project archive with the MIDItracks.map sidecar, alongside KIT/S24 and every referenced drum WAV, as explicitly requested by the user. Keep the existing percussion scope and PR #45. Explicit user correction authorizes product implementation despite the default GA-only scope.",
+    "in_scope": [
+      "src/**",
+      "e2e/s2400*",
+      "e2e/production.spec.ts",
+      "README.md",
+      "docs/s2400-export.md",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "samples/**",
+      "samples.json",
+      "server/**",
+      "package.json",
+      "package-lock.json",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**"
+    ],
+    "controls": [
+      {
+        "id": "s2400_archive_completeness",
+        "description": "Every downloaded project contains KIT, S24, MIDItracks.map and all kit-referenced WAV samples.",
+        "test": "Independent ZIP/record/WAV reader validates the exact project file inventory in API and built production GUI exports, and checks the generated MIDI map against the normalized device-saved map digest."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "All five drum pads including muted and late-phrase hits",
+      "Complete project inventory independent of outside documentation files",
+      "Normalized SHA256 of device-saved MIDItracks.map",
+      "Built production GUI project download",
+      "Regenerated LE FEU RESTE export: three project sidecars and five drum samples"
+    ],
+    "seed": "20260914-s2400-complete-project",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding",
+      "benchmark_worklet_budget"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

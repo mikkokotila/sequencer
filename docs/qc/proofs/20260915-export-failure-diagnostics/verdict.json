@@ -1,0 +1,189 @@
+{
+  "task_id": "20260915-export-failure-diagnostics",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "spec_path": "docs/qc/specs/20260915-export-failure-diagnostics.task.spec.json",
+  "policy_version": "2.0.0",
+  "diagnostics_version": "1.0.0",
+  "started_at_utc": "2026-09-15T16:50:05.683Z",
+  "finished_at_utc": "2026-09-15T16:55:39.650Z",
+  "head_sha": "5777c38",
+  "tree_sha": "98811bf52a4a4681255b7cce06fc0b06d5ba2ce2",
+  "subject_sha": "a0399cdab2149a1f020465ea9e62888c1e0d75b9e640cceb54843bafb4cac334",
+  "subject_files": [
+    "e2e/song-export.spec.ts",
+    "src/transport/render-song.ts",
+    "src/ui/song-export.ts"
+  ],
+  "simulated_files": [],
+  "changed_files": [
+    "docs/qc/proofs/20260915-export-failure-diagnostics.md",
+    "docs/qc/proofs/20260915-export-failure-diagnostics/proof.manifest.json",
+    "docs/qc/specs/20260915-export-failure-diagnostics.task.spec.json",
+    "e2e/song-export.spec.ts",
+    "src/transport/render-song.ts",
+    "src/ui/song-export.ts"
+  ],
+  "phases": [
+    {
+      "name": "parse",
+      "status": "PASS",
+      "detail": "task.spec.json schema validated."
+    },
+    {
+      "name": "bind",
+      "status": "PASS",
+      "detail": "Diff-to-contract binding complete."
+    },
+    {
+      "name": "synthesize",
+      "status": "PASS",
+      "detail": "commands=6, oracles=8, manifest=required"
+    },
+    {
+      "name": "execute",
+      "status": "PASS",
+      "detail": "commands=6, oracles=8, diagnostics=0"
+    },
+    {
+      "name": "verify",
+      "status": "PASS",
+      "detail": "Final verdict: PASS"
+    }
+  ],
+  "obligations": {
+    "commands": [
+      {
+        "id": "O-CI",
+        "label": "CI",
+        "command": "npm run ci",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 7540,
+        "log_file": "docs/qc/proofs/20260915-export-failure-diagnostics/logs/O-CI.log"
+      },
+      {
+        "id": "O-E2E",
+        "label": "E2E",
+        "command": "npm run e2e",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 308331,
+        "log_file": "docs/qc/proofs/20260915-export-failure-diagnostics/logs/O-E2E.log"
+      },
+      {
+        "id": "O-E2E-DELTA",
+        "label": "E2E delta coverage",
+        "command": "npm run gate:e2e-delta",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 329,
+        "log_file": "docs/qc/proofs/20260915-export-failure-diagnostics/logs/O-E2E-DELTA.log"
+      },
+      {
+        "id": "O-GATE-CONTRACTS-FULL",
+        "label": "Contract static gates",
+        "command": "node docs/qc/scripts/contract-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 510,
+        "log_file": "docs/qc/proofs/20260915-export-failure-diagnostics/logs/O-GATE-CONTRACTS-FULL.log"
+      },
+      {
+        "id": "O-GATE-ARCH-FULL",
+        "label": "Architecture gates",
+        "command": "node docs/qc/scripts/architecture-gates.mjs",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 498,
+        "log_file": "docs/qc/proofs/20260915-export-failure-diagnostics/logs/O-GATE-ARCH-FULL.log"
+      },
+      {
+        "id": "O-COMMIT-RANGE",
+        "label": "Commit range governance attestation",
+        "command": "npm run gate:commit-range",
+        "blocking": true,
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_ms": 508,
+        "log_file": "docs/qc/proofs/20260915-export-failure-diagnostics/logs/O-COMMIT-RANGE.log"
+      }
+    ],
+    "global_debt": [],
+    "debt_ratchet": {
+      "baseline_id": "20260322-global-debt-baseline",
+      "baseline_total_failures": 11,
+      "current_total_failures": 0,
+      "delta_total_failures": -11,
+      "require_debt_reduction": false,
+      "contracts_failures": [],
+      "architecture_failures": []
+    },
+    "oracles": [
+      {
+        "oracle_id": "off_transparent",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260915-export-failure-diagnostics/oracles/off_transparent.json",
+        "raw_artifact": "docs/qc/proofs/20260915-export-failure-diagnostics/raw/off_transparent.json",
+        "raw_sha256": "eac6cd5e7c71a7b4e144cc1ef1810d451cbc2a91f498f3803f9ed9408ad2848d"
+      },
+      {
+        "oracle_id": "on_audible",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260915-export-failure-diagnostics/oracles/on_audible.json",
+        "raw_artifact": "docs/qc/proofs/20260915-export-failure-diagnostics/raw/on_audible.json",
+        "raw_sha256": "7a8995f3fb3635a755b60e36c00fa477b12ccfc933592ac4ad0836fc3dcac9fb"
+      },
+      {
+        "oracle_id": "low_end_continuity",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260915-export-failure-diagnostics/oracles/low_end_continuity.json",
+        "raw_artifact": "docs/qc/proofs/20260915-export-failure-diagnostics/raw/low_end_continuity.json",
+        "raw_sha256": "47cc945832b86776fb29023d39cc77964f96aa10114ecff29c1d331da2357a0f"
+      },
+      {
+        "oracle_id": "clip_guard",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260915-export-failure-diagnostics/oracles/clip_guard.json",
+        "raw_artifact": "docs/qc/proofs/20260915-export-failure-diagnostics/raw/clip_guard.json",
+        "raw_sha256": "6e3fcf31dd2504cb0cf09055d2e1b7d3e14430e6936557a75b853def9d0f4b23"
+      },
+      {
+        "oracle_id": "default_safety",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260915-export-failure-diagnostics/oracles/default_safety.json",
+        "raw_artifact": "docs/qc/proofs/20260915-export-failure-diagnostics/raw/default_safety.json",
+        "raw_sha256": "e7f898d4c98fd59b4579f71c185717bd8591911ee881479caac3a891da475d48"
+      },
+      {
+        "oracle_id": "control_binding",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260915-export-failure-diagnostics/oracles/control_binding.json",
+        "raw_artifact": "docs/qc/proofs/20260915-export-failure-diagnostics/raw/control_binding.json",
+        "raw_sha256": "2a30e9f1681a536cc8cab51d8ca54b1326e84432bc9bc25f3b8eab54d18f63f7"
+      },
+      {
+        "oracle_id": "benchmark_worklet_budget",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260915-export-failure-diagnostics/oracles/benchmark_worklet_budget.json",
+        "raw_artifact": "docs/qc/proofs/20260915-export-failure-diagnostics/raw/benchmark_worklet_budget.json",
+        "raw_sha256": "06313f86458928948817728c067966328e7a091ca6506cd97fcb2ecf8f310b4b"
+      },
+      {
+        "oracle_id": "persistence_roundtrip",
+        "status": "PASS",
+        "artifact": "docs/qc/proofs/20260915-export-failure-diagnostics/oracles/persistence_roundtrip.json",
+        "raw_artifact": "docs/qc/proofs/20260915-export-failure-diagnostics/raw/persistence_roundtrip.json",
+        "raw_sha256": "9f27ad9a8ded97fe2629013a5c5e4553acd9cf03d8eef09cccb9775dc3515ffb"
+      }
+    ],
+    "manifest_required": true
+  },
+  "diagnostics": [],
+  "verdict": "PASS"
+}

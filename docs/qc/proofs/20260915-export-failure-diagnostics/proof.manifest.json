@@ -1,0 +1,51 @@
+{
+  "task_id": "20260915-export-failure-diagnostics",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260915-export-failure-diagnostics/logs/O-CI.log"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260915-export-failure-diagnostics/logs/O-E2E.log"
+    },
+    {
+      "id": "O-E2E-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260915-export-failure-diagnostics/logs/O-E2E-DELTA.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260915-export-failure-diagnostics/logs/O-GATE-CONTRACTS-FULL.log"
+    },
+    {
+      "id": "O-GATE-ARCH-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260915-export-failure-diagnostics/logs/O-GATE-ARCH-FULL.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260915-export-failure-diagnostics/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "19 real Chromium export tests pass, including three new failure/retry regressions that fail on the original implementation. Actual in-app browser six-minute 96 BPM song render completes after restoring the local server; host download destination is unverified. All 19 export tests also pass in separately launched installed Google Chrome, with actual file inspection. Compiler-owned full regression and audio evidence are authoritative."
+  },
+  "artifacts": [
+    "verdict.json"
+  ]
+}

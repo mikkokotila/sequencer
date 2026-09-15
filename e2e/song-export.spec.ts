@@ -319,3 +319,61 @@ test('song export renders melody octaves, polyphonic harmony, and vocal timing',
   expect(result.beforeVocal).toBeLessThan(1e-8);
   expect(result.absent).toBeLessThan(0.005);
 });
+
+for (const format of ['wav', 'mp3'] as const) {
+  test(`${format.toUpperCase()} processor load failure is reported as a failure and retries without reloading the song`, async ({ page }) => {
+    await fixture(page, false);
+    const downloads: string[] = [];
+    page.on('download', file => downloads.push(file.suggestedFilename()));
+    // Chromium can serve worklet modules from its own cache, bypassing page routes.
+    // Reject the five processor registrations with the browser's native failure type.
+    await page.evaluate(() => {
+      const original = AudioWorklet.prototype.addModule;
+      let remainingFailures = 5;
+      AudioWorklet.prototype.addModule = function (...args) {
+        if (remainingFailures-- > 0)
+          return Promise.reject(new DOMException('Unable to load a worklet module', 'AbortError'));
+        return original.apply(this, args);
+      };
+    });
+    await page.locator('#export-song-btn').click();
+    await page.locator(`#export-${format}-btn`).click();
+    await expect(page.locator('#song-export-status')).toContainText('Could not load audio processors');
+    await expect(page.locator('#song-export-status')).toHaveClass(/export-error/);
+    await expect(page.locator('#song-export-status')).not.toContainText('cancelled');
+    await expect(page.locator(`#export-${format}-btn`)).toBeEnabled();
+    expect(downloads).toEqual([]);
+    const download = page.waitForEvent('download');
+    await page.locator(`#export-${format}-btn`).click();
+    expect((await download).suggestedFilename()).toBe(`Audio Fixture.${format}`);
+    await expect(page.locator('#song-export-status')).not.toHaveClass(/export-error/);
+    expect(await page.evaluate(async () => {
+      const song = await import('/src/transport/song.ts');
+      const patterns = await import('/src/transport/patterns.ts');
+      return { name: song.currentSongName, bpm: song.bpm, note: patterns.phrases[0]!.drumPat[0]![0] };
+    })).toEqual({ name: 'Audio Fixture', bpm: 220, note: true });
+  });
+}
+
+test('a native rendering AbortError without user cancellation is a failure and permits retry', async ({ page }) => {
+  await fixture(page, false);
+  await page.evaluate(() => {
+    const original = OfflineAudioContext.prototype.startRendering;
+    let first = true;
+    OfflineAudioContext.prototype.startRendering = function () {
+      if (first) {
+        first = false;
+        return Promise.reject(new DOMException('Rendering unavailable', 'AbortError'));
+      }
+      return original.call(this);
+    };
+  });
+  await page.locator('#export-song-btn').click();
+  await page.locator('#export-wav-btn').click();
+  await expect(page.locator('#song-export-status')).toContainText('Rendering unavailable');
+  await expect(page.locator('#song-export-status')).toHaveClass(/export-error/);
+  await expect(page.locator('#song-export-status')).not.toContainText('cancelled');
+  const download = page.waitForEvent('download');
+  await page.locator('#export-wav-btn').click();
+  expect((await download).suggestedFilename()).toBe('Audio Fixture.wav');
+});

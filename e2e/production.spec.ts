@@ -1,23 +1,39 @@
 import { test, expect } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
 import { readZip, records, field, blocks, events, expectCompleteS2400Project } from './s2400-files';
-import { readFile } from 'node:fs/promises';
+import { readFile, mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { preview, type PreviewServer } from 'vite';
 
 let server: PreviewServer;
+let documents: string;
+async function startPreview(mode: 'browser' | 'local', port: number) {
+  const previousMode = process.env.SEQUENCER_DOWNLOAD_MODE;
+  const previousDocuments = process.env.SEQUENCER_DOCUMENTS_DIR;
+  process.env.SEQUENCER_DOWNLOAD_MODE = mode;
+  process.env.SEQUENCER_DOCUMENTS_DIR = documents;
+  try {
+    return await preview({ root: process.cwd(), logLevel: 'error',
+      preview: { host: '127.0.0.1', port, strictPort: true } });
+  } finally {
+    if (previousMode === undefined) delete process.env.SEQUENCER_DOWNLOAD_MODE;
+    else process.env.SEQUENCER_DOWNLOAD_MODE = previousMode;
+    if (previousDocuments === undefined) delete process.env.SEQUENCER_DOCUMENTS_DIR;
+    else process.env.SEQUENCER_DOCUMENTS_DIR = previousDocuments;
+  }
+}
 test.beforeAll(async () => {
+  documents = await mkdtemp(path.join(tmpdir(), 'sequencer-production-documents-'));
   execFileSync('npm', ['run', 'build'], { cwd: process.cwd(), stdio: 'pipe' });
-  server = await preview({
-    root: process.cwd(),
-    logLevel: 'error',
-    preview: { host: '127.0.0.1', port: 5177, strictPort: true },
-  });
+  server = await startPreview('browser', 5177);
 });
 test.afterAll(async () => {
   if (server) {
     server.httpServer.closeAllConnections();
     await new Promise<void>((resolve) => server.httpServer.close(() => resolve()));
   }
+  if (documents) await rm(documents, { recursive: true, force: true });
 });
 
 test('production build initializes worklets, plays samples, and downloads WAV, MP3 and S2400', async ({ page }) => {
@@ -56,7 +72,7 @@ test('production build initializes worklets, plays samples, and downloads WAV, M
   wav.writeUInt32LE(samples * 2, 40);
   for (let i = 0; i < samples; i++)
     wav.writeInt16LE(Math.round(Math.sin((i * 2 * Math.PI * 220) / 44100) * 1000), 44 + i * 2);
-  await page.route('**/*.wav', (route) =>
+  await page.route(url => url.pathname.endsWith('.wav'), (route) =>
     route.fulfill({ status: 200, contentType: 'audio/wav', body: wav }),
   );
   await page.goto('http://127.0.0.1:5177/');
@@ -131,4 +147,24 @@ test('production GUI preserves phrase 48 through JSON export/import and freezes 
   await expect(page.getByRole('combobox', { name: 'Song phrases' })).toHaveValue('48');
   await expect(page.locator('.phrase-slot.active')).toHaveAttribute('data-phrase', '47');
   await expect(page.locator('.melody-cell[data-track="2"][data-step="63"][data-note="0"]')).toHaveClass(/active/);
+});
+
+
+test('production GUI writes explicit song JSON to the configured Documents/songs folder', async ({ page }) => {
+  const local = await startPreview('local', 0);
+  try {
+    const address = local.httpServer.address();
+    if (!address || typeof address === 'string') throw new Error('No production export address');
+    await page.goto(`http://127.0.0.1:${address.port}/`);
+    await page.waitForSelector('html[data-ready="true"]');
+    await page.locator('#save-btn').click();
+    const file = path.join(documents, 'songs', 'Untitled.json');
+    await expect(page.locator('#save-btn')).toHaveAttribute('title', `Saved to ${file}`);
+    const song = JSON.parse(await readFile(file, 'utf8'));
+    expect(song.name).toBe('Untitled');
+    expect(song.phrases).toHaveLength(36);
+  } finally {
+    local.httpServer.closeAllConnections();
+    await new Promise<void>(resolve => local.httpServer.close(() => resolve()));
+  }
 });

@@ -72,8 +72,9 @@ export function createSongExportButton(): HTMLButtonElement {
                     : `Encoding ${format.toUpperCase()}… ${Math.round(fraction * 100)}%`;
               },
             });
-      downloadSongAudio(result);
-      status.textContent = `${result.filename} downloaded.`;
+      status.textContent = 'Saving export…';
+      const saved = await downloadSongAudio(result, controller.signal);
+      status.textContent = saved.path ? `Saved to ${saved.path}` : `${saved.filename} downloaded.`;
     } catch (error) {
       // Browsers also use AbortError for failed module loads and rendering.
       // Only our own cancellation signal means the user cancelled this export.

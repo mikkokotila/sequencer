@@ -1,3 +1,4 @@
+import { saveExportFile, exportFilename, type SavedExport } from './export-file';
 import { checkExportAbort, renderSongToBuffer } from './render-song';
 
 export type AudioExportFormat = 'wav' | 'mp3';
@@ -78,23 +79,16 @@ export async function exportSongAudio(
   });
   checkExportAbort(options.signal);
   options.onProgress?.({ stage: 'encoding', fraction: 1 });
-  const name =
-    song.name
-      .replace(/[<>:"/\\|?*]/g, '')
-      .replace(/\p{Cc}/gu, '')
-      .trim()
-      .slice(0, 120) || 'Untitled';
-  return { blob, filename: `${name}.${format}`, duration: song.buffer.duration };
+  return {
+    blob,
+    filename: exportFilename(song.name, `.${format}`),
+    duration: song.buffer.duration,
+  };
 }
 
-export function downloadSongAudio(result: Pick<SongAudioExport, 'blob' | 'filename'>): void {
-  const url = URL.createObjectURL(result.blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = result.filename;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  // Give Chrome time to consume the blob before revoking its URL.
-  setTimeout(() => URL.revokeObjectURL(url), 10000);
+export function downloadSongAudio(
+  result: Pick<SongAudioExport, 'blob' | 'filename'>,
+  signal?: AbortSignal,
+): Promise<SavedExport> {
+  return saveExportFile(result.blob, result.filename, 'download', signal);
 }

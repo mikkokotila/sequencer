@@ -25,6 +25,8 @@ Both `npm run dev` and `npm run preview` serve `/samples/drums/...` and `/sample
 
 Use **Download Song Audio** in the toolbar to save the full song as stereo **WAV (24-bit, 44.1 kHz)** or **MP3 (320 kbps)**. The export plays every non-empty phrase once in numeric order, matching transport order, and includes samples, mutes, levels, pan, octaves, harmonies, envelopes, all enabled effects, and engine controls. Sample and effect tails are retained; only inaudible padding is trimmed. MP3 can include the small encoder delay/padding inherent in its frames. Exports capture the current song when started, so subsequent edits cannot alter the file. Rendering and encoding stay local, with progress, cancellation, and retry on failure. The export limit is ten minutes including tails.
 
+**Export locations:** when running locally with `npm run dev` or `npm run preview`, **Export Pattern** writes song JSONs to `~/Documents/songs`; WAV, MP3, loop ZIP and S2400 ZIP exports go to `~/Documents`. These files are written only when you export; normal editing still autosaves to browser storage. Existing files are preserved with numbered filenames on repeated export. Permission or disk errors remain visible and can be retried. Static hosting falls back to the browser's configured download folder. Programmatic exports use the same destinations; `savePatternFile()` and `downloadSongAudio()` are asynchronous and return the actual saved filename and path. `SEQUENCER_DOCUMENTS_DIR` overrides the Documents directory; `SEQUENCER_DOWNLOAD_MODE=browser` explicitly uses browser downloads (also used by tests).
+
 Programmatic callers use the same API as the GUI:
 
 ```ts
@@ -36,7 +38,7 @@ const result = await exportSongAudio('mp3', {
   onProgress: ({ stage, fraction }) => console.log(stage, fraction), // optional
 });
 // result contains a Blob, filename, and rendered duration in seconds.
-downloadSongAudio(result); // optional: trigger a browser download
+await downloadSongAudio(result); // optional: save the file using the GUI's destination
 ```
 
 MP3 encoding uses [@breezystack/lamejs](https://github.com/gideonstele/lamejs), licensed under LGPL-3.0. The existing ZIP export remains available for individual dry phrase loops.

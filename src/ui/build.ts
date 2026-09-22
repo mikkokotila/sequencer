@@ -407,9 +407,20 @@ export function buildUI(): void {
   const saveBtn = el('button', 'tb');
   saveBtn.id = 'save-btn';
   saveBtn.title = 'Export Pattern';
+  saveBtn.setAttribute('aria-label', 'Export Pattern');
   saveBtn.innerHTML =
     '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3M3 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  saveBtn.onclick = savePatternFile;
+  saveBtn.onclick = () => {
+    saveBtn.disabled = true;
+    void savePatternFile()
+      .then((saved) => {
+        if (saved)
+          saveBtn.title = saved.path ? `Saved to ${saved.path}` : `${saved.filename} downloaded.`;
+      })
+      .finally(() => {
+        saveBtn.disabled = false;
+      });
+  };
   fileBtns.appendChild(saveBtn);
   const loadBtn = el('button', 'tb');
   loadBtn.id = 'load-btn';
@@ -420,6 +431,7 @@ export function buildUI(): void {
   fileBtns.appendChild(loadBtn);
   const loopsBtn = el('button', 'tb');
   loopsBtn.id = 'export-loops-btn';
+  loopsBtn.setAttribute('aria-label', 'Export Loops (ZIP of WAVs)');
   loopsBtn.title = 'Export Loops (ZIP of WAVs)';
   loopsBtn.innerHTML =
     '<svg width="10" height="10" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M6 7v2M8 6v4M10 7v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
@@ -429,6 +441,10 @@ export function buildUI(): void {
     loopsBtn.title = 'Export Loops (ZIP of WAVs)';
     loopsBtn.classList.add('busy');
     exportLoopsZip()
+      .then((saved) => {
+        if (saved)
+          loopsBtn.title = saved.path ? `Saved to ${saved.path}` : `${saved.filename} downloaded.`;
+      })
       .catch((err: unknown) => {
         console.error('Export Loops failed:', err);
         loopsBtn.classList.add('export-error');

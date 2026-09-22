@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite';
 import { sampleLibraryPlugin } from './server/sample-library.mjs';
+import { exportFilesPlugin } from './server/export-files.mjs';
 
 export default defineConfig({
-  plugins: [sampleLibraryPlugin(), {
+  plugins: [sampleLibraryPlugin(), exportFilesPlugin(), {
     name: 'isolated-dsp-benchmark',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {

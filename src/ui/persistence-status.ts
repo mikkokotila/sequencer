@@ -32,7 +32,9 @@ export function initPersistenceStatus(): void {
       };
       panel.appendChild(button);
     };
-    action('Export local copy', savePatternFile);
+    action('Export local copy', async () => {
+      await savePatternFile();
+    });
     if (conflict) {
       action('Save as new song', saveSongCopy);
       action('Reload saved song', reloadSavedSong);

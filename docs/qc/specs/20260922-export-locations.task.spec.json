@@ -1,0 +1,66 @@
+{
+  "task_id": "20260922-export-locations",
+  "task_type": "feature",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Explicit user request: move existing song exports to Documents/songs and save future JSON exports there, with other sequencer exports in Documents. User confirmed only on Export, not autosave. Product work overrides default GA-only scope and extends the still-open export PR #51 with the related destination behavior.",
+    "in_scope": [
+      "src/**",
+      "server/export-files.mjs",
+      "vite.config.ts",
+      "playwright.config.ts",
+      "e2e/**",
+      "README.md",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "samples/**",
+      "samples.json",
+      "package.json",
+      "package-lock.json",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**"
+    ],
+    "controls": [
+      {
+        "id": "export_destinations",
+        "description": "Only explicit exports write song JSON to Documents/songs and WAV/MP3/ZIP to Documents; preserve older files and report actual saved paths.",
+        "test": "Real disk files from every GUI export, no file from editing/autosave, embedded samples, Unicode filenames, static-host fallback, cancellation and retry."
+      },
+      {
+        "id": "bounded_writes",
+        "description": "Loopback same-origin export API accepts only fixed file categories and publishes complete files without replacing existing ones.",
+        "test": "Concurrent same-name saves, traversal and origin/host rejection, size limits, symlink escape, permission denial and disconnected upload cleanup."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "Temporary Documents directories with actual Node filesystem writes",
+      "Chrome GUI with generated WAV sample bytes",
+      "Dev and preview server export middleware",
+      "Existing user PLEIN R\u00c9GIME at 96 BPM exported without modifying the song"
+    ],
+    "seed": "20260922-export-locations",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding",
+      "benchmark_worklet_budget",
+      "persistence_roundtrip"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

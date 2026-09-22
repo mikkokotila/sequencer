@@ -1,0 +1,51 @@
+{
+  "task_id": "20260922-export-locations",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260922-export-locations/logs/O-CI.log"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260922-export-locations/logs/O-E2E.log"
+    },
+    {
+      "id": "O-E2E-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260922-export-locations/logs/O-E2E-DELTA.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260922-export-locations/logs/O-GATE-CONTRACTS-FULL.log"
+    },
+    {
+      "id": "O-GATE-ARCH-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260922-export-locations/logs/O-GATE-ARCH-FULL.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260922-export-locations/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "69 focused Chromium regressions pass, including 14 new filesystem/GUI save-location tests. The current user song was explicitly exported through the actual in-app GUI to /Users/mikkokotila/Documents/songs/PLEIN RÉGIME.json and parsed from disk: 96 BPM, 36 phrases, embedded sample data retained. A transient startup module error during Vite reload was resolved with the existing Retry startup control, without changing the song. No implicit editing/autosave filesystem writes are added. All 14 new tests pass in installed Google Chrome on the final implementation, including non-loopback client rejection. Production build and static checks pass. All three production GUI tests pass, including an added built-app local JSON export check; legacy production download checks explicitly use browser mode and all preview fixtures use temporary Documents folders."
+  },
+  "artifacts": [
+    "verdict.json"
+  ]
+}

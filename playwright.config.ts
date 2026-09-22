@@ -14,6 +14,7 @@ export default defineConfig({
   },
   webServer: {
     command: 'npx vite --port 5174',
+    env: { SEQUENCER_DOWNLOAD_MODE: 'browser' },
     port: 5174,
     reuseExistingServer: true,
     timeout: 30000,

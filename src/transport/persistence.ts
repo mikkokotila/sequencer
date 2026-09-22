@@ -2,6 +2,7 @@
  * Persistence — IndexedDB operations, song save/load, file import/export.
  */
 
+import { saveExportFile, exportFilename, type SavedExport } from './export-file';
 import type { ExtensionState, Phrase, SampleData, SongData } from '../types';
 import { DRUMS_CFG, MEL_CFG, STEPS } from '../config';
 import {
@@ -418,29 +419,24 @@ export async function reloadSavedSong(): Promise<void> {
 //  File import / export
 // ═══════════════════════════════════════════
 
-export function savePatternFile(): void {
+export async function savePatternFile(): Promise<SavedExport | undefined> {
   const data = collectSongData(currentSongName);
-  let encoded: string;
   try {
     normalizeSong(data, true);
-    encoded = encodeSongFile(data);
+    const blob = new Blob([encodeSongFile(data)], { type: 'application/json' });
+    const filename = exportFilename(currentSongName, '.json');
+    return await saveExportFile(blob, filename, 'song');
   } catch (error) {
     reportPersistenceError(error);
-    return;
+    return undefined;
   }
-  const blob = new Blob([encoded], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = currentSongName.replace(/[^a-zA-Z0-9\-_ ]/g, '') + '.json';
-  a.click();
-  URL.revokeObjectURL(a.href);
 }
 
 /**
  * Render every non-empty phrase to a 24-bit PCM WAV and bundle the lot into
  * an uncompressed ZIP, then trigger a download.
  */
-export async function exportLoopsZip(): Promise<void> {
+export async function exportLoopsZip(): Promise<SavedExport | undefined> {
   const { renderPhraseToBuffer } = await import('./render');
   const { audioBufferToWav24 } = await import('./wav');
   const { buildStoreZip } = await import('./zip');
@@ -463,11 +459,8 @@ export async function exportLoopsZip(): Promise<void> {
 
   const zip = buildStoreZip(entries);
   const blob = new Blob([zip.buffer as ArrayBuffer], { type: 'application/zip' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = currentSongName.replace(/[^a-zA-Z0-9\-_ ]/g, '') + '-loops.zip';
-  a.click();
-  URL.revokeObjectURL(a.href);
+  const filename = exportFilename(currentSongName, '-loops.zip');
+  return saveExportFile(blob, filename, 'download');
 }
 
 export function loadPatternFile(): void {

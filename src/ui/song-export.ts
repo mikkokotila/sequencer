@@ -72,14 +72,18 @@ export function createSongExportButton(): HTMLButtonElement {
                     : `Encoding ${format.toUpperCase()}… ${Math.round(fraction * 100)}%`;
               },
             });
-      downloadSongAudio(result);
-      status.textContent = `${result.filename} downloaded.`;
+      status.textContent = 'Saving export…';
+      const saved = await downloadSongAudio(result, controller.signal);
+      status.textContent = saved.path ? `Saved to ${saved.path}` : `${saved.filename} downloaded.`;
     } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError')
-        status.textContent = 'Export cancelled.';
+      // Browsers also use AbortError for failed module loads and rendering.
+      // Only our own cancellation signal means the user cancelled this export.
+      if (controller.signal.aborted) status.textContent = 'Export cancelled.';
       else {
         status.textContent =
-          error instanceof Error ? error.message : 'Export failed. Please try again.';
+          error instanceof Error
+            ? `Export failed. ${error.message}`
+            : 'Export failed. Please try again.';
         status.classList.add('export-error');
       }
     } finally {

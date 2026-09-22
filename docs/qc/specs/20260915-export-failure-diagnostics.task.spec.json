@@ -1,0 +1,59 @@
+{
+  "task_id": "20260915-export-failure-diagnostics",
+  "task_type": "bugfix",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "User-reported WAV export failure: distinguish failed audio processor loading and native rendering errors from user cancellation. Explicit product repair request overrides default GA-only scope. No feature changes.",
+    "in_scope": [
+      "src/**",
+      "index.html",
+      "e2e/**",
+      "README.md",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "samples/**",
+      "samples.json",
+      "server/**",
+      "package.json",
+      "package-lock.json",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**"
+    ],
+    "controls": [
+      {
+        "id": "export_failure_diagnostics",
+        "description": "Only an aborted export signal means cancelled; processor failures explain server availability and support retry.",
+        "test": "WAV/MP3 module failure and recovery; native rendering AbortError recovery; existing cancellation, audio decoding and state snapshot coverage."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "Chrome with deterministic percussion samples",
+      "Injected browser-native AudioWorklet and OfflineAudioContext failures",
+      "Current user song: 96 BPM, 36 phrases, 144 bars"
+    ],
+    "seed": "20260915-export-failure-diagnostics",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding",
+      "benchmark_worklet_budget",
+      "persistence_roundtrip"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

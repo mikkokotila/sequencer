@@ -190,7 +190,14 @@ export async function renderSongToBuffer(options: RenderOptions = {}): Promise<R
   const abort = () => dispose();
   options.signal?.addEventListener('abort', abort, { once: true });
   try {
-    await loadAllWorklets(ctx);
+    try {
+      await loadAllWorklets(ctx);
+    } catch {
+      checkExportAbort(options.signal);
+      throw new Error(
+        'Could not load audio processors. Check that the app server is running and reachable, then try again.',
+      );
+    }
     checkExportAbort(options.signal);
     const mixBus = ctx.createGain();
     const trim = ctx.createGain();

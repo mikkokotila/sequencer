@@ -1,0 +1,60 @@
+{
+  "task_id": "20260923-kit-export-refresh",
+  "task_type": "feature",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "User explicitly requested refreshing existing PR #34 for merge: integrate the original sample-kit exporter with current main, the Documents save API, and real ZIP-content tests. This product request overrides default GA-only scope. The integration preserves both histories and all current-main behavior; old proof artifacts remain historical records.",
+    "in_scope": [
+      "src/transport/kit-export.ts",
+      "src/ui/kit-export.ts",
+      "src/ui/build.ts",
+      "e2e/kit-export.spec.ts",
+      "e2e/production.spec.ts",
+      "README.md",
+      "docs/qc/proofs/**",
+      "docs/qc/specs/**",
+      "docs/qc/runs/**",
+      "logs/compiler.log"
+    ],
+    "out_of_scope": [
+      "samples/**",
+      "samples.json",
+      "package.json",
+      "package-lock.json",
+      "docs/contracts/**",
+      "docs/qc/compiler/**",
+      "docs/qc/scripts/**"
+    ],
+    "controls": [
+      {
+        "id": "kit_export",
+        "description": "Explicit original-sample ZIP export includes loaded drum, synth and vocal tracks with extraction-safe distinct filenames and no audio rendering.",
+        "test": "GUI local save, independent Python zipfile CRC/central-directory validation and byte-for-byte comparison of all nine sources, duplicate/case/Unicode/path handling, empty/retry, frozen in-flight snapshot, browser fallback and API return values."
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "Isolated temporary Documents directories",
+      "Generated distinct WAVs on all nine tracks, muted and unused samples",
+      "Production GUI loading a 16-bit WAV sample and exporting its exact bytes"
+    ],
+    "seed": "20260923-kit-export-refresh",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "low_end_continuity",
+      "clip_guard",
+      "default_safety",
+      "control_binding",
+      "benchmark_worklet_budget",
+      "persistence_roundtrip"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false,
+    "require_debt_reduction": false
+  }
+}

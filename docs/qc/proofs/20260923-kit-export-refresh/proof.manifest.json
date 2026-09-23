@@ -1,0 +1,51 @@
+{
+  "task_id": "20260923-kit-export-refresh",
+  "tree_sha": "__AUTO__",
+  "commit_shas": [],
+  "required_gates": [
+    {
+      "id": "O-CI",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260923-kit-export-refresh/logs/O-CI.log"
+    },
+    {
+      "id": "O-E2E",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260923-kit-export-refresh/logs/O-E2E.log"
+    },
+    {
+      "id": "O-E2E-DELTA",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260923-kit-export-refresh/logs/O-E2E-DELTA.log"
+    },
+    {
+      "id": "O-GATE-CONTRACTS-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260923-kit-export-refresh/logs/O-GATE-CONTRACTS-FULL.log"
+    },
+    {
+      "id": "O-GATE-ARCH-FULL",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260923-kit-export-refresh/logs/O-GATE-ARCH-FULL.log"
+    },
+    {
+      "id": "O-COMMIT-RANGE",
+      "result": "PASS",
+      "blocking": true,
+      "evidence": "docs/qc/proofs/20260923-kit-export-refresh/logs/O-COMMIT-RANGE.log"
+    }
+  ],
+  "contracts": [],
+  "browser_verification": {
+    "status": "VERIFIED",
+    "details": "Seven real Chromium GUI/API integration tests pass. ZIP files are extracted with Python zipfile, which independently checks CRCs and the central directory. Every original sample byte is compared for all nine tracks. Production GUI coverage includes loading a real generated 16-bit WAV and checking its unchanged bytes in the kit ZIP. All seven dedicated tests also pass in installed Google Chrome. Ten focused Chromium tests (seven kit plus three production GUI tests) pass; static checks and the production build pass."
+  },
+  "artifacts": [
+    "verdict.json"
+  ]
+}

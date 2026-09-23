@@ -25,7 +25,7 @@ Both `npm run dev` and `npm run preview` serve `/samples/drums/...` and `/sample
 
 Use **Download Song Audio** in the toolbar to save the full song as stereo **WAV (24-bit, 44.1 kHz)** or **MP3 (320 kbps)**. The export plays every non-empty phrase once in numeric order, matching transport order, and includes samples, mutes, levels, pan, octaves, harmonies, envelopes, all enabled effects, and engine controls. Sample and effect tails are retained; only inaudible padding is trimmed. MP3 can include the small encoder delay/padding inherent in its frames. Exports capture the current song when started, so subsequent edits cannot alter the file. Rendering and encoding stay local, with progress, cancellation, and retry on failure. The export limit is ten minutes including tails.
 
-**Export locations:** when running locally with `npm run dev` or `npm run preview`, **Export Pattern** writes song JSONs to `~/Documents/songs`; WAV, MP3, loop ZIP and S2400 ZIP exports go to `~/Documents`. These files are written only when you export; normal editing still autosaves to browser storage. Existing files are preserved with numbered filenames on repeated export. Permission or disk errors remain visible and can be retried. Static hosting falls back to the browser's configured download folder. Programmatic exports use the same destinations; `savePatternFile()` and `downloadSongAudio()` are asynchronous and return the actual saved filename and path. `SEQUENCER_DOCUMENTS_DIR` overrides the Documents directory; `SEQUENCER_DOWNLOAD_MODE=browser` explicitly uses browser downloads (also used by tests).
+**Export locations:** when running locally with `npm run dev` or `npm run preview`, **Export Pattern** writes song JSONs to `~/Documents/songs`; WAV, MP3, sample-kit ZIP, loop ZIP and S2400 ZIP exports go to `~/Documents`. These files are written only when you export; normal editing still autosaves to browser storage. Existing files are preserved with numbered filenames on repeated export. Permission or disk errors remain visible and can be retried. Static hosting falls back to the browser's configured download folder. Programmatic exports use the same destinations; `savePatternFile()` and `downloadSongAudio()` are asynchronous and return the actual saved filename and path. `SEQUENCER_DOCUMENTS_DIR` overrides the Documents directory; `SEQUENCER_DOWNLOAD_MODE=browser` explicitly uses browser downloads (also used by tests).
 
 Programmatic callers use the same API as the GUI:
 
@@ -145,6 +145,12 @@ samples.json                   Sample browser manifest
 - **Prettier** — formatting
 - **Playwright** — E2E testing
 - **Husky + lint-staged** — pre-commit hooks
+
+### Sample kits
+
+**Export Sample Kit** in the toolbar saves `{songName}-bundle.zip` to `~/Documents` when running locally. It contains the original sample bytes from every loaded drum, synth and vocal track, including muted tracks and samples unused by the current patterns. No sequencing, pitch, envelopes or effects are rendered. Samples keep their names inside the bundle folder; unsafe characters are removed and duplicate names receive numbered suffixes (also accounting for case-insensitive extraction). Empty kits show an error without writing a file. Save failures remain visible on the button and allow retry; repeated exports preserve existing ZIPs. Static hosting uses the browser download folder.
+
+Programmatic use: `await exportKit()` from `src/transport/kit-export.ts` returns `{ filename, path? }` through the same save API. The export snapshots sample names and bytes before saving.
 
 ### S2400 drum projects (experimental)
 

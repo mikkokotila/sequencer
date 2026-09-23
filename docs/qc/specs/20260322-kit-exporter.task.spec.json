@@ -1,0 +1,43 @@
+{
+  "task_id": "20260322-kit-exporter",
+  "task_type": "feature",
+  "execution_profile": "real",
+  "capability": {
+    "summary": "Export all loaded samples as a ZIP bundle named {songName}-bundle",
+    "in_scope": [
+      "src/transport/kit-export.ts",
+      "src/ui/build.ts",
+      "e2e/sequencer.spec.ts",
+      "README.md"
+    ],
+    "out_of_scope": [
+      "src/engine/worklets/**"
+    ],
+    "controls": [
+      {
+        "id": "kit.export",
+        "default": "idle",
+        "range": ["idle", "exporting"],
+        "unit": "action",
+        "off_semantics": "no effect on audio or state",
+        "on_semantics": "downloads ZIP containing all loaded samples"
+      }
+    ]
+  },
+  "proof": {
+    "fixtures": [
+      "builtin:kick_01"
+    ],
+    "seed": "fixed-seed-v1",
+    "oracles": [
+      "off_transparent",
+      "on_audible",
+      "control_binding"
+    ]
+  },
+  "guardrails": {
+    "allow_fixme": false,
+    "allow_skip": false,
+    "allow_contract_edits": false
+  }
+}

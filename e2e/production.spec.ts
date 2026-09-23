@@ -36,7 +36,7 @@ test.afterAll(async () => {
   if (documents) await rm(documents, { recursive: true, force: true });
 });
 
-test('production build initializes worklets, plays samples, and downloads WAV, MP3 and S2400', async ({ page }) => {
+test('production build initializes worklets, plays samples, and downloads sample kits, WAV, MP3 and S2400', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.addInitScript(() => {
@@ -94,6 +94,14 @@ test('production build initializes worklets, plays samples, and downloads WAV, M
       () => (window as unknown as { __contexts: AudioContext[] }).__contexts.length,
     ),
   ).toBe(1);
+  const kitDownload = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export Sample Kit', exact: true }).click();
+  const kit = await kitDownload;
+  expect(kit.suggestedFilename()).toBe('Untitled-bundle.zip');
+  const kitFiles = readZip(await readFile((await kit.path())!));
+  expect(kitFiles.size).toBe(1);
+  expect([...kitFiles.values()][0]).toEqual(wav); // Original 16-bit source, not rendered audio.
+  await expect(page.locator('#kit-export-btn')).toHaveAttribute('title', 'Untitled-bundle.zip downloaded.');
   await page.locator('#export-song-btn').click();
   for (const format of ['wav', 'mp3', 'zip']) {
     const download = page.waitForEvent('download');
